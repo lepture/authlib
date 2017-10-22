@@ -1,4 +1,4 @@
-from authlib.util.security import generate_token
+from authlib.common.security import generate_token
 
 __all__ = ['BearerToken']
 

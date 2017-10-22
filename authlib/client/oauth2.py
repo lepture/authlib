@@ -1,5 +1,6 @@
 from requests import Session
-from ..util.security import generate_token
+from ..common.security import generate_token
+from ..common.urls import url_decode
 
 
 class OAuth2Session(Session):
@@ -21,7 +22,32 @@ class OAuth2Session(Session):
     def authorization_url(self, url, state=None, **kwargs):
         pass
 
-    def fetch_access_token(self, url, **kwargs):
+    def fetch_access_token(
+            self, url=None, code=None, authorization_response=None,
+            body='', auth=None, username=None, password=None, method='POST',
+            timeout=None, headers=None, verify=True, proxies=None, **kwargs):
+        if url is None and authorization_response:
+            return self.token_from_fragment(authorization_response)
+
+        if headers is None:
+            headers = {
+                'Accept': 'application/json',
+                'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8',
+            }
+
+        if method.upper() == 'POST':
+            resp = self.post(
+                url, data=dict(url_decode(body)), timeout=timeout,
+                headers=headers, auth=auth, verify=verify, proxies=proxies
+            )
+        else:
+            resp = self.get(
+                url, params=dict(url_decode(body)), timeout=timeout,
+                headers=headers, auth=auth, verify=verify, proxies=proxies
+            )
+
+        for hook in self.compliance_hook['access_token_response']:
+            resp = hook(resp)
         return {}
 
     def fetch_token(self, url, **kwargs):
