@@ -43,6 +43,27 @@ class InvalidTokenError(OAuth2Error):
         'or invalid for other reasons.'
     )
 
+    def get_headers(self):
+        """If the protected resource request does not include authentication
+        credentials or does not contain an access token that enables access
+        to the protected resource, the resource server MUST include the HTTP
+        "WWW-Authenticate" response header field; it MAY include it in
+        response to other conditions as well.
+
+        https://tools.ietf.org/html/rfc6750#section-3
+        """
+        headers = super(InvalidTokenError, self).get_headers()
+
+        extras = []
+        if self.realm:
+            extras.append('realm="{}"'.format(self.realm))
+        extras.append('error="{}"'.format(self.error))
+        extras.append('error_description="{}"'.format(self.description))
+        headers.append(
+            ('WWW-Authenticate', 'Bearer ' + ',\n'.join(extras))
+        )
+        return headers
+
 
 class InsufficientScopeError(OAuth2Error):
     """The request requires higher privileges than provided by the

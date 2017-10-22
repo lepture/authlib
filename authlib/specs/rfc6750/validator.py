@@ -15,6 +15,9 @@ from .errors import (
 
 
 class BearerTokenValidator(object):
+    def __init__(self, realm=None):
+        self.realm = realm
+
     def request_invalid(self, token, scope, request):
         raise NotImplementedError('Subclasses must implement this method.')
 
@@ -34,10 +37,19 @@ class BearerTokenValidator(object):
         if self.request_invalid(token, scope, request):
             raise InvalidRequestError()
         if self.token_expired(token, scope, request):
-            raise InvalidTokenError('The access token provided is expired')
+            raise InvalidTokenError(
+                'The access token provided is expired',
+                realm=self.realm
+            )
         if self.token_revoked(token, scope, request):
-            raise InvalidTokenError('The access token provided is revoked')
+            raise InvalidTokenError(
+                'The access token provided is revoked',
+                realm=self.realm,
+            )
         if self.token_malformed(token, scope, request):
-            raise InvalidTokenError('The access token provided is malformed')
+            raise InvalidTokenError(
+                'The access token provided is malformed',
+                realm=self.realm
+            )
         if self.scope_insufficient(token, scope, request):
             raise InsufficientScopeError()
