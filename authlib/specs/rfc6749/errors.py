@@ -51,3 +51,17 @@ class OAuth2Error(Exception):
             ('Cache-Control', 'no-store'),
             ('Pragma', 'no-cache')
         ]
+
+
+class InsecureTransportError(OAuth2Error):
+    error = 'insecure_transport'
+    description = 'OAuth 2 MUST utilize https.'
+
+
+class MissingCodeError(OAuth2Error):
+    error = 'missing_code'
+
+
+class MismatchingStateError(OAuth2Error):
+    error = 'mismatching_state'
+    description = 'CSRF Warning! State not equal in request and response.'

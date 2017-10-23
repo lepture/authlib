@@ -1,8 +1,8 @@
 import logging
-from requests.compat import urljoin
 from .oauth1 import OAuth1Session
 from .oauth2 import OAuth2Session
 from .errors import OAuthException
+from ..common.urls import urlparse
 
 log = logging.getLogger(__name__)
 
@@ -42,32 +42,34 @@ class OAuthClient(object):
                              hook_type, self._hooks)
         self._hooks[hook_type] = f
 
-    def authorize_redirect(self, callback=None, **kwargs):
+    def authorize_redirect(self, callback_uri=None, **kwargs):
         redirect = self._hooks['authorize_redirect']
         assert callable(redirect), 'missing authorize_redirect'
 
         if self.request_token_url:
-            setter = self._hooks['request_token_setter']
-            assert callable(setter), 'missing request_token_setter'
+            set_token = self._hooks['request_token_setter']
+            assert callable(set_token), 'missing request_token_setter'
 
             sess = OAuth1Session(
                 self.client_key,
                 client_secret=self.client_secret,
+                callback_uri=callback_uri,
             )
-            resp = sess.fetch_request_token(
+            token = sess.fetch_request_token(
                 self.request_token_url,
                 **self.request_token_params
             )
             # remember oauth_token, oauth_token_secret
-            setter(resp)
-            url = sess.authorization_url(self.authorize_url)
+            set_token(token)
+            url, state = sess.authorization_url(self.authorize_url)
         else:
             sess = OAuth2Session(
                 self.client_key,
                 client_secret=self.client_secret,
+                redirect_uri=callback_uri,
             )
-            url = sess.authorization_url(self.authorize_url)
-        return redirect(url)
+            url, state = sess.authorization_url(self.authorize_url)
+        return redirect(url, state)
 
     def authorize_access_token(self, params):
         set_access_token = self._hooks['access_token_setter']
@@ -115,7 +117,7 @@ class OAuthClient(object):
 
     def request(self, method, url, **kwargs):
         if self.api_base_url and not url.startswith(('https://', 'http://')):
-            url = urljoin(self.api_base_url, url)
+            url = urlparse.urljoin(self.api_base_url, url)
         if not self.session.token:
             self.session.token = self._get_access_token()
         return self.session.request(method, url, **kwargs)

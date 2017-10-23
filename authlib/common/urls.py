@@ -87,3 +87,23 @@ def url_decode(query):
     for k, v in params:
         decoded.append((to_unicode(k), to_unicode(v)))
     return decoded
+
+
+def add_params_to_qs(query, params):
+    """Extend a query with a list of two-tuples."""
+    if isinstance(params, dict):
+        params = params.items()
+
+    qs = urlparse.parse_qsl(query, keep_blank_values=True)
+    qs.extend(params)
+    return url_encode(qs)
+
+
+def add_params_to_uri(uri, params, fragment=False):
+    """Add a list of two-tuples to the uri query components."""
+    sch, net, path, par, query, fra = urlparse.urlparse(uri)
+    if fragment:
+        fra = add_params_to_qs(fra, params)
+    else:
+        query = add_params_to_qs(query, params)
+    return urlparse.urlunparse((sch, net, path, par, query, fra))
