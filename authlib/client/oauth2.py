@@ -3,10 +3,11 @@ from requests import Session
 from requests.auth import HTTPBasicAuth
 from ..common.security import generate_token, is_secure_transport
 from ..common.urls import url_decode
-from ..specs.rfc6749.client import (
+from ..specs.rfc6749.grant import (
     prepare_grant_uri,
     prepare_token_request,
     parse_authorization_code_response,
+    parse_implicit_response,
 )
 from ..specs.rfc6749 import OAuth2Token
 from ..specs.rfc6749 import OAuth2Error, InsecureTransportError
@@ -81,12 +82,14 @@ class OAuth2Session(Session):
             return BearToken
 
     def authorization_url(self, url, state=None, **kwargs):
+        state = state or self.state
         if state is None:
             state = generate_token()
 
         uri = prepare_grant_uri(
-            url, redirect_uri=self.redirect_uri,
-            scope=self.scope, state=state, **kwargs
+            url, client_id=self.client_id, response_type='code',
+            redirect_uri=self.redirect_uri, scope=self.scope,
+            state=state, **kwargs
         )
         return uri, state
 
@@ -111,22 +114,19 @@ class OAuth2Session(Session):
         body = prepare_token_request(
             'authorization_code',
             code=code, body=body,
-            client_id=self.client_id,
             redirect_uri=self.redirect_uri,
+            state=self.state,
             **kwargs
         )
 
-        client_id = kwargs.get('client_id', '')
         if auth is None:
-            if client_id:
-                client_secret = kwargs.get('client_secret', '')
+            if username and password:
+                auth = HTTPBasicAuth(username, password)
+            else:
+                client_secret = self.client_secret
                 if client_secret is None:
                     client_secret = ''
-                auth = HTTPBasicAuth(client_id, client_secret)
-            elif username:
-                if password is None:
-                    raise ValueError('Username was supplied, but not password.')
-                auth = HTTPBasicAuth(username, password)
+                auth = HTTPBasicAuth(self.client_id, client_secret)
 
         if headers is None:
             headers = DEFAULT_HEADERS
@@ -146,21 +146,15 @@ class OAuth2Session(Session):
             resp = hook(resp)
 
         params = resp.json()
-        if 'error' not in params:
-            return OAuth2Token(params)
-
-        error = params['error']
-        description = params.get('description')
-        uri = params.get('error_uri'),
-        state = params.get('state')
-        raise TokenError(error, description, resp.status_code, uri, state)
+        return self._parse_and_validate_token(params, resp.status_code)
 
     def fetch_token(self, url, **kwargs):
         """Alias for fetch_access_token. Compatible with requests-oauthlib."""
         return self.fetch_access_token(url, **kwargs)
 
     def token_from_fragment(self, authorization_response):
-        pass
+        params = parse_implicit_response(authorization_response, self.state)
+        return self._parse_and_validate_token(params)
 
     def refresh_token(self, url, **kwargs):
         pass
@@ -193,3 +187,14 @@ class OAuth2Session(Session):
             raise ValueError('Hook type %s is not in %s.',
                              hook_type, self.compliance_hook)
         self.compliance_hook[hook_type].add(hook)
+
+    def _parse_and_validate_token(self, params, status_code=400):
+        if 'error' not in params:
+            self.token = OAuth2Token(params)
+            return self.token
+
+        error = params['error']
+        description = params.get('description')
+        uri = params.get('error_uri'),
+        state = params.get('state')
+        raise TokenError(error, description, status_code, uri, state)
