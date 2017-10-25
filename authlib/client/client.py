@@ -61,17 +61,17 @@ class OAuthClient(object):
             )
             # remember oauth_token, oauth_token_secret
             set_token(token)
-            url, state = sess.authorization_url(self.authorize_url)
+            url, state = sess.authorization_url(self.authorize_url, **kwargs)
         else:
             sess = OAuth2Session(
                 self.client_key,
                 client_secret=self.client_secret,
                 redirect_uri=callback_uri,
             )
-            url, state = sess.authorization_url(self.authorize_url)
+            url, state = sess.authorization_url(self.authorize_url, **kwargs)
         return redirect(url, state)
 
-    def authorize_access_token(self, params):
+    def authorize_access_token(self, **params):
         set_access_token = self._hooks['access_token_setter']
         assert callable(set_access_token), 'missing access_token_setter'
 
@@ -85,13 +85,13 @@ class OAuthClient(object):
                 client_secret=self.client_secret,
                 token=token,
             )
-            token = sess.fetch_access_token(self.access_token_url)
+            token = sess.fetch_access_token(self.access_token_url, **params)
         else:
             sess = OAuth2Session(
                 self.client_key,
                 client_secret=self.client_secret,
             )
-            token = sess.fetch_access_token(self.access_token_url)
+            token = sess.fetch_access_token(self.access_token_url, **params)
         set_access_token(token)
         return token
 

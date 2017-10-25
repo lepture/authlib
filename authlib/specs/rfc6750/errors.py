@@ -13,6 +13,12 @@
 """
 from ..rfc6749.errors import OAuth2Error
 
+__all__ = [
+    'InvalidRequestError',
+    'InvalidTokenError',
+    'InsufficientScopeError'
+]
+
 
 class InvalidRequestError(OAuth2Error):
     """The request is missing a required parameter, includes an

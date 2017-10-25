@@ -10,8 +10,8 @@ from ..specs.rfc6749.grant import (
     parse_implicit_response,
 )
 from ..specs.rfc6749 import OAuth2Token
-from ..specs.rfc6749 import OAuth2Error, InsecureTransportError
-from ..specs.rfc6750 import BearToken
+from ..specs.rfc6749 import CustomOAuth2Error, InsecureTransportError
+from ..specs.rfc6750 import BearToken, InvalidTokenError
 
 __all__ = ['OAuth2Session']
 
@@ -20,16 +20,6 @@ DEFAULT_HEADERS = {
     'Accept': 'application/json',
     'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
 }
-
-
-class TokenError(OAuth2Error):
-    def __init__(self, error=None, description=None, status_code=None,
-                 uri=None, state=None, **kwargs):
-
-        if error is not None:
-            self.error = error
-        super(TokenError).__init__(description, status_code, uri,
-                                   state, **kwargs)
 
 
 class OAuth2Session(Session):
@@ -61,6 +51,8 @@ class OAuth2Session(Session):
         self.auto_refresh_kwargs = auto_refresh_kwargs
         self.scope = scope
         self.redirect_uri = redirect_uri
+        if isinstance(token, dict) and not isinstance(token, OAuth2Token):
+            token = OAuth2Token(token)
         self.token = token
         self.token_placement = token_placement
         self.state = state
@@ -156,13 +148,54 @@ class OAuth2Session(Session):
         params = parse_implicit_response(authorization_response, self.state)
         return self._parse_and_validate_token(params)
 
-    def refresh_token(self, url, **kwargs):
-        pass
+    def refresh_token(self, url, refresh_token=None, body='', auth=None,
+                      timeout=None, headers=None, verify=True,
+                      proxies=None, **kwargs):
+
+        refresh_token = refresh_token or self.token.get('refresh_token')
+        kwargs.update(self.auto_refresh_kwargs)
+
+        body = prepare_token_request(
+            'refresh_token', body=body, scope=self.scope,
+            refresh_token=refresh_token, **kwargs
+        )
+
+        if headers is None:
+            headers = DEFAULT_HEADERS
+
+        resp = self.post(
+            url, data=dict(url_decode(body)), auth=auth, timeout=timeout,
+            headers=headers, verify=verify, withhold_token=True, proxies=proxies
+        )
+        for hook in self.compliance_hook['refresh_token_response']:
+            resp = hook(resp)
+
+        params = resp.json()
+        self._parse_and_validate_token(params, resp.status_code)
+        if 'refresh_token' not in self.token:
+            self.token['refresh_token'] = refresh_token
+
+        if callable(self.token_updater):
+            self.token_updater(self.token)
+        return self.token
 
     def request(self, method, url, data=None, headers=None,
                 withhold_token=False, **kwargs):
 
         if self.token and not withhold_token:
+            if self.token.is_expired():
+                if not self.auto_refresh_url:
+                    raise InvalidTokenError(
+                        'The access token provided is expired')
+
+                auth = kwargs.pop('auth', None)
+                if auth is None and self.client_id and self.client_secret:
+                    auth = HTTPBasicAuth(self.client_id, self.client_secret)
+
+                self.refresh_token(
+                    self.auto_refresh_url, auth=auth, **kwargs
+                )
+
             tok = self.token_cls(self.token['access_token'])
             url, headers, data = tok.add_token(
                 url, headers, data, self.token_placement
@@ -171,7 +204,6 @@ class OAuth2Session(Session):
             for hook in self.compliance_hook['protected_request']:
                 url, headers, data = hook(url, headers, data)
 
-            # TODO: auto renew
         return super(OAuth2Session, self).request(
             method, url, headers=headers, data=data, **kwargs)
 
@@ -197,4 +229,4 @@ class OAuth2Session(Session):
         description = params.get('description')
         uri = params.get('error_uri'),
         state = params.get('state')
-        raise TokenError(error, description, status_code, uri, state)
+        raise CustomOAuth2Error(error, description, status_code, uri, state)
