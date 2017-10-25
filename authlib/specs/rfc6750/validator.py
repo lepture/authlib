@@ -9,7 +9,9 @@
 
 from .errors import (
     InvalidRequestError,
-    InvalidTokenError,
+    ExpiredTokenError,
+    RevokedTokenError,
+    MalformedTokenError,
     InsufficientScopeError
 )
 
@@ -37,19 +39,10 @@ class BearerTokenValidator(object):
         if self.request_invalid(token, scope, request):
             raise InvalidRequestError()
         if self.token_expired(token, scope, request):
-            raise InvalidTokenError(
-                'The access token provided is expired',
-                realm=self.realm
-            )
+            raise ExpiredTokenError(realm=self.realm)
         if self.token_revoked(token, scope, request):
-            raise InvalidTokenError(
-                'The access token provided is revoked',
-                realm=self.realm,
-            )
+            raise RevokedTokenError(realm=self.realm)
         if self.token_malformed(token, scope, request):
-            raise InvalidTokenError(
-                'The access token provided is malformed',
-                realm=self.realm
-            )
+            raise MalformedTokenError(realm=self.realm)
         if self.scope_insufficient(token, scope, request):
             raise InsufficientScopeError()

@@ -4,6 +4,8 @@ from .oauth2 import OAuth2Session
 from .errors import OAuthException
 from ..common.urls import urlparse
 
+__all__ = ['OAuthClient']
+
 log = logging.getLogger(__name__)
 
 

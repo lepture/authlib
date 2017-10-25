@@ -11,7 +11,7 @@ from ..specs.rfc6749.grant import (
 )
 from ..specs.rfc6749 import OAuth2Token
 from ..specs.rfc6749 import CustomOAuth2Error, InsecureTransportError
-from ..specs.rfc6750 import BearToken, InvalidTokenError
+from ..specs.rfc6750 import BearToken, ExpiredTokenError
 
 __all__ = ['OAuth2Session']
 
@@ -185,9 +185,7 @@ class OAuth2Session(Session):
         if self.token and not withhold_token:
             if self.token.is_expired():
                 if not self.auto_refresh_url:
-                    raise InvalidTokenError(
-                        'The access token provided is expired')
-
+                    raise ExpiredTokenError()
                 auth = kwargs.pop('auth', None)
                 if auth is None and self.client_id and self.client_secret:
                     auth = HTTPBasicAuth(self.client_id, self.client_secret)

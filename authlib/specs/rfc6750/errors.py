@@ -16,6 +16,9 @@ from ..rfc6749.errors import OAuth2Error
 __all__ = [
     'InvalidRequestError',
     'InvalidTokenError',
+    'ExpiredTokenError',
+    'RevokedTokenError',
+    'MalformedTokenError',
     'InsufficientScopeError'
 ]
 
@@ -69,6 +72,18 @@ class InvalidTokenError(OAuth2Error):
             ('WWW-Authenticate', 'Bearer ' + ',\n'.join(extras))
         )
         return headers
+
+
+class ExpiredTokenError(InvalidTokenError):
+    description = 'The access token provided is expired'
+
+
+class RevokedTokenError(InvalidTokenError):
+    description = 'The access token provided is revoked'
+
+
+class MalformedTokenError(InvalidTokenError):
+    description = 'The access token provided is malformed'
 
 
 class InsufficientScopeError(OAuth2Error):

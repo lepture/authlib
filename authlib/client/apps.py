@@ -2,13 +2,47 @@ import json
 from ..common.urls import urlparse
 from ..common.encoding import to_bytes
 
+__all__ = ['twitter', 'dropbox', 'github', 'facebook']
+
 
 class AppFactory(object):
     def __init__(self, name, config, doc, compliance_fix=None):
         self.name = name
         self.config = config
         self.compliance_fix = compliance_fix
+        self.oauth = None
+        self._client = None
         self.__doc__ = doc.lstrip()
+
+    def register_to(self, oauth):
+        kwargs = {}
+        if self.compliance_fix:
+            kwargs['compliance_fix'] = self.compliance_fix
+
+        kwargs.update(self.config)
+        oauth.register(self.name, **kwargs)
+        self.oauth = oauth
+
+    @property
+    def client(self):
+        if self._client:
+            return self._client
+        if self.oauth:
+            self._client = self.oauth.create_client(self.name)
+            return self._client
+        raise RuntimeError('App not `register_to` any oauth registry')
+
+    def get(self, url, **kwargs):
+        return self.client.get(url, **kwargs)
+
+    def post(self, url, **kwargs):
+        return self.client.post(url, **kwargs)
+
+    def put(self, url, **kwargs):
+        return self.client.put(url, **kwargs)
+
+    def delete(self, url, **kwargs):
+        return self.client.delete(url, **kwargs)
 
 
 twitter = AppFactory('twitter', {
