@@ -14,6 +14,14 @@ except ImportError:
     from urllib.parse import quote as _quote
     from urllib.parse import unquote as _unquote
     from urllib.parse import urlencode as _urlencode
+
+try:
+    from urllib2 import parse_keqv_list
+    from urllib2 import parse_http_list
+except ImportError:
+    from urllib.request import parse_keqv_list
+    from urllib.request import parse_http_list
+
 try:
     import urlparse
 except ImportError:
@@ -107,3 +115,37 @@ def add_params_to_uri(uri, params, fragment=False):
     else:
         query = add_params_to_qs(query, params)
     return urlparse.urlunparse((sch, net, path, par, query, fra))
+
+
+def quote(s, safe=b'/'):
+    return to_unicode(_quote(to_bytes(s), safe, encoding='utf-8'))
+
+
+def unquote(s):
+    return to_unicode(_unquote(s))
+
+
+def extract_params(raw):
+    """Extract parameters and return them as a list of 2-tuples.
+
+    Will successfully extract parameters from urlencoded query strings,
+    dicts, or lists of 2-tuples. Empty strings/dicts/lists will return an
+    empty list of parameters. Any other input will result in a return
+    value of None.
+    """
+    if isinstance(raw, (list, tuple)):
+        try:
+            raw = dict(raw)
+        except (TypeError, ValueError):
+            return None
+
+    if isinstance(raw, dict):
+        params = []
+        for k, v in raw.items():
+            params.append((to_unicode(k), to_unicode(v)))
+        return params
+
+    try:
+        return url_decode(raw)
+    except ValueError:
+        return None

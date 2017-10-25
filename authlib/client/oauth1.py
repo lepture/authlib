@@ -3,7 +3,8 @@ from requests import Session
 
 class OAuth1Session(Session):
     def __init__(self, client_key, client_secret=None, token=None,
-                 callback_uri=None, rsa_key=None, verifier=None):
+                 callback_uri=None, rsa_key=None, verifier=None,
+                 force_include_body=False):
         super(OAuth1Session, self).__init__()
 
         self.client_key = client_key

@@ -1,7 +1,7 @@
 from requests.compat import str, bytes
 
 
-def to_bytes(x, charset='UTF-8', errors='strict'):
+def to_bytes(x, charset='utf-8', errors='strict'):
     if x is None:
         return None
     if isinstance(x, (bytes, bytearray)):
@@ -11,13 +11,13 @@ def to_bytes(x, charset='UTF-8', errors='strict'):
     raise TypeError('Expected bytes')
 
 
-def to_native(x, charset='UTF-8', errors='strict'):
+def to_native(x, charset='utf-8', errors='strict'):
     if x is None or isinstance(x, str):
         return x
     return x.decode(charset, errors)
 
 
-def to_unicode(x, charset='UTF-8', errors='strict', allow_none_charset=False):
+def to_unicode(x, charset='utf-8', errors='strict', allow_none_charset=False):
     if x is None:
         return None
     if not isinstance(x, bytes):
