@@ -31,8 +31,7 @@ SIGNATURE_TYPE_QUERY = 'QUERY'
 SIGNATURE_TYPE_BODY = 'BODY'
 
 
-def construct_base_string(http_method, base_string_uri,
-                          normalized_encoded_request_parameters):
+def construct_base_string(method, uri, normalized_parameters):
     """**String Construction**
     Per `section 3.4.1.1`_ of the spec.
 
@@ -62,38 +61,12 @@ def construct_base_string(http_method, base_string_uri,
 
     .. _`section 3.4.1.1`: http://tools.ietf.org/html/rfc5849#section-3.4.1.1
     """
-
-    # The signature base string is constructed by concatenating together,
-    # in order, the following HTTP request elements:
-
-    # 1.  The HTTP request method in uppercase.  For example: "HEAD",
-    #     "GET", "POST", etc.  If the request uses a custom HTTP method, it
-    #     MUST be encoded (`Section 3.6`_).
-    #
-    # .. _`Section 3.6`: http://tools.ietf.org/html/rfc5849#section-3.6
-    base_string = escape(http_method.upper())
-
-    # 2.  An "&" character (ASCII code 38).
-    base_string += '&'
-
-    # 3.  The base string URI from `Section 3.4.1.2`_, after being encoded
-    #     (`Section 3.6`_).
-    #
-    # .. _`Section 3.4.1.2`: http://tools.ietf.org/html/rfc5849#section-3.4.1.2
-    # .. _`Section 3.4.6`: http://tools.ietf.org/html/rfc5849#section-3.4.6
-    base_string += escape(base_string_uri)
-
-    # 4.  An "&" character (ASCII code 38).
-    base_string += '&'
-
-    # 5.  The request parameters as normalized in `Section 3.4.1.3.2`_, after
-    #     being encoded (`Section 3.6`).
-    #
-    # .. _`Section 3.4.1.3.2`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3.2
-    # .. _`Section 3.4.6`: http://tools.ietf.org/html/rfc5849#section-3.4.6
-    base_string += escape(normalized_encoded_request_parameters)
-
-    return base_string
+    params = [
+        escape(method.upper()),
+        escape(uri),
+        escape(normalized_parameters),
+    ]
+    return '&'.join(params)
 
 
 def normalize_base_string_uri(uri, host=None):
@@ -240,7 +213,6 @@ def collect_parameters(uri_query='', body=None, headers=None,
 
     .. _`section 3.4.1.3.1`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3.1
     """
-    headers = headers or {}
     params = []
 
     # The parameters from the following sources are collected into a single
