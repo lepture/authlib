@@ -417,6 +417,41 @@ def sign_hmac_sha1(base_string, client_secret, resource_owner_secret):
     return to_unicode(sig)
 
 
+_jwtrs1 = None
+
+#jwt has some nice pycrypto/cryptography abstractions
+def _jwt_rs1_signing_algorithm():
+    global _jwtrs1
+    if _jwtrs1 is None:
+        import jwt.algorithms as jwtalgo
+        _jwtrs1 = jwtalgo.RSAAlgorithm(jwtalgo.hashes.SHA1)
+    return _jwtrs1
+
+
+def sign_rsa_sha1(base_string, rsa_private_key):
+    """**RSA-SHA1**
+
+    Per `section 3.4.3`_ of the spec.
+
+    The "RSA-SHA1" signature method uses the RSASSA-PKCS1-v1_5 signature
+    algorithm as defined in `RFC3447, Section 8.2`_ (also known as
+    PKCS#1), using SHA-1 as the hash function for EMSA-PKCS1-v1_5.  To
+    use this method, the client MUST have established client credentials
+    with the server that included its RSA public key (in a manner that is
+    beyond the scope of this specification).
+
+    .. _`section 3.4.3`: http://tools.ietf.org/html/rfc5849#section-3.4.3
+    .. _`RFC3447, Section 8.2`: http://tools.ietf.org/html/rfc3447#section-8.2
+
+    """
+    base_string = to_bytes(base_string)
+    alg = _jwt_rs1_signing_algorithm()
+    key = alg.prepare_key(to_unicode(rsa_private_key))
+    s = alg.sign(base_string, key)
+    sig = binascii.b2a_base64(s)[:-1]
+    return to_unicode(sig)
+
+
 def sign_plaintext(client_secret, resource_owner_secret):
     """Sign a request using plaintext.
 
@@ -474,6 +509,34 @@ def verify_hmac_sha1(signature, http_method, uri, params,
     base_string = construct_base_string(http_method, uri, params)
     sig = sign_hmac_sha1(base_string, client_secret, resource_owner_secret)
     return safe_string_equals(sig, signature)
+
+
+def verify_rsa_sha1(signature, http_method, uri, params, rsa_public_key):
+    """Verify a RSASSA-PKCS #1 v1.5 base64 encoded signature.
+
+    Per `section 3.4.3`_ of the spec.
+
+    Note this method requires the jwt and cryptography libraries.
+
+    .. _`section 3.4.3`: http://tools.ietf.org/html/rfc5849#section-3.4.3
+
+    To satisfy `RFC2616 section 5.2`_ item 1, the request argument's uri
+    attribute MUST be an absolute URI whose netloc part identifies the
+    origin server or gateway on which the resource resides. Any Host
+    item of the request argument's headers dict attribute will be
+    ignored.
+
+    .. _`RFC2616 section 5.2`: http://tools.ietf.org/html/rfc2616#section-5.2
+    """
+    uri = normalize_base_string_uri(uri)
+    norm_params = normalize_parameters(params)
+    text = construct_base_string(http_method, uri, norm_params)
+
+    alg = _jwt_rs1_signing_algorithm()
+    key = alg.prepare_key(to_unicode(rsa_public_key))
+
+    sig = binascii.a2b_base64(to_bytes(signature))
+    return alg.verify(to_bytes(text), key, sig)
 
 
 def verify_plaintext(signature, client_secret=None, resource_owner_secret=None):
