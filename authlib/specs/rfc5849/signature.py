@@ -21,10 +21,9 @@ from .util import (
     parse_authorization_header,
 )
 
-SIGNATURE_HMAC = "HMAC-SHA1"
-SIGNATURE_RSA = "RSA-SHA1"
+SIGNATURE_HMAC_SHA1 = "HMAC-SHA1"
+SIGNATURE_RSA_SHA1 = "RSA-SHA1"
 SIGNATURE_PLAINTEXT = "PLAINTEXT"
-SIGNATURE_METHODS = (SIGNATURE_HMAC, SIGNATURE_RSA, SIGNATURE_PLAINTEXT)
 
 SIGNATURE_TYPE_HEADER = 'HEADER'
 SIGNATURE_TYPE_QUERY = 'QUERY'
@@ -367,6 +366,22 @@ def normalize_parameters(params):
     #     single string by using an "&" character (ASCII code 38) as
     #     separator.
     return '&'.join(parameter_parts)
+
+
+def base_string_from_request(method, uri, body, headers):
+    """Construct base string from a HTTP request."""
+    collected_params = collect_parameters(
+        uri_query=urlparse.urlparse(uri).query,
+        body=body,
+        headers=headers
+    )
+
+    normalized_params = normalize_parameters(collected_params)
+    normalized_uri = normalize_base_string_uri(
+        uri, headers.get('Host', None)
+    )
+
+    return construct_base_string(method, normalized_uri, normalized_params)
 
 
 def sign_hmac_sha1(base_string, client_secret, resource_owner_secret):

@@ -1,8 +1,10 @@
 from .signature import (
-    SIGNATURE_HMAC,
-    SIGNATURE_RSA,
+    SIGNATURE_HMAC_SHA1,
+    SIGNATURE_RSA_SHA1,
     SIGNATURE_PLAINTEXT,
     SIGNATURE_TYPE_HEADER,
     SIGNATURE_TYPE_QUERY,
     SIGNATURE_TYPE_BODY,
 )
+
+from .client import Client

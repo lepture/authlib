@@ -69,7 +69,7 @@ class InvalidTokenError(OAuth2Error):
         extras.append('error="{}"'.format(self.error))
         extras.append('error_description="{}"'.format(self.description))
         headers.append(
-            ('WWW-Authenticate', 'Bearer ' + ',\n'.join(extras))
+            ('WWW-Authenticate', 'Bearer ' + ', '.join(extras))
         )
         return headers
 
