@@ -89,7 +89,7 @@ class Client(object):
             raise ValueError('Invalid signature method.')
         return sign(self, method, uri, body, headers)
 
-    def get_oauth_params(self, method, uri, body, headers, nonce, timestamp):
+    def get_oauth_params(self, body, headers, nonce, timestamp):
         oauth_params = [
             ('oauth_nonce', nonce),
             ('oauth_timestamp', timestamp),
@@ -111,11 +111,22 @@ class Client(object):
             sig = base64.b64encode(hashlib.sha1(to_bytes(body)).digest())
             oauth_params.append(('oauth_body_hash', to_unicode(sig)))
 
-        method = to_unicode(method)
-        uri = to_unicode(uri)
-        sig = self.get_oauth_signature(method, uri, body, headers)
-        oauth_params.append(('oauth_signature', sig))
         return oauth_params
+
+    def _render(self, uri, headers, body, oauth_params):
+        if self.signature_type == SIGNATURE_TYPE_HEADER:
+            headers = prepare_headers(oauth_params, headers, realm=self.realm)
+        elif self.signature_type == SIGNATURE_TYPE_BODY:
+            decoded_body = extract_params(body)
+            if decoded_body:
+                body = prepare_form_encoded_body(oauth_params, decoded_body)
+                body = url_encode(body)
+                headers['Content-Type'] = CONTENT_TYPE_FORM_URLENCODED
+        elif self.signature_type == SIGNATURE_TYPE_QUERY:
+            uri = prepare_request_uri_query(oauth_params, uri)
+        else:
+            raise ValueError('Unknown signature type specified.')
+        return uri, headers, body
 
     def sign(self, method, uri, body, headers, nonce=None, timestamp=None):
         if nonce is None:
@@ -128,22 +139,14 @@ class Client(object):
         # transform int to str
         timestamp = str(timestamp)
 
-        oauth_params = self.get_oauth_params(
-            method, uri, body, headers, nonce, timestamp)
+        if headers is None:
+            headers = {}
 
-        if self.signature_type == SIGNATURE_TYPE_HEADER:
-            headers = prepare_headers(oauth_params, headers, realm=self.realm)
+        oauth_params = self.get_oauth_params(body, headers, nonce, timestamp)
+        uri, headers, body = self._render(uri, headers, body, oauth_params)
 
-        elif self.signature_type == SIGNATURE_TYPE_BODY:
-            decoded_body = extract_params(body)
-            if decoded_body:
-                body = prepare_form_encoded_body(oauth_params, decoded_body)
-                body = url_encode(body)
-                headers['Content-Type'] = CONTENT_TYPE_FORM_URLENCODED
+        sig = self.get_oauth_signature(method, uri, body, headers)
+        oauth_params.append(('oauth_signature', sig))
 
-        elif self.signature_type == SIGNATURE_TYPE_QUERY:
-            uri = prepare_request_uri_query(oauth_params, uri)
-        else:
-            raise ValueError('Unknown signature type specified.')
-
+        uri, headers, body = self._render(uri, headers, body, oauth_params)
         return uri, headers, body

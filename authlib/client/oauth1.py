@@ -151,7 +151,7 @@ class OAuth1Session(Session):
             if text.startswith('{'):
                 token = json.loads(text)
             else:
-                token = url_decode(text)
+                token = dict(url_decode(text))
         except (TypeError, ValueError) as e:
             error = ("Unable to decode token from token response. "
                      "This is commonly caused by an unsuccessful request where"
