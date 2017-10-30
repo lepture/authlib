@@ -29,6 +29,22 @@ CONTENT_TYPE_FORM_URLENCODED = 'application/x-www-form-urlencoded'
 CONTENT_TYPE_MULTI_PART = 'multipart/form-data'
 
 
+def client_sign_hmac_sha1(client, method, uri, body, headers):
+    base_string = base_string_from_request(method, uri, body, headers)
+    return sign_hmac_sha1(
+        base_string, client.client_secret, client.resource_owner_secret
+    )
+
+
+def client_sign_rsa_sha1(client, method, uri, body, headers):
+    base_string = base_string_from_request(method, uri, body, headers)
+    return sign_rsa_sha1(base_string, client.rsa_key)
+
+
+def client_sign_plaintext(client, *args, **kwargs):
+    return sign_plaintext(client.client_secret, client.resource_owner_secret)
+
+
 class Client(object):
     SIGNATURE_METHODS = {
         SIGNATURE_HMAC_SHA1: client_sign_hmac_sha1,
@@ -90,13 +106,14 @@ class Client(object):
 
         # https://tools.ietf.org/id/draft-eaton-oauth-bodyhash-00.html
         content_type = headers.get('Content-Type', '')
-        if not content_type.startswith(CONTENT_TYPE_FORM_URLENCODED):
+        not_form = not content_type.startswith(CONTENT_TYPE_FORM_URLENCODED)
+        if body and content_type and not_form:
             sig = base64.b64encode(hashlib.sha1(to_bytes(body)).digest())
             oauth_params.append(('oauth_body_hash', to_unicode(sig)))
 
         method = to_unicode(method)
         uri = to_unicode(uri)
-        sig = self.get_oauth_signature(uri, method, body, headers)
+        sig = self.get_oauth_signature(method, uri, body, headers)
         oauth_params.append(('oauth_signature', sig))
         return oauth_params
 
@@ -105,6 +122,11 @@ class Client(object):
             nonce = generate_token()
         if timestamp is None:
             timestamp = int(time.time())
+        if body is None:
+            body = ''
+
+        # transform int to str
+        timestamp = str(timestamp)
 
         oauth_params = self.get_oauth_params(
             method, uri, body, headers, nonce, timestamp)
@@ -125,19 +147,3 @@ class Client(object):
             raise ValueError('Unknown signature type specified.')
 
         return uri, headers, body
-
-
-def client_sign_hmac_sha1(client, method, uri, body, headers):
-    base_string = base_string_from_request(method, uri, body, headers)
-    return sign_hmac_sha1(
-        base_string, client.client_secret, client.resource_owner_secret
-    )
-
-
-def client_sign_rsa_sha1(client, method, uri, body, headers):
-    base_string = base_string_from_request(method, uri, body, headers)
-    return sign_rsa_sha1(base_string, client.rsa_key)
-
-
-def client_sign_plaintext(client, *args, **kwargs):
-    return sign_plaintext(client.client_secret, client.resource_owner_secret)

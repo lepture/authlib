@@ -56,8 +56,8 @@ class OAuth(object):
                 kwargs[k] = v
 
         client = OAuthClient(**kwargs)
-        if callable(compliance_fix):
-            compliance_fix(client.session)
+        if compliance_fix:
+            client.compliance_fix = compliance_fix
 
         self._clients[name] = client
         return client

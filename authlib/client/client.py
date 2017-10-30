@@ -25,6 +25,7 @@ class OAuthClient(object):
         self.refresh_token_url = refresh_token_url
         self.authorize_url = authorize_url
         self.api_base_url = api_base_url
+        self.compliance_fix = None
 
         self._sess = None
 
@@ -63,7 +64,9 @@ class OAuthClient(object):
             )
             # remember oauth_token, oauth_token_secret
             set_token(token)
-            url, state = sess.authorization_url(self.authorize_url, **kwargs)
+            url = sess.authorization_url(
+                self.authorize_url, token['oauth_token'], **kwargs)
+            state = None
         else:
             sess = OAuth2Session(
                 self.client_key,
@@ -81,12 +84,11 @@ class OAuthClient(object):
             get_request_token = self._hooks['request_token_getter']
             assert callable(get_request_token), 'missing request_token_getter'
 
-            token = get_request_token()
             sess = OAuth1Session(
                 self.client_key,
                 client_secret=self.client_secret,
-                token=token,
             )
+            sess.token = get_request_token()
             token = sess.fetch_access_token(self.access_token_url, **params)
         else:
             sess = OAuth2Session(
@@ -99,6 +101,7 @@ class OAuthClient(object):
 
     @property
     def session(self):
+        """OAuth 1/2 Session for requests. Initialized lazily."""
         if self._sess:
             return self._sess
 
@@ -106,7 +109,9 @@ class OAuthClient(object):
             self._sess = OAuth1Session(self.client_key, self.client_secret)
         else:
             self._sess = OAuth2Session(self.client_key, self.client_secret)
-
+            # only OAuth2 has compliance_fix currently
+            if self.compliance_fix:
+                self.compliance_fix(self._sess)
         return self._sess
 
     def _get_access_token(self):

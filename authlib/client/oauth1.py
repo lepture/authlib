@@ -6,7 +6,12 @@ from requests import Session
 from requests.auth import AuthBase
 from requests.utils import to_native_string
 from ..common.encoding import to_unicode
-from ..common.urls import url_decode, extract_params
+from ..common.urls import (
+    url_decode,
+    extract_params,
+    add_params_to_uri,
+    urlparse,
+)
 from ..specs.rfc5849 import Client
 from ..specs.rfc5849 import (
     SIGNATURE_HMAC_SHA1,
@@ -64,33 +69,39 @@ class OAuth1Session(Session):
         )
         self.auth = self._client
 
+    @property
+    def token(self):
+        return dict(
+            oauth_token=self._client.resource_owner_key,
+            oauth_token_secret=self._client.resource_owner_secret,
+            oauth_verifier=self._client.verifier
+        )
+
+    @token.setter
+    def token(self, token):
+        """This token setter is designed for an easy integration for
+        OAuthClient. Make sure both OAuth1Session and OAuth2Session
+        have token setters.
+        """
+        if 'oauth_token' in token:
+            self._client.resource_owner_key = token['oauth_token']
+        else:
+            raise TokenMissing(
+                'Response does not contain a token: {resp}'.format(resp=token),
+                token,
+            )
+        if 'oauth_token_secret' in token:
+            self._client.resource_owner_secret = token['oauth_token_secret']
+        if 'oauth_verifier' in token:
+            self._client.verifier = token['oauth_verifier']
+
     def authorization_url(self, url, request_token=None, **kwargs):
-        pass
+        kwargs['oauth_token'] = request_token or self._client.resource_owner_key
+        if self._client.callback_uri:
+            kwargs['oauth_callback'] = self._client.callback_uri
+        return add_params_to_uri(url, kwargs.items())
 
     def fetch_request_token(self, url, realm=None, **kwargs):
-        """Fetch a request token.
-
-        This is the first step in the OAuth 1 workflow. A request token is
-        obtained by making a signed post request to url. The token is then
-        parsed from the application/x-www-form-urlencoded response and ready
-        to be used to construct an authorization url.
-
-        :param url: The request token endpoint URL.
-        :param realm: A list of realms to request access to.
-        :param kwargs: Optional arguments passed to "post"
-
-        Note that a previously set callback_uri will be reset for your
-        convenience, or else signature creation will be incorrect on
-        consecutive requests.
-
-        >>> request_token_url = 'https://api.twitter.com/oauth/request_token'
-        >>> oauth_session = OAuth1Session('client-key', client_secret='secret')
-        >>> oauth_session.fetch_request_token(request_token_url)
-        {
-            'oauth_token': 'sdf0o9823sjdfsdf',
-            'oauth_token_secret': '2kjshdfp92i34asdasd',
-        }
-        """
         self._client.realm = ' '.join(realm) if realm else None
         token = self._fetch_token(url, **kwargs)
         self._client.callback_uri = None
@@ -98,10 +109,34 @@ class OAuth1Session(Session):
         return token
 
     def fetch_access_token(self, url, verifier=None, **kwargs):
-        pass
+        if verifier:
+            self._client.verifier = verifier
+        if not self._client.verifier:
+            raise VerifierMissing('No client verifier has been set.')
+        token = self._fetch_token(url, **kwargs)
+        self._client.verifier = None
+        return token
 
     def parse_authorization_response(self, url):
-        pass
+        """Extract parameters from the post authorization redirect
+        response URL.
+
+        :param url: The full URL that resulted from the user being redirected
+                    back from the OAuth provider to you, the client.
+        :returns: A dict of parameters extracted from the URL.
+
+        >>> redirect_response = 'https://127.0.0.1/callback?oauth_token=kjerht2309uf&oauth_token_secret=lsdajfh923874&oauth_verifier=w34o8967345'
+        >>> oauth_session = OAuth1Session('client-key', client_secret='secret')
+        >>> oauth_session.parse_authorization_response(redirect_response)
+        {
+            'oauth_token: 'kjerht2309u',
+            'oauth_token_secret: 'lsdajfh923874',
+            'oauth_verifier: 'w34o8967345',
+        }
+        """
+        token = dict(url_decode(urlparse.urlparse(url).query))
+        self.token = token
+        return token
 
     def _fetch_token(self, url, **kwargs):
         resp = self.post(url, **kwargs)
@@ -124,28 +159,26 @@ class OAuth1Session(Session):
                      "The decoding error was %s""" % e)
             raise ValueError(error)
 
-        self._populate_attributes(token)
+        self.token = token
         return token
 
-    def _populate_attributes(self, token):
-        if 'oauth_token' in token:
-            self.resource_owner_key = token['oauth_token']
-        else:
-            raise TokenMissing(
-                'Response does not contain a token: {resp}'.format(resp=token),
-                token,
-            )
-        if 'oauth_token_secret' in token:
-            self.resource_owner_secret = token['oauth_token_secret']
-        if 'oauth_verifier' in token:
-            self.verifier = token['oauth_verifier']
+    def rebuild_auth(self, prepared_request, response):
+        """
+        When being redirected we should always strip Authorization
+        header, since nonce may not be reused as per OAuth spec.
+        """
+        if 'Authorization' in prepared_request.headers:
+            # If we get redirected to a new host, we should strip out
+            # any authentication headers.
+            prepared_request.headers.pop('Authorization', True)
+            prepared_request.prepare_auth(self.auth)
 
 
 class OAuth1(AuthBase, Client):
     """Signs the request using OAuth 1 (RFC5849)"""
 
     def sign_request(self, req):
-        return self.sign(req.method, req.url, req.data, req.headers)
+        return self.sign(req.method, req.url, req.body, req.headers)
 
     def __call__(self, req):
         """Add OAuth parameters to the request.

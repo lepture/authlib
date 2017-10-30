@@ -118,7 +118,7 @@ def add_params_to_uri(uri, params, fragment=False):
 
 
 def quote(s, safe=b'/'):
-    return to_unicode(_quote(to_bytes(s), safe, encoding='utf-8'))
+    return to_unicode(_quote(to_bytes(s), safe))
 
 
 def unquote(s):
@@ -144,6 +144,9 @@ def extract_params(raw):
         for k, v in raw.items():
             params.append((to_unicode(k), to_unicode(v)))
         return params
+
+    if not raw:
+        return None
 
     try:
         return url_decode(raw)
