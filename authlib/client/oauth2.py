@@ -96,10 +96,14 @@ class OAuth2Session(Session):
         if not is_secure_transport(url):
             raise InsecureTransportError()
 
+        state = kwargs.pop('state', None)
+        if not state:
+            state = self.state
+
         if not code and authorization_response:
             params = parse_authorization_code_response(
                 authorization_response,
-                state=self.state
+                state=state
             )
             code = params['code']
 
@@ -107,7 +111,7 @@ class OAuth2Session(Session):
             'authorization_code',
             code=code, body=body,
             redirect_uri=self.redirect_uri,
-            state=self.state,
+            state=state,
             **kwargs
         )
 
@@ -224,7 +228,7 @@ class OAuth2Session(Session):
             return self.token
 
         error = params['error']
-        description = params.get('description')
+        description = params.get('error_description')
         uri = params.get('error_uri'),
         state = params.get('state')
         raise CustomOAuth2Error(error, description, status_code, uri, state)

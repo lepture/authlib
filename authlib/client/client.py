@@ -2,6 +2,7 @@ import logging
 from .oauth1 import OAuth1Session
 from .oauth2 import OAuth2Session
 from .errors import OAuthException
+from ..specs.rfc6749 import OAuth2Token
 from ..common.urls import urlparse
 
 __all__ = ['OAuthClient']
@@ -14,7 +15,7 @@ class OAuthClient(object):
                  request_token_url=None, request_token_params=None,
                  access_token_url=None, access_token_params=None,
                  refresh_token_url=None, authorize_url=None,
-                 api_base_url=None, client_kwargs=None):
+                 api_base_url=None, client_kwargs=None, **kwargs):
 
         self.client_key = client_key
         self.client_secret = client_secret
@@ -28,6 +29,7 @@ class OAuthClient(object):
         self.client_kwargs = client_kwargs or {}
         self.compliance_fix = None
 
+        self._kwargs = kwargs
         self._sess = None
 
         self._hooks = {
@@ -89,7 +91,7 @@ class OAuthClient(object):
             sess.token = get_request_token()
             # re-assign token with verifier
             sess.token = params
-            kwargs = self.access_token_params
+            kwargs = self.access_token_params or {}
             token = sess.fetch_access_token(self.access_token_url, **kwargs)
         else:
             sess = OAuth2Session(
@@ -99,7 +101,8 @@ class OAuthClient(object):
                 **self.client_kwargs
             )
             kwargs = {}
-            kwargs.update(self.access_token_params)
+            if self.access_token_params:
+                kwargs.update(self.access_token_params)
             kwargs.update(params)
             token = sess.fetch_access_token(self.access_token_url, **kwargs)
         return token
@@ -121,6 +124,11 @@ class OAuthClient(object):
                 self.compliance_fix(self._sess)
         return self._sess
 
+    def set_token(self, token):
+        if not self.request_token_url and isinstance(token, dict):
+            token = OAuth2Token(token)
+        self.session.token = token
+
     def _get_access_token(self):
         func = self._hooks['access_token_getter']
         assert callable(func), 'missing access_token_getter'
@@ -133,7 +141,7 @@ class OAuthClient(object):
         if self.api_base_url and not url.startswith(('https://', 'http://')):
             url = urlparse.urljoin(self.api_base_url, url)
         if not self.session.token:
-            self.session.token = self._get_access_token()
+            self.set_token(self._get_access_token())
         return self.session.request(method, url, **kwargs)
 
     def get(self, url, **kwargs):

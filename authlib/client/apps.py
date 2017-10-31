@@ -64,6 +64,7 @@ github = AppFactory('github', {
     'api_base_url': 'https://api.github.com/',
     'access_token_url': 'https://github.com/login/oauth/access_token',
     'authorize_url': 'https://github.com/login/oauth/authorize',
+    'profile_url': '/user',
     'client_kwargs': {'scope': 'user:email'},
 }, "The OAuth app for GitHub API.")
 

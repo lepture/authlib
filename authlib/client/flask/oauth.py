@@ -153,6 +153,13 @@ class RemoteApp(OAuthClient):
 
         cb_key = '_{}_callback_'.format(self.name)
         callback_uri = session.pop(cb_key, None)
-        params = dict(request.args)
+        params = request.args.to_dict(flat=True)
         token = self.authorize_access_token(callback_uri, **params)
         return token
+
+    def fetch_profile(self):
+        url = self._kwargs.get('profile_url')
+        if url:
+            resp = self.get(url)
+            if resp.status_code == 200:
+                return resp.json()

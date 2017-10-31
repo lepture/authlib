@@ -1,13 +1,13 @@
-from authlib.common.encoding import str, to_unicode
+from authlib.common.encoding import to_unicode
 
 
 def list_to_scope(scope):
     """Convert a list of scopes to a space separated string."""
-    if isinstance(scope, str) or scope is None:
-        return scope
-    elif isinstance(scope, (set, tuple, list)):
+    if isinstance(scope, (set, tuple, list)):
         return " ".join([to_unicode(s) for s in scope])
-    raise ValueError("Invalid scope: {}".format(scope))
+    if scope is None:
+        return scope
+    return to_unicode(scope)
 
 
 def scope_to_list(scope):

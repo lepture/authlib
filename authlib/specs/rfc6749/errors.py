@@ -59,7 +59,7 @@ class CustomOAuth2Error(OAuth2Error):
 
         if error is not None:
             self.error = error
-        super(CustomOAuth2Error).__init__(
+        super(CustomOAuth2Error, self).__init__(
             description, status_code, uri, state, **kwargs)
 
 
