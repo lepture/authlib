@@ -53,28 +53,21 @@ class OAuthClient(object):
             set_token = self._hooks['request_token_setter']
             assert callable(set_token), 'missing request_token_setter'
 
-            sess = OAuth1Session(
-                self.client_key,
-                client_secret=self.client_secret,
-                callback_uri=callback_uri,
-                **self.client_kwargs
-            )
-            token = sess.fetch_request_token(
+            self.session.callback_uri = callback_uri
+            token = self.session.fetch_request_token(
                 self.request_token_url,
                 **self.request_token_params
             )
             # remember oauth_token, oauth_token_secret
             set_token(token)
-            url = sess.authorization_url(self.authorize_url,  **kwargs)
+            url = self.session.authorization_url(
+                self.authorize_url,  **kwargs)
+            self.session.callback_uri = None
             state = None
         else:
-            sess = OAuth2Session(
-                self.client_key,
-                client_secret=self.client_secret,
-                redirect_uri=callback_uri,
-                **self.client_kwargs
-            )
-            url, state = sess.authorization_url(self.authorize_url, **kwargs)
+            self.session.redirect_uri = callback_uri
+            url, state = self.session.authorization_url(
+                self.authorize_url, **kwargs)
         return redirect(url, callback_uri, state)
 
     def authorize_access_token(self, callback_uri=None, **params):
@@ -82,29 +75,22 @@ class OAuthClient(object):
             get_request_token = self._hooks['request_token_getter']
             assert callable(get_request_token), 'missing request_token_getter'
 
-            sess = OAuth1Session(
-                self.client_key,
-                client_secret=self.client_secret,
-                callback_uri=callback_uri,
-                **self.client_kwargs
-            )
-            sess.token = get_request_token()
+            self.session.callback_uri = callback_uri
+            self.session.token = get_request_token()
             # re-assign token with verifier
-            sess.token = params
+            self.session.token = params
             kwargs = self.access_token_params or {}
-            token = sess.fetch_access_token(self.access_token_url, **kwargs)
+            token = self.session.fetch_access_token(
+                self.access_token_url, **kwargs)
+            self.session.callback_uri = None
         else:
-            sess = OAuth2Session(
-                self.client_key,
-                client_secret=self.client_secret,
-                redirect_uri=callback_uri,
-                **self.client_kwargs
-            )
+            self.session.redirect_uri = callback_uri
             kwargs = {}
             if self.access_token_params:
                 kwargs.update(self.access_token_params)
             kwargs.update(params)
-            token = sess.fetch_access_token(self.access_token_url, **kwargs)
+            token = self.session.fetch_access_token(
+                self.access_token_url, **kwargs)
         return token
 
     @property

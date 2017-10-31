@@ -70,6 +70,14 @@ class OAuth1Session(Session):
         self.auth = self._client
 
     @property
+    def callback_uri(self):
+        return self._client.callback_uri
+
+    @callback_uri.setter
+    def callback_uri(self, uri):
+        self._client.callback_uri = uri
+
+    @property
     def token(self):
         return dict(
             oauth_token=self._client.resource_owner_key,
