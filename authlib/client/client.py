@@ -14,7 +14,7 @@ class OAuthClient(object):
                  request_token_url=None, request_token_params=None,
                  access_token_url=None, access_token_params=None,
                  refresh_token_url=None, authorize_url=None,
-                 api_base_url=None):
+                 api_base_url=None, client_kwargs=None):
 
         self.client_key = client_key
         self.client_secret = client_secret
@@ -25,17 +25,15 @@ class OAuthClient(object):
         self.refresh_token_url = refresh_token_url
         self.authorize_url = authorize_url
         self.api_base_url = api_base_url
+        self.client_kwargs = client_kwargs or {}
         self.compliance_fix = None
 
         self._sess = None
 
         self._hooks = {
             'access_token_getter': None,
-            'access_token_setter': None,
             'request_token_getter': None,
             'request_token_setter': None,
-            'redirect_uri_setter': None,
-            'redirect_uri_getter': None,
             'authorize_redirect': None
         }
 
@@ -57,6 +55,7 @@ class OAuthClient(object):
                 self.client_key,
                 client_secret=self.client_secret,
                 callback_uri=callback_uri,
+                **self.client_kwargs
             )
             token = sess.fetch_request_token(
                 self.request_token_url,
@@ -64,22 +63,19 @@ class OAuthClient(object):
             )
             # remember oauth_token, oauth_token_secret
             set_token(token)
-            url = sess.authorization_url(
-                self.authorize_url, token['oauth_token'], **kwargs)
+            url = sess.authorization_url(self.authorize_url,  **kwargs)
             state = None
         else:
             sess = OAuth2Session(
                 self.client_key,
                 client_secret=self.client_secret,
                 redirect_uri=callback_uri,
+                **self.client_kwargs
             )
             url, state = sess.authorization_url(self.authorize_url, **kwargs)
-        return redirect(url, state)
+        return redirect(url, callback_uri, state)
 
-    def authorize_access_token(self, **params):
-        set_access_token = self._hooks['access_token_setter']
-        assert callable(set_access_token), 'missing access_token_setter'
-
+    def authorize_access_token(self, callback_uri=None, **params):
         if self.request_token_url:
             get_request_token = self._hooks['request_token_getter']
             assert callable(get_request_token), 'missing request_token_getter'
@@ -87,16 +83,25 @@ class OAuthClient(object):
             sess = OAuth1Session(
                 self.client_key,
                 client_secret=self.client_secret,
+                callback_uri=callback_uri,
+                **self.client_kwargs
             )
             sess.token = get_request_token()
-            token = sess.fetch_access_token(self.access_token_url, **params)
+            # re-assign token with verifier
+            sess.token = params
+            kwargs = self.access_token_params
+            token = sess.fetch_access_token(self.access_token_url, **kwargs)
         else:
             sess = OAuth2Session(
                 self.client_key,
                 client_secret=self.client_secret,
+                redirect_uri=callback_uri,
+                **self.client_kwargs
             )
-            token = sess.fetch_access_token(self.access_token_url, **params)
-        set_access_token(token)
+            kwargs = {}
+            kwargs.update(self.access_token_params)
+            kwargs.update(params)
+            token = sess.fetch_access_token(self.access_token_url, **kwargs)
         return token
 
     @property
@@ -106,9 +111,11 @@ class OAuthClient(object):
             return self._sess
 
         if self.request_token_url:
-            self._sess = OAuth1Session(self.client_key, self.client_secret)
+            self._sess = OAuth1Session(
+                self.client_key, self.client_secret, **self.client_kwargs)
         else:
-            self._sess = OAuth2Session(self.client_key, self.client_secret)
+            self._sess = OAuth2Session(
+                self.client_key, self.client_secret, **self.client_kwargs)
             # only OAuth2 has compliance_fix currently
             if self.compliance_fix:
                 self.compliance_fix(self._sess)

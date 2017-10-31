@@ -125,12 +125,11 @@ class OAuth1Session(Session):
                     back from the OAuth provider to you, the client.
         :returns: A dict of parameters extracted from the URL.
 
-        >>> redirect_response = 'https://127.0.0.1/callback?oauth_token=kjerht2309uf&oauth_token_secret=lsdajfh923874&oauth_verifier=w34o8967345'
+        >>> redirect_response = 'https://127.0.0.1/callback?oauth_token=kjerht2309uf&oauth_verifier=w34o8967345'
         >>> oauth_session = OAuth1Session('client-key', client_secret='secret')
         >>> oauth_session.parse_authorization_response(redirect_response)
         {
             'oauth_token: 'kjerht2309u',
-            'oauth_token_secret: 'lsdajfh923874',
             'oauth_verifier: 'w34o8967345',
         }
         """

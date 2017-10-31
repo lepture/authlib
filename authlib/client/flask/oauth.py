@@ -1,3 +1,7 @@
+import uuid
+from flask import request, redirect, session
+from authlib.common.flask.cache import Cache
+from ..errors import OAuthException
 from ..client import OAuthClient
 
 __all__ = ['OAuth']
@@ -18,6 +22,7 @@ class OAuth(object):
         self._clients = {}
 
         self.app = app
+        self.cache = None
         if app:
             self.init_app(app)
 
@@ -30,6 +35,7 @@ class OAuth(object):
             oauth.init_app(app)
         """
         self.app = app
+        self.cache = Cache(app)
         app.extensions = getattr(app, 'extensions', {})
         app.extensions['authlib.client.flask'] = self
 
@@ -44,7 +50,8 @@ class OAuth(object):
             'client_key', 'client_secret',
             'request_token_url', 'request_token_params',
             'access_token_url', 'access_token_params',
-            'refresh_token_url', 'authorize_url', 'api_base_url'
+            'refresh_token_url', 'authorize_url',
+            'api_base_url', 'client_kwargs',
         )
 
         kwargs = self._registry[name]
@@ -55,7 +62,7 @@ class OAuth(object):
                 v = self.app.config.get(conf_key, None)
                 kwargs[k] = v
 
-        client = OAuthClient(**kwargs)
+        client = RemoteApp(name, self.cache, **kwargs)
         if compliance_fix:
             client.compliance_fix = compliance_fix
 
@@ -80,3 +87,77 @@ class OAuth(object):
             if key in self._registry:
                 return self.create_client(key)
             raise AttributeError('No such client: %s' % key)
+
+
+class TokenMixin(object):
+    @classmethod
+    def create_token(cls, name, token):
+        raise NotImplementedError()
+
+    @classmethod
+    def fetch_token(cls, name):
+        raise NotImplementedError()
+
+
+class RemoteApp(OAuthClient):
+    token_model = TokenMixin
+
+    def __init__(self, name, cache=None, *args, **kwargs):
+        self.name = name
+        self.cache = cache
+        super(RemoteApp, self).__init__(*args, **kwargs)
+        self.register_hook('authorize_redirect', self.redirect_hook)
+        self.register_hook('access_token_getter', self.access_token_getter)
+
+        if self.request_token_url:
+            self.register_hook(
+                'request_token_getter',
+                self.request_token_getter
+            )
+            self.register_hook(
+                'request_token_setter',
+                self.request_token_setter
+            )
+
+    def redirect_hook(self, uri, callback_uri=None, state=None):
+        if callback_uri:
+            key = '_{}_callback_'.format(self.name)
+            session[key] = callback_uri
+        if state:
+            key = '_{}_state_'.format(self.name)
+            session[key] = state
+        return redirect(uri)
+
+    def access_token_getter(self):
+        return self.token_model.fetch_token(self.name)
+
+    def request_token_getter(self):
+        key = '_{}_req_token_'.format(self.name)
+        sid = session.pop(key, None)
+        if not sid:
+            raise OAuthException('Missing request token')
+
+        token = self.cache.get(sid)
+        self.cache.delete(sid)
+        return token
+
+    def request_token_setter(self, token):
+        key = '_{}_req_token_'.format(self.name)
+        sid = uuid.uuid4().hex
+        session[key] = sid
+        self.cache.set(sid, token)
+
+    def authorize_response(self):
+        if not self.request_token_url:
+            state_key = '_{}_state_'.format(self.name)
+            state = session.pop(state_key, None)
+            if state != request.args.get('state'):
+                raise OAuthException(
+                    'State not equal in request and response.')
+
+        cb_key = '_{}_callback_'.format(self.name)
+        callback_uri = session.pop(cb_key, None)
+        params = dict(request.args)
+        token = self.authorize_access_token(callback_uri, **params)
+        self.token_model.create_token(self.name, token)
+        return token

@@ -95,7 +95,8 @@ def facebook_compliance_fix(session):
 
 
 facebook = AppFactory('facebook', {
-    'api_base_url': 'https://graph.facebook.com',
-    'access_token_url': 'https://graph.facebook.com/oauth/access_token',
-    'authorize_url': 'https://www.facebook.com/dialog/oauth',
+    'api_base_url': 'https://graph.facebook.com/v2.10',
+    'access_token_url': 'https://graph.facebook.com/v2.10/oauth/access_token',
+    'access_token_params': {'method': 'GET'},
+    'authorize_url': 'https://www.facebook.com/v2.10/dialog/oauth',
 }, "The OAuth app for Facebook API.", facebook_compliance_fix)
