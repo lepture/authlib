@@ -67,4 +67,4 @@ class BearToken(object):
             headers = self.add_to_headers(headers)
         elif placement == 'body':
             body = self.add_to_body(body)
-        return uri, body, headers
+        return uri, headers, body
