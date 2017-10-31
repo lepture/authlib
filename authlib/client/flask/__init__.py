@@ -1,1 +1,1 @@
-from .oauth import OAuth
+from .oauth import OAuth, RemoteApp

@@ -91,10 +91,6 @@ class OAuth(object):
 
 class TokenMixin(object):
     @classmethod
-    def create_token(cls, name, token):
-        raise NotImplementedError()
-
-    @classmethod
     def fetch_token(cls, name):
         raise NotImplementedError()
 
@@ -159,5 +155,4 @@ class RemoteApp(OAuthClient):
         callback_uri = session.pop(cb_key, None)
         params = dict(request.args)
         token = self.authorize_access_token(callback_uri, **params)
-        self.token_model.create_token(self.name, token)
         return token

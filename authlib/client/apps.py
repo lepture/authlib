@@ -64,6 +64,7 @@ github = AppFactory('github', {
     'api_base_url': 'https://api.github.com/',
     'access_token_url': 'https://github.com/login/oauth/access_token',
     'authorize_url': 'https://github.com/login/oauth/authorize',
+    'client_kwargs': {'scope': 'user:email'},
 }, "The OAuth app for GitHub API.")
 
 
@@ -99,4 +100,13 @@ facebook = AppFactory('facebook', {
     'access_token_url': 'https://graph.facebook.com/v2.10/oauth/access_token',
     'access_token_params': {'method': 'GET'},
     'authorize_url': 'https://www.facebook.com/v2.10/dialog/oauth',
+    'client_kwargs': {'scope': 'email'},
 }, "The OAuth app for Facebook API.", facebook_compliance_fix)
+
+
+google = AppFactory('google', {
+    'api_base_url': 'https://www.googleapis.com/oauth2/v1/',
+    'access_token_url': 'https://accounts.google.com/o/oauth2/token',
+    'authorize_url': 'https://accounts.google.com/o/oauth2/auth',
+    'client_kwargs': {'scope': 'email'},
+}, "The OAuth app for Google API.")
