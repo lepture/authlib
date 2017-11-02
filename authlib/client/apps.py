@@ -50,6 +50,7 @@ twitter = AppFactory('twitter', {
     'request_token_url': 'https://api.twitter.com/oauth/request_token',
     'access_token_url': 'https://api.twitter.com/oauth/access_token',
     'authorize_url': 'https://api.twitter.com/oauth/authenticate',
+    'profile_url': 'account/verify_credentials.json?skip_status=true&include_email=true'
 }, "The OAuth app for Twitter API.")
 
 
@@ -64,7 +65,7 @@ github = AppFactory('github', {
     'api_base_url': 'https://api.github.com/',
     'access_token_url': 'https://github.com/login/oauth/access_token',
     'authorize_url': 'https://github.com/login/oauth/authorize',
-    'profile_url': '/user',
+    'profile_url': 'user',
     'client_kwargs': {'scope': 'user:email'},
 }, "The OAuth app for GitHub API.")
 

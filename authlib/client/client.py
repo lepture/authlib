@@ -54,9 +54,11 @@ class OAuthClient(object):
             assert callable(set_token), 'missing request_token_setter'
 
             self.session.callback_uri = callback_uri
+            params = {}
+            if self.request_token_params:
+                params.update(self.request_token_params)
             token = self.session.fetch_request_token(
-                self.request_token_url,
-                **self.request_token_params
+                self.request_token_url, **params
             )
             # remember oauth_token, oauth_token_secret
             set_token(token)

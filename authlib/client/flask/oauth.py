@@ -94,6 +94,10 @@ class TokenMixin(object):
     def fetch_token(cls, name):
         raise NotImplementedError()
 
+    @classmethod
+    def update_token(cls, name, token):
+        raise NotImplementedError()
+
 
 class RemoteApp(OAuthClient):
     token_model = TokenMixin
@@ -102,6 +106,7 @@ class RemoteApp(OAuthClient):
         self.name = name
         self.cache = cache
         super(RemoteApp, self).__init__(*args, **kwargs)
+
         self.register_hook('authorize_redirect', self.redirect_hook)
         self.register_hook('access_token_getter', self.access_token_getter)
 
@@ -114,6 +119,8 @@ class RemoteApp(OAuthClient):
                 'request_token_setter',
                 self.request_token_setter
             )
+        elif self.client_kwargs.get('auto_refresh_url'):
+            self.client_kwargs['token_updater'] = self.token_updater
 
     def redirect_hook(self, uri, callback_uri=None, state=None):
         if callback_uri:
@@ -142,6 +149,9 @@ class RemoteApp(OAuthClient):
         sid = uuid.uuid4().hex
         session[key] = sid
         self.cache.set(sid, token)
+
+    def token_updater(self, token):
+        self.token_model.update_token(self.name, token)
 
     def authorize_response(self):
         if not self.request_token_url:
