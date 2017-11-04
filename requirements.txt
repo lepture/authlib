@@ -1,0 +1,4 @@
+requests
+cryptography
+pyjwt>=1.0.0
+Flask

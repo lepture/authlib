@@ -210,7 +210,8 @@ class OAuth1(AuthBase, Client):
             req.url, headers, req.body = self.sign_request(req)
         else:
             # Omit body data in the signing of non form-encoded requests
-            req.url, headers, _ = self.sign_request(req)
+            req.url, headers, _ = self.sign(
+                req.method, req.url, '', req.headers)
 
         req.prepare_headers(headers)
         req.url = to_native_string(req.url)

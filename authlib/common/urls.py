@@ -85,7 +85,7 @@ def url_decode(query):
     # >>> urllib.parse.parse_qsl(u'%E5%95%A6%E5%95%A6')
     # u'\u5566\u5566'
 
-    query = to_bytes(query)
+    query = to_unicode(query)
     # We want to allow queries such as "c2" whereas urlparse.parse_qsl
     # with the strict_parsing flag will not.
     params = urlparse.parse_qsl(query, keep_blank_values=True)

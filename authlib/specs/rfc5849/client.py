@@ -117,8 +117,8 @@ class Client(object):
         if self.signature_type == SIGNATURE_TYPE_HEADER:
             headers = prepare_headers(oauth_params, headers, realm=self.realm)
         elif self.signature_type == SIGNATURE_TYPE_BODY:
-            decoded_body = extract_params(body)
-            if decoded_body:
+            if CONTENT_TYPE_FORM_URLENCODED in headers.get('Content-Type', ''):
+                decoded_body = extract_params(body) or []
                 body = prepare_form_encoded_body(oauth_params, decoded_body)
                 body = url_encode(body)
                 headers['Content-Type'] = CONTENT_TYPE_FORM_URLENCODED
@@ -130,9 +130,9 @@ class Client(object):
 
     def sign(self, method, uri, body, headers, nonce=None, timestamp=None):
         if nonce is None:
-            nonce = generate_token()
+            nonce = generate_nonce()
         if timestamp is None:
-            timestamp = int(time.time())
+            timestamp = generate_timestamp()
         if body is None:
             body = ''
 
@@ -150,3 +150,11 @@ class Client(object):
 
         uri, headers, body = self._render(uri, headers, body, oauth_params)
         return uri, headers, body
+
+
+def generate_nonce():
+    return generate_token()
+
+
+def generate_timestamp():
+    return str(int(time.time()))
