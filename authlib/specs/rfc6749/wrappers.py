@@ -19,7 +19,9 @@ class OAuth2Response(object):
 
 class OAuth2Token(dict):
     def __init__(self, params):
-        if 'expires_at' not in params and 'expires_in' in params:
+        if 'expires_at' in params:
+            params['expires_at'] = int(params['expires_at'])
+        elif 'expires_in' in params:
             params['expires_at'] = int(time.time()) + \
                                    int(params['expires_in'])
         super(OAuth2Token, self).__init__(params)

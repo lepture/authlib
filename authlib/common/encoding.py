@@ -15,6 +15,8 @@ def to_bytes(x, charset='utf-8', errors='strict'):
         return x
     if isinstance(x, unicode_type):
         return x.encode(charset, errors)
+    if isinstance(x, (int, float)):
+        return str(x).encode(charset, errors)
     return byte_type(x)
 
 

@@ -130,12 +130,14 @@ class OAuth2Session(Session):
         if method.upper() == 'POST':
             resp = self.post(
                 url, data=dict(url_decode(body)), timeout=timeout,
-                headers=headers, auth=auth, verify=verify, proxies=proxies
+                headers=headers, auth=auth, verify=verify, proxies=proxies,
+                withhold_token=True,
             )
         else:
             resp = self.get(
                 url, params=dict(url_decode(body)), timeout=timeout,
-                headers=headers, auth=auth, verify=verify, proxies=proxies
+                headers=headers, auth=auth, verify=verify, proxies=proxies,
+                withhold_token=True,
             )
 
         for hook in self.compliance_hook['access_token_response']:
