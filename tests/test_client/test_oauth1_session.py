@@ -125,7 +125,11 @@ class OAuth1SessionTest(unittest.TestCase):
         generate_timestamp.return_value = '123'
         fake_xml = StringIO('hello world')
         headers = {'Content-Type': 'application/xml'}
-        signature = 'OAuth oauth_nonce="abc", oauth_timestamp="123", oauth_version="1.0", oauth_signature_method="HMAC-SHA1", oauth_consumer_key="foo", oauth_signature="h2sRqLArjhlc5p3FTkuNogVHlKE%3D"'
+        signature = (
+            'OAuth oauth_nonce="abc", oauth_timestamp="123", oauth_version="1.0", '
+            'oauth_signature_method="HMAC-SHA1", oauth_consumer_key="foo", '
+            'oauth_signature="h2sRqLArjhlc5p3FTkuNogVHlKE%3D"'
+        )
         auth = OAuth1Session('foo')
         auth.send = self.verify_signature(signature)
         auth.post('https://i.b', headers=headers, files=[('fake', fake_xml)])
@@ -135,7 +139,11 @@ class OAuth1SessionTest(unittest.TestCase):
     def test_nonascii(self, generate_nonce, generate_timestamp):
         generate_nonce.return_value = 'abc'
         generate_timestamp.return_value = '123'
-        signature = 'OAuth oauth_nonce="abc", oauth_timestamp="123", oauth_version="1.0", oauth_signature_method="HMAC-SHA1", oauth_consumer_key="foo", oauth_signature="W0haoue5IZAZoaJiYCtfqwMf8x8%3D"'
+        signature = (
+            'OAuth oauth_nonce="abc", oauth_timestamp="123", oauth_version="1.0", '
+            'oauth_signature_method="HMAC-SHA1", oauth_consumer_key="foo", '
+            'oauth_signature="W0haoue5IZAZoaJiYCtfqwMf8x8%3D"'
+        )
         auth = OAuth1Session('foo')
         auth.send = self.verify_signature(signature)
         auth.post('https://i.b?cjk=%E5%95%A6%E5%95%A6')

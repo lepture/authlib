@@ -9,8 +9,10 @@ else:
 
 
 def to_bytes(x, charset='utf-8', errors='strict'):
-    if x is None or isinstance(x, byte_type):
+    if x is None:
         return None
+    if isinstance(x, byte_type):
+        return x
     if isinstance(x, unicode_type):
         return x.encode(charset, errors)
     return byte_type(x)
