@@ -28,7 +28,7 @@ setup(
     zip_safe=False,
     include_package_data=True,
     platforms='any',
-    long_description=fread('description.rst'),
+    long_description=fread('LONG_DESC.rst'),
     license='LGPLv3',
     install_requires=['requests'],
     extras_require={
