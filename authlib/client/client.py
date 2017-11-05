@@ -78,9 +78,10 @@ class OAuthClient(object):
             assert callable(get_request_token), 'missing request_token_getter'
 
             self.session.callback_uri = callback_uri
-            self.session.token = get_request_token()
-            # re-assign token with verifier
-            self.session.token = params
+            token = get_request_token()
+            # merge token with verifier
+            token.update(params)
+            self.session.token = token
             kwargs = self.access_token_params or {}
             token = self.session.fetch_access_token(
                 self.access_token_url, **kwargs)
