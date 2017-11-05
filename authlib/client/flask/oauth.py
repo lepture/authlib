@@ -1,6 +1,6 @@
 import uuid
 from flask import request, redirect, session
-from authlib.common.flask.cache import Cache
+from authlib.common.flask import Cache
 from ..errors import OAuthException
 from ..client import OAuthClient
 
