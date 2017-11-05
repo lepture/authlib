@@ -12,6 +12,7 @@ from ..specs.rfc6749.grant import (
 from ..specs.rfc6749 import OAuth2Token
 from ..specs.rfc6749 import CustomOAuth2Error, InsecureTransportError
 from ..specs.rfc6750 import BearToken, ExpiredTokenError
+from ..specs.rfc7009 import prepare_revoke_token_request
 
 __all__ = ['OAuth2Session']
 
@@ -62,6 +63,7 @@ class OAuth2Session(Session):
             'access_token_response': set(),
             'refresh_token_response': set(),
             'protected_request': set(),
+            'revoke_token_request': set(),
         }
 
     @property
@@ -184,6 +186,27 @@ class OAuth2Session(Session):
         if callable(self.token_updater):
             self.token_updater(self.token)
         return self.token
+
+    def revoke_token(self, url, token, token_type_hint=None,
+                     body=None, auth=None, timeout=None, headers=None,
+                     verify=True, proxies=None, **kwargs):
+        data, headers = prepare_revoke_token_request(
+            token, token_type_hint, body, headers)
+
+        for hook in self.compliance_hook['protected_request']:
+            url, headers, data = hook(url, headers, data)
+
+        if auth is None:
+            client_secret = self.client_secret
+            if client_secret is None:
+                client_secret = ''
+            auth = HTTPBasicAuth(self.client_id, client_secret)
+
+        return self.post(
+            url, data=dict(url_decode(body)), timeout=timeout,
+            headers=headers, auth=auth, verify=verify, proxies=proxies,
+            withhold_token=True,
+        )
 
     def request(self, method, url, data=None, headers=None,
                 withhold_token=False, **kwargs):

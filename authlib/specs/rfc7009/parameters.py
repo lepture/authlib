@@ -1,7 +1,8 @@
 from authlib.common.urls import add_params_to_qs
 
 
-def prepare_request(token, token_type_hint=None, body=None, headers=None):
+def prepare_revoke_token_request(token, token_type_hint=None,
+                                 body=None, headers=None):
     """Construct request body and headers for revocation endpoint.
 
     :param token: access_token or refresh_token string.
