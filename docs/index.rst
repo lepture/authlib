@@ -3,18 +3,69 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Authlib's documentation!
-===================================
+Authlib: Ready to use Authentication
+====================================
+
+Release v\ |version|. (:ref:`Installation <install>`)
+
+
+Features
+--------
+
+Lovely features that Authlib has built-in:
+
+- Generic specification implementations
+- OAuth 1 (RFC5849)
+- OAuth 2 (RFC6749, RFC6750, RFC7009, RFC7662)
+- **TODO** OpenID Connect
+- **DONE** OAuth 1, OAuth 2 Requests Sessions
+- **DONE** Mixed OAuth 1 and OAuth 2 Client
+- **DONE** Integrated client with Flask
+- **TODO** Integrated client with Django
+- **TODO** Flask OAuth 1 / OAuth 2 Servers
+- **TODO** Django OAuth 1 / OAuth 2 Servers
+
+Authlib is designed as a replacement of OAuthlib, Flask-OAuthlib.
+
+User Guide
+----------
+
+This part of the documentation begins with some background information
+about Authlib, and information on the client parts.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+
+   intro
+   install
+   client/quickstart
+   client/advanced
+   client/frameworks
+   client/apps
+
+Server Guide
+------------
+
+This part of the documentation contains information on the server parts.
 
 
+Specifications
+--------------
 
-Indices and tables
-==================
+Guide on specifications. You don't have to read this section if you are
+just using Authlib. But it would be good for you to understand how Authlib
+works.
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+
+Sustainable Contribution
+------------------------
+
+This section aims to make Authlib sustainable, on governance, code commits
+and finance.
+
+.. toctree::
+   :maxdepth: 2
+
+   community/support
+   community/awesome
+   community/authors
