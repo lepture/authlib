@@ -10,9 +10,10 @@ def twitter_fetch_user(client):
     resp = client.get(url, params)
     profile = resp.json()
     uid = profile.get('id')
+    username = profile.get('screen_name')
     name = profile.get('name')
     email = profile.get('email')
-    return User(uid, name=name, email=email)
+    return User(uid, username=username, name=name, email=email)
 
 
 twitter = AppFactory('twitter', {

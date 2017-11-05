@@ -1,7 +1,6 @@
 from collections import namedtuple
 
-# TODO: find common fields for user
-User = namedtuple('User', ['id', 'name', 'email'])
+User = namedtuple('User', ['id', 'username', 'name', 'email'])
 
 
 class AppFactory(object):

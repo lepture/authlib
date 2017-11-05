@@ -2,11 +2,13 @@ from .base import AppFactory, User
 
 
 def github_fetch_user(client):
-    profile = client.get('user')
+    resp = client.get('user')
+    profile = resp.json()
     uid = profile.get('id')
+    username = profile.get('login')
     name = profile.get('name')
     email = profile.get('email')
-    return User(uid, name=name, email=email)
+    return User(uid, username=username, name=name, email=email)
 
 
 github = AppFactory('github', {
