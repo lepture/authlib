@@ -105,7 +105,13 @@ class RemoteApp(OAuthClient):
     def __init__(self, name, cache=None, *args, **kwargs):
         self.name = name
         self.cache = cache
+        fetch_user = kwargs.pop('fetch_user', None)
         super(RemoteApp, self).__init__(*args, **kwargs)
+
+        if fetch_user:
+            self.fetch_user = lambda: fetch_user(self)
+        else:
+            self.fetch_user = lambda: None
 
         self.register_hook('authorize_redirect', self.redirect_hook)
         self.register_hook('access_token_getter', self.access_token_getter)
@@ -166,10 +172,3 @@ class RemoteApp(OAuthClient):
         params = request.args.to_dict(flat=True)
         token = self.authorize_access_token(callback_uri, **params)
         return token
-
-    def fetch_profile(self):
-        url = self._kwargs.get('profile_url')
-        if url:
-            resp = self.get(url)
-            if resp.status_code == 200:
-                return resp.json()
