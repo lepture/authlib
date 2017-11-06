@@ -1,7 +1,7 @@
 .. _client-advanced:
 
-Advanced Usage on Client
-========================
+Advanced Usage
+==============
 
 
 OAuth1Session

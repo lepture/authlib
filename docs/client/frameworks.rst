@@ -1,7 +1,7 @@
 .. _client-frameworks:
 
-Integrated Frameworks on Client
-===============================
+Integrated Frameworks
+=====================
 
 
 Flask

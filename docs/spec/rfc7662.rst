@@ -1,0 +1,6 @@
+OAuth 2.0 Token Introspection
+=============================
+
+This section contains the generic implementation of RFC7662_.
+
+.. _RFC7662: https://tools.ietf.org/html/rfc7662

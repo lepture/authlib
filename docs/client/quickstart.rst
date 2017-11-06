@@ -1,7 +1,7 @@
 .. _client-quickstart:
 
-Quick Start on Client
-=====================
+Quick Start
+===========
 
 
 Requests Sessions

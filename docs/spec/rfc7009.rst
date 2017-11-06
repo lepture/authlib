@@ -1,0 +1,6 @@
+OAuth 2.0 Token Revocation
+==========================
+
+This section contains the generic implementation of RFC7009_.
+
+.. _RFC7009: https://tools.ietf.org/html/rfc7009

@@ -1,4 +1,4 @@
-Awesome Posts and Talks
-=======================
+Awesome Articles and Talks
+==========================
 
-Here is a list of awesome posts and talks about Authlib.
+Here is a list of awesome articles and talks about Authlib.

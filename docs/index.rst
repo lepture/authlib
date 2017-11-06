@@ -8,6 +8,8 @@ Authlib: Ready to use Authentication
 
 Release v\ |version|. (:ref:`Installation <install>`)
 
+Authlib is a ready to use authentication library. It is designed from low level
+APIs to high level APIs, to meet the needs of everyone.
 
 Features
 --------
@@ -25,7 +27,7 @@ Lovely features that Authlib has built-in:
 - **TODO** Flask OAuth 1 / OAuth 2 Servers
 - **TODO** Django OAuth 1 / OAuth 2 Servers
 
-Authlib is designed as a replacement of OAuthlib, Flask-OAuthlib.
+Authlib is compatible with Python2.7+ and Python3.5+.
 
 User Guide
 ----------
@@ -48,6 +50,7 @@ Server Guide
 
 This part of the documentation contains information on the server parts.
 
+(Under Construction)
 
 Specifications
 --------------
@@ -56,16 +59,34 @@ Guide on specifications. You don't have to read this section if you are
 just using Authlib. But it would be good for you to understand how Authlib
 works.
 
+.. toctree::
+   :maxdepth: 2
 
-Sustainable Contribution
-------------------------
+   spec/rfc5849
+   spec/rfc6749
+   spec/rfc6750
+   spec/rfc7009
+   spec/rfc7662
 
-This section aims to make Authlib sustainable, on governance, code commits
-and finance.
+
+Community Contribution
+----------------------
+
+This section aims to make Authlib sustainable, on governance, code commits,
+issues and finance.
 
 .. toctree::
    :maxdepth: 2
 
    community/support
+   community/security
+   community/contribute
    community/awesome
    community/authors
+
+Get Updates
+-----------
+
+Stay tuned with Authlib, here is a Newsletter for you:
+
+https://tinyletter.com/authlib

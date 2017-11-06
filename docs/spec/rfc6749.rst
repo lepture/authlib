@@ -1,0 +1,6 @@
+The OAuth 2.0 Authorization Framework
+=====================================
+
+This section contains the generic implementation of RFC6749_.
+
+.. _RFC6749: https://tools.ietf.org/html/rfc6749
