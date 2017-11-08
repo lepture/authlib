@@ -53,7 +53,7 @@ class OAuth1Session(Session):
                  callback_uri=None, rsa_key=None, verifier=None,
                  signature_method=SIGNATURE_HMAC_SHA1,
                  signature_type=SIGNATURE_TYPE_HEADER,
-                 force_include_body=False):
+                 force_include_body=False, **kwargs):
         super(OAuth1Session, self).__init__()
 
         self._client = OAuth1(

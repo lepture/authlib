@@ -28,7 +28,7 @@ class OAuth2Session(Session):
                  auto_refresh_url=None, auto_refresh_kwargs=None,
                  scope=None, redirect_uri=None,
                  token=None, token_placement='headers',
-                 state=None, token_updater=None):
+                 state=None, token_updater=None, **kwargs):
         """Construct a new OAuth 2 client requests session.
 
         :param client_id:
@@ -80,8 +80,9 @@ class OAuth2Session(Session):
         if state is None:
             state = generate_token()
 
+        response_type = kwargs.pop('response_type', 'code')
         uri = prepare_grant_uri(
-            url, client_id=self.client_id, response_type='code',
+            url, client_id=self.client_id, response_type=response_type,
             redirect_uri=self.redirect_uri, scope=self.scope,
             state=state, **kwargs
         )
