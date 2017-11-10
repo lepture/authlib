@@ -40,8 +40,9 @@ about Authlib, and information on the client parts.
 
    intro
    install
-   client/quickstart
-   client/advanced
+   client/oauth1
+   client/oauth2
+   client/mixed
    client/frameworks
    client/apps
 
