@@ -9,5 +9,7 @@
     https://tools.ietf.org/html/rfc6749
 """
 
+# flake8: noqa
+
 from .wrappers import *
 from .errors import *

@@ -5,6 +5,7 @@ import json
 from requests import Session
 from requests.auth import AuthBase
 from requests.utils import to_native_string
+from .errors import OAuthException
 from ..common.encoding import to_unicode
 from ..common.urls import (
     url_decode,
@@ -25,29 +26,43 @@ __all__ = ['OAuth1Session', 'OAuth1']
 CONTENT_TYPE_FORM_URLENCODED = 'application/x-www-form-urlencoded'
 
 
-class TokenRequestDenied(ValueError):
-
-    def __init__(self, message, response):
-        super(TokenRequestDenied, self).__init__(message)
-        self.response = response
-
-    @property
-    def status_code(self):
-        """For backwards-compatibility purposes"""
-        return self.response.status_code
-
-
-class TokenMissing(ValueError):
-    def __init__(self, message, response):
-        super(TokenMissing, self).__init__(message)
-        self.response = response
-
-
-class VerifierMissing(ValueError):
-    pass
-
-
 class OAuth1Session(Session):
+    """Construct a new OAuth 1 client requests session.
+
+    :param client_key: Consumer key, which you get from registration.
+    :param client_secret: Consumer Secret, which you get from registration.
+    :param resource_owner_key: A resource owner key, also referred to as
+                               request token or access token depending on
+                               when in the workflow it is used.
+    :param resource_owner_secret: A resource owner secret obtained with
+                                  either a request or access token. Often
+                                  referred to as token secret.
+    :param callback_uri: The URL the user is redirect back to after
+                         authorization.
+    :param rsa_key: The private RSA key as a string. Can only be used with
+                    signature_method=authlib.spec.rfc5849.SIGNATURE_RSA.
+    :param verifier: A verifier string to prove authorization was granted.
+    :param signature_method: Signature methods for OAuth 1, available types:
+
+                             * :data:`authlib.spec.rfc5849.SIGNATURE_HMAC_SHA1`
+                             * :data:`authlib.spec.rfc5849.SIGNATURE_RSA_SHA1`
+                             * :data:`authlib.spec.rfc5849.SIGNATURE_PLAINTEXT`
+
+                             Default is ``SIGNATURE_HMAC_SHA1``. You can extend
+                             signature method via ``rfc5849.Client``.
+    :param signature_type: Signature type decides where the OAuth
+                           parameters are added. Either in the
+                           Authorization header (default) or to the URL
+                           query parameters or the request body. Defined as:
+
+                           * :data:`authlib.spec.rfc5849.SIGNATURE_TYPE_HEADER`
+                           * :data:`authlib.spec.rfc5849.SIGNATURE_TYPE_BODY`
+                           * :data:`authlib.spec.rfc5849.SIGNATURE_TYPE_QUERY`
+
+    :param force_include_body: Always include the request body in the
+                               signature creation.
+    :param kwargs: Extra parameters to include.
+    """
     def __init__(self, client_key, client_secret=None,
                  resource_owner_key=None, resource_owner_secret=None,
                  callback_uri=None, rsa_key=None, verifier=None,
@@ -68,6 +83,7 @@ class OAuth1Session(Session):
             force_include_body=force_include_body
         )
         self.auth = self._client
+        self._kwargs = kwargs
 
     @property
     def callback_uri(self):
@@ -94,33 +110,78 @@ class OAuth1Session(Session):
         if 'oauth_token' in token:
             self._client.resource_owner_key = token['oauth_token']
         else:
-            raise TokenMissing(
-                'Response does not contain a token: {resp}'.format(resp=token),
-                token,
-            )
+            msg = 'oauth_token is missing: {resp}'.format(resp=token)
+            raise OAuthException(msg, 'token_missing', token)
         if 'oauth_token_secret' in token:
             self._client.resource_owner_secret = token['oauth_token_secret']
         if 'oauth_verifier' in token:
             self._client.verifier = token['oauth_verifier']
 
     def authorization_url(self, url, request_token=None, **kwargs):
+        """Create an authorization URL by appending request_token and optional
+        kwargs to url.
+
+        This is the second step in the OAuth 1 workflow. The user should be
+        redirected to this authorization URL, grant access to you, and then
+        be redirected back to you. The redirection back can either be specified
+        during client registration or by supplying a callback URI per request.
+
+        :param url: The authorization endpoint URL.
+        :param request_token: The previously obtained request token.
+        :param kwargs: Optional parameters to append to the URL.
+        :returns: The authorization URL with new parameters embedded.
+        """
         kwargs['oauth_token'] = request_token or self._client.resource_owner_key
         if self._client.callback_uri:
             kwargs['oauth_callback'] = self._client.callback_uri
         return add_params_to_uri(url, kwargs.items())
 
     def fetch_request_token(self, url, realm=None, **kwargs):
-        self._client.realm = ' '.join(realm) if realm else None
+        """Method for fetching an access token from the token endpoint.
+
+        This is the first step in the OAuth 1 workflow. A request token is
+        obtained by making a signed post request to url. The token is then
+        parsed from the application/x-www-form-urlencoded response and ready
+        to be used to construct an authorization url.
+
+        :param url: Request Token endpoint.
+        :param realm: A string/list/tuple of realm for Authorization header.
+        :param kwargs: Extra parameters to include for fetching token.
+        :return: A Request Token dict.
+
+        Note, ``realm`` can also be configured when session created::
+
+            session = OAuth1Session(client_key, client_secret, ..., realm='')
+        """
+        if realm is None:
+            realm = self._kwargs.get('realm', None)
+        if realm:
+            if isinstance(realm, (tuple, list)):
+                realm = ' '.join(realm)
+            self._client.realm = realm
+        else:
+            self._client.realm = None
         token = self._fetch_token(url, **kwargs)
         self._client.callback_uri = None
         self._client.realm = None
         return token
 
     def fetch_access_token(self, url, verifier=None, **kwargs):
+        """Method for fetching an access token from the token endpoint.
+
+        This is the final step in the OAuth 1 workflow. An access token is
+        obtained using all previously obtained credentials, including the
+        verifier from the authorization step.
+
+        :param url: Access Token endpoint.
+        :param verifier: A verifier string to prove authorization was granted.
+        :param kwargs: Extra parameters to include for fetching access token.
+        :return: A token dict.
+        """
         if verifier:
             self._client.verifier = verifier
         if not self._client.verifier:
-            raise VerifierMissing('No client verifier has been set.')
+            raise OAuthException('No client verifier has been set.')
         token = self._fetch_token(url, **kwargs)
         self._client.verifier = None
         return token
@@ -132,14 +193,6 @@ class OAuth1Session(Session):
         :param url: The full URL that resulted from the user being redirected
                     back from the OAuth provider to you, the client.
         :returns: A dict of parameters extracted from the URL.
-
-        >>> redirect_response = 'https://127.0.0.1/callback?oauth_token=kjerht2309uf&oauth_verifier=w34o8967345'
-        >>> oauth_session = OAuth1Session('client-key', client_secret='secret')
-        >>> oauth_session.parse_authorization_response(redirect_response)
-        {
-            'oauth_token: 'kjerht2309u',
-            'oauth_verifier: 'w34o8967345',
-        }
         """
         token = dict(url_decode(urlparse.urlparse(url).query))
         self.token = token
@@ -150,8 +203,8 @@ class OAuth1Session(Session):
 
         if resp.status_code >= 400:
             error = "Token request failed with code {}, response was '{}'."
-            raise TokenRequestDenied(
-                error.format(resp.status_code, resp.text), resp)
+            message = error.format(resp.status_code, resp.text)
+            raise OAuthException(message, 'token_request_denied', resp)
 
         try:
             text = resp.text.strip()

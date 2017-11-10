@@ -9,4 +9,6 @@
     https://tools.ietf.org/html/rfc7009
 """
 
+# flake8: noqa
+
 from .parameters import prepare_revoke_token_request

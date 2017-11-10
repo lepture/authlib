@@ -434,8 +434,9 @@ def sign_hmac_sha1(base_string, client_secret, resource_owner_secret):
 
 _jwtrs1 = None
 
-#jwt has some nice pycrypto/cryptography abstractions
+
 def _jwt_rs1_signing_algorithm():
+    # jwt has some nice pycrypto/cryptography abstractions
     global _jwtrs1
     if _jwtrs1 is None:
         import jwt.algorithms as jwtalgo

@@ -50,7 +50,7 @@ class OAuthClientTest(unittest.TestCase):
         client.register_hook('authorize_redirect', lambda: 'ok')
         self.assertRaises(AssertionError, client.authorize_redirect, '')
 
-    def test_oauth1_authorize_access_token(self):
+    def test_oauth1_fetch_access_token(self):
         client = OAuthClient(
             'foo',
             request_token_url='https://a.com/req',
@@ -62,10 +62,10 @@ class OAuthClientTest(unittest.TestCase):
 
         client.register_hook('request_token_getter', request_token_getter)
         client.session.send = self.fake_body('oauth_token=foo')
-        resp = client.authorize_access_token(oauth_verifier='bar')
+        resp = client.fetch_access_token(oauth_verifier='bar')
         self.assertEqual(resp['oauth_token'], 'foo')
 
-    def test_oauth2_authorize_access_token(self):
+    def test_oauth2_fetch_access_token(self):
         url = 'https://example.com/token'
 
         token = {
@@ -78,8 +78,8 @@ class OAuthClientTest(unittest.TestCase):
 
         client = OAuthClient(client_id='foo', access_token_url=url)
         client.session.send = self.fake_token(token)
-        self.assertEqual(client.authorize_access_token(), token)
-        self.assertEqual(client.authorize_access_token(url), token)
+        self.assertEqual(client.fetch_access_token(), token)
+        self.assertEqual(client.fetch_access_token(url), token)
 
     def fake_token(self, token):
         def fake_send(r, **kwargs):

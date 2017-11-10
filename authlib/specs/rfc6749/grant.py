@@ -32,13 +32,10 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
                   `Section 10.12`_.
     :param kwargs: Extra arguments to embed in the grant/authorization URL.
 
-    An example of an authorization code grant authorization URL:
+    An example of an authorization code grant authorization URL::
 
-    .. code-block:: http
-
-        GET /authorize?response_type=code&client_id=s6BhdRkqt3&state=xyz
-            &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb HTTP/1.1
-        Host: server.example.com
+        /authorize?response_type=code&client_id=s6BhdRkqt3&state=xyz
+        &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb
 
     .. _`Section 2.2`: http://tools.ietf.org/html/rfc6749#section-2.2
     .. _`Section 3.1.2`: http://tools.ietf.org/html/rfc6749#section-3.1.2
@@ -81,9 +78,7 @@ def prepare_token_request(grant_type, body='', redirect_uri=None, **kwargs):
                          `Section 4.1.1`_, and their values MUST be identical.
     :param kwargs: Extra arguments to embed in the request body.
 
-    An example of an authorization code token request body:
-
-    .. code-block:: http
+    An example of an authorization code token request body::
 
         grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA
         &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb

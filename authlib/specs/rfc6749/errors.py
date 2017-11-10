@@ -1,3 +1,5 @@
+from authlib.common.security import is_secure_transport
+
 
 class OAuth2Error(Exception):
     error = None
@@ -66,6 +68,11 @@ class CustomOAuth2Error(OAuth2Error):
 class InsecureTransportError(OAuth2Error):
     error = 'insecure_transport'
     description = 'OAuth 2 MUST utilize https.'
+
+    @classmethod
+    def check(cls, url):
+        if not is_secure_transport(url):
+            raise cls()
 
 
 class MissingCodeError(OAuth2Error):

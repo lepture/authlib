@@ -11,9 +11,7 @@ except ImportError:
         def __reduce__(self):
             return '_missing'
 
-
     _missing = _Missing()
-
 
     class cached_property(property):
         def __init__(self, func, name=None, doc=None):

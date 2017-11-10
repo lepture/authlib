@@ -11,7 +11,7 @@ from authlib.specs.rfc5849 import (
     SIGNATURE_TYPE_QUERY,
 )
 from authlib.common.encoding import to_unicode, unicode_type
-from authlib.client import OAuth1Session
+from authlib.client import OAuth1Session, OAuthException
 
 
 TEST_RSA_KEY = (
@@ -214,8 +214,8 @@ class OAuth1SessionTest(unittest.TestCase):
         # assertRaises is not a context manager.
         try:
             auth.fetch_access_token('https://example.com/token')
-        except ValueError as exc:
-            self.assertEqual('No client verifier has been set.', str(exc))
+        except OAuthException as exc:
+            self.assertEqual('No client verifier has been set.', exc.message)
 
     def test_fetch_token_invalid_response(self):
         auth = OAuth1Session('foo')
@@ -229,9 +229,9 @@ class OAuth1SessionTest(unittest.TestCase):
             # assert on the properties of the exception
             try:
                 auth.fetch_request_token('https://example.com/token')
-            except ValueError as err:
-                self.assertEqual(err.status_code, code)
-                self.assertTrue(isinstance(err.response, requests.Response))
+            except OAuthException as err:
+                self.assertEqual(err.type, 'token_request_denied')
+                self.assertTrue(isinstance(err.data, requests.Response))
             else:  # no exception raised
                 self.fail("ValueError not raised")
 

@@ -54,6 +54,19 @@ class Client(object):
 
     @classmethod
     def register_signature_method(cls, name, sign):
+        """Extend client signature methods.
+
+        :param name: A string to represent signature method.
+        :param sign: A function to generate signature.
+
+        The ``sign`` method accept 5 parameters::
+
+            def custom_sign_method(client, method, uri, body, headers):
+                # client is the instance of Client.
+                return 'your-signed-string'
+
+            Client.register_signature_method('custom-name', custom_sign_method)
+        """
         cls.SIGNATURE_METHODS[name] = sign
 
     def __init__(self, client_key, client_secret=None,
@@ -129,6 +142,18 @@ class Client(object):
         return uri, headers, body
 
     def sign(self, method, uri, body, headers, nonce=None, timestamp=None):
+        """Sign the HTTP request, add OAuth parameters and signature.
+
+        :param method: HTTP method of the request.
+        :param uri:  URI of the HTTP request.
+        :param body: Body payload of the HTTP request.
+        :param headers: Headers of the HTTP request.
+        :param nonce: A string to represent nonce value. If not configured,
+                      this method will generate one for you.
+        :param timestamp: Current timestamp. If not configured, this method
+                          will generate one for you.
+        :return: uri, headers, body
+        """
         if nonce is None:
             nonce = generate_nonce()
         if timestamp is None:

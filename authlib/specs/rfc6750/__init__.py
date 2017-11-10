@@ -9,5 +9,7 @@
     https://tools.ietf.org/html/rfc6750
 """
 
+# flake8: noqa
+
 from .token import *
 from .errors import *

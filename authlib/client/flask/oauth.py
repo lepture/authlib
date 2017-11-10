@@ -17,12 +17,15 @@ class OAuth(object):
         oauth = OAuth(app)
     """
 
-    def __init__(self, app=None):
+    def __init__(self, app=None, token_model=None):
         self._registry = {}
         self._clients = {}
 
         self.app = app
         self.cache = None
+        if token_model is None:
+            token_model = TokenMixin
+        self.token_model = token_model
         if app:
             self.init_app(app)
 
@@ -50,8 +53,8 @@ class OAuth(object):
             'client_key', 'client_secret',
             'request_token_url', 'request_token_params',
             'access_token_url', 'access_token_params',
-            'refresh_token_url', 'authorize_url',
-            'api_base_url', 'client_kwargs',
+            'refresh_token_url', 'refresh_token_params',
+            'authorize_url', 'api_base_url', 'client_kwargs',
         )
 
         kwargs = self._registry[name]
@@ -62,7 +65,7 @@ class OAuth(object):
                 v = self.app.config.get(conf_key, None)
                 kwargs[k] = v
 
-        client = RemoteApp(name, self.cache, **kwargs)
+        client = RemoteApp(name, self.cache, self.token_model, **kwargs)
         if compliance_fix:
             client.compliance_fix = compliance_fix
 
@@ -72,9 +75,15 @@ class OAuth(object):
     def register(self, name, **kwargs):
         """Registers a new remote application.
 
-        :param name: the name of the remote application
+        :param name: Name of the remote application.
+        :param kwargs: Parameters for :class:`RemoteApp`.
 
-        Find more parameters from :class:`OAuthClient`.
+        Find parameters from :class:`~authlib.client.OAuthClient`.
+        When a remote app is registered, it can be accessed with
+        *named* attribute::
+
+            oauth.register('twitter', client_key='', ...)
+            oauth.twitter.get('timeline')
         """
         self._registry[name] = kwargs
         if self.app:
@@ -100,11 +109,19 @@ class TokenMixin(object):
 
 
 class RemoteApp(OAuthClient):
-    token_model = TokenMixin
+    """Flask integrated RemoteApp of :class:`~authlib.client.OAuthClient`.
+    It has built-in hooks for OAuthClient. The only required configuration
+    is token model.
+    """
 
-    def __init__(self, name, cache=None, *args, **kwargs):
+    def __init__(self, name, cache=None, token_model=None, *args, **kwargs):
         self.name = name
         self.cache = cache
+
+        if token_model is None:
+            token_model = TokenMixin
+        self.token_model = token_model
+
         fetch_user = kwargs.pop('fetch_user', None)
         super(RemoteApp, self).__init__(*args, **kwargs)
 
@@ -125,7 +142,7 @@ class RemoteApp(OAuthClient):
                 'request_token_setter',
                 self.request_token_setter
             )
-        elif self.client_kwargs.get('auto_refresh_url'):
+        elif self.client_kwargs.get('refresh_token_url'):
             self.client_kwargs['token_updater'] = self.token_updater
 
     def redirect_hook(self, uri, callback_uri=None, state=None):
@@ -159,7 +176,8 @@ class RemoteApp(OAuthClient):
     def token_updater(self, token):
         self.token_model.update_token(self.name, token)
 
-    def authorize_response(self):
+    def authorize_access_token(self):
+        """Authorize access token."""
         if not self.request_token_url:
             state_key = '_{}_state_'.format(self.name)
             state = session.pop(state_key, None)
@@ -170,5 +188,5 @@ class RemoteApp(OAuthClient):
         cb_key = '_{}_callback_'.format(self.name)
         callback_uri = session.pop(cb_key, None)
         params = request.args.to_dict(flat=True)
-        token = self.authorize_access_token(callback_uri, **params)
+        token = self.fetch_access_token(callback_uri, **params)
         return token
