@@ -59,6 +59,8 @@ Guide on specifications. You don't have to read this section if you are
 just using Authlib. But it would be good for you to understand how Authlib
 works.
 
+(Under Construction)
+
 .. toctree::
    :maxdepth: 2
 
@@ -68,6 +70,16 @@ works.
    spec/rfc7009
    spec/rfc7662
 
+API Reference
+-------------
+
+If you are looking for information on a specific function, class or method,
+this part of the documentation is for you.
+
+.. toctree::
+   :maxdepth: 2
+
+   api/client
 
 Community Contribution
 ----------------------
