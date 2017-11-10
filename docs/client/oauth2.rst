@@ -4,7 +4,8 @@ OAuth 2 Session
 .. module:: authlib.client
 
 The :class:`OAuth2Session` in Authlib is designed to be compatible
-with the one in **requests-oauthlib**.
+with the one in **requests-oauthlib**. This section is a guide on
+how to obtain an access token in OAuth 2 flow.
 
 There are two steps in OAuth 2 to obtain an access token. Initialize
 the session for reuse::

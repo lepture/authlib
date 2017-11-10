@@ -5,7 +5,8 @@ OAuth 1 Session
 
 The :class:`OAuth1Session` in Authlib is designed to be
 compatible with the one in **requests-oauthlib**, although there are
-differences.
+differences. This section is a guide on how to obtain an access token
+in OAuth 1 flow.
 
 There are three steps in OAuth 1 to obtain an access token. Initialize
 the session for reuse::
@@ -115,8 +116,8 @@ don't need to do anything::
     >>> resp.json()
     {...}
 
-The above is not the real flow, just like what we did in :ref:`fetch_access_token`,
-we need to create another session ourselves::
+The above is not the real flow, just like what we did in
+:ref:`fetch_oauth1_access_token`, we need to create another session ourselves::
 
     >>> access_token = restore_access_token_from_database()
     >>> resource_owner_key = access_token['oauth_token']
