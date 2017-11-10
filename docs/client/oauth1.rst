@@ -53,7 +53,7 @@ is re-used::
 Now visit the authorization url that :meth:`OAuth1Session.authorization_url`
 generated, and grant the authorization.
 
-.. _fetch_access_token:
+.. _fetch_oauth1_access_token:
 
 Fetch Access Token
 ------------------
@@ -63,8 +63,8 @@ registered callback URI. For instance::
 
     https://example.com/twitter?oauth_token=gA..H&oauth_verifier=fcg..1Dq
 
-If you assigned ``callback_uri`` in :ref:`fetch_access_token`, the authorize
-response would be something like::
+If you assigned ``callback_uri`` in :ref:`fetch_oauth1_access_token`, the
+authorize response would be something like::
 
     https://your-domain.org/auth?oauth_token=gA..H&oauth_verifier=fcg..1Dq
 
@@ -127,6 +127,9 @@ we need to create another session ourselves::
     ...     resource_owner_secret=resource_owner_secret)
     >>> account_url = 'https://api.twitter.com/1.1/account/verify_credentials.json'
     >>> resp = session.get(account_url)
+
+Understand OAuth 1
+------------------
 
 To understand/feel the OAuth 1 authorization flow, register a Twitter consumer
 client at https://apps.twitter.com/ and repeat the steps in this section.
