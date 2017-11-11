@@ -3,6 +3,7 @@ Support
 
 If you have questions or issues about Authlib, there are several options:
 
+.. _stackoverflow:
 
 StackOverflow
 -------------
