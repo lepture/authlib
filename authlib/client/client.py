@@ -77,11 +77,10 @@ class OAuthClient(object):
         }
 
     def register_hook(self, hook_type, f):
-        """
+        """Register a hook for OAuthClient.
 
         :param hook_type: Type name of the hook.
         :param f: A function that will be bind with the given hook type.
-        :return: None
 
         Available hook types are:
 
