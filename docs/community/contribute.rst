@@ -1,9 +1,6 @@
 Contribution
 ============
 
-Be a Backer
------------
-
 Bug Reports
 -----------
 

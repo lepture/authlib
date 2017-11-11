@@ -71,19 +71,8 @@ works.
    spec/rfc7009
    spec/rfc7662
 
-API Reference
--------------
-
-If you are looking for information on a specific function, class or method,
-this part of the documentation is for you.
-
-.. toctree::
-   :maxdepth: 2
-
-   api/client
-
-Community Contribution
-----------------------
+Community & Contribution
+------------------------
 
 This section aims to make Authlib sustainable, on governance, code commits,
 issues and finance.
@@ -95,7 +84,19 @@ issues and finance.
    community/security
    community/contribute
    community/awesome
+   community/sustainable
    community/authors
+
+API Reference
+-------------
+
+If you are looking for information on a specific function, class or method,
+this part of the documentation is for you.
+
+.. toctree::
+   :maxdepth: 2
+
+   api/client
 
 Get Updates
 -----------
