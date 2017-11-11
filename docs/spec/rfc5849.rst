@@ -1,3 +1,5 @@
+.. _specs/rfc5849:
+
 The OAuth 1.0 Protocol
 ======================
 
