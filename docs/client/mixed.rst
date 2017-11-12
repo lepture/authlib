@@ -1,3 +1,5 @@
+.. _oauth_client:
+
 OAuthClient
 ===========
 

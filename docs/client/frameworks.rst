@@ -69,8 +69,75 @@ EXAMPLE_CLIENT_SECRET      Twitter Consumer Secret
 EXAMPLE_ACCESS_TOKEN_URL   URL to fetch OAuth access token
 ========================== ===============================
 
-Token Model
-~~~~~~~~~~~
+Cache & Database
+~~~~~~~~~~~~~~~~
+
+The remote app that :meth:`OAuth.register` configured, is a subclass of
+:class:`~authlib.client.OAuthClient`. You can read more on :ref:`oauth_client`.
+There are hooks for OAuthClient, and flask integration has registered them
+all for you. However, you need to configure cache and database access.
+
+Cache is used for temporary information, such as request token, state and
+callback uri. We use the :class:`~authlib.common.flask.cache.Cache` as the
+backend. To specify a certain cache type, config with::
+
+    OAUTH_CLIENT_CACHE_TYPE = '{{ cache_type }}'
+
+Find more configuration on :ref:`flask_cache`. Please note, the
+``config_prefix`` is::
+
+    OAUTH_CLIENT
+
+For database, we need a class which has two class methods. It would be
+something like::
+
+    class MyTokenModel(db.Model):
+        OAUTH1_TOKEN_TYPE = 'oauth1.0'
+
+        user_id = Column(Integer, nullable=False)
+        name = Column(String(20), nullable=False)
+
+        token_type = Column(String(20))
+        access_token = Column(String(48), nullable=False)
+        # refresh_token or access_token_secret
+        alt_token = Column(String(48))
+        expires_at = Column(Integer, default=0)
+
+        @classmethod
+        def fetch_token(cls, name):
+            q = cls.query.filter_by(name=name, user_id=current_user.id)
+            item = q.first()
+            if item.token_type == cls.OAUTH1_TOKEN_TYPE:
+                return dict(
+                    oauth_token=self.access_token,
+                    oauth_token_secret=self.alt_token,
+                )
+            return dict(
+                access_token=self.access_token,
+                token_type=self.token_type,
+                refresh_token=self.refresh_token,
+                expires_at=self.expires_at,
+            )
+
+        @classmethod
+        def update_token(cls, name, token):
+            item = cls(name=name, user_id=current_user.id)
+            if 'oauth_token' in token:
+                item.token_type = cls.OAUTH1_TOKEN_TYPE
+                item.access_token = token['oauth_token']
+                item.alt_token = token['oauth_token_secret']
+            else:
+                item.token_type = token.get('token_type', 'bearer')
+                item.access_token = token.get('access_token')
+                item.alt_token = token.get('refresh_token')
+                item.expires_at = token.get('expires_at')
+            db.session.add(item)
+            db.session.commit()
+            return item
+
+You need to register this **TokenModel** in the registry::
+
+    oauth = OAuth(app, token_model=MyTokenModel)
 
 OAuth 1 & OAuth 2
 ~~~~~~~~~~~~~~~~~

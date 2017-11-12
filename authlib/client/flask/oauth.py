@@ -38,7 +38,7 @@ class OAuth(object):
             oauth.init_app(app)
         """
         self.app = app
-        self.cache = Cache(app)
+        self.cache = Cache(app, config_prefix='OAUTH_CLIENT')
         app.extensions = getattr(app, 'extensions', {})
         app.extensions['authlib.client.flask'] = self
 
