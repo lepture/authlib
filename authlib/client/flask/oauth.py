@@ -121,31 +121,25 @@ class RemoteApp(OAuthClient):
         if token_model is None:
             token_model = TokenMixin
         self.token_model = token_model
-
-        fetch_user = kwargs.pop('fetch_user', None)
         super(RemoteApp, self).__init__(*args, **kwargs)
 
-        if fetch_user:
-            self.fetch_user = lambda: fetch_user(self)
-        else:
-            self.fetch_user = lambda: None
-
-        self.register_hook('authorize_redirect', self.redirect_hook)
-        self.register_hook('access_token_getter', self.access_token_getter)
+        self.register_hook('authorize_redirect', self._redirect_hook)
+        self.register_hook('access_token_getter', self._access_token_getter)
 
         if self.request_token_url:
             self.register_hook(
                 'request_token_getter',
-                self.request_token_getter
+                self._request_token_getter
             )
             self.register_hook(
                 'request_token_setter',
-                self.request_token_setter
+                self._request_token_setter
             )
         elif self.client_kwargs.get('refresh_token_url'):
-            self.client_kwargs['token_updater'] = self.token_updater
+            self.client_kwargs['token_updater'] = lambda token:\
+                token_model.update_token(name, token)
 
-    def redirect_hook(self, uri, callback_uri=None, state=None):
+    def _redirect_hook(self, uri, callback_uri=None, state=None):
         if callback_uri:
             key = '_{}_callback_'.format(self.name)
             session[key] = callback_uri
@@ -154,10 +148,10 @@ class RemoteApp(OAuthClient):
             session[key] = state
         return redirect(uri)
 
-    def access_token_getter(self):
+    def _access_token_getter(self):
         return self.token_model.fetch_token(self.name)
 
-    def request_token_getter(self):
+    def _request_token_getter(self):
         key = '_{}_req_token_'.format(self.name)
         sid = session.pop(key, None)
         if not sid:
@@ -167,14 +161,11 @@ class RemoteApp(OAuthClient):
         self.cache.delete(sid)
         return token
 
-    def request_token_setter(self, token):
+    def _request_token_setter(self, token):
         key = '_{}_req_token_'.format(self.name)
         sid = uuid.uuid4().hex
         session[key] = sid
         self.cache.set(sid, token)
-
-    def token_updater(self, token):
-        self.token_model.update_token(self.name, token)
 
     def authorize_access_token(self):
         """Authorize access token."""

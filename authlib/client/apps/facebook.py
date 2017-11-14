@@ -5,6 +5,7 @@ from .base import AppFactory
 
 
 def facebook_compliance_fix(session):
+    """Compliance fix for Facebook."""
 
     def _compliance_fix(r):
         # if Facebook claims to be sending us json, let's trust them.

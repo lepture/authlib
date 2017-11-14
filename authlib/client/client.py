@@ -52,7 +52,7 @@ class OAuthClient(object):
                  access_token_url=None, access_token_params=None,
                  refresh_token_url=None, refresh_token_params=None,
                  authorize_url=None, api_base_url=None,
-                 client_kwargs=None, **kwargs):
+                 client_kwargs=None, compliance_fix=None, **kwargs):
         self.client_key = client_key
         self.client_secret = client_secret
         self.request_token_url = request_token_url
@@ -64,7 +64,7 @@ class OAuthClient(object):
         self.authorize_url = authorize_url
         self.api_base_url = api_base_url
         self.client_kwargs = client_kwargs or {}
-        self.compliance_fix = None
+        self.compliance_fix = compliance_fix
 
         self._kwargs = kwargs
         self._sess = None
@@ -208,7 +208,7 @@ class OAuthClient(object):
             token = OAuth2Token(token)
         self.session.token = token
 
-    def _get_access_token(self):
+    def get_token(self):
         func = self._hooks['access_token_getter']
         assert callable(func), 'missing access_token_getter'
         rv = func()
@@ -219,8 +219,10 @@ class OAuthClient(object):
     def request(self, method, url, **kwargs):
         if self.api_base_url and not url.startswith(('https://', 'http://')):
             url = urlparse.urljoin(self.api_base_url, url)
+        if kwargs.get('withhold_token'):
+            return self.session.request(method, url, **kwargs)
         if not self.session.token:
-            self.set_token(self._get_access_token())
+            self.set_token(self.get_token())
         return self.session.request(method, url, **kwargs)
 
     def get(self, url, **kwargs):
