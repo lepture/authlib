@@ -139,9 +139,34 @@ You need to register this **TokenModel** in the registry::
 
     oauth = OAuth(app, token_model=MyTokenModel)
 
-OAuth 1 & OAuth 2
-~~~~~~~~~~~~~~~~~
+Implement the Server
+~~~~~~~~~~~~~~~~~~~~
 
+Now it's time to make everything works. We need routes for log in and
+authorization::
+
+    from flask import Blueprint
+
+    bp = Blueprint(__name__, 'auth')
+
+    @bp.route('/login')
+    def login():
+        callback_uri = url_for('.authorize', _external=True)
+        return oauth.twitter.authorize_redirect(callback_uri)
+
+    @bp.route('/authorize')
+    def authorize():
+        token = oauth.twitter.authorize_access_token()
+        # this is a pseudo method, you need to implement it yourself
+        MyTokenModel.save(token)
+        return redirect('/profile')
+
+The only methods you need to call are :meth:`~RemoteApp.authorize_redirect`
+and :meth:`~RemoteApp.authorize_access_token`. When you have obtained access
+token, make requests with your remote app::
+
+    >>> resp = oauth.twitter.get('account/verify_credentials.json')
+    >>> print(resp.json())
 
 Django
 ------
@@ -151,3 +176,26 @@ Django
 
 Compliance Fix
 --------------
+
+The :class:`RemoteApp` is a subclass of :class:`~authlib.client.OAuthClient`,
+they share the same logic for compliance fix. Construct a method to fix
+requests session as in :ref:`compliance_fix_mixed`::
+
+    def compliance_fix(session):
+
+        def fix_protected_request(url, headers, data):
+            # do something
+            return url, headers, data
+
+        session.register_compliance_hook(
+            'protected_request', fix_protected_request)
+
+When :meth:`OAuth.register` a remote app, pass it in the parameters::
+
+    oauth.register('twitter', {
+        'client_key': '...',
+        'client_secret': '...',
+        ...,
+        'compliance_fix': compliance_fix,
+        ...
+    })

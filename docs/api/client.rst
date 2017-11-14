@@ -27,7 +27,11 @@ Flask Registry and RemoteApp
    :members:
 
 .. autoclass:: RemoteApp
-   :members:
+   :members: authorize_access_token
+
+   .. method:: authorize_redirect(callback_uri=None, **kwargs)
+
+      Redirect to authorization server.
 
 
 Django Registry and RemoteApp

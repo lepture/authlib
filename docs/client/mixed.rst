@@ -155,3 +155,47 @@ token now::
     params = parse_response_url_qs()
     token = client.fetch_access_token(callback_uri, **params)
     save_token_to_db(token)
+
+.. _compliance_fix_mixed:
+
+Compliance Fix
+--------------
+
+Since many OAuth 2 providers are not following standard strictly, we need to
+fix them. It has been introduced in :ref:`compliance_fix_oauth2`.
+
+For OAuthClient, we can register our hooks one by one, with
+:meth:`OAuth2Session.register_compliance_hook`::
+
+    client.session.register_compliance_hook('protected_request', func)
+
+However, there is a shortcut attribute for it. You need to construct a method
+which takes ``session`` as the parameter::
+
+    def compliance_fix(session):
+
+        def fix_protected_request(url, headers, data):
+            # do something
+            return url, headers, data
+
+        def fix_access_token_response(response):
+            # patch response
+            return response
+
+        session.register_compliance_hook(
+            'protected_request', fix_protected_request)
+        session.register_compliance_hook(
+            'access_token_response', fix_access_token_response)
+        # register other hooks
+
+Later, when you initialized **OAuthClient**, pass it to the client parameters::
+
+    client = OAuthClient(
+        client_key='...',
+        client_secret='...',
+        ...,
+        compliance_fix=compliance_fix,
+        ...
+    )
+
+It will automatically patch the requests session for OAuth 2.

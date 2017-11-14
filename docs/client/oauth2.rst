@@ -107,6 +107,8 @@ ourselves::
     >>> account_url = 'https://api.github.com/user'
     >>> resp = session.get(account_url)
 
+.. _compliance_fix_oauth2:
+
 Compliance Fix for non Standard
 -------------------------------
 
