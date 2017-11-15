@@ -38,8 +38,8 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
 
-
 html_theme = 'sphinx_typlog_theme'
+html_favicon = 'favicon.ico'
 html_theme_path = [sphinx_typlog_theme.get_path()]
 html_theme_options = {
     'logo': 'authlib.png',
@@ -51,6 +51,11 @@ html_theme_options = {
     'description': 'A ready to use authentication library.',
     'github_user': 'lepture',
     'github_repo': 'authlib',
+    'analytics_id': 'UA-34098939-7',
+    'meta_html': (
+        '<link rel="apple-touch-icon" sizes="180x180" '
+        'href="//authlib.org/apple-touch-icon.png">'
+    )
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,

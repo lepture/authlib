@@ -1,2 +1,2 @@
 -r requirements.txt
-sphinx_typlog_theme
+sphinx-typlog-theme==0.1.1
