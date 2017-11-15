@@ -1,5 +1,7 @@
 import os
 import sys
+import sphinx_typlog_theme
+
 sys.path.insert(0, os.path.abspath('..'))
 
 extensions = ['sphinx.ext.autodoc']
@@ -38,6 +40,7 @@ pygments_style = 'sphinx'
 
 
 html_theme = 'sphinx_typlog_theme'
+html_theme_path = [sphinx_typlog_theme.get_path()]
 html_theme_options = {
     'logo': 'authlib.png',
     'color': '#3E7FCB',
