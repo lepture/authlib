@@ -171,7 +171,9 @@ token, make requests with your remote app::
 Django
 ------
 
-(Under Construction)
+.. admonition:: For Your Information
+
+   Django integration will be implemented in Version 0.2.
 
 
 Compliance Fix

@@ -6,3 +6,5 @@ The OAuth 1.0 Protocol
 This section contains the generic implementation of RFC5849_.
 
 .. _RFC5849: https://tools.ietf.org/html/rfc5849
+
+.. note:: This documentation will be finished in the future.

@@ -104,6 +104,8 @@ this part of the documentation is for you.
 Get Updates
 -----------
 
-Stay tuned with Authlib, here is a Newsletter for you:
+Stay tuned with Authlib, here is a Newsletter for you.
 
-https://tinyletter.com/authlib
+.. admonition:: Subscribe the Newsletter
+
+   Here is a NEWSLETTER for you: https://tinyletter.com/authlib

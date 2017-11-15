@@ -37,4 +37,6 @@ Flask Registry and RemoteApp
 Django Registry and RemoteApp
 -----------------------------
 
-(Under construction)
+.. admonition:: For Your Information
+
+   Django integration will be implemented in Version 0.2.

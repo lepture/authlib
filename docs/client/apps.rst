@@ -7,6 +7,8 @@ There are built-in configuration for famous services. Import them and register
 them to frameworks registry. If you haven't read :ref:`client-frameworks`,
 head over back to that section.
 
+.. warning:: This is a preview version, the API may change from time to time.
+
 Twitter
 -------
 
