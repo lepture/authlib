@@ -1,0 +1,20 @@
+language: python
+sudo: false
+cache: pip
+
+python:
+  - 2.7
+  - 3.5
+  - 3.6
+
+env:
+  - TOXENV=py
+
+install:
+  - pip install -U setuptools
+  - pip install tox
+
+script: tox
+
+notifications:
+  email: false

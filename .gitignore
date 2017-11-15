@@ -11,7 +11,8 @@ parts
 .DS_Store
 .installed.cfg
 docs/_build
-cover/
+htmlcov/
 venv/
 .tox
+.coverage*
 *.egg
