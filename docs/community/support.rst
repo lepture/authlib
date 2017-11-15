@@ -16,7 +16,7 @@ Twitter
 -------
 
 If your StackOverflow question is not answered for a long time, please
-ping me at Twitter *@lepture*.
+ping me at Twitter `@lepture <https://twitter.com/lepture>`_.
 
 GitHub Issues
 -------------
