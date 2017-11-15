@@ -37,8 +37,18 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 pygments_style = 'sphinx'
 
 
-# html_theme = 'sphinx_typlog_theme'
-# html_theme_options = {}
+html_theme = 'sphinx_typlog_theme'
+html_theme_options = {
+    'logo': 'authlib.png',
+    'color': '#3E7FCB',
+    'navs': [
+        {'url': 'https://authlib.org/', 'title': 'Homepage'},
+        {'url': 'https://github.com/lepture/authlib', 'title': 'GitHub'},
+    ],
+    'description': 'A ready to use authentication library.',
+    'github_user': 'lepture',
+    'github_repo': 'authlib',
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -47,11 +57,10 @@ html_static_path = ['_static']
 
 html_sidebars = {
     '**': [
-        'about.html',
+        'project.html',
         'localtoc.html',
         'relations.html',
         'searchbox.html',
-        'donate.html',
     ]
 }
 

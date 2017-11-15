@@ -8,7 +8,7 @@ interested in contributing to Authlib, there are few things you need to know:
    with respect.
 2. Your contribution may be rejected, but don't despair. It's just that this
    certain pull request doesn't fit Authlib. Be brave for a next contribution.
-3. Some issues will be labeled as **newbie-friendly**, if you're new to Authlib,
+3. Some issues will be labeled as **newbie friendly**, if you're new to Authlib,
    you may find these issues are a good start for contribution.
 
 Bug Reports
