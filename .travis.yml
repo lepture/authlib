@@ -9,7 +9,7 @@ python:
   - pypy
 
 env:
-  - TOXENV=py
+  - TOXENV=py,codecov
 
 install:
   - pip install -U setuptools
