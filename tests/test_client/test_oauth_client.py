@@ -1,9 +1,8 @@
 from __future__ import unicode_literals, print_function
-import mock
 import unittest
-import requests
 from authlib.common.urls import quote
 from authlib.client import OAuthClient
+from ..client_base import mock_json_response, mock_text_response
 
 
 class OAuthClientTest(unittest.TestCase):
@@ -22,7 +21,7 @@ class OAuthClientTest(unittest.TestCase):
             request_token_url='https://a.com/req',
             authorize_url='https://a.com/auth'
         )
-        client.session.send = self.fake_body('oauth_token=foo')
+        client.session.send = mock_text_response('oauth_token=foo')
         client.register_hook('authorize_redirect', verify_oauth1_redirect)
         client.register_hook('request_token_setter', request_token_setter)
         client.authorize_redirect('https://b.com/bar')
@@ -61,7 +60,7 @@ class OAuthClientTest(unittest.TestCase):
             return {'oauth_token': 'req'}
 
         client.register_hook('request_token_getter', request_token_getter)
-        client.session.send = self.fake_body('oauth_token=foo')
+        client.session.send = mock_text_response('oauth_token=foo')
         resp = client.fetch_access_token(oauth_verifier='bar')
         self.assertEqual(resp['oauth_token'], 'foo')
 
@@ -77,22 +76,7 @@ class OAuthClientTest(unittest.TestCase):
         }
 
         client = OAuthClient(client_id='foo', access_token_url=url)
-        client.session.send = self.fake_token(token)
+        client.session.send = mock_json_response(token)
         self.assertEqual(client.fetch_access_token(), token)
         self.assertEqual(client.fetch_access_token(url), token)
 
-    def fake_token(self, token):
-        def fake_send(r, **kwargs):
-            resp = mock.MagicMock()
-            resp.json = lambda: token
-            return resp
-        return fake_send
-
-    def fake_body(self, body, status_code=200):
-        def fake_send(r, **kwargs):
-            resp = mock.MagicMock(spec=requests.Response)
-            resp.cookies = []
-            resp.text = body
-            resp.status_code = status_code
-            return resp
-        return fake_send

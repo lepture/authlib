@@ -253,10 +253,13 @@ class OAuth2Session(Session):
 
         .. _`RFC7009`: https://tools.ietf.org/html/rfc7009
         """
+        if body is None:
+            body = ''
+
         data, headers = prepare_revoke_token_request(
             token, token_type_hint, body, headers)
 
-        for hook in self.compliance_hook['protected_request']:
+        for hook in self.compliance_hook['revoke_token_request']:
             url, headers, data = hook(url, headers, data)
 
         if auth is None:

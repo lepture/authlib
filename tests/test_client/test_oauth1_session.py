@@ -10,8 +10,19 @@ from authlib.specs.rfc5849 import (
     SIGNATURE_TYPE_BODY,
     SIGNATURE_TYPE_QUERY,
 )
+from authlib.specs.rfc5849.util import escape
 from authlib.common.encoding import to_unicode, unicode_type
 from authlib.client import OAuth1Session, OAuthException
+
+
+def mock_response(body, status_code=200):
+    def fake_send(r, **kwargs):
+        resp = mock.MagicMock(spec=requests.Response)
+        resp.cookies = []
+        resp.text = body
+        resp.status_code = status_code
+        return resp
+    return fake_send
 
 
 TEST_RSA_KEY = (
@@ -148,12 +159,36 @@ class OAuth1SessionTest(unittest.TestCase):
         auth.send = self.verify_signature(signature)
         auth.post('https://i.b?cjk=%E5%95%A6%E5%95%A6')
 
+    def test_callback_uri(self):
+        sess = OAuth1Session('foo')
+        self.assertIsNone(sess.callback_uri)
+        url = 'https://i.b'
+        sess.callback_uri = url
+        self.assertEqual(sess.callback_uri, url)
+
+    def test_set_token(self):
+        sess = OAuth1Session('foo')
+        try:
+            sess.token = {}
+        except OAuthException as exc:
+            self.assertEqual(exc.type, 'token_missing')
+
+        sess.token = {'oauth_token': 'a', 'oauth_token_secret': 'b'}
+        self.assertIsNone(sess.token['oauth_verifier'])
+        sess.token = {'oauth_token': 'a', 'oauth_verifier': 'c'}
+        self.assertEqual(sess.token['oauth_token_secret'], 'b')
+        self.assertEqual(sess.token['oauth_verifier'], 'c')
+
     def test_authorization_url(self):
         auth = OAuth1Session('foo')
         url = 'https://example.comm/authorize'
         token = 'asluif023sf'
         auth_url = auth.authorization_url(url, request_token=token)
         self.assertEqual(auth_url, url + '?oauth_token=' + token)
+        callback_uri = 'https://c.b'
+        auth = OAuth1Session('foo', callback_uri=callback_uri)
+        auth_url = auth.authorization_url(url, request_token=token)
+        self.assertIn(escape(callback_uri), auth_url)
 
     def test_parse_response_url(self):
         url = 'https://i.b/callback?oauth_token=foo&oauth_verifier=bar'
@@ -167,16 +202,21 @@ class OAuth1SessionTest(unittest.TestCase):
 
     def test_fetch_request_token(self):
         auth = OAuth1Session('foo')
-        auth.send = self.fake_body('oauth_token=foo')
+        auth.send = mock_response('oauth_token=foo')
         resp = auth.fetch_request_token('https://example.com/token')
         self.assertEqual(resp['oauth_token'], 'foo')
         for k, v in resp.items():
             self.assertTrue(isinstance(k, unicode_type))
             self.assertTrue(isinstance(v, unicode_type))
 
+        resp = auth.fetch_request_token('https://example.com/token', realm='A')
+        self.assertEqual(resp['oauth_token'], 'foo')
+        resp = auth.fetch_request_token('https://example.com/token', realm=['A', 'B'])
+        self.assertEqual(resp['oauth_token'], 'foo')
+
     def test_fetch_request_token_with_optional_arguments(self):
         auth = OAuth1Session('foo')
-        auth.send = self.fake_body('oauth_token=foo')
+        auth.send = mock_response('oauth_token=foo')
         resp = auth.fetch_request_token('https://example.com/token',
                                         verify=False, stream=True)
         self.assertEqual(resp['oauth_token'], 'foo')
@@ -186,16 +226,22 @@ class OAuth1SessionTest(unittest.TestCase):
 
     def test_fetch_access_token(self):
         auth = OAuth1Session('foo', verifier='bar')
-        auth.send = self.fake_body('oauth_token=foo')
+        auth.send = mock_response('oauth_token=foo')
         resp = auth.fetch_access_token('https://example.com/token')
         self.assertEqual(resp['oauth_token'], 'foo')
         for k, v in resp.items():
             self.assertTrue(isinstance(k, unicode_type))
             self.assertTrue(isinstance(v, unicode_type))
 
+        auth = OAuth1Session('foo')
+        auth.send = mock_response('oauth_token=foo')
+        resp = auth.fetch_access_token(
+            'https://example.com/token', verifier='bar')
+        self.assertEqual(resp['oauth_token'], 'foo')
+
     def test_fetch_access_token_with_optional_arguments(self):
         auth = OAuth1Session('foo', verifier='bar')
-        auth.send = self.fake_body('oauth_token=foo')
+        auth.send = mock_response('oauth_token=foo')
         resp = auth.fetch_access_token('https://example.com/token',
                                        verify=False, stream=True)
         self.assertEqual(resp['oauth_token'], 'foo')
@@ -207,7 +253,7 @@ class OAuth1SessionTest(unittest.TestCase):
         """Assert that an error is being raised whenever there's no verifier
         passed in to the client.
         """
-        auth.send = self.fake_body('oauth_token=foo')
+        auth.send = mock_response('oauth_token=foo')
 
         # Use a try-except block so that we can assert on the exception message
         # being raised and also keep the Python2.6 compatibility where
@@ -219,12 +265,12 @@ class OAuth1SessionTest(unittest.TestCase):
 
     def test_fetch_token_invalid_response(self):
         auth = OAuth1Session('foo')
-        auth.send = self.fake_body('not valid urlencoded response!')
+        auth.send = mock_response('not valid urlencoded response!')
         self.assertRaises(
             ValueError, auth.fetch_request_token, 'https://example.com/token')
 
         for code in (400, 401, 403):
-            auth.send = self.fake_body('valid=response', code)
+            auth.send = mock_response('valid=response', code)
             # use try/catch rather than self.assertRaises, so we can
             # assert on the properties of the exception
             try:
@@ -249,14 +295,5 @@ class OAuth1SessionTest(unittest.TestCase):
             self.assertEqual(auth_header, signature)
             resp = mock.MagicMock(spec=requests.Response)
             resp.cookies = []
-            return resp
-        return fake_send
-
-    def fake_body(self, body, status_code=200):
-        def fake_send(r, **kwargs):
-            resp = mock.MagicMock(spec=requests.Response)
-            resp.cookies = []
-            resp.text = body
-            resp.status_code = status_code
             return resp
         return fake_send

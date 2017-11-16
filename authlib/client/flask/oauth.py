@@ -1,5 +1,6 @@
 import uuid
 from flask import request, redirect, session
+from werkzeug.local import LocalProxy
 from authlib.common.flask import Cache
 from ..errors import OAuthException
 from ..client import OAuthClient
@@ -38,7 +39,8 @@ class OAuth(object):
             oauth.init_app(app)
         """
         self.app = app
-        self.cache = Cache(app, config_prefix='OAUTH_CLIENT')
+        if 'OAUTH_CLIENT_CACHE_TYPE' in app.config:
+            self.cache = Cache(app, config_prefix='OAUTH_CLIENT')
         app.extensions = getattr(app, 'extensions', {})
         app.extensions['authlib.client.flask'] = self
 
@@ -88,6 +90,7 @@ class OAuth(object):
         self._registry[name] = kwargs
         if self.app:
             return self.create_client(name)
+        return LocalProxy(lambda: self.create_client(name))
 
     def __getattr__(self, key):
         try:
@@ -172,6 +175,7 @@ class RemoteApp(OAuthClient):
         if not self.request_token_url:
             state_key = '_{}_state_'.format(self.name)
             state = session.pop(state_key, None)
+            print(state, request.args)
             if state != request.args.get('state'):
                 raise OAuthException(
                     'State not equal in request and response.')
