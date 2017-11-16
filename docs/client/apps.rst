@@ -1,13 +1,13 @@
-.. _client-apps:
+.. _client_apps:
 
 Ready to Use Apps
 =================
 
 There are built-in configuration for famous services. Import them and register
-them to frameworks registry. If you haven't read :ref:`client-frameworks`,
+them to frameworks registry. If you haven't read :ref:`client_frameworks`,
 head over back to that section.
 
-.. warning:: This is a preview version, the API may change from time to time.
+.. warning:: This is a preview version, the API will be stable in version 0.2.
 
 Twitter
 -------

@@ -37,6 +37,9 @@ Commercial License
 Authlib is licensed under LGPLv3, if this license doesn't fit your company,
 consider to purchase a commercial license.
 
+Find more information on
+https://authlib.org/support#commercial-license
+
 Commercial Support
 ------------------
 
@@ -44,5 +47,5 @@ I do provide commercial support on Authlib. If you need personal help or
 consulting on your project, please send an email with a brief of what you
 need to <me@lepture.com>, I'll decide whether I can take the job.
 
-Note that work must be Authlib related. My contracting price is $250/hour
-or $1000/day. 1 day usually means 6 hours.
+Note that work must be Authlib related. Find more information on
+https://authlib.org/support#consulting-and-supports

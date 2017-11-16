@@ -1,10 +1,12 @@
-.. _client-frameworks:
+.. _client_frameworks:
 
 Integrated Frameworks
 =====================
 
 Authlib has built-in integrated frameworks support, which makes
 it much easier to develop with your favorite framework.
+
+.. _flask_client:
 
 Flask
 -----

@@ -1,3 +1,5 @@
+.. _oauth_1_session:
+
 OAuth 1 Session
 ===============
 

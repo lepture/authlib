@@ -100,6 +100,7 @@ this part of the documentation is for you.
 
    api/client
    api/misc
+   changelog
 
 Get Updates
 -----------
