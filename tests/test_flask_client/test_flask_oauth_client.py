@@ -4,17 +4,11 @@ import unittest
 from flask import Flask, session
 from authlib.client import OAuthException
 from authlib.client.flask import OAuth
-from ..client_base import mock_json_response, mock_text_response
-
-
-def get_bearer_token():
-    return {
-        'token_type': 'Bearer',
-        'access_token': 'a',
-        'refresh_token': 'b',
-        'expires_in': '3600',
-        'expires_at': int(time.time()) + 3600,
-    }
+from ..client_base import (
+    mock_json_response,
+    mock_text_response,
+    get_bearer_token
+)
 
 
 class OAuthClientTest(unittest.TestCase):

@@ -1,8 +1,12 @@
 from __future__ import unicode_literals, print_function
 import unittest
 from authlib.common.urls import quote
-from authlib.client import OAuthClient
-from ..client_base import mock_json_response, mock_text_response
+from authlib.client import OAuthClient, OAuthException
+from ..client_base import (
+    mock_json_response,
+    mock_text_response,
+    get_bearer_token,
+)
 
 
 class OAuthClientTest(unittest.TestCase):
@@ -66,17 +70,36 @@ class OAuthClientTest(unittest.TestCase):
 
     def test_oauth2_fetch_access_token(self):
         url = 'https://example.com/token'
-
-        token = {
-            'token_type': 'Bearer',
-            'access_token': 'asdfoiw37850234lkjsdfsdf',
-            'refresh_token': 'sldvafkjw34509s8dfsdf',
-            'expires_in': '3600',
-            'expires_at': 3600,
-        }
-
+        token = get_bearer_token()
         client = OAuthClient(client_id='foo', access_token_url=url)
         client.session.send = mock_json_response(token)
         self.assertEqual(client.fetch_access_token(), token)
         self.assertEqual(client.fetch_access_token(url), token)
 
+    def test_request_with_token_getter(self):
+        client = OAuthClient(client_id='foo')
+        client.session.send = mock_json_response({'name': 'a'})
+        try:
+            client.get('https://i.b/user')
+        except AssertionError as exc:
+            self.assertIn('missing', str(exc))
+
+        client.register_hook('access_token_getter', lambda: None)
+        try:
+            client.get('https://i.b/user')
+        except OAuthException as exc:
+            self.assertEqual('token_missing', exc.type)
+
+        client.register_hook('access_token_getter', get_bearer_token)
+        resp = client.get('https://i.b/user')
+        self.assertEqual(resp.json()['name'], 'a')
+        resp = client.post('https://i.b/user')
+        self.assertEqual(resp.json()['name'], 'a')
+        resp = client.put('https://i.b/user')
+        self.assertEqual(resp.json()['name'], 'a')
+        resp = client.delete('https://i.b/user')
+        self.assertEqual(resp.json()['name'], 'a')
+
+        client.api_base_url = 'https://i.b'
+        resp = client.get('user')
+        self.assertEqual(resp.json()['name'], 'a')

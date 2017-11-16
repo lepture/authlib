@@ -36,17 +36,44 @@ class OAuth2SessionTest(TestCase):
         }
         self.client_id = 'foo'
 
-    def test_add_token(self):
+    def test_add_token_to_header(self):
         token = 'Bearer ' + self.token['access_token']
 
         def verifier(r, **kwargs):
             auth_header = r.headers.get(str('Authorization'), None)
             self.assertEqual(auth_header, token)
             resp = mock.MagicMock()
-            resp.cookes = []
             return resp
 
         sess = OAuth2Session(client_id=self.client_id, token=self.token)
+        sess.send = verifier
+        sess.get('https://i.b')
+
+    def test_add_token_to_body(self):
+        def verifier(r, **kwargs):
+            self.assertIn(self.token['access_token'], r.body)
+            resp = mock.MagicMock()
+            return resp
+
+        sess = OAuth2Session(
+            client_id=self.client_id,
+            token=self.token,
+            token_placement='body'
+        )
+        sess.send = verifier
+        sess.post('https://i.b')
+
+    def test_add_token_to_uri(self):
+        def verifier(r, **kwargs):
+            self.assertIn(self.token['access_token'], r.url)
+            resp = mock.MagicMock()
+            return resp
+
+        sess = OAuth2Session(
+            client_id=self.client_id,
+            token=self.token,
+            token_placement='uri'
+        )
         sess.send = verifier
         sess.get('https://i.b')
 
