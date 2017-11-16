@@ -137,7 +137,7 @@ class Cache(object):
         :param keys: The function accepts multiple keys as positional
                      arguments.
         """
-        return self.cache.get_many(*keys)
+        return [self.cache.get(k) for k in keys]
 
     def get_dict(self, *keys):
         """Like :meth:`get_many` but return a dict::
