@@ -7,7 +7,7 @@ def twitter_fetch_user(client):
         'skip_status': True,
         'include_email': True
     }
-    resp = client.get(url, params)
+    resp = client.get(url, params=params)
     profile = resp.json()
     uid = profile.get('id')
     username = profile.get('screen_name')

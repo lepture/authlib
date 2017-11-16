@@ -1,7 +1,7 @@
 from __future__ import unicode_literals, print_function
 import mock
-import unittest
 import requests
+from unittest import TestCase
 from io import StringIO
 
 from authlib.specs.rfc5849 import (
@@ -13,16 +13,7 @@ from authlib.specs.rfc5849 import (
 from authlib.specs.rfc5849.util import escape
 from authlib.common.encoding import to_unicode, unicode_type
 from authlib.client import OAuth1Session, OAuthException
-
-
-def mock_response(body, status_code=200):
-    def fake_send(r, **kwargs):
-        resp = mock.MagicMock(spec=requests.Response)
-        resp.cookies = []
-        resp.text = body
-        resp.status_code = status_code
-        return resp
-    return fake_send
+from ..client_base import mock_text_response
 
 
 TEST_RSA_KEY = (
@@ -65,7 +56,7 @@ TEST_RSA_OAUTH_SIGNATURE = (
 )
 
 
-class OAuth1SessionTest(unittest.TestCase):
+class OAuth1SessionTest(TestCase):
 
     def test_signature_types(self):
         def verify_signature(getter):
@@ -202,7 +193,7 @@ class OAuth1SessionTest(unittest.TestCase):
 
     def test_fetch_request_token(self):
         auth = OAuth1Session('foo')
-        auth.send = mock_response('oauth_token=foo')
+        auth.send = mock_text_response('oauth_token=foo')
         resp = auth.fetch_request_token('https://example.com/token')
         self.assertEqual(resp['oauth_token'], 'foo')
         for k, v in resp.items():
@@ -216,7 +207,7 @@ class OAuth1SessionTest(unittest.TestCase):
 
     def test_fetch_request_token_with_optional_arguments(self):
         auth = OAuth1Session('foo')
-        auth.send = mock_response('oauth_token=foo')
+        auth.send = mock_text_response('oauth_token=foo')
         resp = auth.fetch_request_token('https://example.com/token',
                                         verify=False, stream=True)
         self.assertEqual(resp['oauth_token'], 'foo')
@@ -226,7 +217,7 @@ class OAuth1SessionTest(unittest.TestCase):
 
     def test_fetch_access_token(self):
         auth = OAuth1Session('foo', verifier='bar')
-        auth.send = mock_response('oauth_token=foo')
+        auth.send = mock_text_response('oauth_token=foo')
         resp = auth.fetch_access_token('https://example.com/token')
         self.assertEqual(resp['oauth_token'], 'foo')
         for k, v in resp.items():
@@ -234,14 +225,14 @@ class OAuth1SessionTest(unittest.TestCase):
             self.assertTrue(isinstance(v, unicode_type))
 
         auth = OAuth1Session('foo')
-        auth.send = mock_response('oauth_token=foo')
+        auth.send = mock_text_response('oauth_token=foo')
         resp = auth.fetch_access_token(
             'https://example.com/token', verifier='bar')
         self.assertEqual(resp['oauth_token'], 'foo')
 
     def test_fetch_access_token_with_optional_arguments(self):
         auth = OAuth1Session('foo', verifier='bar')
-        auth.send = mock_response('oauth_token=foo')
+        auth.send = mock_text_response('oauth_token=foo')
         resp = auth.fetch_access_token('https://example.com/token',
                                        verify=False, stream=True)
         self.assertEqual(resp['oauth_token'], 'foo')
@@ -253,7 +244,7 @@ class OAuth1SessionTest(unittest.TestCase):
         """Assert that an error is being raised whenever there's no verifier
         passed in to the client.
         """
-        auth.send = mock_response('oauth_token=foo')
+        auth.send = mock_text_response('oauth_token=foo')
 
         # Use a try-except block so that we can assert on the exception message
         # being raised and also keep the Python2.6 compatibility where
@@ -265,12 +256,12 @@ class OAuth1SessionTest(unittest.TestCase):
 
     def test_fetch_token_invalid_response(self):
         auth = OAuth1Session('foo')
-        auth.send = mock_response('not valid urlencoded response!')
+        auth.send = mock_text_response('not valid urlencoded response!')
         self.assertRaises(
             ValueError, auth.fetch_request_token, 'https://example.com/token')
 
         for code in (400, 401, 403):
-            auth.send = mock_response('valid=response', code)
+            auth.send = mock_text_response('valid=response', code)
             # use try/catch rather than self.assertRaises, so we can
             # assert on the properties of the exception
             try:

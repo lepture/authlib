@@ -29,8 +29,8 @@ class OAuth2SessionTest(TestCase):
     def setUp(self):
         self.token = {
             'token_type': 'Bearer',
-            'access_token': 'asdfoiw37850234lkjsdfsdf',
-            'refresh_token': 'sldvafkjw34509s8dfsdf',
+            'access_token': 'a',
+            'refresh_token': 'b',
             'expires_in': '3600',
             'expires_at': fake_time + 3600,
         }

@@ -1,6 +1,5 @@
 from __future__ import unicode_literals, print_function
-import time
-import unittest
+from unittest import TestCase
 from flask import Flask, session
 from authlib.client import OAuthException
 from authlib.client.flask import OAuth
@@ -11,7 +10,7 @@ from ..client_base import (
 )
 
 
-class OAuthClientTest(unittest.TestCase):
+class FlaskOAuthTest(TestCase):
     def test_register_remote_app(self):
         app = Flask(__name__)
         oauth = OAuth(app)
@@ -42,10 +41,11 @@ class OAuthClientTest(unittest.TestCase):
             'DEV_CLIENT_SECRET': 'dev',
         })
         oauth = OAuth()
-        oauth.register('dev')
+        remote = oauth.register('dev')
         self.assertRaises(RuntimeError, lambda: oauth.dev.client_key)
         oauth.init_app(app)
         self.assertEqual(oauth.dev.client_key, 'dev')
+        self.assertEqual(remote.client_key, 'dev')
 
     def test_register_oauth1_remote_app(self):
         app = Flask(__name__)
