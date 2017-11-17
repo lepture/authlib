@@ -1,2 +1,4 @@
-include LONG_DESC.rst
+include README.rst
 include LICENSE
+prune docs*
+prune tests*

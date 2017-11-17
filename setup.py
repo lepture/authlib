@@ -2,7 +2,8 @@
 # -*- coding: utf-8 -*-
 
 
-from setuptools import setup
+from setuptools import setup, find_packages
+from authlib.consts import version, homepage
 
 rsa_require = ['cryptography', 'pyjwt>=1.0.0']
 flask_require = ['Flask']
@@ -16,19 +17,19 @@ def fread(filename):
 
 setup(
     name='Authlib',
-    version='0.1rc0',
+    version=version,
     author='Hsiaoming Yang',
     author_email='me@lepture.com',
-    url='',
-    packages=[],
+    url=homepage,
+    packages=find_packages(),
     description=(
         'A ready to use authentication library for '
-        'OAuth1, OAuth2 and more.'
+        'OAuth1, OAuth2, OpenID connect and more.'
     ),
     zip_safe=False,
     include_package_data=True,
     platforms='any',
-    long_description=fread('LONG_DESC.rst'),
+    long_description=fread('README.rst'),
     license='LGPLv3',
     install_requires=['requests'],
     extras_require={
@@ -37,7 +38,7 @@ setup(
         'django': django_require
     },
     classifiers=[
-        'Development Status :: 1 - Planning',
+        'Development Status :: 3 - Alpha',
         'Environment :: Console',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
