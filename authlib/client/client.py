@@ -4,6 +4,7 @@ from .oauth2 import OAuth2Session
 from .errors import OAuthException
 from ..specs.rfc6749 import OAuth2Token
 from ..common.urls import urlparse
+from ..consts import default_user_agent
 
 __all__ = ['OAuthClient']
 
@@ -201,6 +202,7 @@ class OAuthClient(object):
             # only OAuth2 has compliance_fix currently
             if self.compliance_fix:
                 self.compliance_fix(self._sess)
+        self._sess.headers['User-Agent'] = default_user_agent
         return self._sess
 
     def set_token(self, token):
