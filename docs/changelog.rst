@@ -7,7 +7,7 @@ Here you can see the full list of changes between each Authlib release.
 Version 0.1
 -----------
 
-**Release date not decided.**
+**Released on Nov 18, 2017.**
 
 This is an Alpha version for previewing. You can expect there are many
 features missing, however the client part works well enough. These APIs are
