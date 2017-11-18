@@ -1,4 +1,4 @@
-from .base import AppFactory
+from .base import AppFactory, User
 
 GOOGLE_JWK_URL = 'https://www.googleapis.com/oauth2/v3/certs'
 GOOGLE_JWK_SET = None
@@ -24,9 +24,20 @@ def google_revoke_token(client):
     return client.post(GOOGLE_AUTH_URL, params={'token': token})
 
 
+def google_fetch_user(client):
+    resp = client.get('userinfo')
+    profile = resp.json()
+    uid = profile.get('id')
+    username = None
+    name = profile.get('name')
+    email = profile.get('email')
+    return User(uid, username=username, name=name, email=email)
+
+
 google = AppFactory('google', {
     'api_base_url': 'https://www.googleapis.com/',
     'access_token_url': 'https://www.googleapis.com/oauth2/v4/token',
     'authorize_url': GOOGLE_AUTH_URL,
     'client_kwargs': {'scope': ['openid', 'email', 'profile']},
+    'fetch_user': google_fetch_user,
 }, "The OAuth app for Google API.")
