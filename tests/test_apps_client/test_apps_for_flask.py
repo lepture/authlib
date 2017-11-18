@@ -5,6 +5,7 @@ from authlib.client.apps import (
     twitter_fetch_user,
     dropbox_fetch_user,
     github_fetch_user,
+    google_fetch_user,
 )
 from ..client_base import mock_json_response
 
@@ -58,3 +59,19 @@ class OAuthAppsTest(TestCase):
         user = github_fetch_user(client)
         self.assertEqual(user.id, 1)
         self.assertEqual(user.username, 'lepture')
+        
+    def test_google_fetch_user(self):
+        client = OAuthClient(
+            'a', 'b',
+            api_base_url='https://google.com/api'
+        )
+        client.set_token({'access_token': 'a', 'token_type': 'bearer'})
+        client.session.send = mock_json_response({
+            'id': 1,
+            'name': 'Grey Li',
+            'email': 'a@b.c'
+        })
+        user = google_fetch_user(client)
+        self.assertEqual(user.id, 1)
+        self.assertEqual(user.name, 'Grey Li')
+        
