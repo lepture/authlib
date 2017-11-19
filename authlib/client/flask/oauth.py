@@ -5,7 +5,7 @@ from authlib.common.flask import Cache
 from ..errors import OAuthException
 from ..client import OAuthClient
 
-__all__ = ['OAuth']
+__all__ = ['OAuth', 'RemoteApp']
 
 
 class OAuth(object):
@@ -168,14 +168,13 @@ class RemoteApp(OAuthClient):
         key = '_{}_req_token_'.format(self.name)
         sid = uuid.uuid4().hex
         session[key] = sid
-        self.cache.set(sid, token)
+        self.cache.set(sid, token, timeout=600)
 
     def authorize_access_token(self):
         """Authorize access token."""
         if not self.request_token_url:
             state_key = '_{}_state_'.format(self.name)
             state = session.pop(state_key, None)
-            print(state, request.args)
             if state != request.args.get('state'):
                 raise OAuthException(
                     'State not equal in request and response.')
