@@ -126,19 +126,7 @@ class RemoteApp(OAuthClient):
         self.token_model = token_model
         super(RemoteApp, self).__init__(*args, **kwargs)
 
-        self.register_hook('authorize_redirect', self._redirect_hook)
-        self.register_hook('access_token_getter', self._access_token_getter)
-
-        if self.request_token_url:
-            self.register_hook(
-                'request_token_getter',
-                self._request_token_getter
-            )
-            self.register_hook(
-                'request_token_setter',
-                self._request_token_setter
-            )
-        elif self.client_kwargs.get('refresh_token_url'):
+        if self.client_kwargs.get('refresh_token_url'):
             self.client_kwargs['token_updater'] = lambda token:\
                 token_model.update_token(name, token)
 
@@ -150,9 +138,6 @@ class RemoteApp(OAuthClient):
             key = '_{}_state_'.format(self.name)
             session[key] = state
         return redirect(uri)
-
-    def _access_token_getter(self):
-        return self.token_model.fetch_token(self.name)
 
     def _request_token_getter(self):
         key = '_{}_req_token_'.format(self.name)
@@ -170,9 +155,40 @@ class RemoteApp(OAuthClient):
         session[key] = sid
         self.cache.set(sid, token, timeout=600)
 
+    def get_token(self):
+        return self.token_model.fetch_token(self.name)
+
+    def authorize_redirect(self, callback_uri=None, **kwargs):
+        """
+        :param callback_uri:
+        :param kwargs:
+        :return: A HTTP redirect response.
+        """
+        if callback_uri:
+            key = '_{}_callback_'.format(self.name)
+            session[key] = callback_uri
+
+        if self.request_token_url:
+            save_request_token = self._request_token_setter
+        else:
+            save_request_token = None
+
+        uri, state = self.generate_authorize_redirect(
+            callback_uri,
+            save_request_token,
+            **kwargs
+        )
+        if state:
+            key = '_{}_state_'.format(self.name)
+            session[key] = state
+        return redirect(uri)
+
     def authorize_access_token(self):
         """Authorize access token."""
-        if not self.request_token_url:
+        if self.request_token_url:
+            get_request_token = self._request_token_getter
+        else:
+            get_request_token = None
             state_key = '_{}_state_'.format(self.name)
             state = session.pop(state_key, None)
             if state != request.args.get('state'):
@@ -182,5 +198,8 @@ class RemoteApp(OAuthClient):
         cb_key = '_{}_callback_'.format(self.name)
         callback_uri = session.pop(cb_key, None)
         params = request.args.to_dict(flat=True)
-        token = self.fetch_access_token(callback_uri, **params)
-        return token
+        return self.fetch_access_token(
+            callback_uri,
+            get_request_token,
+            **params
+        )

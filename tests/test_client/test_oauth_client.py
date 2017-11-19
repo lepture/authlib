@@ -11,13 +11,8 @@ from ..client_base import (
 
 class OAuthClientTest(unittest.TestCase):
 
-    def test_oauth1_authorize_redirect(self):
-
-        def verify_oauth1_redirect(uri, callback_uri, state):
-            self.assertIsNone(state)
-            self.assertIn('foo', uri)
-
-        def request_token_setter(token):
+    def test_oauth1_generate_authorize_redirect(self):
+        def save_request_token(token):
             self.assertIn('oauth_token', token)
 
         client = OAuthClient(
@@ -26,32 +21,17 @@ class OAuthClientTest(unittest.TestCase):
             authorize_url='https://a.com/auth'
         )
         client.session.send = mock_text_response('oauth_token=foo')
-        client.register_hook('authorize_redirect', verify_oauth1_redirect)
-        client.register_hook('request_token_setter', request_token_setter)
-        client.authorize_redirect('https://b.com/bar')
+        uri, state = client.generate_authorize_redirect(
+            'https://b.com/bar', save_request_token)
+        self.assertIsNone(state)
+        self.assertIn('foo', uri)
 
-    def test_oauth2_authorize_redirect(self):
-
-        def verify_oauth2_redirect(uri, callback_uri, state):
-            self.assertIn(state, uri)
-            self.assertIn(quote(callback_uri, ''), uri)
-
+    def test_oauth2_generate_authorize_redirect(self):
+        callback_uri = 'https://b.com/red'
         client = OAuthClient('foo', authorize_url='https://a.com/auth')
-        client.register_hook('authorize_redirect', verify_oauth2_redirect)
-        client.authorize_redirect('https://b.com/red')
-
-    def test_authorize_redirect_errors(self):
-        client = OAuthClient('foo', authorize_url='https://a.com/auth')
-        self.assertRaises(AssertionError, client.authorize_redirect, '')
-
-        client = OAuthClient(
-            'foo',
-            request_token_url='https://a.com/req',
-            authorize_url='https://a.com/auth'
-        )
-
-        client.register_hook('authorize_redirect', lambda: 'ok')
-        self.assertRaises(AssertionError, client.authorize_redirect, '')
+        uri, state = client.generate_authorize_redirect(callback_uri)
+        self.assertIn(state, uri)
+        self.assertIn(quote(callback_uri, ''), uri)
 
     def test_oauth1_fetch_access_token(self):
         client = OAuthClient(
@@ -60,12 +40,12 @@ class OAuthClientTest(unittest.TestCase):
             access_token_url='https://example.com/token'
         )
 
-        def request_token_getter():
+        def get_request_token():
             return {'oauth_token': 'req'}
 
-        client.register_hook('request_token_getter', request_token_getter)
         client.session.send = mock_text_response('oauth_token=foo')
-        resp = client.fetch_access_token(oauth_verifier='bar')
+        resp = client.fetch_access_token(
+            get_request_token=get_request_token, oauth_verifier='bar')
         self.assertEqual(resp['oauth_token'], 'foo')
 
     def test_oauth2_fetch_access_token(self):
@@ -76,21 +56,25 @@ class OAuthClientTest(unittest.TestCase):
         self.assertEqual(client.fetch_access_token(), token)
         self.assertEqual(client.fetch_access_token(url), token)
 
-    def test_request_with_token_getter(self):
-        client = OAuthClient(client_id='foo')
-        client.session.send = mock_json_response({'name': 'a'})
-        try:
-            client.get('https://i.b/user')
-        except AssertionError as exc:
-            self.assertIn('missing', str(exc))
+    def test_request_without_token(self):
+        class MyOAuthClient(OAuthClient):
+            def get_token(self):
+                return None
 
-        client.register_hook('access_token_getter', lambda: None)
+        client = MyOAuthClient(client_id='foo')
+        client.session.send = mock_json_response({'name': 'a'})
         try:
             client.get('https://i.b/user')
         except OAuthException as exc:
             self.assertEqual('token_missing', exc.type)
 
-        client.register_hook('access_token_getter', get_bearer_token)
+    def test_request_with_token(self):
+        class MyOAuthClient(OAuthClient):
+            def get_token(self):
+                return get_bearer_token()
+
+        client = MyOAuthClient(client_id='foo')
+        client.session.send = mock_json_response({'name': 'a'})
         resp = client.get('https://i.b/user')
         self.assertEqual(resp.json()['name'], 'a')
         resp = client.post('https://i.b/user')

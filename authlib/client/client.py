@@ -70,61 +70,16 @@ class OAuthClient(object):
         self._kwargs = kwargs
         self._sess = None
 
-        self._hooks = {
-            'access_token_getter': None,
-            'request_token_getter': None,
-            'request_token_setter': None,
-            'authorize_redirect': None
-        }
-
-    def register_hook(self, hook_type, f):
-        """Register a hook for OAuthClient.
-
-        :param hook_type: Type name of the hook.
-        :param f: A function that will be bind with the given hook type.
-
-        Available hook types are:
-
-        * access_token_getter: fetch access token from database.
-        * request_token_getter: get the temporary request token (for OAuth 1).
-        * request_token_setter: the temporary request token (for OAuth 1).
-        * authorize_redirect: invoke to handle HTTP redirect.
-        """
-        if hook_type not in self._hooks:
-            raise ValueError('Hook type %s is not in %s.',
-                             hook_type, self._hooks)
-        self._hooks[hook_type] = f
-
-    def authorize_redirect(self, callback_uri=None, **kwargs):
-        """Generate the authorize redirect with the given
-        :meth:`authorize_redirect` hook.
+    def generate_authorize_redirect(
+            self, callback_uri=None, save_request_token=None, **kwargs):
+        """Generate the authorize redirect.
 
         :param callback_uri: Callback or redirect URI for authorization.
+        :param save_request_token: A function to save request token.
         :param kwargs: Extra parameters to include.
-        :return: A HTTP redirect response.
-
-        You need to :meth:`register_hook` a `authorize_redirect` hook, which
-        accepts three parameters::
-
-            def handle_authorize_redirect(url, callback_uri, state):
-                # this is a pseudo method, you need to construct it yourself
-                if callback_uri:
-                    # for later use
-                    session['callback_uri'] = callback_uri
-                if state:
-                    # for later security check
-                    session['state'] = state
-                return make_redirect_response(url, status_code=302)
-
-            client.register_hook('authorize_redirect', handle_authorize_redirect)
+        :return: (url, state)
         """
-        redirect = self._hooks['authorize_redirect']
-        assert callable(redirect), 'missing authorize_redirect'
-
         if self.request_token_url:
-            set_token = self._hooks['request_token_setter']
-            assert callable(set_token), 'missing request_token_setter'
-
             self.session.callback_uri = callback_uri
             params = {}
             if self.request_token_params:
@@ -133,7 +88,7 @@ class OAuthClient(object):
                 self.request_token_url, **params
             )
             # remember oauth_token, oauth_token_secret
-            set_token(token)
+            save_request_token(token)
             url = self.session.authorization_url(
                 self.authorize_url,  **kwargs)
             self.session.callback_uri = None
@@ -142,20 +97,19 @@ class OAuthClient(object):
             self.session.redirect_uri = callback_uri
             url, state = self.session.authorization_url(
                 self.authorize_url, **kwargs)
-        return redirect(url, callback_uri, state)
+        return url, state
 
-    def fetch_access_token(self, callback_uri=None, **params):
+    def fetch_access_token(
+            self, callback_uri=None, get_request_token=None, **params):
         """Fetch access token in one step.
 
         :param callback_uri: Callback or Redirect URI that is used in
                              previous :meth:`authorize_redirect`.
+        :param get_request_token: A function to get previous request token.
         :param params: Extra parameters to fetch access token.
         :return: A token dict.
         """
         if self.request_token_url:
-            get_request_token = self._hooks['request_token_getter']
-            assert callable(get_request_token), 'missing request_token_getter'
-
             self.session.callback_uri = callback_uri
             token = get_request_token()
             # merge token with verifier
@@ -206,17 +160,14 @@ class OAuthClient(object):
         return self._sess
 
     def set_token(self, token):
+        if token is None:
+            raise OAuthException('No token available', type='token_missing')
         if not self.request_token_url and isinstance(token, dict):
             token = OAuth2Token(token)
         self.session.token = token
 
     def get_token(self):
-        func = self._hooks['access_token_getter']
-        assert callable(func), 'missing access_token_getter'
-        rv = func()
-        if rv is None:
-            raise OAuthException('No token available', type='token_missing')
-        return rv
+        raise NotImplementedError()
 
     def request(self, method, url, **kwargs):
         if self.api_base_url and not url.startswith(('https://', 'http://')):

@@ -4,6 +4,18 @@ Changelog
 Here you can see the full list of changes between each Authlib release.
 
 
+Version 0.2
+-----------
+
+**Release date not decided**
+
+This is a Beta version for Clients. You would expect that the clients works
+well enough for daily use.
+
+- :class:`~authlib.client.OAuthClient` is refactored to be the base class for
+  Flask and Django.
+
+
 Version 0.1
 -----------
 

@@ -6,12 +6,22 @@ OAuthClient
 .. module:: authlib.client
 
 A mixed OAuth 1 and OAuth 2 client, one to control them both. With
-:class:`OAuthClient`, we make the authorization much similar. It is also the
+:class:`OAuthClient`, we make the authorization much similar. It is the
 base class for framework integrations.
 
 :class:`OAuthClient` will automatically detect whether it is OAuth 1 or
 OAuth 2 via its parameters. OAuth 1 has ``request_token_url``, while OAuth 2
 doesn't.
+
+To use **OAuthClient** for requesting user resources, you need to subclass it,
+and implement a :meth:`OAuthClient.get_token` method::
+
+    class MyOAuthClient(OAuthClient):
+        def get_token(self):
+            return get_current_user_token()
+
+.. note:: This ``OAuthClient`` is designed for framework integrations, you
+   won't use it in daily life.
 
 OAuth 1 Flow
 ------------
@@ -30,67 +40,34 @@ Configure an OAuth 1 client with :class:`OAuthClient`::
 There are other options that you could pass to the class. Please read the API
 documentation.
 
-Register Hooks
-~~~~~~~~~~~~~~
-
-For OAuth 1, we need to register four hooks:
-
-* request_token_setter
-* request_token_getter
-* authorize_redirect
-* access_token_getter
-
-**request_token_setter** is used for saving request token for later use::
-
-    def request_token_setter(token):
-        session['token'] = token
-
-    client.register_hook('request_token_setter', request_token_setter)
-
-**request_token_getter** is used to fetch the request token that we saved
-earlier::
-
-    def request_token_getter():
-        return session.pop('token', None)
-
-    client.register_hook('request_token_getter', request_token_getter)
-
-**authorize_redirect** is how we handle HTTP redirect to authorization server::
-
-    def authorize_redirect(url, callback_uri, state):
-        if callback_uri:
-            # save it for later use
-            session['callback_uri'] = callback_uri
-        # state is not used in OAuth 1
-        return redirect_response(url, status_code=302)
-
-**access_token_getter** is a function to fetch access token from your database::
-
-    def access_token_getter():
-        # it should return a dict of:
-        # {'oauth_token': '..', 'oauth_token_secret': '..'}
-        return db.get_current_user_token()
-
 Redirect to Authorization Endpoint
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-With your hooks configured, we can head over to the authorization server
-directly, our request token hooks will handle everything well for us::
+There is a request token exchange in OAuth 1, in this case, we need to save
+the request token before heading over to authorization endpoint::
 
-    client.authorize_redirect('https://api.twitter.com/oauth/authenticate')
-    # The second ``callback_uri`` parameter is optional.
+    def save_request_token(token):
+        session['token'] = token
 
-Now we will be redirect to the authorization endpoint with the hook you
-provided in ``authorize_redirect``.
+    # The first ``callback_uri`` parameter is optional.
+    url, state = client.generate_authorize_redirect(
+        save_request_token=save_request_token)
+
+Now we will get a redirect url to the authorization endpoint. The return value
+is a tuple of ``(url, state)``, in OAuth 1, ``state`` will always be ``None``.
 
 Get Access Token
 ~~~~~~~~~~~~~~~~
 
 If permission is granted, we can fetch the access token now::
 
+    def get_request_token():
+        return session.pop('token', None)
+
     callback_uri = session.pop('callback_uri', None)
     params = parse_response_url_qs()
-    token = client.fetch_access_token(callback_uri, **params)
+    token = client.fetch_access_token(
+        callback_uri, get_request_token=get_request_token, **params)
     save_token_to_db(token)
 
 OAuth 2 Flow
@@ -107,43 +84,20 @@ The flow of OAuth 2 is similar with OAuth 1, and much simpler::
         client_kwargs={'scope': 'user:email'},
     )
 
-Register Hooks
-~~~~~~~~~~~~~~
-
-For OAuth 2, we only need to register two hooks:
-
-* authorize_redirect
-* access_token_getter
-
-**authorize_redirect** is how we handle HTTP redirect to authorization server::
-
-    def authorize_redirect(url, callback_uri, state):
-        if callback_uri:
-            # save it for later use
-            session['callback_uri'] = callback_uri
-        if state:
-            session['state'] = state
-        return redirect_response(url, status_code=302)
-
-**access_token_getter** is a function to fetch access token from your database::
-
-    def access_token_getter():
-        # it should return a dict of:
-        # {'access_token': '..', 'expires_at': '..'}
-        return db.get_current_user_token()
 
 Redirect to Authorization Endpoint
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-With your hooks configured, we can head over to the authorization server
-directly, our request token hooks will handle everything well for us::
+Unlike OAuth 1, there is no request token. The process to authorization
+server is very simple::
 
     callback_uri = 'https://example.com/auth'
-    authorize_uri = 'https://github.com/login/oauth/authorize'
-    client.authorize_redirect(authorize_uri, callback_uri)
+    url, state = client.generate_authorize_redirect(callback_uri)
+    # save state for getting access token
+    session['state'] = state
 
-Now we will be redirect to the authorization endpoint with the hook you
-provided in ``authorize_redirect``.
+Note that, in OAuth 2, there will be a ``state`` always, you need to save it
+for later use.
 
 Get Access Token
 ~~~~~~~~~~~~~~~~
@@ -153,6 +107,8 @@ token now::
 
     callback_uri = session.pop('callback_uri', None)
     params = parse_response_url_qs()
+    # you need to verify state here
+    assert params['state'] == session.pop('state')
     token = client.fetch_access_token(callback_uri, **params)
     save_token_to_db(token)
 
