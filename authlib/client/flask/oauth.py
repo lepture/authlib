@@ -130,15 +130,6 @@ class RemoteApp(OAuthClient):
             self.client_kwargs['token_updater'] = lambda token:\
                 token_model.update_token(name, token)
 
-    def _redirect_hook(self, uri, callback_uri=None, state=None):
-        if callback_uri:
-            key = '_{}_callback_'.format(self.name)
-            session[key] = callback_uri
-        if state:
-            key = '_{}_state_'.format(self.name)
-            session[key] = state
-        return redirect(uri)
-
     def _request_token_getter(self):
         key = '_{}_req_token_'.format(self.name)
         sid = session.pop(key, None)
@@ -159,7 +150,8 @@ class RemoteApp(OAuthClient):
         return self.token_model.fetch_token(self.name)
 
     def authorize_redirect(self, callback_uri=None, **kwargs):
-        """
+        """Create a HTTP Redirect for Authorization Endpoint.
+
         :param callback_uri: Callback or redirect URI for authorization.
         :param kwargs: Extra parameters to include.
         :return: A HTTP redirect response.
