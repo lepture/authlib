@@ -11,17 +11,10 @@ from authlib.specs.rfc6749 import (
     MismatchingStateError,
 )
 from authlib.specs.rfc6750 import ExpiredTokenError
+from ..client_base import mock_json_response
 
 
 fake_time = int(time.time())
-
-
-def mock_response(payload):
-    def fake_send(r, **kwargs):
-        resp = mock.MagicMock()
-        resp.json = lambda: payload
-        return resp
-    return fake_send
 
 
 class OAuth2SessionTest(TestCase):
@@ -98,13 +91,23 @@ class OAuth2SessionTest(TestCase):
     def test_fetch_token(self):
         url = 'https://example.com/token'
 
+        def fake_send(r, **kwargs):
+            self.assertIn('code=v', r.body)
+            resp = mock.MagicMock()
+            resp.json = lambda: self.token
+            return resp
+
         sess = OAuth2Session(client_id=self.client_id, token=self.token)
-        sess.send = mock_response(self.token)
-        self.assertEqual(sess.fetch_access_token(url), self.token)
+        sess.send = fake_send
+        self.assertEqual(sess.fetch_access_token(url, code='v'), self.token)
+        self.assertEqual(
+            sess.fetch_access_token(
+                url, authorization_response='https://i.b/?code=v'),
+            self.token)
 
         error = {'error': 'invalid_request'}
         sess = OAuth2Session(client_id=self.client_id, token=self.token)
-        sess.send = mock_response(error)
+        sess.send = mock_json_response(error)
         self.assertRaises(OAuth2Error, sess.fetch_access_token, url)
 
     @mock.patch("time.time", new=lambda: fake_time)
@@ -120,7 +123,7 @@ class OAuth2SessionTest(TestCase):
             'access_token_response',
             access_token_response_hook
         )
-        sess.send = mock_response(self.token)
+        sess.send = mock_json_response(self.token)
         self.assertEqual(sess.fetch_access_token(url), self.token)
 
     def test_cleans_previous_token_before_fetching_new_one(self):
@@ -138,7 +141,7 @@ class OAuth2SessionTest(TestCase):
 
         with mock.patch('time.time', lambda: now):
             sess = OAuth2Session(client_id=self.client_id, token=self.token)
-            sess.send = mock_response(new_token)
+            sess.send = mock_json_response(new_token)
             self.assertEqual(sess.fetch_access_token(url), new_token)
 
     def test_mis_match_state(self):
@@ -187,7 +190,7 @@ class OAuth2SessionTest(TestCase):
             'protected_request',
             protected_request,
         )
-        sess.send = mock_response({'name': 'a'})
+        sess.send = mock_json_response({'name': 'a'})
         sess.get('https://i.b/user')
 
     def test_auto_refresh_token(self):
@@ -205,12 +208,12 @@ class OAuth2SessionTest(TestCase):
             refresh_token_params={'ping': 'pong'},
             token_updater=token_updater,
         )
-        sess.send = mock_response(self.token)
+        sess.send = mock_json_response(self.token)
         sess.get('https://i.b/user')
 
     def test_revoke_token(self):
         sess = OAuth2Session('a')
         answer = {'status': 'ok'}
-        sess.send = mock_response(answer)
+        sess.send = mock_json_response(answer)
         resp = sess.revoke_token('https://i.b/token', 'hi')
         self.assertEqual(resp.json(), answer)

@@ -224,6 +224,11 @@ class OAuth1SessionTest(TestCase):
             self.assertTrue(isinstance(k, unicode_type))
             self.assertTrue(isinstance(v, unicode_type))
 
+        auth = OAuth1Session('foo', verifier='bar')
+        auth.send = mock_text_response('{"oauth_token":"foo"}')
+        resp = auth.fetch_access_token('https://example.com/token')
+        self.assertEqual(resp['oauth_token'], 'foo')
+
         auth = OAuth1Session('foo')
         auth.send = mock_text_response('oauth_token=foo')
         resp = auth.fetch_access_token(

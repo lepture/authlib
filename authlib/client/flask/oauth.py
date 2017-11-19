@@ -160,8 +160,8 @@ class RemoteApp(OAuthClient):
 
     def authorize_redirect(self, callback_uri=None, **kwargs):
         """
-        :param callback_uri:
-        :param kwargs:
+        :param callback_uri: Callback or redirect URI for authorization.
+        :param kwargs: Extra parameters to include.
         :return: A HTTP redirect response.
         """
         if callback_uri:

@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, print_function
 import unittest
+import mock
 from authlib.common.urls import quote
 from authlib.client import OAuthClient, OAuthException
 from ..client_base import (
@@ -24,7 +25,39 @@ class OAuthClientTest(unittest.TestCase):
         uri, state = client.generate_authorize_redirect(
             'https://b.com/bar', save_request_token)
         self.assertIsNone(state)
-        self.assertIn('foo', uri)
+        self.assertIn('oauth_token=foo', uri)
+
+    def test_oauth1_realms(self):
+        def save_request_token(token):
+            self.assertIn('oauth_token', token)
+
+        def fake_send(r, **kwargs):
+            auth = r.headers['Authorization']
+            self.assertIn('realm', auth)
+            resp = mock.MagicMock()
+            resp.cookies = []
+            resp.text = 'oauth_token=foo'
+            resp.status_code = 200
+            return resp
+
+        client = OAuthClient(
+            'foo',
+            request_token_url='https://a.com/req',
+            request_token_params={'realm': 'email'},
+            authorize_url='https://a.com/auth'
+        )
+
+        client.session.send = fake_send
+        uri, state = client.generate_authorize_redirect(
+            'https://b.com/bar', save_request_token)
+        self.assertIsNone(state)
+        self.assertIn('oauth_token=foo', uri)
+
+        client.request_token_params = {'realm': ['email', 'profile']}
+        uri, state = client.generate_authorize_redirect(
+            'https://b.com/bar', save_request_token)
+        self.assertIsNone(state)
+        self.assertIn('oauth_token=foo', uri)
 
     def test_oauth2_generate_authorize_redirect(self):
         callback_uri = 'https://b.com/red'
