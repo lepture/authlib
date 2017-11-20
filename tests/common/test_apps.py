@@ -7,7 +7,7 @@ from authlib.client.apps import (
     github_fetch_user,
     google_fetch_user,
 )
-from ..client_base import mock_json_response
+from tests.client_base import mock_json_response
 
 
 class OAuthAppsTest(TestCase):
@@ -59,7 +59,7 @@ class OAuthAppsTest(TestCase):
         user = github_fetch_user(client)
         self.assertEqual(user.id, 1)
         self.assertEqual(user.username, 'lepture')
-        
+
     def test_google_fetch_user(self):
         client = OAuthClient(
             'a', 'b',
@@ -74,4 +74,4 @@ class OAuthAppsTest(TestCase):
         user = google_fetch_user(client)
         self.assertEqual(user.id, 1)
         self.assertEqual(user.name, 'Grey Li')
-        
+
