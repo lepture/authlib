@@ -33,7 +33,9 @@ class OAuth(object):
             oauth.register('twitter', client_key='', ...)
             oauth.twitter.get('timeline')
         """
-        return self.create_client(name, **kwargs)
+        client = RemoteApp(name, **kwargs)
+        self._clients[name] = client
+        return client
 
     def __getattr__(self, key):
         try:
@@ -152,6 +154,6 @@ class RemoteApp(OAuthClient):
 
 
 def _get_conf(name):
-    config = settings.get('AUTHLIB_OAUTH_CLIENTS')
+    config = getattr(settings, 'AUTHLIB_OAUTH_CLIENTS', None)
     if config:
         return config.get(name)
