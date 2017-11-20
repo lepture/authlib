@@ -9,7 +9,7 @@ python:
   - pypy
 
 env:
-  - TOXENV=py,codecov
+  - TOXENV=py,flask,django,codecov
 
 install:
   - pip install -U setuptools
