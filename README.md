@@ -20,7 +20,7 @@ Lovely features that Authlib has built-in:
 - **DONE** OAuth 1, OAuth 2 Requests Sessions
 - **DONE** Mixed OAuth 1 and OAuth 2 Client
 - **DONE** Integrated client with Flask
-- **TODO** Integrated client with Django
+- **DONE** Integrated client with Django
 - **TODO** Flask OAuth 1 / OAuth 2 Servers
 - **TODO** Django OAuth 1 / OAuth 2 Servers
 

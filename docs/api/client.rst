@@ -27,16 +27,16 @@ Flask Registry and RemoteApp
    :members:
 
 .. autoclass:: RemoteApp
-   :members: authorize_access_token
-
-   .. method:: authorize_redirect(callback_uri=None, **kwargs)
-
-      Redirect to authorization server.
+   :members:
 
 
 Django Registry and RemoteApp
 -----------------------------
 
-.. admonition:: For Your Information
+.. module:: authlib.client.django
 
-   Django integration will be implemented in Version 0.2.
+.. autoclass:: OAuth
+   :members:
+
+.. autoclass:: RemoteApp
+   :members:

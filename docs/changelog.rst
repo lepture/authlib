@@ -14,7 +14,8 @@ well enough for daily use.
 
 - :class:`~authlib.client.OAuthClient` is refactored to be the base class for
   Flask and Django.
-
+- Add Django integrations :class:`authlib.client.django.OAuth` and
+  :class:`authlib.client.django.RemoteApp`.
 
 Version 0.1
 -----------
