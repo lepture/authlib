@@ -1,12 +1,12 @@
 from __future__ import unicode_literals, print_function
 
-import mock
 from django.conf import settings
 from django.utils.module_loading import import_module
 from django.test import TestCase, RequestFactory, override_settings
 from authlib.client.django import OAuth, RemoteApp
 from ..client_base import (
     mock_text_response,
+    mock_json_response,
     get_bearer_token
 )
 
@@ -100,14 +100,12 @@ class DjangoOAuthTest(TestCase):
         self.assertEqual(rv.status_code, 302)
         url = rv.get('Location')
         self.assertIn('state=', url)
+        state = request.session['_dev_state_']
 
-        def fake_token(r, **kwargs):
-            self.assertEqual(client.session.redirect_uri, 'https://a.b/c')
-            resp = mock.MagicMock()
-            resp.status_code = 200
-            resp.json = get_bearer_token
-            return resp
+        client.session.send = mock_json_response(get_bearer_token())
+        request = self.factory.get('/authorize?state={}'.format(state))
+        request.session = self.factory.session
+        request.session['_dev_state_'] = state
 
-        client.session.send = fake_token
         token = client.authorize_access_token(request)
         self.assertEqual(token['access_token'], 'a')

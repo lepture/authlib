@@ -99,20 +99,23 @@ class OAuthClient(object):
                 self.authorize_url, **kwargs)
         return url, state
 
-    def fetch_access_token(
-            self, callback_uri=None, get_request_token=None, **params):
+    def fetch_access_token(self, callback_uri=None, request_token=None,
+                           **params):
         """Fetch access token in one step.
 
         :param callback_uri: Callback or Redirect URI that is used in
                              previous :meth:`authorize_redirect`.
-        :param get_request_token: A function to get previous request token.
+        :param request_token: A previous request token for OAuth 1.
         :param params: Extra parameters to fetch access token.
         :return: A token dict.
         """
         if self.request_token_url:
             self.session.callback_uri = callback_uri
-            token = get_request_token()
-            # merge token with verifier
+            if request_token is None:
+                raise OAuthException('Missing request token')
+            # merge request token with verifier
+            token = {}
+            token.update(request_token)
             token.update(params)
             self.session.token = token
             kwargs = self.access_token_params or {}

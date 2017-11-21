@@ -73,12 +73,11 @@ class OAuthClientTest(unittest.TestCase):
             access_token_url='https://example.com/token'
         )
 
-        def get_request_token():
-            return {'oauth_token': 'req'}
+        request_token = {'oauth_token': 'req'}
 
         client.session.send = mock_text_response('oauth_token=foo')
         resp = client.fetch_access_token(
-            get_request_token=get_request_token, oauth_verifier='bar')
+            request_token=request_token, oauth_verifier='bar')
         self.assertEqual(resp['oauth_token'], 'foo')
 
     def test_oauth2_fetch_access_token(self):

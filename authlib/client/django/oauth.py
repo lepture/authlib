@@ -119,42 +119,31 @@ class RemoteApp(OAuthClient):
                 request.session[key] = state
         return HttpResponseRedirect(url)
 
-    def authorize_access_token(self, request, callback_uri=None, **params):
+    def authorize_access_token(self, request):
         """Fetch access token in one step.
 
         :param request: HTTP request instance from Django view.
-        :param callback_uri: Callback or Redirect URI that is used in
-                             previous :meth:`authorize_redirect`.
-        :param params: Extra parameters to fetch access token.
         :return: A token dict.
         """
-        if callback_uri is None:
-            key = '_{}_callback_'.format(self.name)
-            callback_uri = request.session.get(key, None)
-
         if self.request_token_url:
-            self.session.callback_uri = callback_uri
             key = '_{}_req_token_'.format(self.name)
-            token = request.session.pop(key, None)
-            if not token:
-                raise OAuthException('Missing request token')
-
-            # merge token with verifier
-            token.update(params)
-            self.session.token = token
-            kwargs = self.access_token_params or {}
-            token = self.session.fetch_access_token(
-                self.access_token_url, **kwargs)
-            self.session.callback_uri = None
+            request_token = request.session.pop(key, None)
         else:
-            self.session.redirect_uri = callback_uri
-            kwargs = {}
-            if self.access_token_params:
-                kwargs.update(self.access_token_params)
-            kwargs.update(params)
-            token = self.session.fetch_access_token(
-                self.access_token_url, **kwargs)
-        return token
+            request_token = None
+            key = '_{}_state_'.format(self.name)
+            state = request.session.pop(key, None)
+            if state != request.GET.get('state'):
+                raise OAuthException(
+                    'State not equal in request and response.')
+
+        key = '_{}_callback_'.format(self.name)
+        callback_uri = request.session.get(key, None)
+        params = dict(request.GET)
+        return self.fetch_access_token(
+            callback_uri,
+            request_token,
+            **params
+        )
 
 
 def _get_conf(name):

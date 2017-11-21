@@ -130,17 +130,17 @@ class RemoteApp(OAuthClient):
             self.client_kwargs['token_updater'] = lambda token:\
                 token_model.update_token(name, token)
 
-    def _request_token_getter(self):
+    def _get_request_token(self):
         key = '_{}_req_token_'.format(self.name)
         sid = session.pop(key, None)
         if not sid:
-            raise OAuthException('Missing request token')
+            return None
 
         token = self.cache.get(sid)
         self.cache.delete(sid)
         return token
 
-    def _request_token_setter(self, token):
+    def _save_request_token(self, token):
         key = '_{}_req_token_'.format(self.name)
         sid = uuid.uuid4().hex
         session[key] = sid
@@ -161,7 +161,7 @@ class RemoteApp(OAuthClient):
             session[key] = callback_uri
 
         if self.request_token_url:
-            save_request_token = self._request_token_setter
+            save_request_token = self._save_request_token
         else:
             save_request_token = None
 
@@ -178,9 +178,9 @@ class RemoteApp(OAuthClient):
     def authorize_access_token(self):
         """Authorize access token."""
         if self.request_token_url:
-            get_request_token = self._request_token_getter
+            request_token = self._get_request_token()
         else:
-            get_request_token = None
+            request_token = None
             state_key = '_{}_state_'.format(self.name)
             state = session.pop(state_key, None)
             if state != request.args.get('state'):
@@ -192,6 +192,6 @@ class RemoteApp(OAuthClient):
         params = request.args.to_dict(flat=True)
         return self.fetch_access_token(
             callback_uri,
-            get_request_token,
+            request_token,
             **params
         )
