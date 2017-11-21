@@ -128,6 +128,10 @@ class RemoteApp(OAuthClient):
         :param params: Extra parameters to fetch access token.
         :return: A token dict.
         """
+        if callback_uri is None:
+            key = '_{}_callback_'.format(self.name)
+            callback_uri = request.session.get(key, None)
+
         if self.request_token_url:
             self.session.callback_uri = callback_uri
             key = '_{}_req_token_'.format(self.name)
