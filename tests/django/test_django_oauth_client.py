@@ -84,7 +84,7 @@ class DjangoOAuthTest(TestCase):
         token = client.authorize_access_token(request)
         self.assertEqual(token['oauth_token'], 'a')
 
-    def test_oauth2_authorize_redirect(self):
+    def test_oauth2_authorize(self):
         request = self.factory.get('/login')
         request.session = self.factory.session
 

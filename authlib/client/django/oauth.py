@@ -138,7 +138,7 @@ class RemoteApp(OAuthClient):
 
         key = '_{}_callback_'.format(self.name)
         callback_uri = request.session.get(key, None)
-        params = dict(request.GET)
+        params = request.GET.dict()
         return self.fetch_access_token(
             callback_uri,
             request_token,
