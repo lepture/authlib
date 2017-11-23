@@ -9,6 +9,7 @@
 # flake8: noqa
 
 from .id_token import (
-    IDToken, CodeIDToken, ImplicitIDToken, HybridIDToken,
-    IDTokenError, parse_id_token
+    IDToken, IDTokenError,
+    CodeIDToken, ImplicitIDToken, HybridIDToken,
+    parse_id_token
 )

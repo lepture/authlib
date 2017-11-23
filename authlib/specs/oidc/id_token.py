@@ -1,5 +1,5 @@
-import time
-from jwt import api_jws as jws
+import json
+from .jws import jws
 
 
 class IDToken(object):
@@ -10,25 +10,8 @@ class IDToken(object):
 
     .. _`Section 2`: http://openid.net/specs/openid-connect-core-1_0.html#IDToken
     """
-    def __init__(self, token, scope, response_type, client_id, redirect_uri,
-                 state, response_mode=None, nonce=None, display=None,
-                 prompt=None, max_age=None, ui_locales=None,
-                 id_token_hint=None, login_hint=None, acr_values=None):
+    def __init__(self, token):
         self.token = token
-        self._scope = scope
-        self._response_type = response_type
-        self._client_id = client_id
-        self._redirect_uri = redirect_uri
-        self._state = state
-        self._response_mode = response_mode
-        self._nonce = nonce
-        self._display = display
-        self._prompt = prompt
-        self._max_age = max_age
-        self._ui_locales = ui_locales
-        self._id_token_hint = id_token_hint
-        self._login_hint = login_hint
-        self._acr_values = acr_values
 
     @property
     def iss(self):
@@ -159,7 +142,7 @@ class IDToken(object):
         if isinstance(issuer, (list, tuple)):
             if self.iss not in issuer:
                 raise IDTokenError('iss is invalid')
-        elif self.iss != issuer:
+        elif issuer is not None and self.iss != issuer:
             raise IDTokenError('iss is invalid')
 
     def validate_sub(self):
@@ -168,30 +151,33 @@ class IDToken(object):
         if len(self.sub) > 255:
             raise IDTokenError('sub exceed 255 in length')
 
-    def validate_aud(self):
+    def validate_aud(self, client_id):
         # aud is required
         if 'aud' not in self.token:
             raise IDTokenError('aud is required')
-
         if isinstance(self.aud, (list, tuple)):
             aud_list = self.aud
         else:
             aud_list = (self.aud,)
-        if self._client_id not in aud_list:
+        if client_id and client_id not in aud_list:
             raise IDTokenError('aud is not for this client')
 
-    def validate_exp(self):
+    def validate_exp(self, now):
         if 'exp' not in self.token:
             raise IDTokenError('exp is required')
-        if self.exp > time.time():
+        if now and self.exp > now:
             raise IDTokenError('exp is expired')
 
     def validate_iat(self):
         if 'iat' not in self.token:
             raise IDTokenError('iat is required')
 
-    def validate_nonce(self):
-        if self._nonce and self._nonce != self.nonce:
+    def validate_auth_time(self, max_age):
+        if max_age and 'auth_time' not in self.token:
+            raise IDTokenError('auth_time is required')
+
+    def validate_nonce(self, nonce):
+        if nonce and nonce != self.nonce:
             raise IDTokenError('nonce is invalid')
 
     def validate_azp(self, client_id):
@@ -199,17 +185,20 @@ class IDToken(object):
             if self.azp != client_id:
                 raise IDTokenError('azp is not for this client')
 
-    def validate(self, issuers=None, **kwargs):
+    def validate(self, issuers=None, client_id=None, nonce=None, max_age=None,
+                 now=None, **kwargs):
         """ID Token Validation, per `Section 3.1.3.7`_.
 
         http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation
         """
         self.validate_iss(issuers)
         self.validate_sub()
-        self.validate_aud()
-        self.validate_exp()
+        self.validate_aud(client_id)
+        self.validate_exp(now)
         self.validate_iat()
-        self.validate_nonce()
+        self.validate_auth_time(max_age)
+        self.validate_nonce(nonce)
+        self.validate_azp(client_id)
 
 
 class CodeIDToken(IDToken):
@@ -230,6 +219,9 @@ class CodeIDToken(IDToken):
         base64url encode them. The at_hash value is a case sensitive string.
         """
         return self.token.get('at_hash')
+
+    def validate_at_hash(self, alg):
+        pass
 
 
 class ImplicitIDToken(IDToken):
@@ -256,13 +248,13 @@ class ImplicitIDToken(IDToken):
         """
         return self.token.get('at_hash')
 
-    def validate_nonce(self):
+    def validate_nonce(self, nonce):
         if 'nonce' not in self.token:
             raise IDTokenError('nonce is required')
-        if self._nonce != self.nonce:
+        if nonce != self.nonce:
             raise IDTokenError('nonce is invalid')
 
-    def validate_at_hash(self):
+    def validate_at_hash(self, header):
         """If the ID Token is issued from the Authorization Endpoint with an
         access_token value, which is the case for the response_type value
         id_token token, this is REQUIRED; it MAY NOT be used when no Access
@@ -293,7 +285,7 @@ class HybridIDToken(ImplicitIDToken):
         """
         return self.token.get('c_hash')
 
-    def validate_at_hash(self):
+    def validate_at_hash(self, header):
         """If the ID Token is issued from the Authorization Endpoint with an
         access_token value, which is the case for the response_type value code
         id_token token, this is REQUIRED; otherwise, its inclusion is
@@ -306,18 +298,18 @@ class IDTokenError(ValueError):
         self.message = message
 
 
-def parse_id_token(
-        id_token, jwk_set, scope, response_type, client_id, redirect_uri,
-        state, response_mode=None, nonce=None, display=None, prompt=None,
-        max_age=None, ui_locales=None, id_token_hint=None, login_hint=None,
-        acr_values=None, algorithms=None):
+def parse_id_token(response, jwk_set, response_type='code', issuers=None,
+                   client_id=None, nonce=None, max_age=None):
 
-    # 3.1.3.3
-    if algorithms is None:
-        algorithms = ['RS256', 'HS256']
+    if 'id_token' not in response:
+        raise ValueError('Invalid OpenID response')
 
-    # TODO: use jose
-    token = jws.decode(id_token, jwk_set, algorithms=algorithms)
+    payload, header, valid = jws.parse(response['id_token'], jwk_set)
+    if not valid:
+        raise IDTokenError('Invalid signature')
+
+    token = json.loads(payload)
+
     if response_type == 'code':
         cls = CodeIDToken
     elif response_type in ImplicitIDToken.RESPONSE_TYPES:
@@ -327,20 +319,9 @@ def parse_id_token(
     else:
         raise ValueError('Invalid response_type')
 
-    return cls(
-        token=token,
-        scope=scope,
-        response_type=response_type,
-        client_id=client_id,
-        redirect_uri=redirect_uri,
-        state=state,
-        response_mode=response_mode,
-        nonce=nonce,
-        display=display,
-        prompt=prompt,
-        max_age=max_age,
-        ui_locales=ui_locales,
-        id_token_hint=id_token_hint,
-        login_hint=login_hint,
-        acr_values=acr_values
+    obj = cls(token)
+    obj.validate(
+        issuers=issuers, client_id=client_id,
+        nonce=nonce, max_age=max_age
     )
+    return obj
