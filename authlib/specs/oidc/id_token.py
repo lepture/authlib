@@ -308,7 +308,7 @@ def parse_id_token(response, jwk_set, response_type='code', issuers=None,
     if not valid:
         raise IDTokenError('Invalid signature')
 
-    token = json.loads(payload)
+    token = json.loads(payload.decode('utf-8'))
 
     if response_type == 'code':
         cls = CodeIDToken
