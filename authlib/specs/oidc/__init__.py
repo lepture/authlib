@@ -11,5 +11,5 @@
 from .id_token import (
     IDToken, IDTokenError,
     CodeIDToken, ImplicitIDToken, HybridIDToken,
-    parse_id_token
+    parse_id_token, validate_id_token, verify_id_token,
 )

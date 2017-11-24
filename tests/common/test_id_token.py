@@ -1,7 +1,9 @@
 from __future__ import unicode_literals, print_function
 import unittest
-from authlib.specs.oidc import parse_id_token
-from authlib.specs.oidc import CodeIDToken
+from authlib.specs.oidc import (
+    parse_id_token, validate_id_token, verify_id_token,
+    IDTokenError, CodeIDToken,
+)
 
 
 # http://openid.net/specs/openid-connect-core-1_0.html#ExampleRSAKey
@@ -41,6 +43,14 @@ ID_TOKEN = (
 
 class OAuthClientTest(unittest.TestCase):
     def test_parse_id_token(self):
+        rv = parse_id_token(ID_TOKEN, JWK_RSA_PUB_KEY)
+        self.assertIsInstance(rv, tuple)
+
+    def test_verify_id_token(self):
+        self.assertRaises(ValueError, lambda: verify_id_token({}, ''))
         response = {'id_token': ID_TOKEN}
-        token = parse_id_token(response, JWK_RSA_PUB_KEY)
+        token = verify_id_token(response, JWK_RSA_PUB_KEY)
         self.assertIsInstance(token, CodeIDToken)
+
+    def test_validate_id_token(self):
+        self.assertRaises(ValueError, lambda: validate_id_token({}, 'n'))

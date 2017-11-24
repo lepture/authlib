@@ -189,7 +189,8 @@ class IDToken(object):
                  now=None, **kwargs):
         """ID Token Validation, per `Section 3.1.3.7`_.
 
-        http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation
+        .. _`Section 3.1.3.7`:
+            http://openid.net/specs/openid-connect-core-1_0.html#IDTokenValidation
         """
         self.validate_iss(issuers)
         self.validate_sub()
@@ -227,7 +228,7 @@ class CodeIDToken(IDToken):
 class ImplicitIDToken(IDToken):
     """Implement IDToken when using the Implicit Flow. Per `Section 3.2.2.10`_
 
-    .. `Section 3.2.2.10`: http://openid.net/specs/openid-connect-core-1_0.html#ImplicitIDToken
+    .. _`Section 3.2.2.10`: http://openid.net/specs/openid-connect-core-1_0.html#ImplicitIDToken
     """
     RESPONSE_TYPES = ('id_token', 'id_token token')
 
@@ -266,7 +267,7 @@ class ImplicitIDToken(IDToken):
 class HybridIDToken(ImplicitIDToken):
     """Implement IDToken when using the Hybrid Flow. Per `Section 3.3.2.11`_.
 
-    .. _`Sectin 3.3.2.11`: http://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken
+    .. _`Section 3.3.2.11`: http://openid.net/specs/openid-connect-core-1_0.html#HybridIDToken
     """
     RESPONSE_TYPES = ('code id_token', 'code token', 'code id_token token')
 
@@ -298,18 +299,37 @@ class IDTokenError(ValueError):
         self.message = message
 
 
-def parse_id_token(response, jwk_set, response_type='code', issuers=None,
-                   client_id=None, nonce=None, max_age=None):
+def parse_id_token(id_token, key):
+    """Parse an id_token text string into token dict.
 
-    if 'id_token' not in response:
-        raise ValueError('Invalid OpenID response')
-
-    payload, header, valid = jws.parse(response['id_token'], jwk_set)
+    :param id_token: A JWS text that represent current id_token.
+    :param key: A PEM key to parse the given id_token. This value can be:
+                * a string text of PEM key
+                * a dict/string of JWK
+                * a set/list/tuple of JWK
+    :return: (token, header)
+    """
+    payload, header, valid = jws.parse(id_token, key)
     if not valid:
         raise IDTokenError('Invalid signature')
-
     token = json.loads(payload.decode('utf-8'))
+    return token, header
 
+
+def validate_id_token(token, response_type='code', header=None, issuers=None,
+                      client_id=None, nonce=None, max_age=None, now=None):
+    """Validate the parsed id_token.
+
+    :param token: The parsed id_token dict.
+    :param response_type: Current OAuth response_type.
+    :param header: The header parsed from id_token JWS.
+    :param issuers: A string or list to validate for iss in id_token.
+    :param client_id: OAuth client_id string to validate aud in id_token.
+    :param nonce: OAuth nonce string to validate nonce in id_token.
+    :param max_age: A max_age parameter in OAuth authorization.
+    :param now: Current timestamp to validate exp in id_token.
+    :return: IDToken
+    """
     if response_type == 'code':
         cls = CodeIDToken
     elif response_type in ImplicitIDToken.RESPONSE_TYPES:
@@ -322,6 +342,18 @@ def parse_id_token(response, jwk_set, response_type='code', issuers=None,
     obj = cls(token)
     obj.validate(
         issuers=issuers, client_id=client_id,
-        nonce=nonce, max_age=max_age
+        nonce=nonce, max_age=max_age,
+        header=header,
     )
     return obj
+
+
+def verify_id_token(response, key, response_type='code', issuers=None,
+                    client_id=None, nonce=None, max_age=None):
+    """Parse and validate id_token in response."""
+    if 'id_token' not in response:
+        raise ValueError('Invalid OpenID response')
+
+    token, header = parse_id_token(response['id_token'], key)
+    return validate_id_token(
+        token, response_type, header, issuers, client_id, nonce, max_age)
