@@ -1,4 +1,4 @@
-from .base import AppFactory, User
+from .base import AppFactory, User, patch_method
 
 
 def dropbox_fetch_user(client):
@@ -8,7 +8,7 @@ def dropbox_fetch_user(client):
     name = profile['name']['display_name']
     email = profile.get('email')
     username = None
-    return User(uid, username=username, name=name, email=email)
+    return User(uid, username=username, name=name, email=email, data=profile)
 
 
 dropbox = AppFactory('dropbox', {
@@ -17,3 +17,5 @@ dropbox = AppFactory('dropbox', {
     'authorize_url': 'https://www.dropbox.com/oauth2/authorize',
     'fetch_user': dropbox_fetch_user,
 }, "The OAuth app for Dropbox API.")
+
+patch_method(dropbox, dropbox_fetch_user, 'fetch_user')

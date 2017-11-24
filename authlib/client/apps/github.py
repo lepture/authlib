@@ -1,4 +1,4 @@
-from .base import AppFactory, User
+from .base import AppFactory, User, patch_method
 
 
 def github_fetch_user(client):
@@ -8,7 +8,7 @@ def github_fetch_user(client):
     username = profile.get('login')
     name = profile.get('name')
     email = profile.get('email')
-    return User(uid, username=username, name=name, email=email)
+    return User(uid, username=username, name=name, email=email, data=profile)
 
 
 github = AppFactory('github', {
@@ -18,3 +18,6 @@ github = AppFactory('github', {
     'client_kwargs': {'scope': 'user:email'},
     'fetch_user': github_fetch_user,
 }, "The OAuth app for GitHub API.")
+
+
+patch_method(github, github_fetch_user, 'fetch_user')

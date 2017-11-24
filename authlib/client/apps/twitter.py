@@ -1,4 +1,4 @@
-from .base import AppFactory, User
+from .base import AppFactory, User, patch_method
 
 
 def twitter_fetch_user(client):
@@ -13,7 +13,7 @@ def twitter_fetch_user(client):
     username = profile.get('screen_name')
     name = profile.get('name')
     email = profile.get('email')
-    return User(uid, username=username, name=name, email=email)
+    return User(uid, username=username, name=name, email=email, data=profile)
 
 
 twitter = AppFactory('twitter', {
@@ -21,5 +21,7 @@ twitter = AppFactory('twitter', {
     'request_token_url': 'https://api.twitter.com/oauth/request_token',
     'access_token_url': 'https://api.twitter.com/oauth/access_token',
     'authorize_url': 'https://api.twitter.com/oauth/authenticate',
-    'fetch_user': twitter_fetch_user,
 }, "The OAuth app for Twitter API.")
+
+
+patch_method(twitter, twitter_fetch_user, 'fetch_user')

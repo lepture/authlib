@@ -1,6 +1,7 @@
+import types
 from collections import namedtuple
 
-User = namedtuple('User', ['id', 'username', 'name', 'email'])
+User = namedtuple('User', ['id', 'username', 'name', 'email', 'data'])
 
 
 class AppFactory(object):
@@ -21,17 +22,29 @@ class AppFactory(object):
             return self._client
         if self.oauth:
             self._client = self.oauth.create_client(self.name)
+            methods = getattr(self, '__patch', None)
+            if methods:
+                for name in methods:
+                    _patch(self._client, methods[name], name)
             return self._client
         raise RuntimeError('App not `register_to` any oauth registry')
 
-    def get(self, url, **kwargs):
-        return self.client.get(url, **kwargs)
+    def __getattr__(self, key):
+        try:
+            return object.__getattribute__(self, key)
+        except AttributeError:
+            return object.__getattribute__(self.client, key)
 
-    def post(self, url, **kwargs):
-        return self.client.post(url, **kwargs)
 
-    def put(self, url, **kwargs):
-        return self.client.put(url, **kwargs)
+def patch_method(instance, func, name=None):
+    if name is None:
+        name = func.__name__
 
-    def delete(self, url, **kwargs):
-        return self.client.delete(url, **kwargs)
+    _patch(instance, func, name)
+    if not hasattr(instance, '__patch'):
+        instance.__patch = {}
+    instance.__patch[name] = func
+
+
+def _patch(instance, func, name):
+    setattr(instance, name, types.MethodType(func, instance))

@@ -1,22 +1,34 @@
-from .base import AppFactory, User
+try:
+    from authlib.specs.oidc import verify_id_token
+except ImportError:
+    verify_id_token = None
 
-GOOGLE_JWK_URL = 'https://www.googleapis.com/oauth2/v3/certs'
-GOOGLE_JWK_SET = None
+from .base import AppFactory, User, patch_method
 
+GOOGLE_API_URL = 'https://www.googleapis.com/'
+GOOGLE_TOKEN_URL = GOOGLE_API_URL + 'oauth2/v4/token'
+GOOGLE_JWK_URL = GOOGLE_API_URL + 'oauth2/v3/certs'
 GOOGLE_AUTH_URL = (
     'https://accounts.google.com/o/oauth2/v2/auth'
     '?access_type=offline'
 )
 GOOGLE_REVOKE_URL = 'https://accounts.google.com/o/oauth2/revoke'
+GOOGLE_JWK_SET = None
 
 
-def google_parse_id_token(client, id_token):
+def google_parse_id_token(client, response, nonce=None):
     global GOOGLE_JWK_SET
     if not GOOGLE_JWK_SET:
         resp = client.get(GOOGLE_JWK_URL, withhold_token=True)
         GOOGLE_JWK_SET = resp.json()
-    # TODO: OpenID Connect
-    return
+
+    id_token = verify_id_token(
+        response, GOOGLE_JWK_SET,
+        issuers=('https://accounts.google.com', 'accounts.google.com'),
+        client_id=client.client_key,
+        nonce=nonce,
+    )
+    return id_token.token
 
 
 def google_revoke_token(client):
@@ -25,19 +37,22 @@ def google_revoke_token(client):
 
 
 def google_fetch_user(client):
-    resp = client.get('userinfo')
+    resp = client.get('oauth2/v3/userinfo')
     profile = resp.json()
     uid = profile.get('id')
     username = None
     name = profile.get('name')
     email = profile.get('email')
-    return User(uid, username=username, name=name, email=email)
+    return User(uid, username=username, name=name, email=email, data=profile)
 
 
 google = AppFactory('google', {
-    'api_base_url': 'https://www.googleapis.com/',
-    'access_token_url': 'https://www.googleapis.com/oauth2/v4/token',
+    'api_base_url': GOOGLE_API_URL,
+    'access_token_url': GOOGLE_TOKEN_URL,
     'authorize_url': GOOGLE_AUTH_URL,
-    'client_kwargs': {'scope': ['openid', 'email', 'profile']},
-    'fetch_user': google_fetch_user,
+    'client_kwargs': {'scope': 'openid email profile'},
 }, "The OAuth app for Google API.")
+
+patch_method(google, google_revoke_token, 'revoke_token')
+patch_method(google, google_fetch_user, 'fetch_user')
+patch_method(google, google_parse_id_token, 'parse_openid')
