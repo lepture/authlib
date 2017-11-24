@@ -183,7 +183,7 @@ Create a registry with :class:`OAuth` object::
 
     from authlib.client.django import OAuth
 
-    oauth = OAuth(app)
+    oauth = OAuth()
 
 Configuration
 ~~~~~~~~~~~~~

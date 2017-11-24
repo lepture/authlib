@@ -56,4 +56,5 @@ And many codes come from these three projects.
 Authlib License
 ---------------
 
-Authlib is licensed under LGPLv3.
+Authlib is licensed under LGPLv3. But there is a commercial license under
+`Authlib Plus <https://authlib.org/plans>`_ plan.
