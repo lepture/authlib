@@ -21,11 +21,11 @@ Lovely features that Authlib has built-in:
 - Generic specification implementations
 - OAuth 1 (RFC5849)
 - OAuth 2 (RFC6749, RFC6750, RFC7009, RFC7662)
-- **TODO** OpenID Connect
-- **DONE** OAuth 1, OAuth 2 Requests Sessions
-- **DONE** Mixed OAuth 1 and OAuth 2 Client
-- **DONE** Integrated client with Flask
-- **DONE** Integrated client with Django
+- OpenID Connect
+- OAuth 1, OAuth 2 Requests Sessions
+- Mixed OAuth 1 and OAuth 2 Client
+- Integrated client with Flask
+- Integrated client with Django
 - **TODO** Flask OAuth 1 / OAuth 2 Servers
 - **TODO** Django OAuth 1 / OAuth 2 Servers
 
@@ -72,6 +72,7 @@ works.
    spec/rfc6750
    spec/rfc7009
    spec/rfc7662
+   spec/oidc
 
 Community & Contribution
 ------------------------

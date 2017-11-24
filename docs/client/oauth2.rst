@@ -138,3 +138,41 @@ string to protect users' resources, let's fix it::
 
 If you find a non standard OAuth 2 services, and you can't fix it. Please
 report it in GitHub issues.
+
+
+OAuth 2 OpenID Connect
+----------------------
+
+For services that support OpenID Connect, if a scope of ``openid`` is provided,
+the authorization server will return a value of ``id_token`` in response::
+
+    >>> from authlib.client import OAuth2Session
+    >>> client_id = 'Your Google client ID'
+    >>> client_secret = 'Your Google client secret'
+    >>> scope = 'openid email profile'
+    >>> session = OAuth2Session(client_id, client_secret, scope=scope)
+
+At the last step of ``session.fetch_access_token``, the return value contains
+a ``id_token``::
+
+    >>> resp = session.fetch_access_token(...)
+    >>> print(resp['id_token'])
+
+This ``id_token`` is a JWS text, it can not be used unless it is parsed.
+Authlib has provided tools for parsing and validating OpenID Connect id_token::
+
+    >>> from authlib.specs.oidc import parse_id_token, validate_id_token
+    >>> # GET keys from https://www.googleapis.com/oauth2/v3/certs
+    >>> token, header = parse_id_token(resp['id_token'], keys)
+    >>> validate_id_token(token, header=header, response_type='code', ...)
+
+It can also be completed by one step with :meth:`~authlib.specs.oidc.verify_id_token`.
+
+.. note::
+
+   To use OpenID Connect, you need to install Authlib with RSA::
+
+       $ pip install Authlib[rsa]
+
+There is a built-in Google app which supports OpenID Connect, checkout the
+source code in **authlib.clients.apps.google**.
