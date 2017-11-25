@@ -67,7 +67,7 @@ class OAuthAppsTest(TestCase):
         )
         client.set_token({'access_token': 'a', 'token_type': 'bearer'})
         client.session.send = mock_json_response({
-            'id': 1,
+            'sub': 1,
             'name': 'Grey Li',
             'email': 'a@b.c'
         })

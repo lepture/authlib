@@ -20,7 +20,7 @@ def google_parse_id_token(client, response, nonce=None):
     global GOOGLE_JWK_SET
     if not GOOGLE_JWK_SET:
         resp = client.get(GOOGLE_JWK_URL, withhold_token=True)
-        GOOGLE_JWK_SET = resp.json()
+        GOOGLE_JWK_SET = resp.json()['keys']
 
     id_token = verify_id_token(
         response, GOOGLE_JWK_SET,
@@ -28,7 +28,7 @@ def google_parse_id_token(client, response, nonce=None):
         client_id=client.client_key,
         nonce=nonce,
     )
-    return id_token.token
+    return _parse_profile(id_token.token)
 
 
 def google_revoke_token(client):
@@ -39,7 +39,11 @@ def google_revoke_token(client):
 def google_fetch_user(client):
     resp = client.get('oauth2/v3/userinfo')
     profile = resp.json()
-    uid = profile.get('id')
+    return _parse_profile(profile)
+
+
+def _parse_profile(profile):
+    uid = profile.get('sub')
     name = profile.get('name')
     email = profile.get('email')
     return User(uid, name=name, email=email, data=profile)
