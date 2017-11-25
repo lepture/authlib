@@ -7,7 +7,6 @@ There are built-in configuration for famous services. Import them and register
 them to frameworks registry. If you haven't read :ref:`client_frameworks`,
 head over back to that section.
 
-.. warning:: This is a preview version, the API will be stable in version 0.2.
 
 Twitter
 -------
@@ -25,7 +24,27 @@ TWITTER_CLIENT_KEY         Twitter Consumer Key
 TWITTER_CLIENT_SECRET      Twitter Consumer Secret
 ========================== =========================
 
-If you are using Django. It's still under construction.
+If you are using Django, you need to configure consumer key and secret in
+settings::
+
+    AUTHLIB_OAUTH_CLIENTS = {
+        'twitter': {
+            'client_key': 'Twitter Consumer Key',
+            'client_secret': 'Twitter Consumer Secret',
+        }
+    }
+
+You are use the ``twitter`` instance directly, or access it from ``oauth``
+registry::
+
+    twitter.authorize_redirect(callback_uri)  # Flask
+    twitter.authorize_redirect(request, callback_uri)  # Django
+
+There is a built-in ``fetch_user`` in every app, you can get the user info
+with a simple function invoke::
+
+    user = twitter.fetch_user()
+    # user contains: id, name, email, data
 
 Facebook
 --------
@@ -44,9 +63,19 @@ FACEBOOK_CLIENT_SECRET     Your Facebook client secret
 FACEBOOK_CLIENT_KWARGS     Configure scope and other things
 ========================== ================================
 
-If you are using Django. It's still under construction.
+The default scope in ``FACEBOOK_CLIENT_KWARGS`` is ``email public_profile``.
 
-BTW, compliance fix is configured already, no worries.
+For Django registry, configure client ID and secret in settings::
+
+    AUTHLIB_OAUTH_CLIENTS = {
+        'facebook': {
+            'client_key': 'Facebook Client ID',
+            'client_secret': 'Facebook Client Secret',
+            'client_kwargs': {'scope': 'Redefine scope here'},
+        }
+    }
+
+It has a built-in ``fetch_user`` method too.
 
 Google
 ------
@@ -65,6 +94,13 @@ GOOGLE_CLIENT_SECRET       Your Google client secret
 GOOGLE_CLIENT_KWARGS       Configure scope and other things
 ========================== ================================
 
+The default scope in ``GOOGLE_CLIENT_KWARGS`` is ``openid email profile``.
+Although there is a ``fetch_user`` method with Google app, you don't have
+to use it, since Google supports OpenID Connect::
+
+    >>> token = google.authorize_access_token()
+    >>> user = google.parse_openid(token)
+
 GitHub
 ------
 
@@ -82,6 +118,20 @@ GITHUB_CLIENT_SECRET       Your GitHub client secret
 GITHUB_CLIENT_KWARGS       Configure scope and other things
 ========================== ================================
 
+The default scope in ``GITHUB_CLIENT_KWARGS`` is ``user:email``.
+
+For Django registry, configure client ID and secret in settings::
+
+    AUTHLIB_OAUTH_CLIENTS = {
+        'github': {
+            'client_key': 'GitHub Client ID',
+            'client_secret': 'GitHub Client Secret',
+            'client_kwargs': {'scope': 'Redefine scope here'},
+        }
+    }
+
+It has a built-in ``fetch_user`` method too.
+
 Dropbox
 -------
 
@@ -98,3 +148,17 @@ DROPBOX_CLIENT_KEY         Your Dropbox client ID
 DROPBOX_CLIENT_SECRET      Your Dropbox client secret
 DROPBOX_CLIENT_KWARGS      Configure scope and other things
 ========================== ================================
+
+There is no default scope for Dropbox.
+
+For Django registry, configure client ID and secret in settings::
+
+    AUTHLIB_OAUTH_CLIENTS = {
+        'dropbox': {
+            'client_key': 'Dropbox Client ID',
+            'client_secret': 'Dropbox Client Secret',
+            'client_kwargs': {'scope': 'Redefine scope here'},
+        }
+    }
+
+It has a built-in ``fetch_user`` method too.

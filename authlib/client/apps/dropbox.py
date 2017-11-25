@@ -14,7 +14,6 @@ dropbox = AppFactory('dropbox', {
     'api_base_url': 'https://www.dropbox.com/2/',
     'access_token_url': 'https://api.dropboxapi.com/oauth2/token',
     'authorize_url': 'https://www.dropbox.com/oauth2/authorize',
-    'fetch_user': dropbox_fetch_user,
 }, "The OAuth app for Dropbox API.")
 
 patch_method(dropbox, dropbox_fetch_user, 'fetch_user')
