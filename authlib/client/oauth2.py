@@ -339,6 +339,7 @@ class OAuth2Session(Session):
             code = params['code']
         return prepare_token_request(
             'authorization_code',
+            client=self.client_id,
             code=code, body=body,
             redirect_uri=self.redirect_uri,
             state=state,
