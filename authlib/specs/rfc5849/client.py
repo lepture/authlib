@@ -3,7 +3,7 @@ import base64
 import hashlib
 from authlib.common.encoding import to_unicode, to_bytes
 from authlib.common.security import generate_token
-from authlib.common.urls import url_encode, extract_params
+from authlib.common.urls import extract_params
 from .signature import (
     SIGNATURE_HMAC_SHA1,
     SIGNATURE_PLAINTEXT,
@@ -133,7 +133,6 @@ class Client(object):
             if CONTENT_TYPE_FORM_URLENCODED in headers.get('Content-Type', ''):
                 decoded_body = extract_params(body) or []
                 body = prepare_form_encoded_body(oauth_params, decoded_body)
-                body = url_encode(body)
                 headers['Content-Type'] = CONTENT_TYPE_FORM_URLENCODED
         elif self.signature_type == SIGNATURE_TYPE_QUERY:
             uri = prepare_request_uri_query(oauth_params, uri)
