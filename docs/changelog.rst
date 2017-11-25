@@ -4,8 +4,8 @@ Changelog
 Here you can see the full list of changes between each Authlib release.
 
 
-Version 0.2
------------
+Version 0.2: Akemi
+------------------
 
 **Release date not decided**
 
@@ -16,6 +16,9 @@ well enough for daily use.
   Flask and Django.
 - Add Django integrations :class:`authlib.client.django.OAuth` and
   :class:`authlib.client.django.RemoteApp`.
+- Refactor on :class:`authlib.client.flask.OAuth` and
+  :class:`authlib.client.flask.RemoteApp`.
+- Refactor on :ref:`client_apps`, make it stable and ready to use.
 
 Version 0.1
 -----------

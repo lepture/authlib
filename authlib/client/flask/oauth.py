@@ -18,19 +18,18 @@ class OAuth(object):
         oauth = OAuth(app)
     """
 
-    def __init__(self, app=None, token_model=None):
+    def __init__(self, app=None, fetch_token=None, update_token=None):
         self._registry = {}
         self._clients = {}
 
         self.app = app
+        self.fetch_token = fetch_token
+        self.update_token = update_token
         self.cache = None
-        if token_model is None:
-            token_model = TokenMixin
-        self.token_model = token_model
         if app:
             self.init_app(app)
 
-    def init_app(self, app):
+    def init_app(self, app, fetch_token=None, update_token=None):
         """Init app with Flask instance.
 
         You can also pass the instance of Flask later::
@@ -41,6 +40,12 @@ class OAuth(object):
         self.app = app
         if 'OAUTH_CLIENT_CACHE_TYPE' in app.config:
             self.cache = Cache(app, config_prefix='OAUTH_CLIENT')
+
+        if fetch_token:
+            self.fetch_token = fetch_token
+        if update_token:
+            self.update_token = update_token
+
         app.extensions = getattr(app, 'extensions', {})
         app.extensions['authlib.client.flask'] = self
 
@@ -67,7 +72,10 @@ class OAuth(object):
                 v = self.app.config.get(conf_key, None)
                 kwargs[k] = v
 
-        client = RemoteApp(name, self.cache, self.token_model, **kwargs)
+        client = RemoteApp(
+            name, self.cache, self.fetch_token,
+            self.update_token, **kwargs
+        )
         if compliance_fix:
             client.compliance_fix = compliance_fix
 
@@ -101,34 +109,24 @@ class OAuth(object):
             raise AttributeError('No such client: %s' % key)
 
 
-class TokenMixin(object):
-    @classmethod
-    def fetch_token(cls, name):
-        raise NotImplementedError()
-
-    @classmethod
-    def update_token(cls, name, token):
-        raise NotImplementedError()
-
-
 class RemoteApp(OAuthClient):
     """Flask integrated RemoteApp of :class:`~authlib.client.OAuthClient`.
     It has built-in hooks for OAuthClient. The only required configuration
     is token model.
     """
 
-    def __init__(self, name, cache=None, token_model=None, *args, **kwargs):
+    def __init__(self, name, cache=None, fetch_token=None, update_token=None,
+                 *args, **kwargs):
         self.name = name
         self.cache = cache
+        self._fetch_token = fetch_token
+        self._update_token = update_token
 
-        if token_model is None:
-            token_model = TokenMixin
-        self.token_model = token_model
         super(RemoteApp, self).__init__(*args, **kwargs)
 
         if self.client_kwargs.get('refresh_token_url'):
             self.client_kwargs['token_updater'] = lambda token:\
-                token_model.update_token(name, token)
+                self._update_token(name, token)
 
     def _get_request_token(self):
         key = '_{}_req_token_'.format(self.name)
@@ -147,7 +145,7 @@ class RemoteApp(OAuthClient):
         self.cache.set(sid, token, timeout=600)
 
     def get_token(self):
-        return self.token_model.fetch_token(self.name)
+        return self._fetch_token(self.name)
 
     def authorize_redirect(self, callback_uri=None, **kwargs):
         """Create a HTTP Redirect for Authorization Endpoint.

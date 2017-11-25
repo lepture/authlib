@@ -90,8 +90,8 @@ Find more configuration on :ref:`flask_cache`. Please note, the
 
     OAUTH_CLIENT
 
-For database, we need a class which has two class methods. It would be
-something like::
+For database, we need to define two functions: ``fetch_token`` and ``update_token``.
+It would be something like::
 
     class MyTokenModel(db.Model):
         OAUTH1_TOKEN_TYPE = 'oauth1.0'
@@ -105,11 +105,8 @@ something like::
         alt_token = Column(String(48))
         expires_at = Column(Integer, default=0)
 
-        @classmethod
-        def fetch_token(cls, name):
-            q = cls.query.filter_by(name=name, user_id=current_user.id)
-            item = q.first()
-            if item.token_type == cls.OAUTH1_TOKEN_TYPE:
+        def to_dict(self):
+            if self.token_type == self.OAUTH1_TOKEN_TYPE:
                 return dict(
                     oauth_token=self.access_token,
                     oauth_token_secret=self.alt_token,
@@ -121,25 +118,32 @@ something like::
                 expires_at=self.expires_at,
             )
 
-        @classmethod
-        def update_token(cls, name, token):
-            item = cls(name=name, user_id=current_user.id)
-            if 'oauth_token' in token:
-                item.token_type = cls.OAUTH1_TOKEN_TYPE
-                item.access_token = token['oauth_token']
-                item.alt_token = token['oauth_token_secret']
-            else:
-                item.token_type = token.get('token_type', 'bearer')
-                item.access_token = token.get('access_token')
-                item.alt_token = token.get('refresh_token')
-                item.expires_at = token.get('expires_at')
-            db.session.add(item)
-            db.session.commit()
-            return item
 
-You need to register this **TokenModel** in the registry::
+    def fetch_token(name):
+        q = MyTokenModel.query.filter_by(name=name, user_id=current_user.id)
+        item = q.first()
+        return item.to_dict()
 
-    oauth = OAuth(app, token_model=MyTokenModel)
+    def update_token(name, token):
+        item = MyTokenModel(name=name, user_id=current_user.id)
+        if 'oauth_token' in token:
+            item.token_type = MyTokenModel.OAUTH1_TOKEN_TYPE
+            item.access_token = token['oauth_token']
+            item.alt_token = token['oauth_token_secret']
+        else:
+            item.token_type = token.get('token_type', 'bearer')
+            item.access_token = token.get('access_token')
+            item.alt_token = token.get('refresh_token')
+            item.expires_at = token.get('expires_at')
+        db.session.add(item)
+        db.session.commit()
+        return item
+
+You need to register this **fetch_token** and **update_token** in the registry::
+
+    oauth = OAuth(app, fetch_token=fetch_token, update_token=update_token)
+
+**update_token** is optional.
 
 Implement the Server
 ~~~~~~~~~~~~~~~~~~~~
@@ -169,6 +173,10 @@ token, make requests with your remote app::
 
     >>> resp = oauth.twitter.get('account/verify_credentials.json')
     >>> print(resp.json())
+
+.. note::
+   Authlib has a playground example which is implemented in Flask. Check it at
+   https://github.com/authlib/playground
 
 Django
 ------
