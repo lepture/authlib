@@ -21,7 +21,7 @@ setup(
     author='Hsiaoming Yang',
     author_email='me@lepture.com',
     url=homepage,
-    packages=find_packages(),
+    packages=find_packages(exclude=['tests']),
     description=(
         'A ready to use authentication library for '
         'OAuth1, OAuth2, OpenID connect and more.'

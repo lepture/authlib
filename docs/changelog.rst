@@ -7,7 +7,7 @@ Here you can see the full list of changes between each Authlib release.
 Version 0.2: Akemi
 ------------------
 
-**Release date not decided**
+**Released on Nov 25, 2017**
 
 This is a Beta version for Clients. You would expect that the clients works
 well enough for daily use.
