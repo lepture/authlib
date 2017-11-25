@@ -40,7 +40,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 pygments_style = 'sphinx'
 
 html_theme = 'sphinx_typlog_theme'
-html_favicon = 'favicon.ico'
+html_favicon = '_static/favicon.ico'
 html_theme_path = [sphinx_typlog_theme.get_path()]
 html_theme_options = {
     'logo': 'authlib.png',

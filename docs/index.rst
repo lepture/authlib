@@ -11,7 +11,7 @@ Release v\ |version|. (:ref:`Installation <install>`)
 Authlib is a ready to use authentication library. It is designed from low level
 APIs to high level APIs, to meet the needs of everyone.
 
-.. note:: Authlib is in Alpha stage. Only client part is implemented for now.
+.. note:: Authlib is in Beta stage. Only client part is implemented for now.
 
 Features
 --------
@@ -101,12 +101,17 @@ this part of the documentation is for you.
 
    api/client
    api/misc
-   changelog
 
 Get Updates
 -----------
 
-Stay tuned with Authlib, here is a Newsletter for you.
+Stay tuned with Authlib, here is a history of Authlib changes.
+
+.. toctree::
+   :maxdepth: 2
+
+   changelog
+
 
 .. admonition:: Subscribe the Newsletter
 
