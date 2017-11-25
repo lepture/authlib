@@ -40,10 +40,9 @@ def google_fetch_user(client):
     resp = client.get('oauth2/v3/userinfo')
     profile = resp.json()
     uid = profile.get('id')
-    username = None
     name = profile.get('name')
     email = profile.get('email')
-    return User(uid, username=username, name=name, email=email, data=profile)
+    return User(uid, name=name, email=email, data=profile)
 
 
 google = AppFactory('google', {

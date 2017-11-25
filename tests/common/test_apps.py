@@ -6,6 +6,7 @@ from authlib.client.apps import (
     dropbox_fetch_user,
     github_fetch_user,
     google_fetch_user,
+    facebook_fetch_user,
 )
 from tests.client_base import mock_json_response
 
@@ -21,13 +22,12 @@ class OAuthAppsTest(TestCase):
         client.set_token({'oauth_token': 'a', 'oauth_token_secret': 'b'})
         client.session.send = mock_json_response({
             'id': 1,
-            'screen_name': 'lepture',
             'name': 'Hsiaoming',
             'email': 'a@b.c'
         })
         user = twitter_fetch_user(client)
         self.assertEqual(user.id, 1)
-        self.assertEqual(user.username, 'lepture')
+        self.assertEqual(user.name, 'Hsiaoming')
 
     def test_dropbox_fetch_user(self):
         client = OAuthClient(
@@ -42,7 +42,7 @@ class OAuthAppsTest(TestCase):
         })
         user = dropbox_fetch_user(client)
         self.assertEqual(user.id, 1)
-        self.assertIsNone(user.username)
+        self.assertEqual(user.name, 'Hsiaoming')
 
     def test_github_fetch_user(self):
         client = OAuthClient(
@@ -58,7 +58,7 @@ class OAuthAppsTest(TestCase):
         })
         user = github_fetch_user(client)
         self.assertEqual(user.id, 1)
-        self.assertEqual(user.username, 'lepture')
+        self.assertEqual(user.name, 'Hsiaoming')
 
     def test_google_fetch_user(self):
         client = OAuthClient(
@@ -75,3 +75,17 @@ class OAuthAppsTest(TestCase):
         self.assertEqual(user.id, 1)
         self.assertEqual(user.name, 'Grey Li')
 
+    def test_facebook_fetch_user(self):
+        client = OAuthClient(
+            'a', 'b',
+            api_base_url='https://facebook.com/api'
+        )
+        client.set_token({'access_token': 'a', 'token_type': 'bearer'})
+        client.session.send = mock_json_response({
+            'id': 1,
+            'name': 'Hsiaoming',
+            'email': 'a@b.c'
+        })
+        user = facebook_fetch_user(client)
+        self.assertEqual(user.id, 1)
+        self.assertEqual(user.name, 'Hsiaoming')

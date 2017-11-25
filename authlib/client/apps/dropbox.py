@@ -7,8 +7,7 @@ def dropbox_fetch_user(client):
     uid = profile.get('account_id')
     name = profile['name']['display_name']
     email = profile.get('email')
-    username = None
-    return User(uid, username=username, name=name, email=email, data=profile)
+    return User(uid, name=name, email=email, data=profile)
 
 
 dropbox = AppFactory('dropbox', {

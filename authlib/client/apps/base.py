@@ -1,7 +1,7 @@
 import types
 from collections import namedtuple
 
-User = namedtuple('User', ['id', 'username', 'name', 'email', 'data'])
+User = namedtuple('User', ['id', 'name', 'email', 'data'])
 
 
 class AppFactory(object):
@@ -10,6 +10,7 @@ class AppFactory(object):
         self.config = config
         self.oauth = None
         self._client = None
+        self._patch = {}
         self.__doc__ = doc.lstrip()
 
     def register_to(self, oauth):
@@ -22,10 +23,9 @@ class AppFactory(object):
             return self._client
         if self.oauth:
             self._client = self.oauth.create_client(self.name)
-            methods = getattr(self, '__patch', None)
-            if methods:
-                for name in methods:
-                    _patch(self._client, methods[name], name)
+            if self._patch:
+                for name in self._patch:
+                    _patch(self._client, self._patch[name], name)
             return self._client
         raise RuntimeError('App not `register_to` any oauth registry')
 
@@ -41,9 +41,7 @@ def patch_method(instance, func, name=None):
         name = func.__name__
 
     _patch(instance, func, name)
-    if not hasattr(instance, '__patch'):
-        instance.__patch = {}
-    instance.__patch[name] = func
+    instance._patch[name] = func
 
 
 def _patch(instance, func, name):

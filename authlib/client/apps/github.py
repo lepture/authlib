@@ -5,10 +5,9 @@ def github_fetch_user(client):
     resp = client.get('user')
     profile = resp.json()
     uid = profile.get('id')
-    username = profile.get('login')
     name = profile.get('name')
     email = profile.get('email')
-    return User(uid, username=username, name=name, email=email, data=profile)
+    return User(uid, name=name, email=email, data=profile)
 
 
 github = AppFactory('github', {
