@@ -432,18 +432,6 @@ def sign_hmac_sha1(base_string, client_secret, resource_owner_secret):
     return to_unicode(sig)
 
 
-_jwtrs1 = None
-
-
-def _jwt_rs1_signing_algorithm():
-    # jwt has some nice pycrypto/cryptography abstractions
-    global _jwtrs1
-    if _jwtrs1 is None:
-        import jwt.algorithms as jwtalgo
-        _jwtrs1 = jwtalgo.RSAAlgorithm(jwtalgo.hashes.SHA1)
-    return _jwtrs1
-
-
 def sign_rsa_sha1(base_string, rsa_private_key):
     """**RSA-SHA1**
 
@@ -460,10 +448,9 @@ def sign_rsa_sha1(base_string, rsa_private_key):
     .. _`RFC3447, Section 8.2`: http://tools.ietf.org/html/rfc3447#section-8.2
 
     """
+    from .rsa import sign_sha1
     base_string = to_bytes(base_string)
-    alg = _jwt_rs1_signing_algorithm()
-    key = alg.prepare_key(to_unicode(rsa_private_key))
-    s = alg.sign(base_string, key)
+    s = sign_sha1(to_bytes(base_string), rsa_private_key)
     sig = binascii.b2a_base64(s)[:-1]
     return to_unicode(sig)
 
@@ -544,15 +531,12 @@ def verify_rsa_sha1(signature, http_method, uri, params, rsa_public_key):
 
     .. _`RFC2616 section 5.2`: http://tools.ietf.org/html/rfc2616#section-5.2
     """
+    from .rsa import verify_sha1
     uri = normalize_base_string_uri(uri)
     norm_params = normalize_parameters(params)
     text = construct_base_string(http_method, uri, norm_params)
-
-    alg = _jwt_rs1_signing_algorithm()
-    key = alg.prepare_key(to_unicode(rsa_public_key))
-
     sig = binascii.a2b_base64(to_bytes(signature))
-    return alg.verify(to_bytes(text), key, sig)
+    return verify_sha1(sig, to_bytes(text), rsa_public_key)
 
 
 def verify_plaintext(signature, client_secret=None, resource_owner_secret=None):

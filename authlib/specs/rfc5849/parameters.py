@@ -54,9 +54,7 @@ def prepare_headers(oauth_params, headers=None, realm=None):
         header_parameters = 'realm="{}", '.format(realm) + header_parameters
 
     # the auth-scheme name set to "OAuth" (case insensitive).
-    authorization_header = 'OAuth %s' % header_parameters
-
-    headers['Authorization'] = authorization_header
+    headers['Authorization'] = 'OAuth {}'.format(header_parameters)
     return headers
 
 
