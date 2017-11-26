@@ -56,6 +56,7 @@ class Cache(object):
     * filesystem: It caches things in local filesystem. Available
       configurations::
 
+          AUTHLIB_CACHE_DIR = ''  # required
           AUTHLIB_CACHE_THRESHOLD = 500
     """
     def __init__(self, app, config_prefix='AUTHLIB', **kwargs):
