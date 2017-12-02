@@ -17,15 +17,6 @@ for you, some of them even don't require code writing:
 3. Write a blog post on Authlib.
 4. Give a star on GitHub and spread Authlib to other people.
 
-Be a Backer
------------
-
-Support my work on `Patreon`_, be a backer, and your name will be listed in
-Backers file in the code repository. If you are a **Great Backer**, you will
-be listed on our website.
-
-.. _`Patreon`: https://www.patreon.com/lepture
-
 Sponsor the Project
 -------------------
 
