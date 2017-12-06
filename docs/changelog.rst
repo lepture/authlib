@@ -4,6 +4,19 @@ Changelog
 Here you can see the full list of changes between each Authlib release.
 
 
+Version 0.2.1
+-------------
+
+**Released on Dec 6, 2017**
+
+This is a bugfix version for Akemi. Sorry for the typo.
+
+- Fixed a typo in :meth:`~authlib.client.OAuth2Session.fetch_access_token`
+  which caused `issue #5`_.
+- Removed pyjwt dependency from rfc5849.
+
+.. _`issue #5`: https://github.com/lepture/authlib/issues/5
+
 Version 0.2: Akemi
 ------------------
 
