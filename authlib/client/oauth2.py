@@ -308,6 +308,7 @@ class OAuth2Session(Session):
         * access_token_response: invoked before token parsing.
         * refresh_token_response: invoked before refresh token parsing.
         * protected_request: invoked before making a request.
+        * revoke_token_request: invoked before revoking a token.
         """
         if hook_type not in self.compliance_hook:
             raise ValueError('Hook type %s is not in %s.',
@@ -339,7 +340,7 @@ class OAuth2Session(Session):
             code = params['code']
         return prepare_token_request(
             'authorization_code',
-            client=self.client_id,
+            client_id=self.client_id,
             code=code, body=body,
             redirect_uri=self.redirect_uri,
             state=state,
