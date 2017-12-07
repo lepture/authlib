@@ -2,14 +2,14 @@ language: python
 sudo: false
 cache: pip
 
-python:
-  - 2.7
-  - 3.5
-  - 3.6
-  - pypy
-
-env:
-  - TOXENV=py,flask,django,codecov
+matrix:
+  include:
+  - python: 2.7
+    env: TOXENV=py,flask,py27-django,codecov
+  - python: 3.5
+    env: TOXENV=py,flask,py35-django,codecov
+  - python: 3.6
+    env: TOXENV=py,flask,py36-django,codecov
 
 install:
   - pip install -U setuptools
