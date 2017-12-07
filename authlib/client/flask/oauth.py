@@ -173,7 +173,7 @@ class RemoteApp(OAuthClient):
             session[key] = state
         return redirect(uri)
 
-    def authorize_access_token(self):
+    def authorize_access_token(self, **kwargs):
         """Authorize access token."""
         if self.request_token_url:
             request_token = self._get_request_token()
@@ -188,6 +188,8 @@ class RemoteApp(OAuthClient):
         cb_key = '_{}_callback_'.format(self.name)
         callback_uri = session.pop(cb_key, None)
         params = request.args.to_dict(flat=True)
+        params.update(kwargs)
+
         return self.fetch_access_token(
             callback_uri,
             request_token,
