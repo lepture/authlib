@@ -5,11 +5,11 @@ cache: pip
 matrix:
   include:
   - python: 2.7
-    env: TOXENV=py,flask,py27-django,codecov
+    env: TOXENV=py27,flask,py27-django,codecov
   - python: 3.5
-    env: TOXENV=py,flask,py35-django,codecov
+    env: TOXENV=py35,flask,py35-django,codecov
   - python: 3.6
-    env: TOXENV=py,flask,py36-django,codecov
+    env: TOXENV=py36,flask,py36-django,codecov
 
 install:
   - pip install -U setuptools
