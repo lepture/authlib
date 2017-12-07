@@ -189,7 +189,6 @@ class RemoteApp(OAuthClient):
         callback_uri = session.pop(cb_key, None)
         params = request.args.to_dict(flat=True)
         params.update(kwargs)
-
         return self.fetch_access_token(
             callback_uri,
             request_token,

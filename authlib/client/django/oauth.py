@@ -119,7 +119,7 @@ class RemoteApp(OAuthClient):
                 request.session[key] = state
         return HttpResponseRedirect(url)
 
-    def authorize_access_token(self, request):
+    def authorize_access_token(self, request, **kwargs):
         """Fetch access token in one step.
 
         :param request: HTTP request instance from Django view.
@@ -139,6 +139,7 @@ class RemoteApp(OAuthClient):
         key = '_{}_callback_'.format(self.name)
         callback_uri = request.session.get(key, None)
         params = request.GET.dict()
+        params.update(kwargs)
         return self.fetch_access_token(
             callback_uri,
             request_token,
