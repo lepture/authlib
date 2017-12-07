@@ -3,7 +3,7 @@ from requests import Session
 from requests.auth import HTTPBasicAuth
 from ..common.security import generate_token
 from ..common.urls import url_decode
-from ..specs.rfc6749.grant import (
+from ..specs.rfc6749.parameters import (
     prepare_grant_uri,
     prepare_token_request,
     parse_authorization_code_response,

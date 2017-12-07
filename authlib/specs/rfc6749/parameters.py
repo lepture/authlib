@@ -4,7 +4,12 @@ from authlib.common.urls import (
     add_params_to_qs,
 )
 from authlib.common.encoding import to_unicode
-from .errors import MissingCodeError, MismatchingStateError
+from .errors import (
+    MissingCodeError,
+    MissingTokenError,
+    MissingTokenTypeError,
+    MismatchingStateError,
+)
 from .util import list_to_scope
 
 
@@ -142,7 +147,7 @@ def parse_authorization_code_response(uri, state=None):
     params = dict(urlparse.parse_qsl(query))
 
     if 'code' not in params:
-        raise MissingCodeError("Missing code parameter in response.")
+        raise MissingCodeError()
 
     if state and params.get('state', None) != state:
         raise MismatchingStateError()
@@ -150,7 +155,7 @@ def parse_authorization_code_response(uri, state=None):
     return params
 
 
-def parse_implicit_response(uri, state=None, scope=None):
+def parse_implicit_response(uri, state=None):
     """Parse the implicit token response URI into a dict.
 
     If the resource owner grants the access request, the authorization
@@ -194,7 +199,13 @@ def parse_implicit_response(uri, state=None, scope=None):
     fragment = urlparse.urlparse(uri).fragment
     params = dict(urlparse.parse_qsl(fragment, keep_blank_values=True))
 
+    if 'access_token' not in params:
+        raise MissingTokenError()
+
+    if 'token_type' not in params:
+        raise MissingTokenTypeError()
+
     if state and params.get('state', None) != state:
-        raise ValueError("Mismatching or missing state in params.")
+        raise MismatchingStateError()
 
     return params

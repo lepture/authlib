@@ -77,6 +77,17 @@ class InsecureTransportError(OAuth2Error):
 
 class MissingCodeError(OAuth2Error):
     error = 'missing_code'
+    description = 'Missing `code` in response.'
+
+
+class MissingTokenError(OAuth2Error):
+    error = 'missing_token'
+    description = 'Missing `access_token` in response.'
+
+
+class MissingTokenTypeError(OAuth2Error):
+    error = 'missing_token_type'
+    description = 'Missing `token_type` in response.'
 
 
 class MismatchingStateError(OAuth2Error):
