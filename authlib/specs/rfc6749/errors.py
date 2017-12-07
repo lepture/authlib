@@ -75,14 +75,32 @@ class InsecureTransportError(OAuth2Error):
             raise cls()
 
 
+class InvalidRequestError(OAuth2Error):
+    error = 'invalid_request'
+
+
+class InvalidScopeError(OAuth2Error):
+    error = 'invalid_request'
+    description = 'The requested scope is invalid, unknown, or malformed.'
+
+
+class UnauthorizedClientError(OAuth2Error):
+    error = 'unauthorized_client'
+
+
 class MissingCodeError(OAuth2Error):
     error = 'missing_code'
-    description = 'Missing `code` in response.'
 
 
 class MissingTokenError(OAuth2Error):
     error = 'missing_token'
-    description = 'Missing `access_token` in response.'
+
+
+class AccessDeniedError(OAuth2Error):
+    error = 'access_denied'
+    description = (
+        'The resource owner or authorization server denied the request'
+    )
 
 
 class MissingTokenTypeError(OAuth2Error):

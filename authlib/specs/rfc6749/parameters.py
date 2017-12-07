@@ -147,7 +147,7 @@ def parse_authorization_code_response(uri, state=None):
     params = dict(urlparse.parse_qsl(query))
 
     if 'code' not in params:
-        raise MissingCodeError()
+        raise MissingCodeError('Missing `code` in response.')
 
     if state and params.get('state', None) != state:
         raise MismatchingStateError()
@@ -200,7 +200,7 @@ def parse_implicit_response(uri, state=None):
     params = dict(urlparse.parse_qsl(fragment, keep_blank_values=True))
 
     if 'access_token' not in params:
-        raise MissingTokenError()
+        raise MissingTokenError('Missing `access_token` in response.')
 
     if 'token_type' not in params:
         raise MissingTokenTypeError()
