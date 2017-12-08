@@ -1,3 +1,7 @@
+"""
+https://tools.ietf.org/html/rfc6749#section-5.2
+"""
+
 from authlib.common.security import is_secure_transport
 
 
@@ -76,16 +80,50 @@ class InsecureTransportError(OAuth2Error):
 
 
 class InvalidRequestError(OAuth2Error):
+    """The request is missing a required parameter, includes an
+    unsupported parameter value (other than grant type),
+    repeats a parameter, includes multiple credentials,
+    utilizes more than one mechanism for authenticating the
+    client, or is otherwise malformed.
+
+    https://tools.ietf.org/html/rfc6749#section-5.2
+    """
     error = 'invalid_request'
 
 
-class InvalidScopeError(OAuth2Error):
-    error = 'invalid_request'
-    description = 'The requested scope is invalid, unknown, or malformed.'
+class InvalidClientError(OAuth2Error):
+    """Client authentication failed (e.g., unknown client, no
+    client authentication included, or unsupported
+    authentication method).  The authorization server MAY
+    return an HTTP 401 (Unauthorized) status code to indicate
+    which HTTP authentication schemes are supported.  If the
+    client attempted to authenticate via the "Authorization"
+    request header field, the authorization server MUST
+    respond with an HTTP 401 (Unauthorized) status code and
+    include the "WWW-Authenticate" response header field
+    matching the authentication scheme used by the client.
+
+    https://tools.ietf.org/html/rfc6749#section-5.2
+    """
+    error = 'invalid_client'
+    status_code = 401
+
+
+class InvalidGrantError(OAuth2Error):
+    error = 'invalid_grant'
 
 
 class UnauthorizedClientError(OAuth2Error):
     error = 'unauthorized_client'
+
+
+class UnsupportedGrantTypeError(OAuth2Error):
+    error = 'unsupported_grant_type'
+
+
+class InvalidScopeError(OAuth2Error):
+    error = 'invalid_scope'
+    description = 'The requested scope is invalid, unknown, or malformed.'
 
 
 class MissingCodeError(OAuth2Error):

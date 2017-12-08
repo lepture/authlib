@@ -1,43 +1,41 @@
-from authlib.common.urls import url_decode, urlparse
 from ..errors import (
     InvalidRequestError,
-    UnauthorizedClientError,
+    InvalidScopeError,
 )
-from ..util import extract_basic_authorization
+from ..util import extract_basic_authorization, scope_to_list
 
 
 class BaseGrant(object):
     AUTHORIZATION_ENDPOINT = False
     ACCESS_TOKEN_ENDPOINT = False
+    ACCESS_TOKEN_METHODS = ['POST']
+    GRANT_TYPE = None
 
-    def __init__(self, method, uri, body, headers, client_model, params=None):
-        self.method = method
-        self.body = body
+    def __init__(self, uri, params, headers, client_model):
         self.headers = headers
         self.uri = uri
-
-        if params is None:
-            if method == 'GET':
-                params = dict(url_decode(urlparse.urlparse(uri).query))
-            elif method == 'POST':
-                params = url_decode(body)
-
         self.params = params or {}
         self.client_model = client_model
+        self.state = params.get('state')
+        self.redirect_uri = self.params.get('redirect_uri')
         self._clients = {}
+
+    @property
+    def client(self):
+        return self.get_client_by_id(self.params['client_id'])
 
     def get_client_by_id(self, client_id):
         if client_id in self._clients:
             return self._clients[client_id]
-        client = self.client_model.get_by_id(client_id)
+        client = self.client_model.get_by_client_id(client_id)
         self._clients[client_id] = client
         return client
 
-    def get_and_validate_client(self, client_id, state=None):
+    def get_and_validate_client(self, client_id):
         if client_id is None:
             raise InvalidRequestError(
                 'Missing "client_id" in request.',
-                state=state,
+                state=self.state,
                 uri=self.uri,
             )
 
@@ -45,43 +43,36 @@ class BaseGrant(object):
         if not client:
             raise InvalidRequestError(
                 'Invalid "client_id" value in request.',
-                state=state,
+                state=self.state,
                 uri=self.uri,
             )
         return client
 
-    def parse_client_id_and_secret(self):
+    def parse_basic_auth_header(self):
         auth_header = self.headers.get('Authorization', '')
         if auth_header and ' ' in auth_header:
             auth_type, auth_token = auth_header.split(maxsplit=1)
             if auth_token.lower() == 'basic':
                 return extract_basic_authorization(auth_token)
 
-        return self.params.get('client_id'), self.params.get('client_secret')
-
-    def authenticate_client(self, client_id, client_secret=None):
-        """Authenticate client with client_id and client_secret.
-
-        require client authentication for confidential clients or for any
-        client that was issued client credentials
-
-        :param client_id:
-        :param client_secret:
-        :return: client
-        """
-        client = self.get_and_validate_client(client_id)
-        if client.check_client_type('confidential'):
-            if client_secret is None:
+    def validate_authorization_redirect_uri(self, client):
+        if self.redirect_uri:
+            if not client.check_redirect_uri(self.redirect_uri):
                 raise InvalidRequestError(
-                    'Missing "client_secret" in request.',
+                    'Invalid "redirect_uri" in request.',
+                    state=self.state,
                     uri=self.uri,
                 )
-            if client_secret != client.client_secret:
-                raise UnauthorizedClientError(uri=self.uri)
-            return client
+        else:
+            redirect_uri = client.get_default_redirect_uri()
+            if not redirect_uri:
+                raise InvalidRequestError(
+                    'Missing "redirect_uri" in request.'
+                )
+            self.redirect_uri = redirect_uri
 
-        if client_secret is not None:
-            if client_secret != client.client_secret:
-                raise UnauthorizedClientError(uri=self.uri)
-
-        return client
+    def validate_requested_scope(self, client):
+        if 'scope' in self.params:
+            requested_scopes = set(scope_to_list(self.params['scope']))
+            if not client.check_requested_scopes(requested_scopes):
+                raise InvalidScopeError(state=self.state, uri=self.uri)

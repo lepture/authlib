@@ -3,10 +3,10 @@ from .base import BaseGrant
 from ..errors import (
     UnauthorizedClientError,
     InvalidRequestError,
-    InvalidScopeError,
+    InvalidGrantError,
+    InvalidClientError,
     AccessDeniedError,
 )
-from ..util import scope_to_list
 
 
 class AuthorizationCodeGrant(BaseGrant):
@@ -22,9 +22,9 @@ class AuthorizationCodeGrant(BaseGrant):
     |   Owner  |
     |          |
     +----------+
-      ^
-      |
-     (B)
+         ^
+         |
+        (B)
     +----|-----+          Client Identifier      +---------------+
     |         -+----(A)-- & Redirection URI ---->|               |
     |  User-   |                                 | Authorization |
@@ -32,19 +32,25 @@ class AuthorizationCodeGrant(BaseGrant):
     |          |                                 |               |
     |         -+----(C)-- Authorization Code ---<|               |
     +-|----|---+                                 +---------------+
-    |    |                                         ^      v
-    (A)  (C)                                       |      |
-    |    |                                         |      |
-    ^    v                                         |      |
-    +---------+                                    |      |
-    |         |>---(D)-- Authorization Code -------'      |
-    |  Client |          & Redirection URI                |
-    |         |                                           |
-    |         |<---(E)----- Access Token -----------------'
+      |    |                                         ^      v
+     (A)  (C)                                        |      |
+      |    |                                         |      |
+      ^    v                                         |      |
+    +---------+                                      |      |
+    |         |>---(D)-- Authorization Code ---------'      |
+    |  Client |          & Redirection URI                  |
+    |         |                                             |
+    |         |<---(E)----- Access Token -------------------'
     +---------+       (w/ Optional Refresh Token)
     """
     AUTHORIZATION_ENDPOINT = True
     ACCESS_TOKEN_ENDPOINT = True
+    GRANT_TYPE = 'authorization_code'
+
+    def __init__(self, uri, params, headers, client_model):
+        super(AuthorizationCodeGrant, self).__init__(uri, params, headers, client_model)
+        self._authenticated_client = None
+        self._authorization_code = None
 
     @staticmethod
     def check_authorization_endpoint(params):
@@ -52,7 +58,7 @@ class AuthorizationCodeGrant(BaseGrant):
 
     @staticmethod
     def check_token_endpoint(params):
-        return params.get('grant_type') == 'authorization_code'
+        return params.get('grant_type') == AuthorizationCodeGrant.GRANT_TYPE
 
     def validate_authorization_request(self):
         """The client constructs the request URI by adding the following
@@ -103,32 +109,17 @@ class AuthorizationCodeGrant(BaseGrant):
         # ignore validate for response_type, since it is validated by
         # check_authorization_endpoint
         client_id = self.params.get('client_id')
-        state = self.params.get('state', None)
-        client = self.get_and_validate_client(client_id, state)
+        client = self.get_and_validate_client(client_id)
         if not client.check_response_type('code'):
             raise UnauthorizedClientError(
                 'The client is not authorized to request an authorization '
                 'code using this method',
-                state=state,
+                state=self.state,
                 uri=self.uri,
             )
 
-        if 'redirect_uri' in self.params:
-            if not client.check_redirect_uri(self.params['redirect_uri']):
-                raise InvalidRequestError(
-                    'Invalid "redirect_uri" in request.',
-                    state=state,
-                    uri=self.uri,
-                )
-        elif not client.default_redirect_uri:
-            raise InvalidRequestError(
-                'Missing "redirect_uri" in request.'
-            )
-
-        if 'scope' in self.params:
-            requested_scopes = set(scope_to_list(self.params['scope']))
-            if not client.check_requested_scopes(requested_scopes):
-                raise InvalidScopeError(state=state, uri=self.uri)
+        self.validate_authorization_redirect_uri(client)
+        self.validate_requested_scope(client)
 
     def create_authorization_response(self, grant_user):
         """If the resource owner grants the access request, the authorization
@@ -164,24 +155,21 @@ class AuthorizationCodeGrant(BaseGrant):
 
         .. _`Section 4.1.2`: http://tools.ietf.org/html/rfc6749#section-4.1.2
 
+        :param grant_user: pass user model if resource owner granted the
+            request, otherwise pass None.
         :returns: (status_code, body, headers)
         """
-        redirect_uri = self.params.get('redirect_uri')
-        client = self.get_client_by_id(self.params['client_id'])
-        if not redirect_uri:
-            redirect_uri = client.default_redirect_uri
-
-        state = self.params.get('state')
         if grant_user:
-            code = client.create_authorization_code(grant_user, redirect_uri)
+            code = self.create_authorization_code(
+                self.client, grant_user, **self.params)
             params = [('code', code)]
-            if state:
-                params.append(('state', state))
+            if self.state:
+                params.append(('state', self.state))
         else:
-            error = AccessDeniedError(state=state, uri=self.uri)
+            error = AccessDeniedError(state=self.state, uri=self.uri)
             params = error.get_body()
 
-        uri = add_params_to_uri(redirect_uri, params)
+        uri = add_params_to_uri(self.redirect_uri, params)
         headers = [('Location', uri)]
         return 302, '', headers
 
@@ -228,10 +216,9 @@ class AuthorizationCodeGrant(BaseGrant):
         """
         # ignore validate for grant_type, since it is validated by
         # check_token_endpoint
-        client_id, client_secret = self.parse_client_id_and_secret()
 
         # authenticate the client if client authentication is included
-        client = self.authenticate_client(client_id, client_secret)
+        client = self.authenticate_client()
 
         code = self.params.get('code')
         if code is None:
@@ -243,15 +230,18 @@ class AuthorizationCodeGrant(BaseGrant):
         # ensure that the authorization code was issued to the authenticated
         # confidential client, or if the client is public, ensure that the
         # code was issued to "client_id" in the request
-        authorization_code = client.parse_authorization_code(code)
+        authorization_code = self.parse_authorization_code(client, code)
         if not authorization_code:
-            raise InvalidRequestError(
+            raise InvalidGrantError(
                 'Invalid "code" in request.',
                 uri=self.uri,
             )
-        return authorization_code
 
-    def create_access_token_response(self, user):
+        # save for create_access_token_response
+        self._authenticated_client = client
+        self._authorization_code = authorization_code
+
+    def create_access_token_response(self):
         """If the access token request is valid and authorized, the
         authorization server issues an access token and optional refresh
         token as described in Section 5.1.  If the request client
@@ -275,13 +265,14 @@ class AuthorizationCodeGrant(BaseGrant):
                 "example_parameter":"example_value"
             }
 
-        :param user: create access token for the specified user.
         :returns: (status_code, body, headers)
 
         .. _`Section 4.1.4`: http://tools.ietf.org/html/rfc6749#section-4.1.4
         """
-        client = self.get_client_by_id(self.params['client_id'])
-        token = client.create_access_token(user)
+        token = self.create_access_token(
+            self._authenticated_client,
+            self._authorization_code
+        )
 
         # NOTE: there is no charset for application/json, since
         # application/json should always in UTF-8.
@@ -293,3 +284,38 @@ class AuthorizationCodeGrant(BaseGrant):
             ('Pragma', 'no-cache'),
         ]
         return 200, token, headers
+
+    def authenticate_client(self):
+        # TODO: document on how to support other means
+        client_params = self.parse_basic_auth_header()
+        if not client_params:
+            client_params = (
+                self.params.get('client_id'),
+                self.params.get('client_secret')
+            )
+
+        client_id, client_secret = client_params
+        client = self.get_and_validate_client(client_id)
+
+        if not client.check_grant_type('code'):
+            raise UnauthorizedClientError(uri=self.uri)
+
+        if client.check_client_type('confidential'):
+            if client_secret != client.client_secret:
+                raise InvalidClientError(uri=self.uri)
+            return client
+
+        if client_secret is not None:
+            if client_secret != client.client_secret:
+                raise InvalidClientError(uri=self.uri)
+
+        return client
+
+    def create_authorization_code(self, client, user, **kwargs):
+        raise NotImplementedError()
+
+    def parse_authorization_code(self, client, code):
+        raise NotImplementedError()
+
+    def create_access_token(self, client, authorization_code):
+        raise NotImplementedError()
