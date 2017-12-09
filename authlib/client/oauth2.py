@@ -11,7 +11,8 @@ from ..specs.rfc6749.parameters import (
 )
 from ..specs.rfc6749 import OAuth2Token
 from ..specs.rfc6749 import CustomOAuth2Error, InsecureTransportError
-from ..specs.rfc6750 import BearToken, ExpiredTokenError
+from ..specs.rfc6750 import ExpiredTokenError
+from ..specs.rfc6750 import add_bearer_token
 from ..specs.rfc7009 import prepare_revoke_token_request
 
 __all__ = ['OAuth2Session']
@@ -81,13 +82,13 @@ class OAuth2Session(Session):
         }
 
     @property
-    def token_cls(self):
+    def add_token(self):
         if not self.token:
             return None
 
         token_type = self.token['token_type'].lower()
         if token_type == 'bearer':
-            return BearToken
+            return add_bearer_token
 
     def authorization_url(self, url, state=None, **kwargs):
         """Generate an authorization URL.
@@ -289,8 +290,8 @@ class OAuth2Session(Session):
                     self.refresh_token_url, auth=auth, **kwargs
                 )
 
-            tok = self.token_cls(self.token['access_token'])
-            url, headers, data = tok.add_token(
+            url, headers, data = self.add_token(
+                self.token['access_token'],
                 url, headers, data, self.token_placement
             )
 

@@ -154,13 +154,9 @@ class OAuth2SessionTest(TestCase):
         )
 
     def test_token_status(self):
-        sess = OAuth2Session('foo')
-        self.assertIsNone(sess.token_cls)
-
         token = dict(access_token='a', token_type='bearer', expires_at=100)
         sess = OAuth2Session('foo', token=token)
 
-        self.assertIsNotNone(sess.token_cls)
         self.assertTrue(sess.token.is_expired)
 
     def test_token_expired(self):

@@ -11,7 +11,7 @@
 
     :copyright: (c) 2017 by Hsiaoming Yang.
 """
-from ..rfc6749.errors import OAuth2Error
+from ..rfc6749.errors import OAuth2Error, InvalidRequestError
 
 __all__ = [
     'InvalidRequestError',
@@ -21,19 +21,6 @@ __all__ = [
     'MalformedTokenError',
     'InsufficientScopeError'
 ]
-
-
-class InvalidRequestError(OAuth2Error):
-    """The request is missing a required parameter, includes an
-    unsupported parameter or parameter value, repeats the same
-    parameter, uses more than one method for including an access
-    token, or is otherwise malformed.  The resource server SHOULD
-    respond with the HTTP 400 (Bad Request) status code.
-
-    https://tools.ietf.org/html/rfc6750#section-3.1
-    """
-    error = 'invalid_request'
-    status_code = 400
 
 
 class InvalidTokenError(OAuth2Error):

@@ -11,5 +11,5 @@
 
 # flake8: noqa
 
-from .token import *
 from .errors import *
+from .parameters import add_bearer_token
