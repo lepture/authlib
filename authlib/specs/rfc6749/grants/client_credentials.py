@@ -26,9 +26,9 @@ class ClientCredentialsGrant(BaseGrant):
     ACCESS_TOKEN_ENDPOINT = True
     GRANT_TYPE = 'client_credentials'
 
-    def __init__(self, uri, params, headers, client_model):
+    def __init__(self, uri, params, headers, client_model, token_generator):
         super(ClientCredentialsGrant, self).__init__(
-            uri, params, headers, client_model)
+            uri, params, headers, client_model, token_generator)
         self._authenticated_client = None
 
     @staticmethod
@@ -98,18 +98,12 @@ class ClientCredentialsGrant(BaseGrant):
 
         :returns: (status_code, body, headers)
         """
-
-        token = self.create_access_token(self._authenticated_client)
-        # A refresh token SHOULD NOT be included
-        if 'refresh_token' in token:
-            del token['refresh_token']
-
-        headers = [
-            ('Content-Type', 'application/json'),
-            ('Cache-Control', 'no-store'),
-            ('Pragma', 'no-cache'),
-        ]
-        return 200, token, headers
+        token = self.token_generator(
+            self._authenticated_client, self.GRANT_TYPE,
+            include_refresh_token=False,
+        )
+        self.create_access_token(token, self._authenticated_client)
+        return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_client(self):
         client_params = self.parse_basic_auth_header()
@@ -128,5 +122,5 @@ class ClientCredentialsGrant(BaseGrant):
 
         return client
 
-    def create_access_token(self, client):
+    def create_access_token(self, token, client):
         raise NotImplementedError()

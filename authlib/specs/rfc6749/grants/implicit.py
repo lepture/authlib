@@ -182,8 +182,13 @@ class ImplicitGrant(BaseGrant):
         :returns: (status_code, body, headers)
         """
         if grant_user:
-            token = self.create_access_token(
-                self.client, grant_user, **self.params)
+            token = self.token_generator(
+                self.client, self.GRANT_TYPE,
+                include_refresh_token=False
+            )
+            self.create_access_token(
+                token, self.client, grant_user, **self.params
+            )
             params = [
                 ('access_token', token['access_token']),
                 ('token_type', token['token_type']),
@@ -202,5 +207,5 @@ class ImplicitGrant(BaseGrant):
         headers = [('Location', uri)]
         return 302, '', headers
 
-    def create_access_token(self, client, grant_user, **kwargs):
+    def create_access_token(self, token, client, grant_user, **kwargs):
         raise NotImplementedError()

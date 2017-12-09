@@ -3,8 +3,9 @@ from .errors import InvalidGrantError
 
 
 class AuthorizationServer(object):
-    def __init__(self, client_model):
+    def __init__(self, client_model, token_generator):
         self.client_model = client_model
+        self.token_generator = token_generator
         self._authorization_endpoints = set()
         self._access_token_endpoints = set()
 

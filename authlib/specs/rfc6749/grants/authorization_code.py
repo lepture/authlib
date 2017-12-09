@@ -47,8 +47,9 @@ class AuthorizationCodeGrant(BaseGrant):
     ACCESS_TOKEN_ENDPOINT = True
     GRANT_TYPE = 'authorization_code'
 
-    def __init__(self, uri, params, headers, client_model):
-        super(AuthorizationCodeGrant, self).__init__(uri, params, headers, client_model)
+    def __init__(self, uri, params, headers, client_model, token_generator):
+        super(AuthorizationCodeGrant, self).__init__(
+            uri, params, headers, client_model, token_generator)
         self._authenticated_client = None
         self._authorization_code = None
 
@@ -269,21 +270,16 @@ class AuthorizationCodeGrant(BaseGrant):
 
         .. _`Section 4.1.4`: http://tools.ietf.org/html/rfc6749#section-4.1.4
         """
-        token = self.create_access_token(
+        token = self.token_generator(
+            self._authenticated_client,
+            self.GRANT_TYPE
+        )
+        self.create_access_token(
+            token,
             self._authenticated_client,
             self._authorization_code
         )
-
-        # NOTE: there is no charset for application/json, since
-        # application/json should always in UTF-8.
-        # The example on RFC is incorrect.
-        # https://tools.ietf.org/html/rfc4627
-        headers = [
-            ('Content-Type', 'application/json'),
-            ('Cache-Control', 'no-store'),
-            ('Pragma', 'no-cache'),
-        ]
-        return 200, token, headers
+        return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_client(self):
         # TODO: document on how to support other means
@@ -317,5 +313,5 @@ class AuthorizationCodeGrant(BaseGrant):
     def parse_authorization_code(self, client, code):
         raise NotImplementedError()
 
-    def create_access_token(self, client, authorization_code):
+    def create_access_token(self, token, client, authorization_code):
         raise NotImplementedError()

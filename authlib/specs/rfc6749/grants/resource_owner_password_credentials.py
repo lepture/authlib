@@ -44,9 +44,9 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
     ACCESS_TOKEN_ENDPOINT = True
     GRANT_TYPE = 'password'
 
-    def __init__(self, uri, params, headers, client_model):
+    def __init__(self, uri, params, headers, client_model, token_generator):
         super(ResourceOwnerPasswordCredentialsGrant, self).__init__(
-            uri, params, headers, client_model)
+            uri, params, headers, client_model, token_generator)
         self._authenticated_client = None
         self._authenticated_user = None
 
@@ -142,17 +142,15 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
 
         :returns: (status_code, body, headers)
         """
-        token = self.create_access_token(
+        token = self.token_generator(
+            self._authenticated_client, self.GRANT_TYPE)
+        self.create_access_token(
+            token,
             self._authenticated_client,
             self._authenticated_user,
             **self.params
         )
-        headers = [
-            ('Content-Type', 'application/json'),
-            ('Cache-Control', 'no-store'),
-            ('Pragma', 'no-cache'),
-        ]
-        return 200, token, headers
+        return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_client(self):
         client_params = self.parse_basic_auth_header()
@@ -189,5 +187,5 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
         """
         raise NotImplementedError()
 
-    def create_access_token(self, client, user, **kwargs):
+    def create_access_token(self, token, client, user, **kwargs):
         raise NotImplementedError()

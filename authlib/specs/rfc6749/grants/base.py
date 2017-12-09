@@ -11,11 +11,22 @@ class BaseGrant(object):
     ACCESS_TOKEN_METHODS = ['POST']
     GRANT_TYPE = None
 
-    def __init__(self, uri, params, headers, client_model):
+    # NOTE: there is no charset for application/json, since
+    # application/json should always in UTF-8.
+    # The example on RFC is incorrect.
+    # https://tools.ietf.org/html/rfc4627
+    TOKEN_RESPONSE_HEADER = [
+        ('Content-Type', 'application/json'),
+        ('Cache-Control', 'no-store'),
+        ('Pragma', 'no-cache'),
+    ]
+
+    def __init__(self, uri, params, headers, client_model, token_generator):
         self.headers = headers
         self.uri = uri
         self.params = params or {}
         self.client_model = client_model
+        self.token_generator = token_generator
         self.state = params.get('state')
         self.redirect_uri = self.params.get('redirect_uri')
         self._clients = {}
