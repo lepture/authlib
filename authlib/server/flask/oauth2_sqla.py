@@ -101,13 +101,3 @@ class OAuth2TokenMixin(object):
         Integer, nullable=False, default=lambda: int(time.time())
     )
     expires_at = Column(Integer, nullable=False, default=0)
-
-    def save_token(self):
-        """Save authorization code (itself) into database. Developers
-        should implement it by themselves. An example would look like::
-
-            def save_token(self):
-                db.session.add(self)
-                db.session.commit()
-        """
-        raise NotImplementedError()

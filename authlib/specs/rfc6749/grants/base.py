@@ -1,8 +1,9 @@
+from authlib.common.urls import extract_basic_authorization
 from ..errors import (
     InvalidRequestError,
     InvalidScopeError,
 )
-from ..util import extract_basic_authorization, scope_to_list
+from ..util import scope_to_list
 
 
 class BaseGrant(object):
