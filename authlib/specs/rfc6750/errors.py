@@ -39,6 +39,12 @@ class InvalidTokenError(OAuth2Error):
         'or invalid for other reasons.'
     )
 
+    def __init__(self, description=None, status_code=None,
+                 uri=None, state=None, realm=None):
+        super(InvalidTokenError, self).__init__(
+            description, status_code, uri, state)
+        self.realm = realm
+
     def get_headers(self):
         """If the protected resource request does not include authentication
         credentials or does not contain an access token that enables access

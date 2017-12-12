@@ -22,6 +22,8 @@ class ClientCredentialsGrant(BaseGrant):
     |         |<--(B)---- Access Token ---------<|               |
     |         |                                  |               |
     +---------+                                  +---------------+
+
+    https://tools.ietf.org/html/rfc6749#section-4.4
     """
     ACCESS_TOKEN_ENDPOINT = True
     GRANT_TYPE = 'client_credentials'
@@ -107,6 +109,7 @@ class ClientCredentialsGrant(BaseGrant):
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_client(self):
+        """Authenticate client with Basic Authorization."""
         client_params = self.parse_basic_auth_header()
         if not client_params:
             raise UnauthorizedClientError(uri=self.uri)

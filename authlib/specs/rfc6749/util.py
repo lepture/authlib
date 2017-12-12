@@ -1,4 +1,3 @@
-import base64
 from authlib.common.encoding import to_unicode
 
 

@@ -283,7 +283,28 @@ class AuthorizationCodeGrant(BaseGrant):
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_client(self):
-        # TODO: document on how to support other means
+        """Parse the authenticated client.
+
+        For example, the client makes the following HTTP request using TLS:
+
+        .. code-block:: http
+
+            POST /token HTTP/1.1
+            Host: server.example.com
+            Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
+            Content-Type: application/x-www-form-urlencoded
+
+            grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA
+            &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb
+
+        To authenticate client with other means, re-implement this method in
+        subclass.
+
+        :return: client
+        """
+        # require client authentication for confidential clients or for any
+        # client that was issued client credentials (or with other
+        # authentication requirements)
         client_params = self.parse_basic_auth_header()
         if not client_params:
             client_params = (
@@ -291,6 +312,7 @@ class AuthorizationCodeGrant(BaseGrant):
                 self.params.get('client_secret')
             )
 
+        # authenticate the client if client authentication is included
         client_id, client_secret = client_params
         client = self.get_and_validate_client(client_id)
 
