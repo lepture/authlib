@@ -272,7 +272,8 @@ class AuthorizationCodeGrant(BaseGrant):
         """
         token = self.token_generator(
             self._authenticated_client,
-            self.GRANT_TYPE
+            self.GRANT_TYPE,
+            scope=self.params.get('scope')
         )
         self.create_access_token(
             token,

@@ -143,7 +143,9 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
         :returns: (status_code, body, headers)
         """
         token = self.token_generator(
-            self._authenticated_client, self.GRANT_TYPE)
+            self._authenticated_client, self.GRANT_TYPE,
+            scope=self.params.get('scope'),
+        )
         self.create_access_token(
             token,
             self._authenticated_client,

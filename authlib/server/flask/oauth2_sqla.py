@@ -100,4 +100,8 @@ class OAuth2TokenMixin(object):
     created_at = Column(
         Integer, nullable=False, default=lambda: int(time.time())
     )
-    expires_at = Column(Integer, nullable=False, default=0)
+    expires_in = Column(Integer, nullable=False, default=0)
+
+    @property
+    def expires_at(self):
+        return self.created_at + self.expires_in

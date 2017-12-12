@@ -100,6 +100,7 @@ class ClientCredentialsGrant(BaseGrant):
         """
         token = self.token_generator(
             self._authenticated_client, self.GRANT_TYPE,
+            scope=self.params.get('scope'),
             include_refresh_token=False,
         )
         self.create_access_token(token, self._authenticated_client)

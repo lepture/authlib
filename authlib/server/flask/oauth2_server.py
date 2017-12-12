@@ -30,7 +30,7 @@ class AuthorizationServer(_AuthorizationServer):
             app.config.setdefault(conf_key, GRANT_TYPES_EXPIRES[k])
 
         self.app = app
-        self.token_generator = self.create_token_generator(app)
+        self.token_generator = self.create_bearer_token_generator(app)
 
     def create_expires_generator(self, app):
 
@@ -40,7 +40,7 @@ class AuthorizationServer(_AuthorizationServer):
 
         return expires_in
 
-    def create_token_generator(self, app):
+    def create_bearer_token_generator(self, app):
         access_token_generator = app.config.get(
             'OAUTH2_ACCESS_TOKEN_GENERATOR',
             True

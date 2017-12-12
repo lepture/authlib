@@ -184,6 +184,7 @@ class ImplicitGrant(BaseGrant):
         if grant_user:
             token = self.token_generator(
                 self.client, self.GRANT_TYPE,
+                scope=self.params.get('scope'),
                 include_refresh_token=False
             )
             self.create_access_token(
