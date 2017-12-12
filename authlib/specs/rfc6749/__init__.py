@@ -13,4 +13,5 @@
 
 from .wrappers import *
 from .errors import *
-from .server import AuthorizationServer
+from .authorization_server import AuthorizationServer
+from .resource_server import ResourceServer
