@@ -64,7 +64,7 @@ class BaseGrant(object):
         auth_header = self.headers.get('Authorization', '')
         if auth_header and ' ' in auth_header:
             auth_type, auth_token = auth_header.split(maxsplit=1)
-            if auth_token.lower() == 'basic':
+            if auth_type.lower() == 'basic':
                 return extract_basic_authorization(auth_token)
 
     def validate_authorization_redirect_uri(self, client):

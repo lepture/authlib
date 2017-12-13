@@ -1,7 +1,9 @@
 import unittest
+import base64
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from authlib.common.security import generate_token
+from authlib.common.encoding import to_bytes, to_unicode
 from authlib.server.flask.oauth2_sqla import (
     OAuth2ClientMixin,
     OAuth2AuthorizationCodeMixin,
@@ -14,6 +16,7 @@ from authlib.server.flask.oauth2_server import (
 from authlib.specs.rfc6749.grants import (
     AuthorizationCodeGrant as _AuthorizationCodeGrant,
     ImplicitGrant as _ImplicitGrant,
+    ResourceOwnerPasswordCredentialsGrant as _PasswordGrant,
 )
 
 db = SQLAlchemy()
@@ -22,6 +25,9 @@ db = SQLAlchemy()
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(40), unique=True, nullable=False)
+
+    def check_password(self, password):
+        return password != 'wrong'
 
 
 class Client(db.Model, OAuth2ClientMixin):
@@ -114,6 +120,24 @@ class ImplicitGrant(_ImplicitGrant):
         db.session.commit()
 
 
+class PasswordGrant(_PasswordGrant):
+    def authenticate_user(self):
+        username = self.params['username']
+        password = self.params['password']
+        user = User.query.filter_by(username=username).first()
+        if user.check_password(password):
+            return user
+
+    def create_access_token(self, token, client, user, **kwargs):
+        item = Token(
+            client_id=client.client_id,
+            user_id=user.id,
+            **token
+        )
+        db.session.add(item)
+        db.session.commit()
+
+
 def create_authorization_server(app):
     server = AuthorizationServer(Client, app)
     server.revoke_query_token = Token.query_revoke_token
@@ -169,3 +193,8 @@ class TestCase(unittest.TestCase):
     def tearDown(self):
         db.drop_all()
         self._ctx.pop()
+
+    def create_basic_header(self, username, password):
+        text = '{}:{}'.format(username, password)
+        auth = to_unicode(base64.b64encode(to_bytes(text)))
+        return {'Authorization': 'Basic ' + auth}

@@ -44,3 +44,9 @@ class ImplicitTest(TestCase):
         self.prepare_data()
         rv = self.client.post(self.authorize_url, data={'user_id': '1'})
         self.assertIn('access_token=', rv.location)
+
+        url = self.authorize_url + '&state=bar&scope=profile'
+        rv = self.client.post(url, data={'user_id': '1'})
+        self.assertIn('access_token=', rv.location)
+        self.assertIn('state=bar', rv.location)
+        self.assertIn('scope=profile', rv.location)
