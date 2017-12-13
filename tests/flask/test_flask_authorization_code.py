@@ -16,14 +16,15 @@ class AuthorizationCodeTest(TestCase):
         db.session.commit()
         client = Client(
             user_id=user.id,
-            client_id='test-code',
+            client_id='code-client',
             client_secret='code-secret',
             default_redirect_uri='http://localhost/authorized',
             allowed_scopes='profile address',
+            is_confidential=True,
         )
         self.authorize_url = (
             '/oauth/authorize?response_type=code'
-            '&client_id=test-code'
+            '&client_id=code-client'
         )
         db.session.add(client)
         db.session.commit()
@@ -46,7 +47,26 @@ class AuthorizationCodeTest(TestCase):
         rv = self.client.post('/oauth/token', data={
             'grant_type': 'authorization_code',
             'code': 'invalid',
-            'client_id': 'test-code',
+            'client_id': 'invalid-id',
+            'client_secret': 'invalid-secret',
+        })
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['error'], 'invalid_request')
+        self.assertIn('client_id', resp['error_description'])
+
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': 'authorization_code',
+            'code': 'invalid',
+            'client_id': 'code-client',
+            'client_secret': 'invalid-secret',
+        })
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['error'], 'invalid_client')
+
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': 'authorization_code',
+            'code': 'invalid',
+            'client_id': 'code-client',
             'client_secret': 'code-secret',
         })
         resp = json.loads(rv.data)
@@ -61,7 +81,7 @@ class AuthorizationCodeTest(TestCase):
         rv = self.client.post('/oauth/token', data={
             'grant_type': 'authorization_code',
             'code': code,
-            'client_id': 'test-code',
+            'client_id': 'code-client',
             'client_secret': 'code-secret',
         })
         resp = json.loads(rv.data)

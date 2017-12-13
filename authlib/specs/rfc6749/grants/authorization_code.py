@@ -305,9 +305,6 @@ class AuthorizationCodeGrant(BaseGrant):
 
         :return: client
         """
-        # require client authentication for confidential clients or for any
-        # client that was issued client credentials (or with other
-        # authentication requirements)
         client_params = self.parse_basic_auth_header()
         if not client_params:
             client_params = (
@@ -319,13 +316,15 @@ class AuthorizationCodeGrant(BaseGrant):
         client_id, client_secret = client_params
         client = self.get_and_validate_client(client_id)
 
+        # require client authentication for confidential clients or for any
+        # client that was issued client credentials (or with other
+        # authentication requirements)
+        if not client.check_client_type('confidential'):
+            raise UnauthorizedClientError(uri=self.uri)
+
         if client_secret != client.client_secret:
             raise InvalidClientError(uri=self.uri)
 
-        if client.check_client_type('confidential'):
-            if client_secret != client.client_secret:
-                raise InvalidClientError(uri=self.uri)
-            return client
         return client
 
     def create_authorization_code(self, client, user, **kwargs):

@@ -13,6 +13,7 @@ from authlib.server.flask.oauth2_server import (
 )
 from authlib.specs.rfc6749.grants import (
     AuthorizationCodeGrant as _AuthorizationCodeGrant,
+    ImplicitGrant as _ImplicitGrant,
 )
 
 db = SQLAlchemy()
@@ -100,6 +101,17 @@ class AuthorizationCodeGrant(_AuthorizationCodeGrant):
         db.session.commit()
         # we can add more data into token
         token['user_id'] = authorization_code.user_id
+
+
+class ImplicitGrant(_ImplicitGrant):
+    def create_access_token(self, token, client, grant_user, **kwargs):
+        item = Token(
+            client_id=client.client_id,
+            user_id=grant_user.id,
+            **token
+        )
+        db.session.add(item)
+        db.session.commit()
 
 
 def create_authorization_server(app):
