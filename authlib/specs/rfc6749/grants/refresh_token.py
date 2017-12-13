@@ -77,6 +77,10 @@ class RefreshTokenGrant(BaseGrant):
         # client that was issued client credentials (or with other
         # authentication requirements)
         client = self.authenticate_client()
+
+        if not client.check_grant_type(self.GRANT_TYPE):
+            raise UnauthorizedClientError(uri=self.uri)
+
         self._authenticated_client = client
 
         refresh_token = self.params.get('refresh_token')
@@ -110,9 +114,6 @@ class RefreshTokenGrant(BaseGrant):
 
         client_id, client_secret = client_params
         client = self.get_and_validate_client(client_id)
-
-        if not client.check_grant_type(self.GRANT_TYPE):
-            raise UnauthorizedClientError(uri=self.uri)
 
         # authenticate the client if client authentication is included
         if client_secret != client.client_secret:

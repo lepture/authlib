@@ -221,6 +221,9 @@ class AuthorizationCodeGrant(BaseGrant):
         # authenticate the client if client authentication is included
         client = self.authenticate_client()
 
+        if not client.check_grant_type(self.GRANT_TYPE):
+            raise UnauthorizedClientError(uri=self.uri)
+
         code = self.params.get('code')
         if code is None:
             raise InvalidRequestError(
@@ -233,7 +236,7 @@ class AuthorizationCodeGrant(BaseGrant):
         # code was issued to "client_id" in the request
         authorization_code = self.parse_authorization_code(client, code)
         if not authorization_code:
-            raise InvalidGrantError(
+            raise InvalidRequestError(
                 'Invalid "code" in request.',
                 uri=self.uri,
             )
@@ -316,18 +319,14 @@ class AuthorizationCodeGrant(BaseGrant):
         client_id, client_secret = client_params
         client = self.get_and_validate_client(client_id)
 
-        if not client.check_grant_type('code'):
-            raise UnauthorizedClientError(uri=self.uri)
+        if client_secret is not None:
+            if client_secret != client.client_secret:
+                raise InvalidClientError(uri=self.uri)
 
         if client.check_client_type('confidential'):
             if client_secret != client.client_secret:
                 raise InvalidClientError(uri=self.uri)
             return client
-
-        if client_secret is not None:
-            if client_secret != client.client_secret:
-                raise InvalidClientError(uri=self.uri)
-
         return client
 
     def create_authorization_code(self, client, user, **kwargs):

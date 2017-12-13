@@ -72,6 +72,10 @@ class ClientCredentialsGrant(BaseGrant):
         # ignore validate for grant_type, since it is validated by
         # check_token_endpoint
         client = self.authenticate_client()
+
+        if not client.check_grant_type(self.GRANT_TYPE):
+            raise UnauthorizedClientError(uri=self.uri)
+
         self.validate_requested_scope(client)
         self._authenticated_client = client
 
@@ -116,9 +120,6 @@ class ClientCredentialsGrant(BaseGrant):
 
         client_id, client_secret = client_params
         client = self.get_and_validate_client(client_id)
-
-        if not client.check_grant_type(self.GRANT_TYPE):
-            raise UnauthorizedClientError(uri=self.uri)
 
         # authenticate the client if client authentication is included
         if client_secret != client.client_secret:
