@@ -83,8 +83,12 @@ class AuthorizationCodeGrant(_AuthorizationCodeGrant):
     def parse_authorization_code(self, code, client):
         item = AuthorizationCode.query.filter_by(
             code=code, client_id=client.client_id).first()
-        if not item.is_expired():
+        if item and not item.is_expired():
             return item
+
+    def delete_authorization_code(self, authorization_code):
+        db.session.delete(authorization_code)
+        db.session.commit()
 
     def create_access_token(self, token, client, authorization_code):
         item = Token(

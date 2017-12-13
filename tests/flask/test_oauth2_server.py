@@ -1,3 +1,5 @@
+from flask import json
+from authlib.common.urls import urlparse, url_decode
 from .oauth2_server import db, User, Client
 from .oauth2_server import TestCase
 from .oauth2_server import AuthorizationCodeGrant
@@ -31,7 +33,7 @@ class AuthorizationCodeTest(TestCase):
         rv = self.client.get(self.authorize_url)
         self.assertEqual(rv.data, b'ok')
 
-    def test_post_authorize(self):
+    def test_invalid_authorize(self):
         self.prepare_data()
         rv = self.client.post(self.authorize_url)
         self.assertIn('error=access_denied', rv.location)
@@ -39,5 +41,28 @@ class AuthorizationCodeTest(TestCase):
         rv = self.client.post(self.authorize_url + '&scope=invalid')
         self.assertIn('error=invalid_scope', rv.location)
 
+    def test_invalid_token(self):
+        self.prepare_data()
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': 'authorization_code',
+            'code': 'invalid',
+            'client_id': 'test-code',
+            'client_secret': 'code-secret',
+        })
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['error'], 'invalid_request')
+
+    def test_authorize_token(self):
+        self.prepare_data()
         rv = self.client.post(self.authorize_url, data={'user_id': '1'})
         self.assertIn('code=', rv.location)
+        params = dict(url_decode(urlparse.urlparse(rv.location).query))
+        code = params['code']
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': 'authorization_code',
+            'code': code,
+            'client_id': 'test-code',
+            'client_secret': 'code-secret',
+        })
+        resp = json.loads(rv.data)
+        self.assertIn('access_token', resp)

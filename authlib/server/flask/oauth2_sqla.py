@@ -54,7 +54,6 @@ class OAuth2AuthorizationCodeMixin(object):
         default=lambda: int(time.time()) + 300
     )
 
-    @property
     def is_expired(self):
         return self.expires_at < time.time()
 

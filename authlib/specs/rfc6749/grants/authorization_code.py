@@ -282,6 +282,7 @@ class AuthorizationCodeGrant(BaseGrant):
             self._authenticated_client,
             self._authorization_code
         )
+        self.delete_authorization_code(self._authorization_code)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_client(self):
@@ -318,9 +319,8 @@ class AuthorizationCodeGrant(BaseGrant):
         client_id, client_secret = client_params
         client = self.get_and_validate_client(client_id)
 
-        if client_secret is not None:
-            if client_secret != client.client_secret:
-                raise InvalidClientError(uri=self.uri)
+        if client_secret != client.client_secret:
+            raise InvalidClientError(uri=self.uri)
 
         if client.check_client_type('confidential'):
             if client_secret != client.client_secret:
@@ -332,6 +332,9 @@ class AuthorizationCodeGrant(BaseGrant):
         raise NotImplementedError()
 
     def parse_authorization_code(self, code, client):
+        raise NotImplementedError()
+
+    def delete_authorization_code(self, authorization_code):
         raise NotImplementedError()
 
     def create_access_token(self, token, client, authorization_code):
