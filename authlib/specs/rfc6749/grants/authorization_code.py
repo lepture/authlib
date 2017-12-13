@@ -3,7 +3,6 @@ from .base import BaseGrant
 from ..errors import (
     UnauthorizedClientError,
     InvalidRequestError,
-    InvalidGrantError,
     InvalidClientError,
     AccessDeniedError,
 )
@@ -234,7 +233,7 @@ class AuthorizationCodeGrant(BaseGrant):
         # ensure that the authorization code was issued to the authenticated
         # confidential client, or if the client is public, ensure that the
         # code was issued to "client_id" in the request
-        authorization_code = self.parse_authorization_code(client, code)
+        authorization_code = self.parse_authorization_code(code, client)
         if not authorization_code:
             raise InvalidRequestError(
                 'Invalid "code" in request.',
@@ -332,7 +331,7 @@ class AuthorizationCodeGrant(BaseGrant):
     def create_authorization_code(self, client, user, **kwargs):
         raise NotImplementedError()
 
-    def parse_authorization_code(self, client, code):
+    def parse_authorization_code(self, code, client):
         raise NotImplementedError()
 
     def create_access_token(self, token, client, authorization_code):

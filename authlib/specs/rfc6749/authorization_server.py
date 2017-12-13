@@ -1,5 +1,6 @@
 from authlib.common.urls import urlparse, url_decode
-from .errors import InvalidGrantError
+from authlib.common.urls import add_params_to_uri
+from .errors import InvalidGrantError, OAuth2Error
 
 
 class AuthorizationServer(object):
@@ -44,3 +45,27 @@ class AuthorizationServer(object):
                         self.token_generator
                     )
         raise InvalidGrantError()
+
+    def create_valid_authorization_response(self, uri, user):
+        grant = self.get_authorization_endpoint_grant(uri)
+        try:
+            grant.validate_authorization_request()
+            return grant.create_authorization_response(user)
+        except OAuth2Error as error:
+            params = error.get_body()
+            loc = add_params_to_uri(grant.redirect_uri, params)
+            headers = [('Location', loc)]
+            return 302, '', headers
+
+    def create_valid_token_response(self, method, uri, body, headers):
+        grant = self.get_access_token_endpoint_grant(
+            method, uri, body, headers
+        )
+        try:
+            grant.validate_access_token_request()
+            return grant.create_access_token_response()
+        except OAuth2Error as error:
+            status = error.status_code
+            body = dict(error.get_body())
+            headers = error.get_headers()
+            return status, body, headers

@@ -16,4 +16,4 @@ def scope_to_list(scope):
         return [to_unicode(s) for s in scope]
     elif scope is None:
         return None
-    return scope.strip().split("")
+    return scope.strip().split()

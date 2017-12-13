@@ -78,25 +78,18 @@ class AuthorizationServer(_AuthorizationServer):
         return grant
 
     def create_authorization_response(self, user):
-        grant = self.get_authorization_endpoint_grant(request.full_path)
-        grant.validate_authorization_request()
-        status, body, headers = grant.create_authorization_response(user)
+        status, _, headers = self.create_valid_authorization_response(
+            request.full_path, user=user
+        )
         return Response('', status=status, headers=headers)
 
     def create_token_response(self):
-        grant = self.get_access_token_endpoint_grant(
+        status, body, headers = self.create_valid_token_response(
             request.method,
             request.full_path,
             request.form.to_dict(flat=True),
             request.headers
         )
-        try:
-            grant.validate_access_token_request()
-            status, body, headers = grant.create_access_token_response()
-        except OAuth2Error as error:
-            status = error.status_code
-            body = dict(error.get_body())
-            headers = error.get_headers()
         return Response(json.dumps(body), status=status, headers=headers)
 
     def create_revocation_response(self):
@@ -114,16 +107,16 @@ class AuthorizationServer(_AuthorizationServer):
 
 
 class ResourceServer(_ResourceServer):
-    def __init__(self, query_user, query_token):
-        self.query_user = query_user
+    def __init__(self, query_token, query_token_user):
         self.query_token = query_token
+        self.query_token_user = query_token_user
 
     def authenticate_token(self, token_string, token_type):
         if token_type.lower() == 'bearer':
             return self.query_token(token_string)
 
     def get_token_user(self, token):
-        return self.query_user(token.user_id)
+        return self.query_token_user(token)
 
     def get_token_scope(self, token):
         return token.scope
