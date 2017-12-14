@@ -1,8 +1,8 @@
 from django.conf import settings
 from django.dispatch import Signal
 from django.http import HttpResponseRedirect
-from ..client import OAuthClient
-from ..errors import OAuthException
+from authlib.client.client import OAuthClient
+from authlib.client.errors import OAuthException
 
 __all__ = ['token_update', 'OAuth', 'RemoteApp']
 

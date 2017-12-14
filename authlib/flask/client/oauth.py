@@ -2,8 +2,8 @@ import uuid
 from flask import request, redirect, session
 from werkzeug.local import LocalProxy
 from authlib.common.flask import Cache
-from ..errors import OAuthException
-from ..client import OAuthClient
+from authlib.client.errors import OAuthException
+from authlib.client.client import OAuthClient
 
 __all__ = ['OAuth', 'RemoteApp']
 

@@ -3,7 +3,7 @@ from __future__ import unicode_literals, print_function
 from django.conf import settings
 from django.utils.module_loading import import_module
 from django.test import TestCase, RequestFactory, override_settings
-from authlib.client.django import OAuth, RemoteApp
+from authlib.django.client import OAuth, RemoteApp
 from ..client_base import (
     mock_text_response,
     mock_json_response,

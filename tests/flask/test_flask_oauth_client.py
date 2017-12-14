@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function
 from unittest import TestCase
 from flask import Flask, session
 from authlib.client import OAuthException
-from authlib.client.flask import OAuth
+from authlib.flask.client import OAuth
 from ..client_base import (
     mock_json_response,
     mock_text_response,

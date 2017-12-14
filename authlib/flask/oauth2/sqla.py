@@ -1,8 +1,6 @@
 import time
-import random
 from sqlalchemy import Column, Boolean, String, Text, Integer
 from authlib.specs.rfc6749.client_model import OAuth2Client
-from authlib.common.security import generate_token
 
 
 class OAuth2ClientMixin(OAuth2Client):
