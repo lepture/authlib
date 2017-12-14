@@ -5,12 +5,12 @@ from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from authlib.common.security import generate_token
 from authlib.common.encoding import to_bytes, to_unicode
-from authlib.server.flask.oauth2_sqla import (
+from authlib.flask.oauth2.sqla import (
     OAuth2ClientMixin,
     OAuth2AuthorizationCodeMixin,
     OAuth2TokenMixin,
 )
-from authlib.server.flask.oauth2_server import (
+from authlib.flask.oauth2 import (
     AuthorizationServer,
     ResourceServer,
 )
