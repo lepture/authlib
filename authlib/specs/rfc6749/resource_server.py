@@ -24,7 +24,7 @@ class ResourceServer(object):
         if not auth:
             raise ValueError()
 
-        token_type, token_string = auth.split(maxsplit=1)
+        token_type, token_string = auth.split(None, 1)
         token = self.authenticate_token(token_string, token_type)
         if not token:
             raise ValueError()

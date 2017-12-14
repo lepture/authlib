@@ -8,7 +8,6 @@ from authlib.specs.rfc6749 import (
     ResourceServer as _ResourceServer,
 )
 from authlib.specs.rfc6750 import BearerToken
-from authlib.specs.rfc7009 import RevocationEndpoint
 from authlib.common.security import generate_token
 
 GRANT_TYPES_EXPIRES = {
@@ -22,10 +21,13 @@ GRANT_TYPES_EXPIRES = {
 class AuthorizationServer(_AuthorizationServer):
     def __init__(self, client_model, app=None):
         super(AuthorizationServer, self).__init__(client_model, None)
-        self.revoke_query_token = None
+        self.revoke_token_endpoint = None
         self.app = None
         if app is not None:
             self.init_app(app)
+
+    def register_revoke_token_endpoint(self, cls):
+        self.revoke_token_endpoint = cls
 
     def init_app(self, app):
         for k in GRANT_TYPES_EXPIRES:
@@ -73,15 +75,17 @@ class AuthorizationServer(_AuthorizationServer):
         )
 
     def validate_authorization_request(self):
-        grant = self.get_authorization_endpoint_grant(request.full_path)
+        grant = self.get_authorization_grant(request.full_path)
         grant.validate_authorization_request()
         return grant
 
     def create_authorization_response(self, user):
-        status, _, headers = self.create_valid_authorization_response(
+        status, body, headers = self.create_valid_authorization_response(
             request.full_path, user=user
         )
-        return Response('', status=status, headers=headers)
+        if isinstance(body, dict):
+            body = json.dumps(body)
+        return Response(body, status=status, headers=headers)
 
     def create_token_response(self):
         status, body, headers = self.create_valid_token_response(
@@ -98,9 +102,8 @@ class AuthorizationServer(_AuthorizationServer):
         else:
             params = request.form.to_dict(flat=True)
 
-        endpoint = RevocationEndpoint(
-            request.full_path, params, request.headers,
-            self.client_model, self.revoke_query_token
+        endpoint = self.revoke_token_endpoint(
+            request.full_path, params, request.headers, self.client_model
         )
         status, body, headers = endpoint.create_revocation_response()
         return Response(json.dumps(body), status=status, headers=headers)

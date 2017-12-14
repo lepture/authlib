@@ -12,8 +12,10 @@
 """
 
 from .base import BaseGrant
+from ..util import get_obj_value, scope_to_list
 from ..errors import (
     InvalidRequestError,
+    InvalidScopeError,
     UnauthorizedClientError,
     InvalidClientError,
 )
@@ -78,6 +80,9 @@ class RefreshTokenGrant(BaseGrant):
         # authentication requirements)
         client = self.authenticate_client()
 
+        if not client.check_client_type('confidential'):
+            raise UnauthorizedClientError(uri=self.uri)
+
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError(uri=self.uri)
 
@@ -89,8 +94,23 @@ class RefreshTokenGrant(BaseGrant):
                 'Missing "refresh_token" in request.',
                 uri=self.uri,
             )
+
+        token = self.authenticate_token(refresh_token)
+        if not token:
+            raise InvalidRequestError(
+                'Invalid "refresh_token" in request.',
+                uri=self.uri,
+            )
+
         scope = self.params.get('scope')
-        token = self.authenticate_token(refresh_token, scope)
+        if scope:
+            original_scope = get_obj_value(token, 'scope')
+            if not original_scope:
+                raise InvalidScopeError(uri=self.uri)
+            original_scope = set(scope_to_list(original_scope))
+            if not original_scope.issuperset(set(scope_to_list(scope))):
+                raise InvalidScopeError(uri=self.uri)
+
         self._authenticated_token = token
 
     def create_access_token_response(self):
@@ -99,10 +119,15 @@ class RefreshTokenGrant(BaseGrant):
         verification or is invalid, the authorization server returns an error
         response as described in Section 5.2.
         """
+        scope = self.params.get('scope')
+        if not scope:
+            scope = get_obj_value(self._authenticated_token, 'scope')
+
+        expires_in = get_obj_value(self._authenticated_token, 'expires_in')
         token = self.token_generator(
             self._authenticated_client, self.GRANT_TYPE,
-            expires_in=self._authenticated_token.expires_in,
-            scope=self.params.get('scope'),
+            expires_in=expires_in,
+            scope=scope,
         )
         self.create_access_token(token, self._authenticated_token)
         return 200, token, self.TOKEN_RESPONSE_HEADER
@@ -110,7 +135,7 @@ class RefreshTokenGrant(BaseGrant):
     def authenticate_client(self):
         client_params = self.parse_basic_auth_header()
         if not client_params:
-            raise UnauthorizedClientError(uri=self.uri)
+            raise InvalidClientError(uri=self.uri)
 
         client_id, client_secret = client_params
         client = self.get_and_validate_client(client_id)
@@ -121,17 +146,17 @@ class RefreshTokenGrant(BaseGrant):
 
         return client
 
-    def authenticate_token(self, refresh_token, scope=None):
+    def authenticate_token(self, refresh_token):
         """
         :param refresh_token: The refresh token issued to the client
-        :param scope:  The scope of the access request
         :return: token
         """
         raise NotImplementedError()
 
-    def create_access_token(self, token, access_token):
+    def create_access_token(self, token, authenticated_token):
         """
         :param token: A new generated token to replace the original token.
-        :param access_token: The original token granted by resource owner.
+        :param authenticated_token: The original token granted by resource
+            owner.
         """
         raise NotImplementedError()

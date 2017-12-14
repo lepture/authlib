@@ -15,7 +15,8 @@
 
 from ..rfc6749.errors import OAuth2Error
 from ..rfc6749.errors import (
-    InvalidRequestError, UnauthorizedClientError
+    InvalidRequestError,
+    InvalidClientError
 )
 
 

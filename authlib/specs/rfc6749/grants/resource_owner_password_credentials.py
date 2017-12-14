@@ -95,6 +95,12 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
         # check_token_endpoint
         client = self.authenticate_client()
 
+        # require client authentication for confidential clients or for any
+        # client that was issued client credentials (or with other
+        # authentication requirements)
+        if not client.check_client_type('confidential'):
+            raise UnauthorizedClientError(uri=self.uri)
+
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError(uri=self.uri)
 
@@ -160,16 +166,10 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
     def authenticate_client(self):
         client_params = self.parse_basic_auth_header()
         if not client_params:
-            raise UnauthorizedClientError(uri=self.uri)
+            raise InvalidClientError(uri=self.uri)
 
         client_id, client_secret = client_params
         client = self.get_and_validate_client(client_id)
-
-        # require client authentication for confidential clients or for any
-        # client that was issued client credentials (or with other
-        # authentication requirements)
-        if not client.check_client_type('confidential'):
-            raise UnauthorizedClientError(uri=self.uri)
 
         # authenticate the client if client authentication is included
         if client_secret != client.client_secret:

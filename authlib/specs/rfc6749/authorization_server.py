@@ -10,13 +10,13 @@ class AuthorizationServer(object):
         self._authorization_endpoints = set()
         self._access_token_endpoints = set()
 
-    def register_endpoint_grant(self, grant_cls):
+    def register_grant_endpoint(self, grant_cls):
         if grant_cls.AUTHORIZATION_ENDPOINT:
             self._authorization_endpoints.add(grant_cls)
         if grant_cls.ACCESS_TOKEN_ENDPOINT:
             self._access_token_endpoints.add(grant_cls)
 
-    def get_authorization_endpoint_grant(self, uri):
+    def get_authorization_grant(self, uri):
         params = dict(url_decode(urlparse.urlparse(uri).query))
         for grant_cls in self._authorization_endpoints:
             if grant_cls.check_authorization_endpoint(params):
@@ -27,7 +27,7 @@ class AuthorizationServer(object):
                 )
         raise InvalidGrantError()
 
-    def get_access_token_endpoint_grant(self, method, uri, body, headers):
+    def get_token_grant(self, method, uri, body, headers):
         if method == 'GET':
             params = dict(url_decode(urlparse.urlparse(uri).query))
         else:
@@ -47,7 +47,11 @@ class AuthorizationServer(object):
         raise InvalidGrantError()
 
     def create_valid_authorization_response(self, uri, user):
-        grant = self.get_authorization_endpoint_grant(uri)
+        try:
+            grant = self.get_authorization_grant(uri)
+        except InvalidGrantError as error:
+            body = dict(error.get_body())
+            return error.status_code, body, error.get_headers()
         try:
             grant.validate_authorization_request()
             return grant.create_authorization_response(user)
@@ -58,9 +62,11 @@ class AuthorizationServer(object):
             return 302, '', headers
 
     def create_valid_token_response(self, method, uri, body, headers):
-        grant = self.get_access_token_endpoint_grant(
-            method, uri, body, headers
-        )
+        try:
+            grant = self.get_token_grant(method, uri, body, headers)
+        except InvalidGrantError as error:
+            body = dict(error.get_body())
+            return error.status_code, body, error.get_headers()
         try:
             grant.validate_access_token_request()
             return grant.create_access_token_response()

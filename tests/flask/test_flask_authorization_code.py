@@ -9,7 +9,7 @@ from .oauth2_server import create_authorization_server
 class AuthorizationCodeTest(TestCase):
     def prepare_data(self):
         server = create_authorization_server(self.app)
-        server.register_endpoint_grant(AuthorizationCodeGrant)
+        server.register_grant_endpoint(AuthorizationCodeGrant)
 
         user = User(username='foo')
         db.session.add(user)
@@ -42,7 +42,7 @@ class AuthorizationCodeTest(TestCase):
         rv = self.client.post(self.authorize_url + '&scope=invalid')
         self.assertIn('error=invalid_scope', rv.location)
 
-    def test_invalid_token(self):
+    def test_invalid_client(self):
         self.prepare_data()
         rv = self.client.post('/oauth/token', data={
             'grant_type': 'authorization_code',
@@ -51,8 +51,7 @@ class AuthorizationCodeTest(TestCase):
             'client_secret': 'invalid-secret',
         })
         resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_request')
-        self.assertIn('client_id', resp['error_description'])
+        self.assertEqual(resp['error'], 'invalid_client')
 
         rv = self.client.post('/oauth/token', data={
             'grant_type': 'authorization_code',
@@ -62,6 +61,9 @@ class AuthorizationCodeTest(TestCase):
         })
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'invalid_client')
+
+    def test_invalid_token(self):
+        self.prepare_data()
 
         rv = self.client.post('/oauth/token', data={
             'grant_type': 'authorization_code',

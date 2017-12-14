@@ -2,6 +2,7 @@ from authlib.common.urls import extract_basic_authorization
 from ..errors import (
     InvalidRequestError,
     InvalidScopeError,
+    InvalidClientError,
 )
 from ..util import scope_to_list
 
@@ -45,16 +46,14 @@ class BaseGrant(object):
 
     def get_and_validate_client(self, client_id):
         if client_id is None:
-            raise InvalidRequestError(
-                'Missing "client_id" in request.',
+            raise InvalidClientError(
                 state=self.state,
                 uri=self.uri,
             )
 
         client = self.get_client_by_id(client_id)
         if not client:
-            raise InvalidRequestError(
-                'Invalid "client_id" value in request.',
+            raise InvalidClientError(
                 state=self.state,
                 uri=self.uri,
             )
@@ -63,7 +62,7 @@ class BaseGrant(object):
     def parse_basic_auth_header(self):
         auth_header = self.headers.get('Authorization', '')
         if auth_header and ' ' in auth_header:
-            auth_type, auth_token = auth_header.split(maxsplit=1)
+            auth_type, auth_token = auth_header.split(None, 1)
             if auth_type.lower() == 'basic':
                 return extract_basic_authorization(auth_token)
 

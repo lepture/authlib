@@ -1,5 +1,6 @@
-import unittest
+import time
 import base64
+import unittest
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from authlib.common.security import generate_token
@@ -17,6 +18,8 @@ from authlib.specs.rfc6749.grants import (
     AuthorizationCodeGrant as _AuthorizationCodeGrant,
     ImplicitGrant as _ImplicitGrant,
     ResourceOwnerPasswordCredentialsGrant as _PasswordGrant,
+    ClientCredentialsGrant as _ClientCredentialsGrant,
+    RefreshTokenGrant as _RefreshTokenGrant,
 )
 
 db = SQLAlchemy()
@@ -53,24 +56,13 @@ class Token(db.Model, OAuth2TokenMixin):
     )
     user = db.relationship('User')
 
+    def is_refresh_token_expired(self):
+        expired_at = self.created_at + self.expires_in * 2
+        return expired_at < time.time()
+
     @classmethod
     def query_token(cls, access_token):
         return cls.query.filter_by(access_token=access_token).first()
-
-    @classmethod
-    def query_revoke_token(cls, token, token_type_hint, client):
-        if token_type_hint == 'access_token':
-            item = cls.query.filter_by(access_token=token).first()
-        elif token_type_hint == 'refresh_token':
-            item = cls.query.filter_by(refresh_token=token).first()
-        else:
-            # without token_type_hint
-            item = cls.query.filter_by(access_token=token).first()
-            if not item:
-                item = cls.query.filter_by(refresh_token=token).first()
-
-        if item and item.client_id == client.client_id:
-            return item
 
 
 class AuthorizationCodeGrant(_AuthorizationCodeGrant):
@@ -79,8 +71,8 @@ class AuthorizationCodeGrant(_AuthorizationCodeGrant):
         item = AuthorizationCode(
             code=code,
             client_id=client.client_id,
-            redirect_uri=kwargs.get('redirect_uri'),
-            scope=kwargs.get('scope'),
+            redirect_uri=kwargs.get('redirect_uri', ''),
+            scope=kwargs.get('scope', ''),
             user_id=user.id,
         )
         db.session.add(item)
@@ -138,9 +130,36 @@ class PasswordGrant(_PasswordGrant):
         db.session.commit()
 
 
+class ClientCredentialsGrant(_ClientCredentialsGrant):
+    def create_access_token(self, token, client):
+        item = Token(
+            client_id=client.client_id,
+            user_id=client.user_id,
+            **token
+        )
+        db.session.add(item)
+        db.session.commit()
+
+
+class RefreshTokenGrant(_RefreshTokenGrant):
+    def authenticate_token(self, refresh_token):
+        item = Token.query.filter_by(refresh_token=refresh_token).first()
+        if item and not item.is_refresh_token_expired():
+            return item
+
+    def create_access_token(self, token, authenticated_token):
+        item = Token(
+            client_id=authenticated_token.client_id,
+            user_id=authenticated_token.user_id,
+            **token
+        )
+        db.session.add(item)
+        db.session.delete(authenticated_token)
+        db.session.commit()
+
+
 def create_authorization_server(app):
     server = AuthorizationServer(Client, app)
-    server.revoke_query_token = Token.query_revoke_token
 
     @app.route('/oauth/authorize', methods=['GET', 'POST'])
     def authorize():
@@ -158,6 +177,9 @@ def create_authorization_server(app):
     def issue_token():
         return server.create_token_response()
 
+    @app.route('/oauth/revoke', methods=['POST'])
+    def revoke_token():
+        return server.create_revocation_response()
     return server
 
 

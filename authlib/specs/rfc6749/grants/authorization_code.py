@@ -1,5 +1,6 @@
 from authlib.common.urls import add_params_to_uri
 from .base import BaseGrant
+from ..util import get_obj_value
 from ..errors import (
     UnauthorizedClientError,
     InvalidRequestError,
@@ -220,6 +221,12 @@ class AuthorizationCodeGrant(BaseGrant):
         # authenticate the client if client authentication is included
         client = self.authenticate_client()
 
+        # require client authentication for confidential clients or for any
+        # client that was issued client credentials (or with other
+        # authentication requirements)
+        if not client.check_client_type('confidential'):
+            raise UnauthorizedClientError(uri=self.uri)
+
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError(uri=self.uri)
 
@@ -237,6 +244,16 @@ class AuthorizationCodeGrant(BaseGrant):
         if not authorization_code:
             raise InvalidRequestError(
                 'Invalid "code" in request.',
+                uri=self.uri,
+            )
+
+        # validate redirect_uri parameter
+        redirect_uri = self.params.get('redirect_uri')
+        _redirect_uri = get_obj_value(authorization_code, 'redirect_uri')
+        original_redirect_uri = _redirect_uri or None
+        if redirect_uri != original_redirect_uri:
+            raise InvalidRequestError(
+                'Invalid "redirect_uri" in request.',
                 uri=self.uri,
             )
 
@@ -275,7 +292,7 @@ class AuthorizationCodeGrant(BaseGrant):
         token = self.token_generator(
             self._authenticated_client,
             self.GRANT_TYPE,
-            scope=self.params.get('scope')
+            scope=get_obj_value(self._authorization_code, 'scope'),
         )
         self.create_access_token(
             token,
@@ -315,12 +332,6 @@ class AuthorizationCodeGrant(BaseGrant):
         # authenticate the client if client authentication is included
         client_id, client_secret = client_params
         client = self.get_and_validate_client(client_id)
-
-        # require client authentication for confidential clients or for any
-        # client that was issued client credentials (or with other
-        # authentication requirements)
-        if not client.check_client_type('confidential'):
-            raise UnauthorizedClientError(uri=self.uri)
 
         if client_secret != client.client_secret:
             raise InvalidClientError(uri=self.uri)

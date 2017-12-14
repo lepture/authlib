@@ -7,7 +7,7 @@ from .oauth2_server import create_authorization_server
 class ImplicitTest(TestCase):
     def prepare_data(self):
         server = create_authorization_server(self.app)
-        server.register_endpoint_grant(ImplicitGrant)
+        server.register_grant_endpoint(ImplicitGrant)
 
         user = User(username='foo')
         db.session.add(user)

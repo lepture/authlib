@@ -116,7 +116,7 @@ class ClientCredentialsGrant(BaseGrant):
         """Authenticate client with Basic Authorization."""
         client_params = self.parse_basic_auth_header()
         if not client_params:
-            raise UnauthorizedClientError(uri=self.uri)
+            raise InvalidClientError(uri=self.uri)
 
         client_id, client_secret = client_params
         client = self.get_and_validate_client(client_id)

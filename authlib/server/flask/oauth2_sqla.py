@@ -60,7 +60,6 @@ class OAuth2AuthorizationCodeMixin(object):
 
 class OAuth2TokenMixin(object):
     client_id = Column(String(48))
-    grant_type = Column(String(40))
     token_type = Column(String(40))
     access_token = Column(String(255), unique=True, nullable=False)
     refresh_token = Column(String(255))
