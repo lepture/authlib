@@ -8,7 +8,6 @@ from authlib.common.urls import url_encode
 from authlib.client import OAuth2Session
 from authlib.client.errors import OAuthException
 from authlib.specs.rfc6749 import (
-    OAuth2Error,
     MismatchingStateError,
 )
 from ..client_base import mock_json_response
@@ -108,7 +107,7 @@ class OAuth2SessionTest(TestCase):
         error = {'error': 'invalid_request'}
         sess = OAuth2Session(client_id=self.client_id, token=self.token)
         sess.send = mock_json_response(error)
-        self.assertRaises(OAuth2Error, sess.fetch_access_token, url)
+        self.assertRaises(OAuthException, sess.fetch_access_token, url)
 
     @mock.patch("time.time", new=lambda: fake_time)
     def test_access_token_response_hook(self):

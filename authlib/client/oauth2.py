@@ -11,7 +11,7 @@ from ..specs.rfc6749.parameters import (
     parse_implicit_response,
 )
 from ..specs.rfc6749 import OAuth2Token
-from ..specs.rfc6749 import CustomOAuth2Error, InsecureTransportError
+from ..specs.rfc6749 import InsecureTransportError
 from ..specs.rfc6750 import add_bearer_token
 from ..specs.rfc7009 import prepare_revoke_token_request
 
@@ -177,8 +177,7 @@ class OAuth2Session(Session):
         for hook in self.compliance_hook['access_token_response']:
             resp = hook(resp)
 
-        params = resp.json()
-        return self._parse_and_validate_token(params, resp.status_code)
+        return self._parse_and_validate_token(resp.json())
 
     def fetch_token(self, url, **kwargs):
         """Alias for fetch_access_token. Compatible with requests-oauthlib."""
@@ -224,8 +223,7 @@ class OAuth2Session(Session):
         for hook in self.compliance_hook['refresh_token_response']:
             resp = hook(resp)
 
-        params = resp.json()
-        self._parse_and_validate_token(params, resp.status_code)
+        self._parse_and_validate_token(resp.json())
         if 'refresh_token' not in self.token:
             self.token['refresh_token'] = refresh_token
 
@@ -316,16 +314,14 @@ class OAuth2Session(Session):
                              hook_type, self.compliance_hook)
         self.compliance_hook[hook_type].add(hook)
 
-    def _parse_and_validate_token(self, params, status_code=400):
+    def _parse_and_validate_token(self, params):
         if 'error' not in params:
             self.token = OAuth2Token(params)
             return self.token
 
         error = params['error']
-        description = params.get('error_description')
-        uri = params.get('error_uri'),
-        state = params.get('state')
-        raise CustomOAuth2Error(error, description, status_code, uri, state)
+        description = params.get('error_description', error)
+        raise OAuthException(description, type=error)
 
     def _prepare_authorization_code_body(self, code, authorization_response,
                                          body, **kwargs):

@@ -85,16 +85,6 @@ class OAuth2Error(Exception):
         ]
 
 
-class CustomOAuth2Error(OAuth2Error):
-    def __init__(self, error=None, description=None, status_code=None,
-                 uri=None, state=None):
-
-        if error is not None:
-            self.error = error
-        super(CustomOAuth2Error, self).__init__(
-            description, status_code, uri, state)
-
-
 class InsecureTransportError(OAuth2Error):
     error = 'insecure_transport'
     description = 'OAuth 2 MUST utilize https.'
