@@ -1,7 +1,7 @@
 import time
 import base64
 import unittest
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from authlib.common.security import generate_token
 from authlib.common.encoding import to_bytes, to_unicode
@@ -12,7 +12,8 @@ from authlib.flask.oauth2.sqla import (
 )
 from authlib.flask.oauth2 import (
     AuthorizationServer,
-    ResourceServer,
+    ResourceProtector,
+    current_token,
 )
 from authlib.specs.rfc6749.grants import (
     AuthorizationCodeGrant as _AuthorizationCodeGrant,
@@ -180,11 +181,24 @@ def create_authorization_server(app):
     @app.route('/oauth/revoke', methods=['POST'])
     def revoke_token():
         return server.create_revocation_response()
+
     return server
 
 
-def create_resource_server():
-    return ResourceServer(Token.query_token, lambda token: token.user)
+def create_resource_server(app):
+    require_oauth = ResourceProtector(Token.query_token)
+
+    @app.route('/user')
+    @require_oauth('profile')
+    def user_profile():
+        user = current_token.user
+        return jsonify(id=user.id, username=user.username)
+
+    @app.route('/user/email')
+    @require_oauth('email')
+    def user_email():
+        user = current_token.user
+        return jsonify(email=user.username + '@example.com')
 
 
 def create_flask_app():
