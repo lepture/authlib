@@ -1,6 +1,7 @@
 import logging
 from requests import Session
 from requests.auth import HTTPBasicAuth
+from .errors import OAuthException
 from ..common.security import generate_token
 from ..common.urls import url_decode
 from ..specs.rfc6749.parameters import (
@@ -11,7 +12,6 @@ from ..specs.rfc6749.parameters import (
 )
 from ..specs.rfc6749 import OAuth2Token
 from ..specs.rfc6749 import CustomOAuth2Error, InsecureTransportError
-from ..specs.rfc6750 import ExpiredTokenError
 from ..specs.rfc6750 import add_bearer_token
 from ..specs.rfc7009 import prepare_revoke_token_request
 
@@ -281,7 +281,7 @@ class OAuth2Session(Session):
         if self.token and not withhold_token:
             if self.token.is_expired():
                 if not self.refresh_token_url:
-                    raise ExpiredTokenError()
+                    raise OAuthException('Token is expired.')
                 auth = kwargs.pop('auth', None)
                 if auth is None and self.client_id and self.client_secret:
                     auth = HTTPBasicAuth(self.client_id, self.client_secret)

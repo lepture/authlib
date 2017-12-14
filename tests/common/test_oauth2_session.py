@@ -6,11 +6,11 @@ from unittest import TestCase
 
 from authlib.common.urls import url_encode
 from authlib.client import OAuth2Session
+from authlib.client.errors import OAuthException
 from authlib.specs.rfc6749 import (
     OAuth2Error,
     MismatchingStateError,
 )
-from authlib.specs.rfc6750 import ExpiredTokenError
 from ..client_base import mock_json_response
 
 
@@ -163,7 +163,7 @@ class OAuth2SessionTest(TestCase):
         token = dict(access_token='a', token_type='bearer', expires_at=100)
         sess = OAuth2Session('foo', token=token)
         self.assertRaises(
-            ExpiredTokenError,
+            OAuthException,
             sess.get,
             'https://i.b/token',
         )
