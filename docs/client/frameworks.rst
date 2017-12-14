@@ -11,7 +11,7 @@ it much easier to develop with your favorite framework.
 Flask
 -----
 
-.. module:: authlib.client.flask
+.. module:: authlib.flask.client
 
 Flask OAuth client can handle OAuth 1 and OAuth 2 services.
 It shares a similar API with Flask-OAuthlib, you can
@@ -19,7 +19,7 @@ transfer your code from Flask-OAuthlib to Authlib with ease.
 
 Create a registry with :class:`OAuth` object::
 
-    from authlib.client.flask import OAuth
+    from authlib.flask.client import OAuth
 
     oauth = OAuth(app)
 
@@ -181,7 +181,7 @@ token, make requests with your remote app::
 Django
 ------
 
-.. module:: authlib.client.django
+.. module:: authlib.django.client
 
 The Django client shares a similar API with Flask client. But there are
 differences, since Django has no request context, you need to pass ``request``
@@ -189,7 +189,7 @@ argument yourself.
 
 Create a registry with :class:`OAuth` object::
 
-    from authlib.client.django import OAuth
+    from authlib.django.client import OAuth
 
     oauth = OAuth()
 

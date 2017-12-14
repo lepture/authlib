@@ -11,7 +11,6 @@ Release v\ |version|. (:ref:`Installation <install>`)
 Authlib is a ready to use authentication library. It is designed from low level
 APIs to high level APIs, to meet the needs of everyone.
 
-.. note:: Authlib is in Beta stage. Only client part is implemented for now.
 
 Features
 --------
@@ -26,7 +25,8 @@ Lovely features that Authlib has built-in:
 - Mixed OAuth 1 and OAuth 2 Client
 - Integrated client with Flask
 - Integrated client with Django
-- **TODO** Flask OAuth 1 / OAuth 2 Servers
+- **TODO** Flask OAuth 1 Server
+- Flask OAuth 2 Authorization server and resource protector
 - **TODO** Django OAuth 1 / OAuth 2 Servers
 
 Authlib is compatible with Python2.7+ and Python3.5+.
@@ -53,7 +53,12 @@ Server Guide
 
 This part of the documentation contains information on the server parts.
 
-(Under Construction)
+.. toctree::
+   :maxdepth: 2
+
+   flask/oauth2
+
+.. note:: Django support will be added later.
 
 Specifications
 --------------
