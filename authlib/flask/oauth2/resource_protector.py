@@ -26,7 +26,7 @@ class ResourceProtector(_ResourceProtector):
             # only bearer token (rfc6750) implemented
             return self.query_token(token_string)
 
-    def __call__(self, scope):
+    def __call__(self, scope=None):
         def wrapper(f):
             @functools.wraps(f)
             def decorated(*args, **kwargs):

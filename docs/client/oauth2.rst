@@ -172,7 +172,7 @@ It can also be completed by one step with :meth:`~authlib.specs.oidc.verify_id_t
 
    To use OpenID Connect, you need to install Authlib with RSA::
 
-       $ pip install Authlib[rsa]
+       $ pip install Authlib[crypto]
 
 There is a built-in Google app which supports OpenID Connect, checkout the
 source code in **authlib.clients.apps.google**.

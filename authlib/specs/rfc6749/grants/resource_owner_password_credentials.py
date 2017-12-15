@@ -115,7 +115,10 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
                 uri=self.uri,
             )
 
-        user = self.authenticate_user()
+        user = self.authenticate_user(
+            self.params['username'],
+            self.params['password']
+        )
         if not user:
             raise InvalidGrantError(
                 'Invalid "username" or "password" in request.',
@@ -177,12 +180,10 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
 
         return client
 
-    def authenticate_user(self):
+    def authenticate_user(self, username, password):
         """validate the resource owner password credentials using its
         existing password validation algorithm::
 
-            username = self.params['username']
-            password = self.params['password']
             user = get_user_by_username(username)
             if user.check_password(password):
                return user

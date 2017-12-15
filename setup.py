@@ -5,9 +5,7 @@
 from setuptools import setup, find_packages
 from authlib.consts import version, homepage
 
-rsa_require = ['cryptography', 'pyjwt>=1.0.0']
-flask_require = ['Flask']
-django_require = ['Django']
+crypto_require = ['cryptography', 'pyjwt>=1.0.0']
 
 
 def fread(filename):
@@ -33,9 +31,7 @@ setup(
     license='LGPLv3',
     install_requires=['requests'],
     extras_require={
-        'rsa': rsa_require,
-        'flask': flask_require,
-        'django': django_require
+        'crypto': crypto_require,
     },
     classifiers=[
         'Development Status :: 3 - Alpha',

@@ -37,6 +37,11 @@ class BaseGrant(object):
     def client(self):
         return self.get_client_by_id(self.params['client_id'])
 
+    @property
+    def scopes(self):
+        if 'scope' in self.params:
+            return scope_to_list(self.params['scope'])
+
     def get_client_by_id(self, client_id):
         if client_id in self._clients:
             return self._clients[client_id]
@@ -83,7 +88,6 @@ class BaseGrant(object):
             self.redirect_uri = redirect_uri
 
     def validate_requested_scope(self, client):
-        if 'scope' in self.params:
-            requested_scopes = set(scope_to_list(self.params['scope']))
-            if not client.check_requested_scopes(requested_scopes):
-                raise InvalidScopeError(state=self.state, uri=self.uri)
+        scopes = self.scopes
+        if scopes and not client.check_requested_scopes(set(scopes)):
+            raise InvalidScopeError(state=self.state, uri=self.uri)

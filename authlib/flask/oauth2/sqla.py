@@ -60,7 +60,7 @@ class OAuth2TokenMixin(object):
     client_id = Column(String(48))
     token_type = Column(String(40))
     access_token = Column(String(255), unique=True, nullable=False)
-    refresh_token = Column(String(255))
+    refresh_token = Column(String(255), index=True)
     scope = Column(Text, default='')
     created_at = Column(
         Integer, nullable=False, default=lambda: int(time.time())
