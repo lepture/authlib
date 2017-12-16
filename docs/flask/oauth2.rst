@@ -8,7 +8,7 @@ Implement OAuth 2 provider in Flask. An OAuth 2 provider contains two servers:
 - Authorization Server: to issue access tokens
 - Resources Server: to serve your users' resources
 
-.. note:: only Bearer Token is supported by now.
+.. note:: Only Bearer Token is supported by now.
 
 Authorization Server
 --------------------

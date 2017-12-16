@@ -8,5 +8,5 @@ Misc utilities in Authlib to make things simple.
 Flask Cache
 -----------
 
-.. autoclass:: authlib.common.flask.cache.Cache
+.. autoclass:: authlib.flask.cache.Cache
    :members:

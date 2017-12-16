@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function
 from unittest import TestCase
 from flask import Flask
 from werkzeug.contrib.cache import NullCache, SimpleCache
-from authlib.common.flask import Cache
+from authlib.flask.cache import Cache
 
 
 class FlaskCacheTest(TestCase):

@@ -80,7 +80,7 @@ There are hooks for OAuthClient, and flask integration has registered them
 all for you. However, you need to configure cache and database access.
 
 Cache is used for temporary information, such as request token, state and
-callback uri. We use the :class:`~authlib.common.flask.cache.Cache` as the
+callback uri. We use the :class:`~authlib.flask.cache.Cache` as the
 backend. To specify a certain cache type, config with::
 
     OAUTH_CLIENT_CACHE_TYPE = '{{ cache_type }}'
