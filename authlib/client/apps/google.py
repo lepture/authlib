@@ -1,6 +1,6 @@
 try:
     from authlib.specs.oidc import verify_id_token
-except ImportError:
+except ImportError:  # pragma: no cover
     verify_id_token = None
 
 from .base import AppFactory, User, patch_method
@@ -17,10 +17,7 @@ GOOGLE_JWK_SET = None
 
 
 def google_parse_id_token(client, response, nonce=None):
-    global GOOGLE_JWK_SET
-    if not GOOGLE_JWK_SET:
-        resp = client.get(GOOGLE_JWK_URL, withhold_token=True)
-        GOOGLE_JWK_SET = resp.json()['keys']
+    jwk_set = _get_google_jwk_set(client)
 
     client_id = getattr(client, 'client_key', None)
     if not client_id:
@@ -28,7 +25,7 @@ def google_parse_id_token(client, response, nonce=None):
         client_id = client.client_id
 
     id_token = verify_id_token(
-        response, GOOGLE_JWK_SET,
+        response, jwk_set,
         issuers=('https://accounts.google.com', 'accounts.google.com'),
         client_id=client_id,
         nonce=nonce,
@@ -45,6 +42,14 @@ def google_fetch_user(client):
     resp = client.get('oauth2/v3/userinfo')
     profile = resp.json()
     return _parse_profile(profile)
+
+
+def _get_google_jwk_set(client):
+    global GOOGLE_JWK_SET
+    if not GOOGLE_JWK_SET:
+        resp = client.get(GOOGLE_JWK_URL, withhold_token=True)
+        GOOGLE_JWK_SET = resp.json()['keys']
+    return GOOGLE_JWK_SET
 
 
 def _parse_profile(profile):

@@ -6,7 +6,7 @@ from .oauth2_server import create_authorization_server
 
 
 class RefreshTokenTest(TestCase):
-    def prepare_data(self):
+    def prepare_data(self, is_confidential=True):
         server = create_authorization_server(self.app)
         server.register_grant_endpoint(RefreshTokenGrant)
 
@@ -19,19 +19,19 @@ class RefreshTokenTest(TestCase):
             client_secret='refresh-secret',
             default_redirect_uri='http://localhost/authorized',
             allowed_scopes='profile',
-            is_confidential=True,
+            is_confidential=is_confidential,
         )
         db.session.add(client)
         db.session.commit()
 
-    def create_token(self):
+    def create_token(self, scope='profile'):
         token = Token(
             user_id=1,
             client_id='refresh-client',
             token_type='bearer',
             access_token='a1',
             refresh_token='r1',
-            scope='profile',
+            scope=scope,
             expires_in=3600,
         )
         db.session.add(token)
@@ -66,6 +66,18 @@ class RefreshTokenTest(TestCase):
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'invalid_client')
 
+    def test_public_client(self):
+        self.prepare_data(False)
+        headers = self.create_basic_header(
+            'refresh-client', 'refresh-secret'
+        )
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': 'refresh_token',
+            'refresh_token': 'r1',
+        }, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['error'], 'unauthorized_client')
+
     def test_invalid_refresh_token(self):
         self.prepare_data()
         headers = self.create_basic_header(
@@ -87,6 +99,20 @@ class RefreshTokenTest(TestCase):
     def test_invalid_scope(self):
         self.prepare_data()
         self.create_token()
+        headers = self.create_basic_header(
+            'refresh-client', 'refresh-secret'
+        )
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': 'refresh_token',
+            'refresh_token': 'r1',
+            'scope': 'invalid',
+        }, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['error'], 'invalid_scope')
+
+    def test_invalid_scope_none(self):
+        self.prepare_data()
+        self.create_token(scope=None)
         headers = self.create_basic_header(
             'refresh-client', 'refresh-secret'
         )

@@ -15,6 +15,7 @@ from authlib.flask.oauth2 import (
     ResourceProtector,
     current_token,
 )
+from authlib.specs.rfc6749 import OAuth2Error
 from authlib.specs.rfc6749.grants import (
     AuthorizationCodeGrant as _AuthorizationCodeGrant,
     ImplicitGrant as _ImplicitGrant,
@@ -40,6 +41,10 @@ class Client(db.Model, OAuth2ClientMixin):
         db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')
     )
     user = db.relationship('User')
+    allowed_response_types = db.Column(db.Text, default='code token')
+
+    def check_response_type(self, response_type):
+        return response_type in self.allowed_response_types.split()
 
 
 class AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):
@@ -163,8 +168,11 @@ def create_authorization_server(app):
     @app.route('/oauth/authorize', methods=['GET', 'POST'])
     def authorize():
         if request.method == 'GET':
-            server.validate_authorization_request()
-            return 'ok'
+            try:
+                server.validate_authorization_request()
+                return 'ok'
+            except OAuth2Error:
+                return 'error'
         user_id = request.form.get('user_id')
         if user_id:
             user = User.query.get(int(user_id))
@@ -197,6 +205,11 @@ def create_resource_server(app):
     def user_email():
         user = current_token.user
         return jsonify(email=user.username + '@example.com')
+
+    @app.route('/info')
+    @require_oauth()
+    def public_info():
+        return jsonify(status='ok')
 
 
 def create_flask_app():

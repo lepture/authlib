@@ -212,3 +212,8 @@ class OAuth2SessionTest(TestCase):
         sess.send = mock_json_response(answer)
         resp = sess.revoke_token('https://i.b/token', 'hi')
         self.assertEqual(resp.json(), answer)
+        resp = sess.revoke_token(
+            'https://i.b/token', 'hi',
+            token_type_hint='access_token'
+        )
+        self.assertEqual(resp.json(), answer)

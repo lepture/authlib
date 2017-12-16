@@ -45,6 +45,12 @@ class ResourceTest(TestCase):
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'invalid_token')
 
+        headers = {'Authorization': 'invalid token'}
+        rv = self.client.get('/user', headers=headers)
+        self.assertEqual(rv.status_code, 401)
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['error'], 'invalid_token')
+
         headers = self.create_bearer_header('invalid')
         rv = self.client.get('/user', headers=headers)
         self.assertEqual(rv.status_code, 401)
@@ -76,3 +82,8 @@ class ResourceTest(TestCase):
         rv = self.client.get('/user', headers=headers)
         resp = json.loads(rv.data)
         self.assertEqual(resp['username'], 'foo')
+
+        rv = self.client.get('/info', headers=headers)
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['status'], 'ok')
+

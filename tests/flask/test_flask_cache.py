@@ -1,20 +1,35 @@
 from __future__ import unicode_literals, print_function
 from unittest import TestCase
 from flask import Flask
-from werkzeug.contrib.cache import NullCache, SimpleCache
+from werkzeug.contrib.cache import NullCache, SimpleCache, FileSystemCache
 from authlib.flask.cache import Cache
 
 
 class FlaskCacheTest(TestCase):
     def test_cache_type(self):
         app = Flask(__name__)
-        self.assertRaises(RuntimeError, Cache, app)
         app.config.update({'AUTHLIB_CACHE_TYPE': 'null'})
         c = Cache(app)
         self.assertIsInstance(c.cache, NullCache)
         app.config.update({'AUTHLIB_CACHE_TYPE': 'simple'})
         c = Cache(app)
         self.assertIsInstance(c.cache, SimpleCache)
+        app.config.update({'AUTHLIB_CACHE_TYPE': 'filesystem'})
+        app.config.update({'AUTHLIB_CACHE_DIR': '/tmp'})
+        c = Cache(app)
+        self.assertIsInstance(c.cache, FileSystemCache)
+
+    def test_invalid_cache_type(self):
+        app = Flask(__name__)
+        self.assertRaises(RuntimeError, Cache, app)
+        app.config.update({'AUTHLIB_CACHE_TYPE': 'invalid'})
+        self.assertRaises(RuntimeError, Cache, app)
+
+    def test_fallback_config(self):
+        app = Flask(__name__)
+        app.config.update({'CACHE_TYPE': 'null'})
+        c = Cache(app)
+        self.assertIsInstance(c.cache, NullCache)
 
     def test_cache_methods(self):
         app = Flask(__name__)

@@ -61,6 +61,11 @@ class RevokeTokenTest(TestCase):
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'invalid_client')
 
+        headers = {'Authorization': 'invalid token_string'}
+        rv = self.client.post('/oauth/revoke', headers=headers)
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['error'], 'invalid_client')
+
         headers = self.create_basic_header(
             'invalid-client', 'revoke-secret'
         )

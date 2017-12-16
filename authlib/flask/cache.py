@@ -92,7 +92,7 @@ class Cache(object):
             kwargs.update(dict(
                 threshold=self._config('threshold', 500),
             ))
-            self.cache = FileSystemCache(self._config('dir'), **kwargs)
+            self.cache = FileSystemCache(self._config('DIR'), **kwargs)
         else:
             raise RuntimeError(
                 '`%s` is not a valid cache type!' % cache_type
