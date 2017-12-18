@@ -3,6 +3,10 @@
 Flask OAuth 2 Server
 ====================
 
+.. meta::
+   :description: How to create an OAuth 2 server in Flask with Authlib.
+       And understand how OAuth 2 works.
+
 Implement OAuth 2 provider in Flask. An OAuth 2 provider contains two servers:
 
 - Authorization Server: to issue access tokens

@@ -3,6 +3,9 @@
 Installation of Authlib
 =======================
 
+.. meta::
+   :description: How to install Authlib with pip, source code and etc.
+
 This part of the documentation covers the installation of Authlib.
 The first step to using any software package is getting it properly installed.
 

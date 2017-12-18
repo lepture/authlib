@@ -3,6 +3,10 @@
 OAuth 1 Session
 ===============
 
+.. meta::
+   :description: An OAuth 1 implementation for requests Session, powered
+        by Authlib.
+
 .. module:: authlib.client
 
 The :class:`OAuth1Session` in Authlib is designed to be

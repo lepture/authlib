@@ -3,6 +3,9 @@
 The OAuth 2.0 Authorization Framework
 =====================================
 
+.. meta::
+   :description: API references on RFC6749 Authlib implementation.
+
 This section contains the generic implementation of RFC6749_.
 
 .. _RFC6749: https://tools.ietf.org/html/rfc6749

@@ -1,6 +1,9 @@
 Changelog
 =========
 
+.. meta::
+   :description: The full list of changes between each Authlib release.
+
 Here you can see the full list of changes between each Authlib release.
 
 

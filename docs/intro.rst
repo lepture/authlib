@@ -3,6 +3,11 @@
 Introduction
 ============
 
+.. meta::
+   :description: A general introduction on Authlib, a project that powers from
+       low-level specification implementation to high-level framework
+       integrations.
+
 Authlib is a ready to use library for authentication. It was designed to be a
 replacement for my Flask-OAuthlib project. Later it becomes a :ref:`monolithic`
 project that powers from low-level specification implementation to high-level

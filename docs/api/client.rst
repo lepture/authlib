@@ -1,6 +1,9 @@
 Client Reference
 ================
 
+.. meta::
+   :description: API references on Authlib Client and its related Flask/Django integrations.
+
 This part of the documentation covers the interface of Authlib Client.
 
 Sessions and Client

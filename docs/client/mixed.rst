@@ -3,6 +3,10 @@
 OAuthClient
 ===========
 
+.. meta::
+   :description: A mixed OAuth 1 and OAuth 2 client, one to control everything.
+      The foundation for Flask and Django integrations.
+
 .. module:: authlib.client
 
 A mixed OAuth 1 and OAuth 2 client, one to control them both. With

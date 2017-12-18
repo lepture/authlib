@@ -1,6 +1,9 @@
 Server Reference
 ================
 
+.. meta::
+   :description: API references on Authlib server part, including Flask related integrations.
+
 This part of the documentation covers the interface of Authlib Server.
 
 Flask OAuth 2 Server

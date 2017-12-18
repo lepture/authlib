@@ -3,6 +3,10 @@
 Ready to Use Apps
 =================
 
+.. meta::
+   :description: The built-in ready to use famous services, including
+      Twitter, Facebook, Google, GitHub, Dropbox, and etc.
+
 There are built-in configuration for famous services. Import them and register
 them to frameworks registry. If you haven't read :ref:`client_frameworks`,
 head over back to that section.

@@ -3,6 +3,9 @@
 The OAuth 2.0 Authorization Framework: Bearer Token Usage
 =========================================================
 
+.. meta::
+   :description: API references on RFC6750 Authlib implementation.
+
 This section contains the generic implementation of RFC6750_.
 
 .. _RFC6750: https://tools.ietf.org/html/rfc6750

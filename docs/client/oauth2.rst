@@ -3,6 +3,10 @@
 OAuth 2 Session
 ===============
 
+.. meta::
+   :description: An OAuth 2 implementation for requests Session, powered
+        by Authlib.
+
 .. module:: authlib.client
 
 The :class:`OAuth2Session` in Authlib is designed to be compatible

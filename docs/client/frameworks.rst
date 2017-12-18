@@ -3,6 +3,10 @@
 Integrated Frameworks
 =====================
 
+.. meta::
+   :description: The built-in Flask and Django integrations for OAuth 1 and
+      OAuth 2 clients.
+
 Authlib has built-in integrated frameworks support, which makes
 it much easier to develop with your favorite framework.
 
