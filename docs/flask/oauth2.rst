@@ -84,8 +84,8 @@ With the SQLAlchemy mixin provided by Authlib::
 Define Server
 ~~~~~~~~~~~~~
 
-Authlib provides a ready to use **AuthorizationServer** which has built-in
-tools to handle requests and responses::
+Authlib provides a ready to use :class:`~authlib.flask.oauth2.AuthorizationServer`
+which has built-in tools to handle requests and responses::
 
     from authlib.flask.oauth2 import AuthorizationServer
 
@@ -390,7 +390,7 @@ server. Here is how to protect your users resources::
         user = current_token.user
         return jsonify(user)
 
-If the resource is not protected by a scope, use `None`::
+If the resource is not protected by a scope, use ``None``::
 
     @app.route('/user')
     @require_oauth()
