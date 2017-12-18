@@ -13,5 +13,6 @@
 
 from .wrappers import *
 from .errors import *
+from .client_model import ClientMixin
 from .authorization_server import AuthorizationServer
 from .resource_protector import ResourceProtector

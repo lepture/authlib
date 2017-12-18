@@ -1,9 +1,9 @@
 import time
 from sqlalchemy import Column, Boolean, String, Text, Integer
-from authlib.specs.rfc6749.client_model import OAuth2Client
+from authlib.specs.rfc6749 import ClientMixin
 
 
-class OAuth2ClientMixin(OAuth2Client):
+class OAuth2ClientMixin(ClientMixin):
     client_id = Column(String(48), index=True)
     client_secret = Column(String(120), nullable=False)
     is_confidential = Column(Boolean, nullable=False, default=False)

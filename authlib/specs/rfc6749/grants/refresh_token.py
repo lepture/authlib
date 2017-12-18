@@ -95,7 +95,7 @@ class RefreshTokenGrant(BaseGrant):
                 uri=self.uri,
             )
 
-        token = self.authenticate_token(refresh_token)
+        token = self.authenticate_refresh_token(refresh_token)
         if not token:
             raise InvalidRequestError(
                 'Invalid "refresh_token" in request.',
@@ -129,10 +129,19 @@ class RefreshTokenGrant(BaseGrant):
             expires_in=expires_in,
             scope=scope,
         )
-        self.create_access_token(token, self._authenticated_token)
+        self.create_access_token(
+            token,
+            self._authenticated_client,
+            self._authenticated_token
+        )
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_client(self):
+        """Authenticate client with Basic Authorization. Developers who want
+        to use other means for authentication can re-implement it in subclass.
+
+        :return: client
+        """
         client_params = self.parse_basic_auth_header()
         if not client_params:
             raise InvalidClientError(uri=self.uri)
@@ -146,16 +155,34 @@ class RefreshTokenGrant(BaseGrant):
 
         return client
 
-    def authenticate_token(self, refresh_token):
-        """
+    def authenticate_refresh_token(self, refresh_token):
+        """Get token information with refresh_token string. Developers should
+        implement this method in subclass::
+
+            def authenticate_refresh_token(self, refresh_token):
+                item = Token.get(refresh_token=refresh_token)
+                if item and not item.is_refresh_token_expired():
+                    return item
+
         :param refresh_token: The refresh token issued to the client
         :return: token
         """
         raise NotImplementedError()
 
-    def create_access_token(self, token, authenticated_token):
-        """
+    def create_access_token(self, token, client, authenticated_token):
+        """Save access_token into database. Developers should implement it in
+        subclass::
+
+            def create_access_token(self, token, client, authenticated_token):
+                item = Token(
+                    client_id=client.client_id,
+                    user_id=authenticated_token.user_id,
+                    **token
+                )
+                item.save()
+
         :param token: A new generated token to replace the original token.
+        :param client: Current client related to the token.
         :param authenticated_token: The original token granted by resource
             owner.
         """

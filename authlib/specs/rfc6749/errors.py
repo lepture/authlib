@@ -90,8 +90,8 @@ class InsecureTransportError(OAuth2Error):
     description = 'OAuth 2 MUST utilize https.'
 
     @classmethod
-    def check(cls, url):
-        if not is_secure_transport(url):
+    def check(cls, uri):
+        if not is_secure_transport(uri):
             raise cls()
 
 

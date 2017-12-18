@@ -15,33 +15,33 @@ class AuthorizationCodeGrant(BaseGrant):
     Since this is a redirection-based flow, the client must be capable of
     interacting with the resource owner's user-agent (typically a web
     browser) and capable of receiving incoming requests (via redirection)
-    from the authorization server.
+    from the authorization server::
 
-    +----------+
-    | Resource |
-    |   Owner  |
-    |          |
-    +----------+
-         ^
-         |
-        (B)
-    +----|-----+          Client Identifier      +---------------+
-    |         -+----(A)-- & Redirection URI ---->|               |
-    |  User-   |                                 | Authorization |
-    |  Agent  -+----(B)-- User authenticates --->|     Server    |
-    |          |                                 |               |
-    |         -+----(C)-- Authorization Code ---<|               |
-    +-|----|---+                                 +---------------+
-      |    |                                         ^      v
-     (A)  (C)                                        |      |
-      |    |                                         |      |
-      ^    v                                         |      |
-    +---------+                                      |      |
-    |         |>---(D)-- Authorization Code ---------'      |
-    |  Client |          & Redirection URI                  |
-    |         |                                             |
-    |         |<---(E)----- Access Token -------------------'
-    +---------+       (w/ Optional Refresh Token)
+        +----------+
+        | Resource |
+        |   Owner  |
+        |          |
+        +----------+
+             ^
+             |
+            (B)
+        +----|-----+          Client Identifier      +---------------+
+        |         -+----(A)-- & Redirection URI ---->|               |
+        |  User-   |                                 | Authorization |
+        |  Agent  -+----(B)-- User authenticates --->|     Server    |
+        |          |                                 |               |
+        |         -+----(C)-- Authorization Code ---<|               |
+        +-|----|---+                                 +---------------+
+          |    |                                         ^      v
+         (A)  (C)                                        |      |
+          |    |                                         |      |
+          ^    v                                         |      |
+        +---------+                                      |      |
+        |         |>---(D)-- Authorization Code ---------'      |
+        |  Client |          & Redirection URI                  |
+        |         |                                             |
+        |         |<---(E)----- Access Token -------------------'
+        +---------+       (w/ Optional Refresh Token)
     """
     AUTHORIZATION_ENDPOINT = True
     ACCESS_TOKEN_ENDPOINT = True
@@ -339,13 +339,70 @@ class AuthorizationCodeGrant(BaseGrant):
         return client
 
     def create_authorization_code(self, client, user, **kwargs):
+        """Save authorization_code for later use. Developers should implement
+        it in subclass. Here is an example::
+
+            from authlib.common.security import generate_token
+
+            def create_authorization_code(self, client, user, **kwargs):
+                code = generate_token(48)
+                item = AuthorizationCode(
+                    code=code,
+                    client_id=client.client_id,
+                    redirect_uri=kwargs.get('redirect_uri', ''),
+                    scope=kwargs.get('scope', ''),
+                    user_id=user.id,
+                )
+                item.save()
+                return code
+
+        :param client: the client that requesting the token.
+        :param user: resource owner (user) object.
+        :param kwargs: other parameters.
+        :return: code string
+        """
         raise NotImplementedError()
 
     def parse_authorization_code(self, code, client):
+        """Get authorization_code from previously savings. Developers should
+        implement it in subclass::
+
+            def parse_authorization_code(self, code, client):
+                return Authorization.get(code=code, client_id=client.client_id)
+
+        :param code: a string represent the code.
+        :param client: client related to this code.
+        :return: authorization_code object
+        """
         raise NotImplementedError()
 
     def delete_authorization_code(self, authorization_code):
+        """Delete authorization code from database or cache. Developers should
+        implement it in subclass::
+
+            def delete_authorization_code(self, authorization_code):
+                authorization_code.delete()
+
+        :param authorization_code: the instance of authorization_code
+        """
         raise NotImplementedError()
 
     def create_access_token(self, token, client, authorization_code):
+        """Save access_token into database. Developers should implement it in
+        subclass::
+
+            def create_access_token(self, token, client, authorization_code):
+                item = Token(
+                    client_id=client.client_id,
+                    user_id=authorization_code.user_id,
+                    **token
+                )
+                item.save()
+                # if you want to add extra data into token
+                token['user_id'] = authorization_code.user_id
+
+        :param token: A dict contains the token information
+        :param client: Current client related to the token
+        :param authorization_code: previously saved authorization_code
+        """
         raise NotImplementedError()

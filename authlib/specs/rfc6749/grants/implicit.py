@@ -27,40 +27,40 @@ class ImplicitGrant(BaseGrant):
     relies on the presence of the resource owner and the registration of
     the redirection URI.  Because the access token is encoded into the
     redirection URI, it may be exposed to the resource owner and other
-    applications residing on the same device.
+    applications residing on the same device::
 
-    +----------+
-    | Resource |
-    |  Owner   |
-    |          |
-    +----------+
-         ^
-         |
-        (B)
-    +----|-----+          Client Identifier     +---------------+
-    |         -+----(A)-- & Redirection URI --->|               |
-    |  User-   |                                | Authorization |
-    |  Agent  -|----(B)-- User authenticates -->|     Server    |
-    |          |                                |               |
-    |          |<---(C)--- Redirection URI ----<|               |
-    |          |          with Access Token     +---------------+
-    |          |            in Fragment
-    |          |                                +---------------+
-    |          |----(D)--- Redirection URI ---->|   Web-Hosted  |
-    |          |          without Fragment      |     Client    |
-    |          |                                |    Resource   |
-    |     (F)  |<---(E)------- Script ---------<|               |
-    |          |                                +---------------+
-    +-|--------+
-      |    |
-     (A)  (G) Access Token
-      |    |
-      ^    v
-    +---------+
-    |         |
-    |  Client |
-    |         |
-    +---------+
+        +----------+
+        | Resource |
+        |  Owner   |
+        |          |
+        +----------+
+             ^
+             |
+            (B)
+        +----|-----+          Client Identifier     +---------------+
+        |         -+----(A)-- & Redirection URI --->|               |
+        |  User-   |                                | Authorization |
+        |  Agent  -|----(B)-- User authenticates -->|     Server    |
+        |          |                                |               |
+        |          |<---(C)--- Redirection URI ----<|               |
+        |          |          with Access Token     +---------------+
+        |          |            in Fragment
+        |          |                                +---------------+
+        |          |----(D)--- Redirection URI ---->|   Web-Hosted  |
+        |          |          without Fragment      |     Client    |
+        |          |                                |    Resource   |
+        |     (F)  |<---(E)------- Script ---------<|               |
+        |          |                                +---------------+
+        +-|--------+
+          |    |
+         (A)  (G) Access Token
+          |    |
+          ^    v
+        +---------+
+        |         |
+        |  Client |
+        |         |
+        +---------+
     """
     AUTHORIZATION_ENDPOINT = True
     GRANT_TYPE = 'implicit'
@@ -187,9 +187,7 @@ class ImplicitGrant(BaseGrant):
                 scope=self.params.get('scope'),
                 include_refresh_token=False
             )
-            self.create_access_token(
-                token, self.client, grant_user, **self.params
-            )
+            self.create_access_token(token, self.client, grant_user)
             params = [
                 ('access_token', token['access_token']),
                 ('token_type', token['token_type']),
@@ -208,5 +206,20 @@ class ImplicitGrant(BaseGrant):
         headers = [('Location', uri)]
         return 302, '', headers
 
-    def create_access_token(self, token, client, grant_user, **kwargs):
+    def create_access_token(self, token, client, grant_user):
+        """Save access_token into database. Developers should implement it in
+        subclass::
+
+            def create_access_token(self, token, client, grant_user):
+                item = Token(
+                    client_id=client.client_id,
+                    user_id=grant_user.id,
+                    **token
+                )
+                item.save()
+
+        :param token: A dict contains the token information.
+        :param client: Current client related to the token.
+        :param grant_user: resource owner.
+        """
         raise NotImplementedError()

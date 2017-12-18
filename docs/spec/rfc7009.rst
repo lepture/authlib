@@ -7,4 +7,11 @@ This section contains the generic implementation of RFC7009_.
 
 .. _RFC7009: https://tools.ietf.org/html/rfc7009
 
-.. note:: This documentation will be finished in the future.
+.. module:: authlib.specs.rfc7009
+
+Revocation Endpoint
+-------------------
+
+.. autoclass:: RevocationEndpoint
+   :member-order: bysource
+   :members:

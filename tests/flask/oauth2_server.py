@@ -1,3 +1,4 @@
+import os
 import time
 import base64
 import unittest
@@ -24,6 +25,7 @@ from authlib.specs.rfc6749.grants import (
     RefreshTokenGrant as _RefreshTokenGrant,
 )
 
+os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
 db = SQLAlchemy()
 
 
@@ -108,7 +110,7 @@ class AuthorizationCodeGrant(_AuthorizationCodeGrant):
 
 
 class ImplicitGrant(_ImplicitGrant):
-    def create_access_token(self, token, client, grant_user, **kwargs):
+    def create_access_token(self, token, client, grant_user):
         item = Token(
             client_id=client.client_id,
             user_id=grant_user.id,
@@ -124,7 +126,7 @@ class PasswordGrant(_PasswordGrant):
         if user.check_password(password):
             return user
 
-    def create_access_token(self, token, client, user, **kwargs):
+    def create_access_token(self, token, client, user):
         item = Token(
             client_id=client.client_id,
             user_id=user.id,
@@ -146,14 +148,14 @@ class ClientCredentialsGrant(_ClientCredentialsGrant):
 
 
 class RefreshTokenGrant(_RefreshTokenGrant):
-    def authenticate_token(self, refresh_token):
+    def authenticate_refresh_token(self, refresh_token):
         item = Token.query.filter_by(refresh_token=refresh_token).first()
         if item and not item.is_refresh_token_expired():
             return item
 
-    def create_access_token(self, token, authenticated_token):
+    def create_access_token(self, token, client, authenticated_token):
         item = Token(
-            client_id=authenticated_token.client_id,
+            client_id=client.client_id,
             user_id=authenticated_token.user_id,
             **token
         )

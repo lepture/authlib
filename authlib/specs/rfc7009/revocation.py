@@ -8,6 +8,17 @@ from .errors import (
 
 
 class RevocationEndpoint(object):
+    """Implementation of revocation endpoint which is described in
+    `RFC7009`_.
+
+    :param uri: HTTP request URI string.
+    :param params: HTTP query or payload parameters.
+    :param headers: HTTP request headers dict.
+    :param client_model: A model class that implemented the methods described
+        by :class:`~authlib.specs.rfc6749.ClientMixin`.
+
+    .. _RFC7009: https://tools.ietf.org/html/rfc7009
+    """
     supported_token_types = ('access_token', 'refresh_token')
 
     def __init__(self, uri, params, headers, client_model):
@@ -26,6 +37,9 @@ class RevocationEndpoint(object):
                 return extract_basic_authorization(auth_token)
 
     def validate_authenticate_client(self):
+        """Validate requested client with Basic Authorization. Developers
+        can re-implement this method for other authenticate means.
+        """
         client_params = self.parse_basic_auth_header()
         if not client_params:
             raise InvalidClientError(uri=self.uri)
@@ -66,6 +80,10 @@ class RevocationEndpoint(object):
         self._token = token
 
     def create_revocation_response(self):
+        """Validate revocation request and create the response for revocation.
+
+        :returns: (status_code, body, headers)
+        """
         try:
             # The authorization server first validates the client credentials
             self.validate_authenticate_client()
@@ -88,7 +106,24 @@ class RevocationEndpoint(object):
         return status, body, headers
 
     def query_token(self, token, token_type_hint, client):
+        """Get the token from database/storage by the given token string.
+        Developers should implement this method::
+
+            def query_token(self, token, token_type_hint, client):
+                if token_type_hint == 'access_token':
+                    return Token.query_by_access_token(token, client.client_id)
+                if token_type_hint == 'refresh_token':
+                    return Token.query_by_refresh_token(token, client.client_id)
+                return Token.query_by_access_token(token, client.client_id) or \
+                    Token.query_by_refresh_token(token, client.client_id)
+        """
         raise NotImplementedError()
 
     def invalidate_token(self, token):
+        """Delete token from database/storage. Developers should implement this
+        method::
+
+            def invalidate_token(self, token):
+                token.delete()
+        """
         raise NotImplementedError()

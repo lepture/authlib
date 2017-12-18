@@ -8,7 +8,14 @@ Implement OAuth 2 provider in Flask. An OAuth 2 provider contains two servers:
 - Authorization Server: to issue access tokens
 - Resources Server: to serve your users' resources
 
-.. note:: Only Bearer Token is supported by now.
+.. note::
+
+    Only Bearer Token is supported by now.
+
+    If you are developing on your localhost, remember to set environment
+    variable::
+
+        export AUTHLIB_INSECURE_TRANSPORT=true
 
 Authorization Server
 --------------------
@@ -48,7 +55,8 @@ Authlib has provided a mixin for SQLAlchemy, define the client with the mixin::
         )
         user = db.relationship('User')
 
-A client is registered by a user (developer) on your website.
+A client is registered by a user (developer) on your website. Get a deep
+inside with :class:`~authlib.specs.rfc6749.ClientMixin` API reference.
 
 Token
 ~~~~~
@@ -153,6 +161,8 @@ grants for them.
 Register Grants
 ---------------
 
+.. module:: authlib.specs.rfc6749.grants
+
 There are four grants defined by RFC6749, you can also create an extend grant
 yourself. Register the supported grant types to the authorization server.
 
@@ -174,7 +184,7 @@ kept in database or something like redis. Here is a SQLAlchemy mixin for
         )
         user = db.relationship('User')
 
-Implement this grant by subclass **AuthorizationCodeGrant**::
+Implement this grant by subclass :class:`AuthorizationCodeGrant`::
 
     from authlib.specs.rfc6749.grants import (
         AuthorizationCodeGrant as _AuthorizationCodeGrant
@@ -226,7 +236,8 @@ Implicit Grant
 ~~~~~~~~~~~~~~
 
 The implicit grant type is usually used in a browser, when resource
-owner granted the access, access token is issued in the redirect URI::
+owner granted the access, access token is issued in the redirect URI,
+implement it with a subclass of :class:`ImplicitGrant`::
 
     from authlib.specs.rfc6749.grants import (
         ImplicitGrant as _ImplicitGrant
@@ -249,7 +260,8 @@ Resource Owner Password Credentials Grant
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Resource owner uses his username and password to exchange an access token,
-this grant type should be used only when the client is trustworthy::
+this grant type should be used only when the client is trustworthy, implement
+it with a subclass of :class:`ResourceOwnerPasswordCredentialsGrant`::
 
     from authlib.specs.rfc6749.grants import (
         ResourceOwnerPasswordCredentialsGrant as _PasswordGrant
@@ -277,7 +289,8 @@ Client Credentials Grant
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 Client credentials grant type can access public resources and the client's
-creator's resources::
+creator's resources, implement it with a subclass of
+:class:`ClientCredentialsGrant`::
 
     from authlib.specs.rfc6749.grants import (
         ClientCredentialsGrant as _ClientCredentialsGrant
@@ -300,7 +313,8 @@ Refresh Token
 -------------
 
 Many OAuth 2 providers haven't implemented refresh token endpoint. Authlib
-provides it as a grant type::
+provides it as a grant type, implement it with a subclass of
+:class:`RefreshTokenGrant`::
 
     from authlib.specs.rfc6749.grants import (
         RefreshTokenGrant as _RefreshTokenGrant

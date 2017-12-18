@@ -13,15 +13,15 @@ class ClientCredentialsGrant(BaseGrant):
     arranged with the authorization server.
 
     The client credentials grant type MUST only be used by confidential
-    clients.
+    clients::
 
-    +---------+                                  +---------------+
-    |         |                                  |               |
-    |         |>--(A)- Client Authentication --->| Authorization |
-    | Client  |                                  |     Server    |
-    |         |<--(B)---- Access Token ---------<|               |
-    |         |                                  |               |
-    +---------+                                  +---------------+
+        +---------+                                  +---------------+
+        |         |                                  |               |
+        |         |>--(A)- Client Authentication --->| Authorization |
+        | Client  |                                  |     Server    |
+        |         |<--(B)---- Access Token ---------<|               |
+        |         |                                  |               |
+        +---------+                                  +---------------+
 
     https://tools.ietf.org/html/rfc6749#section-4.4
     """
@@ -113,7 +113,11 @@ class ClientCredentialsGrant(BaseGrant):
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_client(self):
-        """Authenticate client with Basic Authorization."""
+        """Authenticate client with Basic Authorization. Developers who want
+        to use other means for authentication can re-implement it in subclass.
+
+        :return: client
+        """
         client_params = self.parse_basic_auth_header()
         if not client_params:
             raise InvalidClientError(uri=self.uri)
@@ -128,4 +132,18 @@ class ClientCredentialsGrant(BaseGrant):
         return client
 
     def create_access_token(self, token, client):
+        """Save access_token into database. Developers should implement it in
+        subclass::
+
+            def create_access_token(self, token, client):
+                item = Token(
+                    client_id=client.client_id,
+                    user_id=client.user_id,
+                    **token
+                )
+                item.save()
+
+        :param token: A dict contains the token information.
+        :param client: Current client related to the token.
+        """
         raise NotImplementedError()

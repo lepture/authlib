@@ -21,25 +21,25 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
     an interactive form).  It is also used to migrate existing clients
     using direct authentication schemes such as HTTP Basic or Digest
     authentication to OAuth by converting the stored credentials to an
-    access token.
+    access token::
 
-    +----------+
-    | Resource |
-    |  Owner   |
-    |          |
-    +----------+
-        v
-        |    Resource Owner
-       (A) Password Credentials
-        |
-        v
-    +---------+                                  +---------------+
-    |         |>--(B)---- Resource Owner ------->|               |
-    |         |         Password Credentials     | Authorization |
-    | Client  |                                  |     Server    |
-    |         |<--(C)---- Access Token ---------<|               |
-    |         |    (w/ Optional Refresh Token)   |               |
-    +---------+                                  +---------------+
+        +----------+
+        | Resource |
+        |  Owner   |
+        |          |
+        +----------+
+            v
+            |    Resource Owner
+           (A) Password Credentials
+            |
+            v
+        +---------+                                  +---------------+
+        |         |>--(B)---- Resource Owner ------->|               |
+        |         |         Password Credentials     | Authorization |
+        | Client  |                                  |     Server    |
+        |         |<--(C)---- Access Token ---------<|               |
+        |         |    (w/ Optional Refresh Token)   |               |
+        +---------+                                  +---------------+
     """
     ACCESS_TOKEN_ENDPOINT = True
     GRANT_TYPE = 'password'
@@ -162,11 +162,15 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
             token,
             self._authenticated_client,
             self._authenticated_user,
-            **self.params
         )
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_client(self):
+        """Authenticate client with Basic Authorization. Developers who want
+        to use other means for authentication can re-implement it in subclass.
+
+        :return: client
+        """
         client_params = self.parse_basic_auth_header()
         if not client_params:
             raise InvalidClientError(uri=self.uri)
@@ -190,5 +194,20 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
         """
         raise NotImplementedError()
 
-    def create_access_token(self, token, client, user, **kwargs):
+    def create_access_token(self, token, client, user):
+        """Save access_token into database. Developers should implement it in
+        subclass::
+
+            def create_access_token(self, token, client, user):
+                item = Token(
+                    client_id=client.client_id,
+                    user_id=user.id,
+                    **token
+                )
+                item.save()
+
+        :param token: A dict contains the token information.
+        :param client: Current client related to the token.
+        :param user: resource owner.
+        """
         raise NotImplementedError()

@@ -7,4 +7,47 @@ This section contains the generic implementation of RFC6749_.
 
 .. _RFC6749: https://tools.ietf.org/html/rfc6749
 
-.. note:: This documentation will be finished in the future.
+Servers
+-------
+
+.. module:: authlib.specs.rfc6749
+
+.. autoclass:: AuthorizationServer
+   :members:
+
+.. autoclass:: ResourceProtector
+   :members:
+
+Client Model
+------------
+
+.. autoclass:: ClientMixin
+   :members:
+
+Grants
+------
+
+.. module:: authlib.specs.rfc6749.grants
+
+.. autoclass:: AuthorizationCodeGrant
+   :member-order: bysource
+   :members:
+
+.. autoclass:: ImplicitGrant
+   :member-order: bysource
+   :members:
+
+.. autoclass:: ResourceOwnerPasswordCredentialsGrant
+   :member-order: bysource
+   :members:
+
+.. autoclass:: ClientCredentialsGrant
+   :member-order: bysource
+   :members:
+
+Refresh Token
+-------------
+
+.. autoclass:: RefreshTokenGrant
+   :member-order: bysource
+   :members:
