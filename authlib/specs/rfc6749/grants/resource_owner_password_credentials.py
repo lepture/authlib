@@ -95,12 +95,6 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
         # check_token_endpoint
         client = self.authenticate_client()
 
-        # require client authentication for confidential clients or for any
-        # client that was issued client credentials (or with other
-        # authentication requirements)
-        if not client.check_client_type('confidential'):
-            raise UnauthorizedClientError(uri=self.uri)
-
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError(uri=self.uri)
 

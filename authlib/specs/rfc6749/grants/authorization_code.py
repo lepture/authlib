@@ -221,12 +221,6 @@ class AuthorizationCodeGrant(BaseGrant):
         # authenticate the client if client authentication is included
         client = self.authenticate_client()
 
-        # require client authentication for confidential clients or for any
-        # client that was issued client credentials (or with other
-        # authentication requirements)
-        if not client.check_client_type('confidential'):
-            raise UnauthorizedClientError(uri=self.uri)
-
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError(uri=self.uri)
 
@@ -289,14 +283,17 @@ class AuthorizationCodeGrant(BaseGrant):
 
         .. _`Section 4.1.4`: http://tools.ietf.org/html/rfc6749#section-4.1.4
         """
+        client = self._authenticated_client
+        is_confidential = client.check_client_type('confidential')
         token = self.token_generator(
-            self._authenticated_client,
+            client,
             self.GRANT_TYPE,
             scope=get_obj_value(self._authorization_code, 'scope'),
+            include_refresh_token=is_confidential,
         )
         self.create_access_token(
             token,
-            self._authenticated_client,
+            client,
             self._authorization_code
         )
         self.delete_authorization_code(self._authorization_code)
@@ -323,18 +320,22 @@ class AuthorizationCodeGrant(BaseGrant):
         :return: client
         """
         client_params = self.parse_basic_auth_header()
-        if not client_params:
-            client_params = (
-                self.params.get('client_id'),
-                self.params.get('client_secret')
-            )
+        if client_params:
+            # authenticate the client if client authentication is included
+            client_id, client_secret = client_params
+            client = self.get_and_validate_client(client_id)
+            if client_secret != client.client_secret:
+                raise InvalidClientError(uri=self.uri)
 
-        # authenticate the client if client authentication is included
-        client_id, client_secret = client_params
+            return client
+
+        # require client authentication for confidential clients or for any
+        # client that was issued client credentials (or with other
+        # authentication requirements)
+        client_id = self.params.get('client_id')
         client = self.get_and_validate_client(client_id)
-
-        if client_secret != client.client_secret:
-            raise InvalidClientError(uri=self.uri)
+        if client.check_client_type('confidential') or client.client_secret:
+            raise UnauthorizedClientError(uri=self.uri)
 
         return client
 

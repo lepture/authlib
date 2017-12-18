@@ -59,37 +59,32 @@ class AuthorizationCodeTest(TestCase):
             'grant_type': 'authorization_code',
             'code': 'invalid',
             'client_id': 'invalid-id',
-            'client_secret': 'invalid-secret',
         })
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'invalid_client')
 
+        headers = self.create_basic_header('code-client', 'invalid-secret')
         rv = self.client.post('/oauth/token', data={
             'grant_type': 'authorization_code',
             'code': 'invalid',
-            'client_id': 'code-client',
-            'client_secret': 'invalid-secret',
-        })
+        }, headers=headers)
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'invalid_client')
 
     def test_invalid_code(self):
         self.prepare_data()
 
+        headers = self.create_basic_header('code-client', 'code-secret')
         rv = self.client.post('/oauth/token', data={
             'grant_type': 'authorization_code',
-            'client_id': 'code-client',
-            'client_secret': 'code-secret',
-        })
+        }, headers=headers)
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'invalid_request')
 
         rv = self.client.post('/oauth/token', data={
             'grant_type': 'authorization_code',
             'code': 'invalid',
-            'client_id': 'code-client',
-            'client_secret': 'code-secret',
-        })
+        }, headers=headers)
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'invalid_request')
 
@@ -105,12 +100,11 @@ class AuthorizationCodeTest(TestCase):
 
         params = dict(url_decode(urlparse.urlparse(rv.location).query))
         code = params['code']
+        headers = self.create_basic_header('code-client', 'code-secret')
         rv = self.client.post('/oauth/token', data={
             'grant_type': 'authorization_code',
             'code': code,
-            'client_id': 'code-client',
-            'client_secret': 'code-secret',
-        })
+        }, headers=headers)
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'invalid_request')
 
@@ -125,13 +119,18 @@ class AuthorizationCodeTest(TestCase):
             'grant_type': 'authorization_code',
             'code': code,
             'client_id': 'code-client',
-            'client_secret': 'code-secret',
         })
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'unauthorized_client')
 
-    def test_authorize_token_params(self):
-        self.prepare_data()
+    def test_public_authorize_token(self):
+        self.app.config.update({'OAUTH2_REFRESH_TOKEN_GENERATOR': True})
+        self.prepare_data(False)
+        client = Client.query.filter_by(client_id='code-client').first()
+        client.client_secret = ''
+        db.session.add(client)
+        db.session.commit()
+
         rv = self.client.post(self.authorize_url, data={'user_id': '1'})
         self.assertIn('code=', rv.location)
 
@@ -141,12 +140,12 @@ class AuthorizationCodeTest(TestCase):
             'grant_type': 'authorization_code',
             'code': code,
             'client_id': 'code-client',
-            'client_secret': 'code-secret',
         })
         resp = json.loads(rv.data)
         self.assertIn('access_token', resp)
+        self.assertNotIn('refresh_token', resp)
 
-    def test_authorize_token_basic(self):
+    def test_authorize_token(self):
         # generate refresh token
         self.app.config.update({'OAUTH2_REFRESH_TOKEN_GENERATOR': True})
         self.prepare_data()
