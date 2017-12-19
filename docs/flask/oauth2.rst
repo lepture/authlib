@@ -236,6 +236,40 @@ Implement this grant by subclass :class:`AuthorizationCodeGrant`::
 
 .. note:: AuthorizationCodeGrant is the most complex grant.
 
+A built-in AuthorizationCodeGrant powered by cache is available too. With the
+function ``register_cache_authorization_code``, it can be much simpler::
+
+   from authlib.flask.oauth2 import register_cache_authorization_code
+
+   def create_access_token(token, client, authorization_code):
+      item = Token(
+          client_id=client.client_id,
+          user_id=authorization_code.user_id,
+          **token
+      )
+      db.session.add(item)
+      db.session.commit()
+      # we can add more data into token
+      token['user_id'] = authorization_code.user_id
+
+   def get_user_id(user):
+      return user.id
+
+   register_cache_authorization_code(
+      app, server,
+      create_access_token,
+      get_user_id
+   )
+
+A configuration of cache is required, which is prefixed with ``OAUTH2_CODE``::
+
+   OAUTH2_CODE_CACHE_TYPE = '{{ cache_type }}'
+
+Find more configuration on :ref:`flask_cache`. Please note, the
+``config_prefix`` is::
+
+    OAUTH2_CODE
+
 Implicit Grant
 ~~~~~~~~~~~~~~
 
