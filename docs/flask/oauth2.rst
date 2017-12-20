@@ -387,7 +387,7 @@ endpoint, subclass **RevocationEndpoint** and define the missing methods::
 
     class RevocationEndpoint(_RevocationEndpoint):
         def query_token(self, token, token_type_hint, client):
-            q = OAuth2Token.query.filter_by(client_id=client.client_id)
+            q = Token.query.filter_by(client_id=client.client_id)
             if token_type_hint == 'access_token':
                 return q.filter_by(access_token=token).first()
             elif token_type_hint == 'refresh_token':

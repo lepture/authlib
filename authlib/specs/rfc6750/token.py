@@ -1,6 +1,54 @@
 
 
 class BearerToken(object):
+    """Bearer Token generator which can create the payload for token response
+    by OAuth 2 server. A typical token response would be:
+
+    .. code-block:: http
+
+        HTTP/1.1 200 OK
+        Content-Type: application/json;charset=UTF-8
+        Cache-Control: no-store
+        Pragma: no-cache
+
+        {
+            "access_token":"mF_9.B5f-4.1JqM",
+            "token_type":"Bearer",
+            "expires_in":3600,
+            "refresh_token":"tGzv3JOkF0XG5Qx2TlKWIA"
+        }
+
+    :param access_token_generator: a function to generate access_token.
+    :param refresh_token_generator: a function to generate refresh_token,
+        if not provided, refresh_token will not be added into token response.
+    :param expires_generator: The expires_generator can be an int value or a
+        function. If it is int, all token expires_in will be this value. If it
+        is function, it can  generate expires_in depending on client and
+        grant_type::
+
+            def expires_generator(client, grant_type):
+                if is_official_client(client):
+                    return 3600 * 1000
+                if grant_type == 'implicit':
+                    return 3600
+                return 3600 * 10
+    :return: Callable
+
+    When BearerToken is initialized, it will be callable::
+
+        token_generator = BearerToken(access_token_generator)
+        token = token_generator(client, grant_type, expires_in=None,
+                    scope=None, include_refresh_token=True)
+
+    The callable function that BearerToken created accepts these parameters:
+
+    :param client: the client that making the request.
+    :param grant_type: current requested grant_type.
+    :param expires_in: if provided, use this value as expires_in.
+    :param scope: current requested scope.
+    :param include_refresh_token: should refresh_token be included.
+    :return: Token dict
+    """
     DEFAULT_EXPIRES_IN = 3600
 
     def __init__(self, access_token_generator,
@@ -12,7 +60,6 @@ class BearerToken(object):
 
     def __call__(self, client, grant_type, expires_in=None,
                  scope=None, include_refresh_token=True):
-
         access_token = self.access_token_generator()
 
         if expires_in is None:
