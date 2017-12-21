@@ -1,5 +1,3 @@
-<!-- (Update "[ ]" to "[x]" to check a box) -->
-
 **What kind of change does this PR introduce?** (check at least one)
 
 - [ ] Bugfix
@@ -15,11 +13,8 @@
 
 If yes, please describe the impact and migration path for existing applications:
 
-**The PR fulfills these requirements:**
+(If no, please delete the above question and this text message.)
 
-- [ ] When resolving a specific issue, it's referenced in the PR's title (e.g. fix #xxx[,#xxx], where "xxx" is the issue number)
-- [ ] Documentation is required when necessary.
-- [ ] Test cases are required when necessary.
+---
 
-If adding a **new feature**, the PR's description includes:
-- [ ] A convincing reason for adding this feature (to avoid wasting your time, it's best to open a suggestion issue first and wait for approval before working on it)
+- [ ] You consent that the copyright of your pull request source code belongs to Authlib's author.

@@ -32,7 +32,7 @@ in reStructuredText, if you are not familiar reStructuredText, please read its
 documentation.
 
 We keep a soft limit of 79 characters wide in text files. Yet, if you have to
-exceed this limit, it's OK.
+exceed this limit, it's OK, but no more than 110 characters.
 
 Make a Pull Request
 -------------------

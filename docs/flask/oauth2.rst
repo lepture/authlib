@@ -14,9 +14,10 @@ Implement OAuth 2 provider in Flask. An OAuth 2 provider contains two servers:
 
 .. note::
 
-    Only Bearer Token is supported by now.
+    Only Bearer Token is supported by now. MAC Token is still under drafts,
+    it will be available when it goes into RFC.
 
-    If you are developing on your localhost, remember to set environment
+    If you are developing on your localhost, remember to set the environment
     variable::
 
         export AUTHLIB_INSECURE_TRANSPORT=true
@@ -24,7 +25,7 @@ Implement OAuth 2 provider in Flask. An OAuth 2 provider contains two servers:
 Authorization Server
 --------------------
 
-The Authorization server provides several endpoints for authorization, issuing
+The Authorization Server provides several endpoints for authorization, issuing
 tokens, refreshing tokens and revoking tokens. When the resource owner (user)
 grants the authorization, this server will issue an access token to the client.
 
@@ -48,7 +49,7 @@ information:
 - Client Identifier, usually called **client_id**
 - Client Password, usually called **client_secret**
 
-Authlib has provided a mixin for SQLAlchemy, define the client with the mixin::
+Authlib has provided a mixin for SQLAlchemy, define the client with this mixin::
 
     from authlib.flask.oauth2.sqla import OAuth2ClientMixin
 
@@ -84,6 +85,9 @@ With the SQLAlchemy mixin provided by Authlib::
             db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')
         )
         user = db.relationship('User')
+
+A token is associated with a resource owner. There is no certain name for
+it, here we call it ``user``, but it can be anything else.
 
 Define Server
 ~~~~~~~~~~~~~
@@ -121,13 +125,16 @@ OAUTH2_REFRESH_TOKEN_GENERATOR     A string of module path for importing a
 ================================== ===============================================
 
 Now define an endpoint for authorization. This endpoint is used by
-authorization_code and implicit grants::
+``authorization_code`` and ``implicit`` grants::
 
     from flask import request, render_template
     from your_project.auth import current_user
 
     @app.route('/oauth/authorize', methods=['GET', 'POST'])
     def authorize():
+        # Login is required since we need to know the current resource owner.
+        # It can be done with a redirection to the login page, or a login
+        # form on this authorization page.
         if request.method == 'GET':
             grant = server.validate_authorization_request()
             return render_template(
@@ -143,7 +150,7 @@ authorization_code and implicit grants::
         return server.create_authorization_response(None)
 
 This is a simple demo, the real case should be more complex. There is a demo
-in `authlib/playground`_, get a real taste with playground.
+in `authlib/playground`_, get a real taste with Authlib Playground.
 
 The token endpoint is much easier::
 
@@ -151,7 +158,7 @@ The token endpoint is much easier::
     def issue_token():
         return server.create_token_response()
 
-The revocatioin endpoint is optional, if revocation feature is required::
+The revocation endpoint is optional, if revocation feature is wanted::
 
     @app.route('/oauth/revoke', methods=['POST'])
     def revoke_token():
@@ -167,8 +174,8 @@ Register Grants
 
 .. module:: authlib.specs.rfc6749.grants
 
-There are four grants defined by RFC6749, you can also create an extend grant
-yourself. Register the supported grant types to the authorization server.
+There are four grant types defined by RFC6749, you can also create your own
+extended grant. Register the supported grant types to the authorization server.
 
 Authorization Code Grant
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -176,7 +183,7 @@ Authorization Code Grant
 Authorization Code Grant is a very common grant type, it is supported by almost
 every OAuth 2 providers. It uses an authorization code to exchange access
 token. In this case, we need a place to store the authorization code. It can be
-kept in database or something like redis. Here is a SQLAlchemy mixin for
+kept in a database or a cache like redis. Here is a SQLAlchemy mixin for
 **AuthorizationCode**::
 
     from authlib.flask.oauth2.sqla import OAuth2AuthorizationCodeMixin
@@ -239,36 +246,33 @@ Implement this grant by subclass :class:`AuthorizationCodeGrant`::
 A built-in AuthorizationCodeGrant powered by cache is available too. With the
 function ``register_cache_authorization_code``, it can be much simpler::
 
-   from authlib.flask.oauth2 import register_cache_authorization_code
+    from authlib.flask.oauth2 import register_cache_authorization_code
 
-   def create_access_token(token, client, authorization_code):
-      item = Token(
-          client_id=client.client_id,
-          user_id=authorization_code.user_id,
-          **token
-      )
-      db.session.add(item)
-      db.session.commit()
-      # we can add more data into token
-      token['user_id'] = authorization_code.user_id
+    def create_access_token(token, client, authorization_code):
+        item = Token(
+            client_id=client.client_id,
+            user_id=authorization_code.user_id,
+            **token
+        )
+        db.session.add(item)
+        db.session.commit()
+        # we can add more data into token
+        token['user_id'] = authorization_code.user_id
 
-   def get_user_id(user):
-      return user.id
+    def get_user_id(user):
+        return user.id
 
-   register_cache_authorization_code(
-      app, server,
-      create_access_token,
-      get_user_id
-   )
+    register_cache_authorization_code(
+        app, server,
+        create_access_token,
+        get_user_id
+    )
+    # get_user_id can be optional, the default one will return user.id
 
-A configuration of cache is required, which is prefixed with ``OAUTH2_CODE``::
+A configuration for :ref:`flask_cache` is required, which is prefixed with
+``OAUTH2_CODE``::
 
-   OAUTH2_CODE_CACHE_TYPE = '{{ cache_type }}'
-
-Find more configuration on :ref:`flask_cache`. Please note, the
-``config_prefix`` is::
-
-    OAUTH2_CODE
+    OAUTH2_CODE_CACHE_TYPE = '{{ cache_type }}'
 
 Implicit Grant
 ~~~~~~~~~~~~~~
@@ -293,6 +297,8 @@ implement it with a subclass of :class:`ImplicitGrant`::
 
     # register it to grant endpoint
     server.register_grant_endpoint(ImplicitGrant)
+
+Implicit Grant is used by **public** client which has no **client_secret**.
 
 Resource Owner Password Credentials Grant
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -366,12 +372,13 @@ provides it as a grant type, implement it with a subclass of
                 return item
 
         def create_access_token(self, token, authenticated_token):
+            # issue a new token to replace the old one, you can also update
+            # the ``authenticated_token`` instead of issuing a new one
             item = Token(
                 client_id=authenticated_token.client_id,
                 user_id=authenticated_token.user_id,
                 **token
             )
-            # issue a new token to replace the old one
             db.session.add(item)
             db.session.delete(authenticated_token)
             db.session.commit()
@@ -380,7 +387,7 @@ provides it as a grant type, implement it with a subclass of
 Token Revocation
 ----------------
 
-RFC7009 defined a way to revoke a token. To implement the token revocation
+RFC7009_ defined a way to revoke a token. To implement the token revocation
 endpoint, subclass **RevocationEndpoint** and define the missing methods::
 
     from authlib.specs.rfc7009 import RevocationEndpoint as _RevocationEndpoint
@@ -405,6 +412,8 @@ endpoint, subclass **RevocationEndpoint** and define the missing methods::
     # register it to authorization server
     server.register_revoke_token_endpoint(RevocationEndpoint)
 
+.. _RFC7009: https://tools.ietf.org/html/rfc7009
+
 Protect Resources
 -----------------
 
@@ -412,7 +421,7 @@ Protect users resources, so that only the authorized clients with the
 authorized access token can access the given scope resources.
 
 A resource server can be a different server other than the authorization
-server. Here is how to protect your users resources::
+server. Here is the way to protect your users' resources::
 
     from flask import jsonify
     from authlib.flask.oauth2 import ResourceProtector, current_token
@@ -443,3 +452,7 @@ If the resource is not protected by a scope, use ``None``::
     def user_profile():
         user = current_token.user
         return jsonify(user)
+
+The ``current_token`` is a proxy to the Token model you have defined above.
+Since there is a `user` relationship on the Token model, we can access this
+``user`` with ``current_token.user``.
