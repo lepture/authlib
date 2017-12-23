@@ -1,7 +1,29 @@
 from flask import json
 from .oauth2_server import db, User, Client, Token
 from .oauth2_server import TestCase
+from .oauth2_server import create_authorization_server
 from .oauth2_server import create_resource_server
+
+
+class AuthorizationTest(TestCase):
+    def test_none_grant(self):
+        create_authorization_server(self.app)
+        authorize_url = (
+            '/oauth/authorize?response_type=token'
+            '&client_id=implicit-client'
+        )
+        rv = self.client.get(authorize_url)
+        self.assertEqual(rv.data, b'error')
+
+        rv = self.client.post(authorize_url, data={'user_id': '1'})
+        self.assertNotEqual(rv.status, 200)
+
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': 'authorization_code',
+            'code': 'x',
+        })
+        data = json.loads(rv.data)
+        self.assertEqual(data['error'], 'invalid_grant')
 
 
 class ResourceTest(TestCase):

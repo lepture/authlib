@@ -1,12 +1,13 @@
 from .oauth2_server import db, User, Client
 from .oauth2_server import TestCase
-from .oauth2_server import ImplicitGrant
+from .oauth2_server import AuthorizationCodeGrant, ImplicitGrant
 from .oauth2_server import create_authorization_server
 
 
 class ImplicitTest(TestCase):
     def prepare_data(self, is_confidential=False):
         server = create_authorization_server(self.app)
+        server.register_grant_endpoint(AuthorizationCodeGrant)
         server.register_grant_endpoint(ImplicitGrant)
 
         user = User(username='foo')

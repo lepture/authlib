@@ -182,7 +182,7 @@ def create_authorization_server(app):
             user = None
         return server.create_authorization_response(user)
 
-    @app.route('/oauth/token', methods=['POST'])
+    @app.route('/oauth/token', methods=['GET', 'POST'])
     def issue_token():
         return server.create_token_response()
 

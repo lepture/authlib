@@ -1,13 +1,14 @@
 from flask import json
 from .oauth2_server import db, User, Client
 from .oauth2_server import TestCase
-from .oauth2_server import PasswordGrant
+from .oauth2_server import AuthorizationCodeGrant, PasswordGrant
 from .oauth2_server import create_authorization_server
 
 
 class PasswordTest(TestCase):
     def prepare_data(self):
         server = create_authorization_server(self.app)
+        server.register_grant_endpoint(AuthorizationCodeGrant)
         server.register_grant_endpoint(PasswordGrant)
 
         user = User(username='foo')
@@ -64,6 +65,13 @@ class PasswordTest(TestCase):
         headers = self.create_basic_header(
             'password-client', 'password-secret'
         )
+
+        rv = self.client.get('/oauth/token', data={
+            'grant_type': 'password',
+        }, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['error'], 'invalid_grant')
+
         rv = self.client.post('/oauth/token', data={
             'grant_type': 'password',
         }, headers=headers)
