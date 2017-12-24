@@ -1,4 +1,4 @@
 -r requirements.txt
 Flask
 Django
-sphinx-typlog-theme==0.2
+sphinx-typlog-theme==0.3.1

@@ -52,6 +52,8 @@ html_theme_options = {
     'description': 'A ready to use authentication library.',
     'github_user': 'lepture',
     'github_repo': 'authlib',
+    'twitter': 'authlib',
+    'og_image': 'https://authlib.org/logo.png',
     'analytics_id': 'UA-34098939-7',
     'meta_html': (
         '<link rel="apple-touch-icon" sizes="180x180" '

@@ -15,13 +15,14 @@ Lovely features that Authlib has built-in:
 
 - Generic specification implementations
 - OAuth 1 (RFC5849)
-- OAuth 2 (RFC6749, RFC6750, RFC7009, RFC7662)
+- OAuth 2 (RFC6749, RFC6750, RFC7009)
 - OpenID Connect
-- **DONE** OAuth 1, OAuth 2 Requests Sessions
-- **DONE** Mixed OAuth 1 and OAuth 2 Client
-- **DONE** Integrated client with Flask
-- **DONE** Integrated client with Django
-- **TODO** Flask OAuth 1 / OAuth 2 Servers
+- OAuth 1, OAuth 2 Requests Sessions
+- Mixed OAuth 1 and OAuth 2 Client
+- Integrated client with Flask
+- Integrated client with Django
+- **TODO** Flask OAuth 1 Server
+- Flask OAuth 2 Authorization server and resource protector
 - **TODO** Django OAuth 1 / OAuth 2 Servers
 
 Authlib is compatible with Python2.7+ and Python3.5+.
@@ -41,7 +42,7 @@ email at <me@lepture.com>. Attachment with patch is welcome.
 
 Authlib is licensed under LGPLv3. Please see LICENSE for licensing details.
 
-If this license doesn’t fit your company, consider to purchase a commercial
+If this license does not fit your company, consider to purchase a commercial
 license.
 
 Find more information on <https://authlib.org/support#commercial-license>

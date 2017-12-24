@@ -19,7 +19,7 @@ Lovely features that Authlib has built-in:
 
 - Generic specification implementations
 - OAuth 1 (RFC5849)
-- OAuth 2 (RFC6749, RFC6750, RFC7009, RFC7662)
+- OAuth 2 (RFC6749, RFC6750, RFC7009)
 - OpenID Connect
 - OAuth 1, OAuth 2 Requests Sessions
 - Mixed OAuth 1 and OAuth 2 Client

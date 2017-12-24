@@ -10,16 +10,16 @@ Here you can see the full list of changes between each Authlib release.
 Version 0.3: Nagato
 -------------------
 
-**Release Date not Decided**
+**Released on Dec 24, 2017. Merry Christmas!**
 
 This is a feature releasing for OAuth 2 server. Since this is the first
 release of the server implementation, you would expect that there are bugs,
 security vulnerabilities, and uncertainties. Try it bravely.
 
-- RFC6749, all grant types, refresh token, authorization server.
-- RFC6750, bearer token creation and validation.
-- RFC7009, token revocation.
-- Flask implementation of authorization server and resource protector.
+- :ref:`RFC6749 <specs/rfc6749>`, all grant types, refresh token, authorization server.
+- :ref:`RFC6750 <specs/rfc6750>`, bearer token creation and validation.
+- :ref:`RFC7009 <specs/rfc7009>`, token revocation.
+- :ref:`Flask implementation <flask_oauth2_server>` of authorization server and resource protector.
 - Mixin of SQLAlchemy models for easy integration.
 
 .. admonition:: Breaking Changes
