@@ -19,15 +19,10 @@ GOOGLE_JWK_SET = None
 def google_parse_id_token(client, response, nonce=None):
     jwk_set = _get_google_jwk_set(client)
 
-    client_id = getattr(client, 'client_key', None)
-    if not client_id:
-        # client can be OAuth2Session
-        client_id = client.client_id
-
     id_token = verify_id_token(
         response, jwk_set,
         issuers=('https://accounts.google.com', 'accounts.google.com'),
-        client_id=client_id,
+        client_id=client.client_id,
         nonce=nonce,
     )
     return _parse_profile(id_token.token)

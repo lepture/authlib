@@ -29,7 +29,7 @@ CONTENT_TYPE_FORM_URLENCODED = 'application/x-www-form-urlencoded'
 class OAuth1Session(Session):
     """Construct a new OAuth 1 client requests session.
 
-    :param client_key: Consumer key, which you get from registration.
+    :param client_id: Consumer key, which you get from registration.
     :param client_secret: Consumer Secret, which you get from registration.
     :param resource_owner_key: A resource owner key, also referred to as
                                request token or access token depending on
@@ -63,7 +63,7 @@ class OAuth1Session(Session):
                                signature creation.
     :param kwargs: Extra parameters to include.
     """
-    def __init__(self, client_key, client_secret=None,
+    def __init__(self, client_id, client_secret=None,
                  resource_owner_key=None, resource_owner_secret=None,
                  callback_uri=None, rsa_key=None, verifier=None,
                  signature_method=SIGNATURE_HMAC_SHA1,
@@ -72,7 +72,7 @@ class OAuth1Session(Session):
         super(OAuth1Session, self).__init__()
 
         self._client = OAuth1(
-            client_key, client_secret=client_secret,
+            client_id, client_secret=client_secret,
             resource_owner_key=resource_owner_key,
             resource_owner_secret=resource_owner_secret,
             callback_uri=callback_uri,
@@ -151,7 +151,7 @@ class OAuth1Session(Session):
 
         Note, ``realm`` can also be configured when session created::
 
-            session = OAuth1Session(client_key, client_secret, ..., realm='')
+            session = OAuth1Session(client_id, client_secret, ..., realm='')
         """
         if realm is None:
             realm = self._kwargs.get('realm', None)

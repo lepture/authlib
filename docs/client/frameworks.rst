@@ -39,7 +39,7 @@ To register a remote application on OAuth registry, using the
 :meth:`~OAuth.register` method::
 
     oauth.register('twitter', {
-        'client_key': 'Twitter Consumer Key',
+        'client_id': 'Twitter Consumer Key',
         'client_secret': 'Twitter Consumer Secret',
         'request_token_url': 'https://api.twitter.com/oauth/request_token',
         'request_token_params': None,
@@ -61,7 +61,7 @@ pair can be omit. They can be configured in your Flask App configuration.
 Config key is formatted with ``{name}_{key}`` in uppercase, e.g.
 
 ========================== ================================
-TWITTER_CLIENT_KEY         Twitter Consumer Key
+TWITTER_CLIENT_ID          Twitter Consumer Key
 TWITTER_CLIENT_SECRET      Twitter Consumer Secret
 TWITTER_REQUEST_TOKEN_URL  URL to fetch OAuth request token
 ========================== ================================
@@ -70,7 +70,7 @@ If you register your remote app as ``oauth.register('example', {...})``, the
 config key would look like:
 
 ========================== ===============================
-EXAMPLE_CLIENT_KEY         Twitter Consumer Key
+EXAMPLE_CLIENT_ID          Twitter Consumer Key
 EXAMPLE_CLIENT_SECRET      Twitter Consumer Secret
 EXAMPLE_ACCESS_TOKEN_URL   URL to fetch OAuth access token
 ========================== ===============================
@@ -204,7 +204,7 @@ To register a remote application on OAuth registry, using the
 :meth:`~OAuth.register` method::
 
     oauth.register('twitter', {
-        'client_key': 'Twitter Consumer Key',
+        'client_id': 'Twitter Consumer Key',
         'client_secret': 'Twitter Consumer Secret',
         'request_token_url': 'https://api.twitter.com/oauth/request_token',
         'request_token_params': None,
@@ -226,7 +226,7 @@ pair can be omit. They can be configured from your Django settings::
 
     AUTHLIB_OAUTH_CLIENTS = {
         'twitter': {
-            'client_key': 'Twitter Consumer Key',
+            'client_id': 'Twitter Consumer Key',
             'client_secret': 'Twitter Consumer Secret',
             'request_token_url': 'https://api.twitter.com/oauth/request_token',
             'request_token_params': None,
@@ -333,7 +333,7 @@ requests session as in :ref:`compliance_fix_mixed`::
 When :meth:`OAuth.register` a remote app, pass it in the parameters::
 
     oauth.register('twitter', {
-        'client_key': '...',
+        'client_id': '...',
         'client_secret': '...',
         ...,
         'compliance_fix': compliance_fix,

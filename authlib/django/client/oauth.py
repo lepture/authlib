@@ -1,8 +1,10 @@
+import warnings
 from django.conf import settings
 from django.dispatch import Signal
 from django.http import HttpResponseRedirect
 from authlib.client.client import OAuthClient
 from authlib.client.errors import OAuthException
+from authlib.common.compat import AuthlibDeprecationWarning
 
 __all__ = ['token_update', 'OAuth', 'RemoteApp']
 
@@ -30,7 +32,7 @@ class OAuth(object):
         When a remote app is registered, it can be accessed with
         *named* attribute::
 
-            oauth.register('twitter', client_key='', ...)
+            oauth.register('twitter', client_id='', ...)
             oauth.twitter.get('timeline')
         """
         client = RemoteApp(name, **kwargs)
@@ -58,7 +60,7 @@ class RemoteApp(OAuthClient):
         config = _get_conf(name)
         if config:
             keys = (
-                'client_key', 'client_secret',
+                'client_id', 'client_secret',
                 'request_token_url', 'request_token_params',
                 'access_token_url', 'access_token_params',
                 'refresh_token_url', 'refresh_token_params',
@@ -67,6 +69,12 @@ class RemoteApp(OAuthClient):
             for k in keys:
                 if k not in kwargs:
                     kwargs[k] = config.get(k, None)
+
+            if not kwargs['client_id']:
+                warnings.warn(AuthlibDeprecationWarning(
+                    '"client_key" has been renamed to "client_id".'
+                ), stacklevel=2)
+                kwargs['client_id'] = config.get('client_key', None)
 
         super(RemoteApp, self).__init__(*args, **kwargs)
 

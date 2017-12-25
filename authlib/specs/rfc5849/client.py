@@ -69,13 +69,13 @@ class Client(object):
         """
         cls.SIGNATURE_METHODS[name] = sign
 
-    def __init__(self, client_key, client_secret=None,
+    def __init__(self, client_id, client_secret=None,
                  resource_owner_key=None, resource_owner_secret=None,
                  callback_uri=None, rsa_key=None, verifier=None,
                  signature_method=SIGNATURE_HMAC_SHA1,
                  signature_type=SIGNATURE_TYPE_HEADER,
                  realm=None, force_include_body=False):
-        self.client_key = client_key
+        self.client_id = client_id
         self.client_secret = client_secret
         self.resource_owner_key = resource_owner_key
         self.resource_owner_secret = resource_owner_secret
@@ -108,7 +108,7 @@ class Client(object):
             ('oauth_timestamp', timestamp),
             ('oauth_version', '1.0'),
             ('oauth_signature_method', self.signature_method),
-            ('oauth_consumer_key', self.client_key),
+            ('oauth_consumer_key', self.client_id),
         ]
         if self.resource_owner_key:
             oauth_params.append(('oauth_token', self.resource_owner_key))

@@ -1,8 +1,10 @@
 import uuid
+import warnings
 from flask import request, redirect, session
 from werkzeug.local import LocalProxy
 from authlib.client.errors import OAuthException
 from authlib.client.client import OAuthClient
+from authlib.common.compat import AuthlibDeprecationWarning
 from ..cache import Cache
 
 __all__ = ['OAuth', 'RemoteApp']
@@ -57,7 +59,7 @@ class OAuth(object):
             return self._clients[name]
 
         keys = (
-            'client_key', 'client_secret',
+            'client_id', 'client_secret',
             'request_token_url', 'request_token_params',
             'access_token_url', 'access_token_params',
             'refresh_token_url', 'refresh_token_params',
@@ -71,6 +73,16 @@ class OAuth(object):
                 conf_key = '{}_{}'.format(name, k).upper()
                 v = self.app.config.get(conf_key, None)
                 kwargs[k] = v
+
+        if not kwargs['client_id']:
+            conf_key = '{}_client_key'.format(name).upper()
+            kwargs['client_id'] = self.app.config.get(conf_key, None)
+            warnings.warn(AuthlibDeprecationWarning(
+                'Use "{}" instead of "{}".'.format(
+                    conf_key.replace('CLIENT_KEY', 'CLIENT_ID'),
+                    conf_key
+                )
+            ), stacklevel=2)
 
         client = RemoteApp(
             name, self.cache, self.fetch_token,

@@ -18,9 +18,9 @@ There are three steps in OAuth 1 to obtain an access token. Initialize
 the session for reuse::
 
     >>> from authlib.client import OAuth1Session
-    >>> client_key = 'Your Twitter client key'
+    >>> client_id = 'Your Twitter client key'
     >>> client_secret = 'Your Twitter client secret'
-    >>> session = OAuth1Session(client_key, client_secret)
+    >>> session = OAuth1Session(client_id, client_secret)
 
 .. _fetch_request_token:
 
@@ -102,7 +102,7 @@ session::
     >>> resource_owner_key = request_token['oauth_token']
     >>> resource_owner_secret = request_token['oauth_token_secret']
     >>> session = OAuth1Session(
-    ...     client_key, client_secret,
+    ...     client_id, client_secret,
     ...     resource_owner_key=resource_owner_key,
     ...     resource_owner_secret=resource_owner_secret)
     >>> # there is no need for `parse_authorization_response` if you can get `verifier`
@@ -129,7 +129,7 @@ The above is not the real flow, just like what we did in
     >>> resource_owner_key = access_token['oauth_token']
     >>> resource_owner_secret = access_token['oauth_token_secret']
     >>> session = OAuth1Session(
-    ...     client_key, client_secret,
+    ...     client_id, client_secret,
     ...     resource_owner_key=resource_owner_key,
     ...     resource_owner_secret=resource_owner_secret)
     >>> account_url = 'https://api.twitter.com/1.1/account/verify_credentials.json'

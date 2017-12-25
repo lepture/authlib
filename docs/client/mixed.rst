@@ -33,7 +33,7 @@ OAuth 1 Flow
 Configure an OAuth 1 client with :class:`OAuthClient`::
 
     client = OAuthClient(
-        client_key='Twitter Consumer Key',
+        client_id='Twitter Consumer Key',
         client_secret='Twitter Consumer Secret',
         request_token_url='https://api.twitter.com/oauth/request_token',
         access_token_url='https://api.twitter.com/oauth/access_token',
@@ -80,7 +80,7 @@ OAuth 2 Flow
 The flow of OAuth 2 is similar with OAuth 1, and much simpler::
 
     client = OAuthClient(
-        client_key='GitHub Client ID',
+        client_id='GitHub Client ID',
         client_secret='GitHub Client Secret',
         api_base_url='https://api.github.com/',
         access_token_url='https://github.com/login/oauth/access_token',
@@ -151,7 +151,7 @@ which takes ``session`` as the parameter::
 Later, when you initialized **OAuthClient**, pass it to the client parameters::
 
     client = OAuthClient(
-        client_key='...',
+        client_id='...',
         client_secret='...',
         ...,
         compliance_fix=compliance_fix,

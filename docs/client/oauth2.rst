@@ -109,7 +109,7 @@ The above is not the real flow, just like what we did in
 ourselves::
 
     >>> token = restore_access_token_from_database()
-    >>> session = OAuth2Session(client_key, client_secret, token=token)
+    >>> session = OAuth2Session(client_id, client_secret, token=token)
     >>> account_url = 'https://api.github.com/user'
     >>> resp = session.get(account_url)
 

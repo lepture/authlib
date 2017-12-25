@@ -1,9 +1,11 @@
 import logging
+import warnings
 from .oauth1 import OAuth1Session
 from .oauth2 import OAuth2Session
 from .errors import OAuthException
 from ..specs.rfc6749 import OAuth2Token
 from ..common.urls import urlparse
+from ..common.compat import AuthlibDeprecationWarning
 from ..consts import default_user_agent
 
 __all__ = ['OAuthClient']
@@ -14,7 +16,7 @@ log = logging.getLogger(__name__)
 class OAuthClient(object):
     """A mixed OAuth client for OAuth 1 and OAuth 2.
 
-    :param client_key: Consumer key of OAuth 1, or Client ID of OAuth 2
+    :param client_id: Consumer key of OAuth 1, or Client ID of OAuth 2
     :param client_secret: Consumer secret of OAuth 2, or Client Secret of OAuth 2
     :param request_token_url: Request Token endpoint for OAuth 1
     :param request_token_params: Extra parameters for Request Token endpoint
@@ -31,7 +33,7 @@ class OAuthClient(object):
     it would be an OAuth 1 instance, otherwise it is OAuth 2 instance::
 
         oauth1_client = OAuthClient(
-            client_key='Twitter Consumer Key',
+            client_id='Twitter Consumer Key',
             client_secret='Twitter Consumer Secret',
             request_token_url='https://api.twitter.com/oauth/request_token',
             access_token_url='https://api.twitter.com/oauth/access_token',
@@ -40,7 +42,7 @@ class OAuthClient(object):
         )
 
         oauth2_client = OAuthClient(
-            client_key='GitHub Client ID',
+            client_id='GitHub Client ID',
             client_secret='GitHub Client Secret',
             api_base_url='https://api.github.com/',
             access_token_url='https://github.com/login/oauth/access_token',
@@ -48,13 +50,18 @@ class OAuthClient(object):
             client_kwargs={'scope': 'user:email'},
         )
     """
-    def __init__(self, client_key=None, client_secret=None,
+    def __init__(self, client_id=None, client_secret=None,
                  request_token_url=None, request_token_params=None,
                  access_token_url=None, access_token_params=None,
                  refresh_token_url=None, refresh_token_params=None,
                  authorize_url=None, api_base_url=None,
                  client_kwargs=None, compliance_fix=None, **kwargs):
-        self.client_key = client_key
+        if not client_id and 'client_key' in kwargs:
+            client_id = kwargs.get('client_key')
+            warnings.warn(AuthlibDeprecationWarning(
+                '"client_key" has been renamed to "client_id".'
+            ), stacklevel=2)
+        self.client_id = client_id
         self.client_secret = client_secret
         self.request_token_url = request_token_url
         self.request_token_params = request_token_params
@@ -144,13 +151,12 @@ class OAuthClient(object):
 
         if self.request_token_url:
             self._sess = OAuth1Session(
-                client_key=self.client_key,
-                client_secret=self.client_secret,
+                self.client_id, self.client_secret,
                 **self.client_kwargs
             )
         else:
             self._sess = OAuth2Session(
-                client_id=self.client_key,
+                client_id=self.client_id,
                 client_secret=self.client_secret,
                 refresh_token_url=self.refresh_token_url,
                 refresh_token_params=self.refresh_token_params,
