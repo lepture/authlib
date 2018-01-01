@@ -1,18 +1,26 @@
-from .base import AppFactory, User, patch_method
+from .base import AppFactory, UserInfo, patch_method, compatible_fetch_user
 
 
-def twitter_fetch_user(client):
+def fetch_profile(client):
     url = 'account/verify_credentials.json'
     params = {
         'skip_status': True,
         'include_email': True
     }
     resp = client.get(url, params=params)
-    profile = resp.json()
-    uid = profile.get('id')
-    name = profile.get('name')
-    email = profile.get('email')
-    return User(uid, name=name, email=email, data=profile)
+    data = resp.json()
+    params = {
+        'sub': data['id_str'],
+        'name': data['name'],
+        'email': data.get('email'),
+        'locale': data.get('lang'),
+        'picture': data.get('profile_image_url_https'),
+        'preferred_username': data.get('screen_name'),
+    }
+    username = params['preferred_username']
+    if username:
+        params['profile'] = 'https://twitter.com/{}'.format(username)
+    return UserInfo(**params)
 
 
 twitter = AppFactory('twitter', {
@@ -23,4 +31,5 @@ twitter = AppFactory('twitter', {
 }, "The OAuth app for Twitter API.")
 
 
-patch_method(twitter, twitter_fetch_user, 'fetch_user')
+patch_method(twitter, fetch_profile, 'profile')
+compatible_fetch_user(twitter, fetch_profile)

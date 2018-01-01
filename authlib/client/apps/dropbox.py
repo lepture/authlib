@@ -1,13 +1,22 @@
-from .base import AppFactory, User, patch_method
+from .base import AppFactory, UserInfo, patch_method, compatible_fetch_user
 
 
-def dropbox_fetch_user(client):
+def fetch_profile(client):
     resp = client.post('users/get_current_account')
-    profile = resp.json()
-    uid = profile.get('account_id')
-    name = profile['name']['display_name']
-    email = profile.get('email')
-    return User(uid, name=name, email=email, data=profile)
+    data = resp.json()
+    name_info = data['name']
+    params = {
+        'sub': data['account_id'],
+        'name': name_info.get('display_name'),
+        'given_name': name_info.get('given_name'),
+        'family_name': name_info.get('surname'),
+        'nickname': name_info.get('familiar_name'),
+        'email': data.get('email'),
+        'email_verified': data.get('email_verified'),
+        'locale': data.get('locale'),
+        'picture': data.get('profile_photo_url'),
+    }
+    return UserInfo(**params)
 
 
 dropbox = AppFactory('dropbox', {
@@ -16,4 +25,5 @@ dropbox = AppFactory('dropbox', {
     'authorize_url': 'https://www.dropbox.com/oauth2/authorize',
 }, "The OAuth app for Dropbox API.")
 
-patch_method(dropbox, dropbox_fetch_user, 'fetch_user')
+patch_method(dropbox, fetch_profile, 'profile')
+compatible_fetch_user(dropbox, fetch_profile)
