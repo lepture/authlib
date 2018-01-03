@@ -19,7 +19,7 @@ class UserInfo(object):
                  email=None, email_verified=False,
                  gender=None, birthdate=None, zoneinfo=None, locale=None,
                  phone_number=None, phone_number_verified=False,
-                 address=None, updated_at=None):
+                 address=None, updated_at=None, **kwargs):
         self.sub = sub
         self.name = name
         self.given_name = given_name
@@ -40,6 +40,7 @@ class UserInfo(object):
         self.phone_number_verified = phone_number_verified
         self.address = address
         self.updated_at = updated_at
+        self.extras = kwargs
 
     def __getitem__(self, item):
         try:

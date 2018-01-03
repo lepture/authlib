@@ -19,34 +19,34 @@ class FlaskOAuthTest(TestCase):
 
         oauth.register(
             'dev',
-            client_key='dev',
+            client_id='dev',
             client_secret='dev',
         )
         self.assertEqual(oauth.dev.name, 'dev')
-        self.assertEqual(oauth.dev.client_key, 'dev')
+        self.assertEqual(oauth.dev.client_id, 'dev')
 
     def test_register_conf_from_app(self):
         app = Flask(__name__)
         app.config.update({
-            'DEV_CLIENT_KEY': 'dev',
+            'DEV_CLIENT_ID': 'dev',
             'DEV_CLIENT_SECRET': 'dev',
         })
         oauth = OAuth(app)
         oauth.register('dev')
-        self.assertEqual(oauth.dev.client_key, 'dev')
+        self.assertEqual(oauth.dev.client_id, 'dev')
 
     def test_init_app_later(self):
         app = Flask(__name__)
         app.config.update({
-            'DEV_CLIENT_KEY': 'dev',
+            'DEV_CLIENT_ID': 'dev',
             'DEV_CLIENT_SECRET': 'dev',
         })
         oauth = OAuth()
         remote = oauth.register('dev')
-        self.assertRaises(RuntimeError, lambda: oauth.dev.client_key)
+        self.assertRaises(RuntimeError, lambda: oauth.dev.client_id)
         oauth.init_app(app)
-        self.assertEqual(oauth.dev.client_key, 'dev')
-        self.assertEqual(remote.client_key, 'dev')
+        self.assertEqual(oauth.dev.client_id, 'dev')
+        self.assertEqual(remote.client_id, 'dev')
 
     def test_register_oauth1_remote_app(self):
         app = Flask(__name__)
@@ -54,7 +54,7 @@ class FlaskOAuthTest(TestCase):
         oauth = OAuth(app)
         oauth.register(
             'dev',
-            client_key='dev',
+            client_id='dev',
             client_secret='dev',
             request_token_url='https://i.b/reqeust-token',
             base_url='https://i.b/api',
@@ -62,13 +62,13 @@ class FlaskOAuthTest(TestCase):
             authorize_url='https://i.b/authorize'
         )
         self.assertEqual(oauth.dev.name, 'dev')
-        self.assertEqual(oauth.dev.client_key, 'dev')
+        self.assertEqual(oauth.dev.client_id, 'dev')
 
     def test_register_built_in_app(self):
         app = Flask(__name__)
         app.config.update({
             'OAUTH_CLIENT_CACHE_TYPE': 'null',
-            'TWITTER_CLIENT_KEY': 'twitter_key',
+            'TWITTER_CLIENT_ID': 'twitter_key',
             'TWITTER_CLIENT_SECRET': 'twitter_secret',
         })
         oauth = OAuth(app)
@@ -86,7 +86,7 @@ class FlaskOAuthTest(TestCase):
         oauth = OAuth(app)
         client = oauth.register(
             'dev',
-            client_key='dev',
+            client_id='dev',
             client_secret='dev',
             request_token_url='https://i.b/reqeust-token',
             base_url='https://i.b/api',
@@ -117,7 +117,7 @@ class FlaskOAuthTest(TestCase):
         oauth = OAuth(app)
         client = oauth.register(
             'dev',
-            client_key='dev',
+            client_id='dev',
             client_secret='dev',
             base_url='https://i.b/api',
             access_token_url='https://i.b/token',

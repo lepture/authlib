@@ -81,14 +81,17 @@ class OAuth2Session(Session):
             'revoke_token_request': set(),
         }
 
-    @property
-    def add_token(self):
+    def add_token(self, url, headers, data):
         if not self.token:
-            return None
+            raise RuntimeError('There is no "token"')
 
         token_type = self.token['token_type'].lower()
         if token_type == 'bearer':
-            return add_bearer_token
+            return add_bearer_token(
+                self.token['access_token'],
+                url, headers, data, self.token_placement
+            )
+        raise RuntimeError('Unsupported "token_type"')
 
     def authorization_url(self, url, state=None, **kwargs):
         """Generate an authorization URL.
@@ -288,10 +291,7 @@ class OAuth2Session(Session):
                     self.refresh_token_url, auth=auth, **kwargs
                 )
 
-            url, headers, data = self.add_token(
-                self.token['access_token'],
-                url, headers, data, self.token_placement
-            )
+            url, headers, data = self.add_token(url, headers, data)
 
             for hook in self.compliance_hook['protected_request']:
                 url, headers, data = hook(url, headers, data)
