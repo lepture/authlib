@@ -47,6 +47,7 @@ html_theme_options = {
     'color': '#3E7FCB',
     'navs': [
         {'url': 'https://authlib.org/', 'title': 'Homepage'},
+        {'url': 'https://play.authlib.org/', 'title': 'Playground'},
         {'url': 'https://github.com/lepture/authlib', 'title': 'GitHub'},
     ],
     'description': 'A ready to use authentication library.',

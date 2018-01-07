@@ -37,6 +37,7 @@ email at <me@lepture.com>. Attachment with patch is welcome.
 1. Take a look at [Authlib Homepage](https://authlib.org/)
 2. Stay tuned with [Authlib Newsletter](https://tinyletter.com/authlib)
 3. Get more information with [Authlib Documentation](https://docs.authlib.org/)
+4. Have a taste with [Authlib Playground](https://play.authlib.org/)
 
 ## License
 
