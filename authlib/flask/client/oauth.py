@@ -1,5 +1,6 @@
 import uuid
 import warnings
+import functools
 from flask import request, redirect, session
 from werkzeug.local import LocalProxy
 from authlib.client.errors import OAuthException
@@ -18,6 +19,15 @@ class OAuth(object):
     Create an instance with Flask::
 
         oauth = OAuth(app)
+
+    You can also pass the instance of Flask later::
+
+        oauth = OAuth()
+        oauth.init_app(app)
+
+    :param app: Flask application instance
+    :param fetch_token: a shared function to get current user's token
+    :param update_token: a share function to update current user's token
     """
 
     def __init__(self, app=None, fetch_token=None, update_token=None):
@@ -32,13 +42,7 @@ class OAuth(object):
             self.init_app(app)
 
     def init_app(self, app, fetch_token=None, update_token=None):
-        """Init app with Flask instance.
-
-        You can also pass the instance of Flask later::
-
-            oauth = OAuth()
-            oauth.init_app(app)
-        """
+        """Init app with Flask instance."""
         self.app = app
         if 'OAUTH_CLIENT_CACHE_TYPE' in app.config:
             self.cache = Cache(app, config_prefix='OAUTH_CLIENT')
@@ -84,9 +88,16 @@ class OAuth(object):
                 )
             ), stacklevel=2)
 
+        fetch_token = kwargs.pop('fetch_token', None)
+        if fetch_token is None and self.fetch_token:
+            fetch_token = functools.partial(self.fetch_token, name=name)
+
+        update_token = kwargs.pop('update_token', None)
+        if update_token is None and self.update_token:
+            update_token = functools.partial(self.update_token, name=name)
+
         client = RemoteApp(
-            name, self.cache, self.fetch_token,
-            self.update_token, **kwargs
+            name, self.cache, fetch_token, update_token, **kwargs
         )
         if compliance_fix:
             client.compliance_fix = compliance_fix
@@ -132,13 +143,11 @@ class RemoteApp(OAuthClient):
         self.name = name
         self.cache = cache
         self._fetch_token = fetch_token
-        self._update_token = update_token
 
         super(RemoteApp, self).__init__(*args, **kwargs)
 
         if self.client_kwargs.get('refresh_token_url'):
-            self.client_kwargs['token_updater'] = lambda token:\
-                self._update_token(name, token)
+            self.client_kwargs['token_updater'] = update_token
 
     def _get_request_token(self):
         key = '_{}_req_token_'.format(self.name)
@@ -157,7 +166,7 @@ class RemoteApp(OAuthClient):
         self.cache.set(sid, token, timeout=600)
 
     def get_token(self):
-        return self._fetch_token(self.name)
+        return self._fetch_token()
 
     def authorize_redirect(self, callback_uri=None, **kwargs):
         """Create a HTTP Redirect for Authorization Endpoint.
