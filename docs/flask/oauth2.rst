@@ -97,7 +97,6 @@ which has built-in tools to handle requests and responses::
 
     from authlib.flask.oauth2 import AuthorizationServer
 
-    # Client is defined above
     server = AuthorizationServer(Client, app)
 
 It can also be initialized lazily with init_app::
@@ -456,3 +455,20 @@ If the resource is not protected by a scope, use ``None``::
 The ``current_token`` is a proxy to the Token model you have defined above.
 Since there is a `user` relationship on the Token model, we can access this
 ``user`` with ``current_token.user``.
+
+MethodView & Flask-Restful
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can also use the ``require_oauth`` decorator in ``flask.views.MethodView``
+and ``flask_restful.Resource``::
+
+    from flask.views import MethodView
+
+    class UserAPI(MethodView):
+        decorators = [require_oauth('profile')]
+
+
+    from flask_restful import Resource
+
+    class UserAPI(Resource):
+        method_decorators = [require_oauth('profile')]
