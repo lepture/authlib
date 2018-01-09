@@ -72,9 +72,12 @@ class OAuth(object):
                 v = self.app.config.get(conf_key, None)
                 kwargs[k] = v
 
+        fetch_token = kwargs.pop('fetch_token', None) or self.fetch_token
+        update_token = kwargs.pop('update_token', None) or self.update_token
+
         client = RemoteApp(
-            name, self.cache, self.fetch_token,
-            self.update_token, **kwargs
+            name, self.cache, fetch_token,
+            update_token, **kwargs
         )
         if compliance_fix:
             client.compliance_fix = compliance_fix
