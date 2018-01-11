@@ -97,24 +97,30 @@ Find more configuration on :ref:`flask_cache`. Please note, the
 For database, we need to define two functions: ``fetch_token`` and ``update_token``.
 It would be something like::
 
-    class MyTokenModel(db.Model):
-        OAUTH1_TOKEN_TYPE = 'oauth1.0'
+    class OAuth1Token(db.Model)
+        user_id = Column(Integer, nullable=False)
+        name = Column(String(20), nullable=False)
 
+        oauth_token = Column(String(48), nullable=False)
+        oauth_token_secret = Column(String(48))
+
+        def to_dict(self):
+            return dict(
+                oauth_token=self.access_token,
+                oauth_token_secret=self.alt_token,
+            )
+
+
+    class OAuth2Token(db.Model):
         user_id = Column(Integer, nullable=False)
         name = Column(String(20), nullable=False)
 
         token_type = Column(String(20))
         access_token = Column(String(48), nullable=False)
-        # refresh_token or access_token_secret
-        alt_token = Column(String(48))
+        refresh_token = Column(String(48))
         expires_at = Column(Integer, default=0)
 
         def to_dict(self):
-            if self.token_type == self.OAUTH1_TOKEN_TYPE:
-                return dict(
-                    oauth_token=self.access_token,
-                    oauth_token_secret=self.alt_token,
-                )
             return dict(
                 access_token=self.access_token,
                 token_type=self.token_type,
@@ -124,20 +130,36 @@ It would be something like::
 
 
     def fetch_token(name):
-        q = MyTokenModel.query.filter_by(name=name, user_id=current_user.id)
-        item = q.first()
-        return item.to_dict()
+        if name == 'twitter':
+            item = OAuth1Token.query.filter_by(
+                name=name, user_id=current_user.id
+            ).first()
+        else:
+            item = OAuth2Token.query.filter_by(
+                name=name, user_id=current_user.id
+            ).first()
+        if item:
+            return item.to_dict()
 
     def update_token(name, token):
-        item = MyTokenModel(name=name, user_id=current_user.id)
-        if 'oauth_token' in token:
-            item.token_type = MyTokenModel.OAUTH1_TOKEN_TYPE
-            item.access_token = token['oauth_token']
-            item.alt_token = token['oauth_token_secret']
+        if name == 'twitter':
+            item = OAuth1Token.query.filter_by(
+                name=name, user_id=current_user.id
+            ).first()
+            if not item:
+                item = OAuth1Token(name=name, user_id=current_user.id)
+
+            item.oauth_token = token['oauth_token']
+            item.oauth_token_secret = token['oauth_token_secret']
         else:
+            item = OAuth2Token.query.filter_by(
+                name=name, user_id=current_user.id
+            ).first()
+            if not item:
+                item = OAuth2Token(name=name, user_id=current_user.id)
             item.token_type = token.get('token_type', 'bearer')
             item.access_token = token.get('access_token')
-            item.alt_token = token.get('refresh_token')
+            item.refresh_token = token.get('refresh_token')
             item.expires_at = token.get('expires_at')
         db.session.add(item)
         db.session.commit()
@@ -146,6 +168,14 @@ It would be something like::
 You need to register this **fetch_token** and **update_token** in the registry::
 
     oauth = OAuth(app, fetch_token=fetch_token, update_token=update_token)
+
+    # or init app later
+    oauth = OAuth(fetch_token=fetch_token, update_token=update_token)
+    oauth.init_app(app)
+
+    # or init everything later
+    oauth = OAuth()
+    oauth.init_app(app, fetch_token=fetch_token, update_token=update_token)
 
 **update_token** is optional.
 
