@@ -206,7 +206,8 @@ class OAuth2Session(Session):
         :return: A :class:`OAuth2Token` object (a dict too).
         """
         refresh_token = refresh_token or self.token.get('refresh_token')
-        kwargs.update(self.refresh_token_params)
+        if self.refresh_token_params is not None:
+            kwargs.update(self.refresh_token_params)
 
         body = prepare_token_request(
             'refresh_token', body=body, scope=self.scope,
