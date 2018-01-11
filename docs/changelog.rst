@@ -6,6 +6,18 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 0.4
+-----------
+
+**Release Date not Decided**
+
+This is a feature releasing for OAuth 1 server, with several bugfixes.
+
+- Allow Flask OAuth register ``fetch_token`` and ``update_token``.
+- Bugfix for OAuthClient when ``refresh_token_params`` is None via `PR#14`_.
+
+.. _`PR#14`: https://github.com/lepture/authlib/pull/14
+
 
 Version 0.3: Nagato
 -------------------
