@@ -3,7 +3,7 @@ from unittest import TestCase
 from flask import Flask, session
 from authlib.client import OAuthException
 from authlib.flask.client import OAuth
-from authlib.client.apps import twitter
+from authlib.client.apps import register_apps, get_oauth_app, get_app
 from ..client_base import (
     mock_json_response,
     mock_text_response,
@@ -72,12 +72,14 @@ class FlaskOAuthTest(TestCase):
             'TWITTER_CLIENT_SECRET': 'twitter_secret',
         })
         oauth = OAuth(app)
-        twitter.register_to(oauth)
+        register_apps(oauth, ['twitter'])
         self.assertEqual(oauth.twitter.name, 'twitter')
+
+        twitter = get_oauth_app(oauth, 'twitter')
+        self.assertEqual(twitter, get_app('twitter'))
+        self.assertEqual(twitter.name, 'twitter')
         self.assertEqual(twitter.client.name, 'twitter')
-        self.assertTrue(callable(twitter.fetch_user))
-        self.assertTrue(callable(twitter.client.fetch_user))
-        self.assertTrue(callable(oauth.twitter.fetch_user))
+        self.assertTrue(callable(twitter.profile))
 
     def test_oauth1_authorize(self):
         app = Flask(__name__)

@@ -1,13 +1,16 @@
 # flake8: noqa
 
+from collections import defaultdict
 from .base import AppFactory
-from .dropbox import dropbox
-from .facebook import facebook, facebook_fetch_user
-from .github import github
-from .twitter import twitter
-from .google import google
+from ._dropbox import dropbox
+from ._facebook import facebook
+from ._github import github
+from ._twitter import twitter
+from ._google import google
 
-_SERVICES_MAP = {
+__all__ = ['register_apps', 'get_app', 'get_oauth_app']
+
+_apps_map = {
     'dropbox': dropbox,
     'facebook': facebook,
     'github': github,
@@ -15,14 +18,22 @@ _SERVICES_MAP = {
     'google': google,
 }
 
+_oauth_apps = defaultdict(dict)
 
-def register_to(oauth, services):
+
+def register_apps(oauth, services):
     for service in services:
-        if service in _SERVICES_MAP:
-            _SERVICES_MAP[service].register_to(oauth)
-        elif isinstance(service, AppFactory):
+        if service in _apps_map:
+            service = _apps_map[service]
+
+        if isinstance(service, AppFactory):
             service.register_to(oauth)
+            _oauth_apps[oauth][service.name] = service
 
 
-def instance(name):
-    return _SERVICES_MAP.get(name)
+def get_oauth_app(oauth, name):
+    return _oauth_apps[oauth].get(name)
+
+
+def get_app(name):
+    return _apps_map.get(name)
