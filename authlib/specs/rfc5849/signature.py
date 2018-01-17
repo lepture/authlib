@@ -490,8 +490,7 @@ def sign_plaintext(client_secret, resource_owner_secret):
     return signature
 
 
-def verify_hmac_sha1(signature, http_method, uri, params,
-                     client_secret=None, resource_owner_secret=None):
+def verify_hmac_sha1(request, resource_owner_secret):
     """Verify a HMAC-SHA1 signature.
 
     Per `section 3.4`_ of the spec.
@@ -507,19 +506,20 @@ def verify_hmac_sha1(signature, http_method, uri, params,
     .. _`RFC2616 section 5.2`: http://tools.ietf.org/html/rfc2616#section-5.2
 
     """
-    uri = normalize_base_string_uri(uri)
-    params = normalize_parameters(params)
-    base_string = construct_base_string(http_method, uri, params)
+    uri = normalize_base_string_uri(request.uri)
+    params = normalize_parameters(request.params)
+    base_string = construct_base_string(request.method, uri, params)
+    client_secret = request.client_secret
     sig = sign_hmac_sha1(base_string, client_secret, resource_owner_secret)
-    return safe_string_equals(sig, signature)
+    return safe_string_equals(sig, request.signature)
 
 
-def verify_rsa_sha1(signature, http_method, uri, params, rsa_public_key):
+def verify_rsa_sha1(request, rsa_public_key):
     """Verify a RSASSA-PKCS #1 v1.5 base64 encoded signature.
 
     Per `section 3.4.3`_ of the spec.
 
-    Note this method requires the jwt and cryptography libraries.
+    Note this method requires the cryptography libraries.
 
     .. _`section 3.4.3`: http://tools.ietf.org/html/rfc5849#section-3.4.3
 
@@ -532,19 +532,19 @@ def verify_rsa_sha1(signature, http_method, uri, params, rsa_public_key):
     .. _`RFC2616 section 5.2`: http://tools.ietf.org/html/rfc2616#section-5.2
     """
     from .rsa import verify_sha1
-    uri = normalize_base_string_uri(uri)
-    norm_params = normalize_parameters(params)
-    text = construct_base_string(http_method, uri, norm_params)
-    sig = binascii.a2b_base64(to_bytes(signature))
+    uri = normalize_base_string_uri(request.uri)
+    norm_params = normalize_parameters(request.params)
+    text = construct_base_string(request.method, uri, norm_params)
+    sig = binascii.a2b_base64(to_bytes(request.signature))
     return verify_sha1(sig, to_bytes(text), rsa_public_key)
 
 
-def verify_plaintext(signature, client_secret=None, resource_owner_secret=None):
+def verify_plaintext(request, resource_owner_secret=None):
     """Verify a PLAINTEXT signature.
 
     Per `section 3.4`_ of the spec.
 
     .. _`section 3.4`: http://tools.ietf.org/html/rfc5849#section-3.4
     """
-    sig = sign_plaintext(client_secret, resource_owner_secret)
-    return safe_string_equals(sig, signature)
+    sig = sign_plaintext(request.client_secret, resource_owner_secret)
+    return safe_string_equals(sig, request.signature)
