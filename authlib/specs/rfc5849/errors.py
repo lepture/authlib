@@ -1,6 +1,11 @@
 """
     authlib.specs.rfc5849.errors
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    RFC5849 has no definition on errors. This module is designed by
+    Authlib based on OAuth 1.0a `Section 10`_ with some changes.
+
+    .. _`Section 10`: https://oauth.net/core/1.0a/#rfc.section.10
 """
 
 
@@ -9,8 +14,7 @@ class OAuth1Error(Exception):
     status_code = 400
     description = ''
 
-    def __init__(self, description=None, status_code=None,
-                 uri=None):
+    def __init__(self, description=None, status_code=None):
         if description is not None:
             self.description = description
 
@@ -19,8 +23,6 @@ class OAuth1Error(Exception):
 
         if status_code is not None:
             self.status_code = status_code
-
-        self.uri = uri
 
     def __str__(self):
         return '{} {}: {}'.format(
@@ -41,8 +43,6 @@ class OAuth1Error(Exception):
         error = [('error', self.error)]
         if self.description:
             error.append(('error_description', self.description))
-        if self.uri:
-            error.append(('error_uri', self.uri))
         return error
 
     def get_headers(self):
@@ -58,8 +58,44 @@ class InvalidRequestError(OAuth1Error):
     error = 'invalid_request'
 
 
+class UnsupportedParameterError(OAuth1Error):
+    error = 'unsupported_parameter'
+
+
+class UnsupportedSignatureMethodError(OAuth1Error):
+    error = 'unsupported_signature_method'
+
+
+class MissingRequiredParameterError(OAuth1Error):
+    error = 'missing_required_parameter'
+
+    def __init__(self, key):
+        description = 'missing "{}" in parameters'.format(key)
+        super(MissingRequiredParameterError, self).__init__(description)
+
+
+class DuplicatedOAuthProtocolParameterError(OAuth1Error):
+    error = 'duplicated_oauth_protocol_parameter'
+
+
+class InvalidClientError(OAuth1Error):
+    error = 'invalid_client'
+    status_code = 401
+
+
+class InvalidTokenError(OAuth1Error):
+    error = 'invalid_token'
+    status_code = 401
+
+
 class InvalidSignatureError(OAuth1Error):
     error = 'invalid_signature'
+    status_code = 401
+
+
+class InvalidNonceError(OAuth1Error):
+    error = 'invalid_nonce'
+    status_code = 401
 
 
 class AccessDeniedError(OAuth1Error):

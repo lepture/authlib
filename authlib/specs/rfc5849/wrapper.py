@@ -5,6 +5,7 @@ from .signature import (
     SIGNATURE_TYPE_BODY,
     SIGNATURE_TYPE_HEADER
 )
+from .errors import DuplicatedOAuthProtocolParameterError
 
 
 class OAuth1Request(object):
@@ -38,10 +39,13 @@ class OAuth1Request(object):
         ]
         oauth_params_set = [params for params in oauth_params_set if params[1]]
         if len(oauth_params_set) > 1:
-            # TODO
-            raise ValueError()
+            found_types = [p[0] for p in oauth_params_set]
+            raise DuplicatedOAuthProtocolParameterError(
+                '"oauth_" params must come from only 1 signature type '
+                'but were found in {}'.format(','.join(found_types))
+            )
 
-        self.oauth_signature_type = oauth_params_set[0][0]
+        self.signature_type = oauth_params_set[0][0]
         self.oauth_params = dict(oauth_params_set[0][1])
 
         params = {}
@@ -58,6 +62,11 @@ class OAuth1Request(object):
     def client_secret(self):
         if self.client:
             return self.client.client_secret
+
+    @property
+    def rsa_public_key(self):
+        if self.client:
+            return self.client.rsa_public_key
 
     @property
     def signature(self):
