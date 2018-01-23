@@ -16,6 +16,7 @@ from .errors import (
     UnsupportedSignatureMethodError,
     InvalidClientError,
     InvalidNonceError,
+    InvalidTokenError,
     InvalidSignatureError,
     AccessDeniedError,
     MethodNotAllowedError,
@@ -132,10 +133,12 @@ class AuthorizationServer(object):
         """
         request = OAuth1Request(method, uri, body, headers)
         if not request.resource_owner_key:
-            raise InvalidRequestError('Missing "oauth_token" in URI query')
+            raise MissingRequiredParameterError('oauth_token')
+
         token = self.get_temporary_credentials_token(request)
         if not token:
-            raise InvalidRequestError('Invalid "oauth_token" in URI query')
+            raise InvalidTokenError()
+
         request.token = token
         return request
 
@@ -168,22 +171,23 @@ class AuthorizationServer(object):
         request = OAuth1Request(method, uri, body, headers)
 
         if not request.client_id:
-            raise InvalidRequestError('Missing "oauth_consumer_key"')
+            raise MissingRequiredParameterError('oauth_consumer_key')
 
         client = self._get_client(request)
         if not client:
-            raise InvalidRequestError('Invalid "oauth_consumer_key"')
+            raise InvalidClientError()
 
         if not request.resource_owner_key:
-            raise InvalidRequestError('Missing "oauth_token"')
+            raise MissingRequiredParameterError('oauth_token')
 
         token = self.get_temporary_credentials_token(request)
         if not token:
-            raise InvalidRequestError()
+            raise InvalidTokenError()
 
         verifier = request.oauth_params.get('oauth_verifier')
         if not verifier:
-            raise InvalidRequestError('Missing "oauth_verifier"')
+            raise MissingRequiredParameterError('oauth_verifier')
+
         if token.oauth_verifier != verifier:
             raise InvalidRequestError('Invalid "oauth_verifier"')
 

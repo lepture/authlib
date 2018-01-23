@@ -85,6 +85,7 @@ class InvalidClientError(OAuth1Error):
 
 class InvalidTokenError(OAuth1Error):
     error = 'invalid_token'
+    description = 'Invalid or expired "oauth_token" in parameters'
     status_code = 401
 
 
