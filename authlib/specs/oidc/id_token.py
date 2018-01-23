@@ -165,7 +165,7 @@ class IDToken(object):
     def validate_exp(self, now):
         if 'exp' not in self.token:
             raise IDTokenError('exp is required')
-        if now and self.exp > now:
+        if now and now > self.exp:
             raise IDTokenError('exp is expired')
 
     def validate_iat(self):
