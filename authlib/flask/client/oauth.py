@@ -177,17 +177,22 @@ class RemoteApp(OAuthClient):
         """Authorize access token."""
         if self.request_token_url:
             request_token = self._get_request_token()
+            params = request.args.to_dict(flat=True)
         else:
             request_token = None
+            params = {}
+
+            # verify state
             state_key = '_{}_state_'.format(self.name)
             state = session.pop(state_key, None)
             if state != request.args.get('state'):
                 raise OAuthException(
                     'State not equal in request and response.')
+            if state:
+                params['state'] = state
 
         cb_key = '_{}_callback_'.format(self.name)
         callback_uri = session.pop(cb_key, None)
-        params = request.args.to_dict(flat=True)
         params.update(kwargs)
         return self.fetch_access_token(
             callback_uri,
