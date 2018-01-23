@@ -119,10 +119,11 @@ class AuthorizationServer(object):
 
         request = self.validate_temporary_credentials_request(
             method, uri, body, headers)
+
         token = self.create_temporary_credentials_token(request)
         payload = [
-            ('oauth_token', token.oauth_token),
-            ('oauth_token_secret', token.oauth_token_secret),
+            ('oauth_token', token.get_oauth_token()),
+            ('oauth_token_secret', token.get_oauth_token_secret()),
             ('oauth_callback_confirmed', True)
         ]
         return 200, payload, self.TOKEN_RESPONSE_HEADER
@@ -154,7 +155,8 @@ class AuthorizationServer(object):
         request.grant_user = grant_user
         verifier = self.create_authorization_verifier(request)
 
-        redirect_uri = request.token.oauth_callback
+        temporary_credentials = request.token
+        redirect_uri = temporary_credentials.get_redirect_uri()
         if not redirect_uri:
             redirect_uri = request.client.get_default_redirect_uri()
 
@@ -180,15 +182,15 @@ class AuthorizationServer(object):
         if not request.resource_owner_key:
             raise MissingRequiredParameterError('oauth_token')
 
-        token = self.get_temporary_credentials_token(request)
-        if not token:
+        temporary_credentials = self.get_temporary_credentials_token(request)
+        if not temporary_credentials:
             raise InvalidTokenError()
 
         verifier = request.oauth_params.get('oauth_verifier')
         if not verifier:
             raise MissingRequiredParameterError('oauth_verifier')
 
-        if token.oauth_verifier != verifier:
+        if not temporary_credentials.check_verifier(verifier):
             raise InvalidRequestError('Invalid "oauth_verifier"')
 
         self.validate_timestamp_and_nonce(request)
@@ -202,8 +204,8 @@ class AuthorizationServer(object):
             method, uri, body, headers)
         token = self.create_token_credentials_token(request)
         payload = [
-            ('oauth_token', token.oauth_token),
-            ('oauth_token_secret', token.oauth_token_secret),
+            ('oauth_token', token.get_oauth_token()),
+            ('oauth_token_secret', token.get_oauth_token_secret()),
         ]
         return 200, payload, self.TOKEN_RESPONSE_HEADER
 

@@ -1,5 +1,7 @@
 from sqlalchemy import Column, String, Text
-from authlib.specs.rfc5849 import ClientMixin
+from authlib.specs.rfc5849 import (
+    ClientMixin, TemporaryCredentialMixin, TokenMixin
+)
 
 
 class OAuth1ClientMixin(ClientMixin):
@@ -15,15 +17,33 @@ class OAuth1ClientMixin(ClientMixin):
         return self.default_redirect_uri
 
 
-class OAuth1TemporaryCredentialMixin(object):
+class OAuth1TemporaryCredentialMixin(TemporaryCredentialMixin):
     client_id = Column(String(48), index=True)
     oauth_token = Column(String(84), unique=True, index=True)
     oauth_token_secret = Column(String(84))
     oauth_verifier = Column(String(84))
     oauth_callback = Column(Text, default='')
 
+    def get_redirect_uri(self):
+        return self.oauth_callback
 
-class OAuth1AccessTokenMixin(object):
+    def check_verifier(self, verifier):
+        return self.oauth_verifier == verifier
+
+    def get_oauth_token(self):
+        return self.oauth_token
+
+    def get_oauth_token_secret(self):
+        return self.oauth_token_secret
+
+
+class OAuth1AccessTokenMixin(TokenMixin):
     client_id = Column(String(48), index=True)
     oauth_token = Column(String(84), unique=True, index=True)
     oauth_token_secret = Column(String(84))
+
+    def get_oauth_token(self):
+        return self.oauth_token
+
+    def get_oauth_token_secret(self):
+        return self.oauth_token_secret

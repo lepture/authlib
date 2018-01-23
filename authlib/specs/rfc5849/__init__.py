@@ -20,5 +20,5 @@ from .signature import (
 )
 
 from .client import Client
-from .models import ClientMixin
+from .models import ClientMixin, TemporaryCredentialMixin, TokenMixin
 from .authorization_server import AuthorizationServer
