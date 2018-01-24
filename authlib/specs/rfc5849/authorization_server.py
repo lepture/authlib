@@ -94,8 +94,8 @@ class AuthorizationServer(object):
         request = OAuth1Request(method, uri, body, headers)
 
         # REQUIRED parameter
-        oauth_callback = request.oauth_params.get('oauth_callback')
-        if not oauth_callback:
+        oauth_callback = request.redirect_uri
+        if not request.redirect_uri:
             raise MissingRequiredParameterError('oauth_callback')
 
         # An absolute URI or
@@ -182,17 +182,18 @@ class AuthorizationServer(object):
         if not request.resource_owner_key:
             raise MissingRequiredParameterError('oauth_token')
 
-        temporary_credentials = self.get_temporary_credentials_token(request)
-        if not temporary_credentials:
+        token = self.get_temporary_credentials_token(request)
+        if not token:
             raise InvalidTokenError()
 
         verifier = request.oauth_params.get('oauth_verifier')
         if not verifier:
             raise MissingRequiredParameterError('oauth_verifier')
 
-        if not temporary_credentials.check_verifier(verifier):
+        if not token.check_verifier(verifier):
             raise InvalidRequestError('Invalid "oauth_verifier"')
 
+        request.token = token
         self.validate_timestamp_and_nonce(request)
         self.validate_oauth_signature(request)
         return request

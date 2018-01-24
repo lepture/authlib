@@ -1,7 +1,5 @@
 
 class ClientMixin(object):
-    # client_id - oauth_consumer_key
-    # client_secret - oauth_consumer_secret
     @classmethod
     def get_by_client_id(cls, client_id):
         """A class method to query client information by client_id. Developers
@@ -25,6 +23,12 @@ class ClientMixin(object):
 
         :return: A URL string
         """
+        raise NotImplementedError()
+
+    def get_client_secret(self):
+        raise NotImplementedError()
+
+    def get_rsa_public_key(self):
         raise NotImplementedError()
 
 

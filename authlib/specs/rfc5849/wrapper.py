@@ -61,12 +61,16 @@ class OAuth1Request(object):
     @property
     def client_secret(self):
         if self.client:
-            return self.client.client_secret
+            return self.client.get_client_secret()
 
     @property
     def rsa_public_key(self):
         if self.client:
-            return self.client.rsa_public_key
+            return self.client.get_rsa_public_key()
+
+    @property
+    def redirect_uri(self):
+        return self.oauth_params.get('oauth_callback')
 
     @property
     def signature(self):
