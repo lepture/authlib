@@ -11,13 +11,34 @@ Version 0.4
 
 **Release Date not Decided**
 
-This is a feature releasing for OAuth 1 server, with several bugfixes.
+This is a feature releasing for OAuth 1 server, with several bug fixes.
 
 - Allow Flask OAuth register ``fetch_token`` and ``update_token``.
-- Bugfix for OAuthClient when ``refresh_token_params`` is None via `PR#14`_.
+- Bug fix for OAuthClient when ``refresh_token_params`` is None via `PR#14`_.
+- Don't pass everything in request args for Flask OAuth client via `issue#16`_.
+- Bug fix for ``IDToken.validate_exp`` via `issue#17`_.
 
 .. _`PR#14`: https://github.com/lepture/authlib/pull/14
+.. _`issue#16`: https://github.com/lepture/authlib/issues/16
+.. _`issue#17`: https://github.com/lepture/authlib/issues/17
 
+.. admonition:: Breaking Changes
+
+    For OAuth 2 server, it is suggested that you pass the user ID instead of user
+    object to ``create_authorization_response``::
+
+        @app.route('/authorize', methods=['POST'])
+        def confirm_authorize():
+            if request.form['confirm'] == 'ok':
+                # pass ID instead of current_user object
+                grant_user = current_user.id
+            else:
+                grant_user = None
+            return server.create_authorization_response(grant_user)
+
+    It will make things simple with an int/string value instead of an object. In
+    the meantime, the implementation of ``AuthorizationCodeGrant`` and
+    ``ImplicitGrant`` should be changed too. Read the documentation on :ref:`flask_oauth2_server`.
 
 Version 0.3: Nagato
 -------------------

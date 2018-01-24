@@ -120,7 +120,7 @@ class AuthorizationServer(_AuthorizationServer):
         grant.validate_authorization_request()
         return grant
 
-    def create_authorization_response(self, user):
+    def create_authorization_response(self, grant_user):
         """Create the HTTP response for authorization. If resource owner
         granted the authorization, pass the resource owner as the user
         parameter, otherwise None::
@@ -128,13 +128,13 @@ class AuthorizationServer(_AuthorizationServer):
             @app.route('/authorize', methods=['POST'])
             def confirm_authorize():
                 if request.form['confirm'] == 'ok':
-                    user = current_user
+                    grant_user = current_user.id
                 else:
-                    user = None
-                return server.create_authorization_response(user)
+                    grant_user = None
+                return server.create_authorization_response(grant_user)
         """
         status, body, headers = self.create_valid_authorization_response(
-            request.full_path, user=user
+            request.full_path, grant_user=grant_user
         )
         if isinstance(body, dict):
             body = json.dumps(body)
