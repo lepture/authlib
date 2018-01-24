@@ -11,6 +11,7 @@ from .signature import (
     verify_rsa_sha1,
 )
 from .errors import (
+    OAuth1Error,
     InvalidRequestError,
     MissingRequiredParameterError,
     UnsupportedSignatureMethodError,
@@ -80,18 +81,15 @@ class AuthorizationServer(object):
         if not verify(request):
             raise InvalidSignatureError()
 
-    def validate_temporary_credentials_request(
-            self, method, uri, body=None, headers=None):
+    def validate_temporary_credentials_request(self, request):
         """Validate HTTP request for temporary credentials."""
 
         # The client obtains a set of temporary credentials from the server by
         # making an authenticated (Section 3) HTTP "POST" request to the
         # Temporary Credential Request endpoint (unless the server advertises
         # another HTTP request method for the client to use).
-        if method.upper() != self.TEMPORARY_CREDENTIALS_METHOD:
+        if request.method.upper() != self.TEMPORARY_CREDENTIALS_METHOD:
             raise MethodNotAllowedError()
-
-        request = OAuth1Request(method, uri, body, headers)
 
         # REQUIRED parameter
         oauth_callback = request.redirect_uri
@@ -114,11 +112,14 @@ class AuthorizationServer(object):
         self.validate_oauth_signature(request)
         return request
 
-    def create_temporary_credentials_response(
+    def create_valid_temporary_credentials_response(
             self, method, uri, body=None, headers=None):
 
-        request = self.validate_temporary_credentials_request(
-            method, uri, body, headers)
+        request = OAuth1Request(method, uri, body, headers)
+        try:
+            self.validate_temporary_credentials_request(request)
+        except OAuth1Error as error:
+            return error.status_code, error.get_body(), error.get_headers()
 
         token = self.create_temporary_credentials_token(request)
         payload = [
@@ -128,11 +129,9 @@ class AuthorizationServer(object):
         ]
         return 200, payload, self.TOKEN_RESPONSE_HEADER
 
-    def validate_resource_owner_authorization_request(
-            self, method, uri, body=None, headers=None):
+    def validate_authorization_request(self, request):
         """Validate
         """
-        request = OAuth1Request(method, uri, body, headers)
         if not request.resource_owner_key:
             raise MissingRequiredParameterError('oauth_token')
 
@@ -143,22 +142,25 @@ class AuthorizationServer(object):
         request.token = token
         return request
 
-    def create_resource_owner_authorization_response(
+    def create_valid_authorization_response(
             self, method, uri, body=None, headers=None, grant_user=None):
 
-        if grant_user is None:
-            raise AccessDeniedError()
-
-        request = self.validate_resource_owner_authorization_request(
-            method, uri, body, headers)
-
-        request.grant_user = grant_user
-        verifier = self.create_authorization_verifier(request)
+        request = OAuth1Request(method, uri, body, headers)
+        # authorize endpoint should try catch this error
+        self.validate_authorization_request(request)
 
         temporary_credentials = request.token
         redirect_uri = temporary_credentials.get_redirect_uri()
         if not redirect_uri:
             redirect_uri = request.client.get_default_redirect_uri()
+
+        if grant_user is None:
+            error = AccessDeniedError()
+            location = add_params_to_uri(redirect_uri, error.get_body())
+            return 302, '', [('Location', location)]
+
+        request.grant_user = grant_user
+        verifier = self.create_authorization_verifier(request)
 
         params = [
             ('oauth_token', request.resource_owner_key),
@@ -167,10 +169,7 @@ class AuthorizationServer(object):
         location = add_params_to_uri(redirect_uri, params)
         return 302, '', [('Location', location)]
 
-    def validate_token_credentials_request(
-            self, method, uri, body=None, headers=None):
-
-        request = OAuth1Request(method, uri, body, headers)
+    def validate_token_request(self, request):
 
         if not request.client_id:
             raise MissingRequiredParameterError('oauth_consumer_key')
@@ -198,16 +197,22 @@ class AuthorizationServer(object):
         self.validate_oauth_signature(request)
         return request
 
-    def create_token_credentials_response(
+    def create_valid_token_response(
             self, method, uri, body=None, headers=None):
+        request = OAuth1Request(method, uri, body, headers)
 
-        request = self.validate_token_credentials_request(
-            method, uri, body, headers)
+        try:
+            self.validate_token_request(request)
+        except OAuth1Error as error:
+            self.delete_temporary_credentials_token(request)
+            return error.status_code, error.get_body(), error.get_headers()
+
         token = self.create_token_credentials_token(request)
         payload = [
             ('oauth_token', token.get_oauth_token()),
             ('oauth_token_secret', token.get_oauth_token_secret()),
         ]
+        self.delete_temporary_credentials_token(request)
         return 200, payload, self.TOKEN_RESPONSE_HEADER
 
     def exists_timestamp_and_nonce(self, timestamp, nonce, request):
@@ -217,6 +222,9 @@ class AuthorizationServer(object):
         raise NotImplementedError()
 
     def get_temporary_credentials_token(self, request):
+        raise NotImplementedError()
+
+    def delete_temporary_credentials_token(self, request):
         raise NotImplementedError()
 
     def create_authorization_verifier(self, request):

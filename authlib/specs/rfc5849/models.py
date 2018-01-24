@@ -57,6 +57,9 @@ class TokenMixin(object):
 
 
 class TemporaryCredentialMixin(TokenMixin):
+    def get_client_id(self):
+        raise NotImplementedError()
+
     def get_redirect_uri(self):
         """A method to get temporary credential's ``oauth_callback``.
         For instance, the database table for temporary credential has a
@@ -66,6 +69,18 @@ class TemporaryCredentialMixin(TokenMixin):
                 return self.oauth_callback
 
         :return: A URL string
+        """
+        raise NotImplementedError()
+
+    def get_grant_user(self):
+        """A method to get the grant user information of this temporary
+        credential. For instance, grant user is stored in database on
+        ``user_id`` column::
+
+            def get_grant_user(self):
+                return self.user_id
+
+        :return: grant user ID
         """
         raise NotImplementedError()
 
