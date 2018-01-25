@@ -254,7 +254,7 @@ database backend or a cache backend would work well.
 
 .. warning::
 
-    Be aware, using secure cookie as session backed will expose your request
+    Be aware, using secure cookie as session backend will expose your request
     token.
 
 
