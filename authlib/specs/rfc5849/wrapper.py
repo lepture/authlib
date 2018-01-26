@@ -22,7 +22,7 @@ class OAuth1Request(object):
 
         self.query = urlparse.urlparse(uri).query
         self.query_params = url_decode(self.query)
-        self.body_params = extract_params(body)
+        self.body_params = extract_params(body) or []
 
         auth = headers.get('Authorization')
         self.realm = None
@@ -48,10 +48,10 @@ class OAuth1Request(object):
         self.signature_type = oauth_params_set[0][0]
         self.oauth_params = dict(oauth_params_set[0][1])
 
-        params = {}
-        params.update(self.query_params)
-        params.update(self.body_params)
-        params.update(self.auth_params)
+        params = []
+        params.extend(self.query_params)
+        params.extend(self.body_params)
+        params.extend(self.auth_params)
         self.params = params
 
     @property
