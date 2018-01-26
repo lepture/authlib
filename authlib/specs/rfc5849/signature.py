@@ -13,12 +13,11 @@ from __future__ import absolute_import, unicode_literals
 import binascii
 import hashlib
 import hmac
-from authlib.common.urls import urlparse, url_decode, extract_params
+from authlib.common.urls import urlparse
 from authlib.common.encoding import to_unicode, to_bytes
 from .util import (
     escape, unescape,
     safe_string_equals,
-    parse_authorization_header,
 )
 
 SIGNATURE_HMAC_SHA1 = "HMAC-SHA1"
@@ -89,8 +88,7 @@ def create_signature_base_string(request):
 
 
 def normalize_base_string_uri(uri, host=None):
-    """**Base String URI**
-    Per `section 3.4.1.2`_ of the spec.
+    """Normalize Base String URI per `Section 3.4.1.2`_.
 
     For example, the HTTP request::
 
@@ -106,7 +104,7 @@ def normalize_base_string_uri(uri, host=None):
 
     is represented by the base string URI: "https://www.example.net:8080/".
 
-    .. _`section 3.4.1.2`: http://tools.ietf.org/html/rfc5849#section-3.4.1.2
+    .. _`Section 3.4.1.2`: http://tools.ietf.org/html/rfc5849#section-3.4.1.2
 
     The host argument overrides the netloc part of the uri argument.
     """
@@ -161,8 +159,7 @@ def normalize_base_string_uri(uri, host=None):
 
 
 def normalize_parameters(params):
-    """**Parameters Normalization**
-    Per `section 3.4.1.3.2`_ of the spec.
+    """Normalize parameters per `Section 3.4.1.3.2`_.
 
     For example, the list of parameters from the previous section would
     be normalized as follows:
@@ -228,13 +225,8 @@ def normalize_parameters(params):
         dj82h48djs9d2&oauth_nonce=7d8f3e4a&oauth_signature_method=HMAC-SHA1
         &oauth_timestamp=137131201&oauth_token=kkk9d7dh3k39sjv7
 
-    .. _`section 3.4.1.3.2`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3.2
+    .. _`Section 3.4.1.3.2`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3.2
     """
-
-    # The parameters collected in `Section 3.4.1.3`_ are normalized into a
-    # single string as follows:
-    #
-    # .. _`Section 3.4.1.3`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3
 
     # 1.  First, the name and value of each parameter are encoded
     #     (`Section 3.6`_).

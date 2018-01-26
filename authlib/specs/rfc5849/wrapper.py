@@ -1,5 +1,7 @@
-from authlib.common.urls import urlparse, extract_params, url_decode
-from .util import parse_authorization_header
+from authlib.common.urls import (
+    urlparse, extract_params, url_decode,
+    parse_http_list, parse_keqv_list,
+)
 from .signature import (
     SIGNATURE_TYPE_QUERY,
     SIGNATURE_TYPE_BODY,
@@ -27,7 +29,7 @@ class OAuth1Request(object):
         auth = headers.get('Authorization')
         self.realm = None
         if auth:
-            self.auth_params = parse_authorization_header(auth, True)
+            self.auth_params = _parse_authorization_header(auth)
             self.realm = dict(self.auth_params).get('realm')
         else:
             self.auth_params = []
@@ -94,3 +96,15 @@ def _filter_oauth(params):
     for k, v in params:
         if k.startswith('oauth_'):
             yield (k, v)
+
+
+def _parse_authorization_header(authorization_header):
+    """Parse an OAuth authorization header into a list of 2-tuples"""
+    auth_scheme = 'oauth '
+    if authorization_header.lower().startswith(auth_scheme):
+        items = parse_http_list(authorization_header[len(auth_scheme):])
+        try:
+            return parse_keqv_list(items).items()
+        except (IndexError, ValueError):
+            pass
+    raise ValueError('Malformed authorization header')

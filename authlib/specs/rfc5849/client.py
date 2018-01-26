@@ -45,7 +45,7 @@ class Client(object):
 
         The ``sign`` method accept 5 parameters::
 
-            def custom_sign_method(client, method, uri, body, headers):
+            def custom_sign_method(client, request):
                 # client is the instance of Client.
                 return 'your-signed-string'
 
