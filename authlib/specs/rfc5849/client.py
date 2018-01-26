@@ -32,7 +32,7 @@ CONTENT_TYPE_MULTI_PART = 'multipart/form-data'
 def client_sign_hmac_sha1(client, method, uri, body, headers):
     base_string = base_string_from_request(method, uri, body, headers)
     return sign_hmac_sha1(
-        base_string, client.client_secret, client.resource_owner_secret
+        base_string, client.client_secret, client.token_secret
     )
 
 
@@ -42,7 +42,7 @@ def client_sign_rsa_sha1(client, method, uri, body, headers):
 
 
 def client_sign_plaintext(client, *args, **kwargs):
-    return sign_plaintext(client.client_secret, client.resource_owner_secret)
+    return sign_plaintext(client.client_secret, client.token_secret)
 
 
 class Client(object):
@@ -70,15 +70,15 @@ class Client(object):
         cls.SIGNATURE_METHODS[name] = sign
 
     def __init__(self, client_id, client_secret=None,
-                 resource_owner_key=None, resource_owner_secret=None,
+                 token=None, token_secret=None,
                  callback_uri=None, rsa_key=None, verifier=None,
                  signature_method=SIGNATURE_HMAC_SHA1,
                  signature_type=SIGNATURE_TYPE_HEADER,
                  realm=None, force_include_body=False):
         self.client_id = client_id
         self.client_secret = client_secret
-        self.resource_owner_key = resource_owner_key
-        self.resource_owner_secret = resource_owner_secret
+        self.token = token
+        self.token_secret = token_secret
         self.callback_uri = callback_uri
         self.signature_method = signature_method
         self.signature_type = signature_type
@@ -110,8 +110,8 @@ class Client(object):
             ('oauth_signature_method', self.signature_method),
             ('oauth_consumer_key', self.client_id),
         ]
-        if self.resource_owner_key:
-            oauth_params.append(('oauth_token', self.resource_owner_key))
+        if self.token:
+            oauth_params.append(('oauth_token', self.token))
         if self.callback_uri:
             oauth_params.append(('oauth_callback', self.callback_uri))
         if self.verifier:

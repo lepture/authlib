@@ -384,7 +384,7 @@ def base_string_from_request(method, uri, body, headers):
     return construct_base_string(method, normalized_uri, normalized_params)
 
 
-def sign_hmac_sha1(base_string, client_secret, resource_owner_secret):
+def sign_hmac_sha1(base_string, client_secret, token_secret):
     """**HMAC-SHA1**
 
     The "HMAC-SHA1" signature method uses the HMAC-SHA1 signature
@@ -419,7 +419,7 @@ def sign_hmac_sha1(base_string, client_secret, resource_owner_secret):
     # 3.  The token shared-secret, after being encoded (`Section 3.6`_).
     #
     # .. _`Section 3.6`: http://tools.ietf.org/html/rfc5849#section-3.6
-    key += escape(resource_owner_secret or '')
+    key += escape(token_secret or '')
 
     signature = hmac.new(to_bytes(key), to_bytes(text), hashlib.sha1)
 
@@ -455,7 +455,7 @@ def sign_rsa_sha1(base_string, rsa_private_key):
     return to_unicode(sig)
 
 
-def sign_plaintext(client_secret, resource_owner_secret):
+def sign_plaintext(client_secret, token_secret):
     """Sign a request using plaintext.
 
     Per `section 3.4.4`_ of the spec.
@@ -485,7 +485,7 @@ def sign_plaintext(client_secret, resource_owner_secret):
     # 3.  The token shared-secret, after being encoded (`Section 3.6`_).
     #
     # .. _`Section 3.6`: http://tools.ietf.org/html/rfc5849#section-3.6
-    signature += escape(resource_owner_secret or '')
+    signature += escape(token_secret or '')
 
     return signature
 

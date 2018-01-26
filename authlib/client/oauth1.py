@@ -31,12 +31,10 @@ class OAuth1Session(Session):
 
     :param client_id: Consumer key, which you get from registration.
     :param client_secret: Consumer Secret, which you get from registration.
-    :param resource_owner_key: A resource owner key, also referred to as
-                               request token or access token depending on
-                               when in the workflow it is used.
-    :param resource_owner_secret: A resource owner secret obtained with
-                                  either a request or access token. Often
-                                  referred to as token secret.
+    :param token: A token string, also referred to as request token or access
+        token depending on when in the workflow it is used.
+    :param token_secret: A token secret obtained with either a request or
+        access token. Often referred to as token secret.
     :param callback_uri: The URL the user is redirect back to after
                          authorization.
     :param rsa_key: The private RSA key as a string. Can only be used with
@@ -64,7 +62,7 @@ class OAuth1Session(Session):
     :param kwargs: Extra parameters to include.
     """
     def __init__(self, client_id, client_secret=None,
-                 resource_owner_key=None, resource_owner_secret=None,
+                 token=None, token_secret=None,
                  callback_uri=None, rsa_key=None, verifier=None,
                  signature_method=SIGNATURE_HMAC_SHA1,
                  signature_type=SIGNATURE_TYPE_HEADER,
@@ -73,8 +71,8 @@ class OAuth1Session(Session):
 
         self._client = OAuth1(
             client_id, client_secret=client_secret,
-            resource_owner_key=resource_owner_key,
-            resource_owner_secret=resource_owner_secret,
+            token=token,
+            token_secret=token_secret,
             callback_uri=callback_uri,
             signature_method=signature_method,
             signature_type=signature_type,
@@ -96,8 +94,8 @@ class OAuth1Session(Session):
     @property
     def token(self):
         return dict(
-            oauth_token=self._client.resource_owner_key,
-            oauth_token_secret=self._client.resource_owner_secret,
+            oauth_token=self._client.token,
+            oauth_token_secret=self._client.token_secret,
             oauth_verifier=self._client.verifier
         )
 
@@ -108,12 +106,12 @@ class OAuth1Session(Session):
         have token setters.
         """
         if 'oauth_token' in token:
-            self._client.resource_owner_key = token['oauth_token']
+            self._client.token = token['oauth_token']
         else:
             msg = 'oauth_token is missing: {resp}'.format(resp=token)
             raise OAuthException(msg, 'token_missing', token)
         if 'oauth_token_secret' in token:
-            self._client.resource_owner_secret = token['oauth_token_secret']
+            self._client.token_secret = token['oauth_token_secret']
         if 'oauth_verifier' in token:
             self._client.verifier = token['oauth_verifier']
 
@@ -131,7 +129,7 @@ class OAuth1Session(Session):
         :param kwargs: Optional parameters to append to the URL.
         :returns: The authorization URL with new parameters embedded.
         """
-        kwargs['oauth_token'] = request_token or self._client.resource_owner_key
+        kwargs['oauth_token'] = request_token or self._client.token
         if self._client.callback_uri:
             kwargs['oauth_callback'] = self._client.callback_uri
         return add_params_to_uri(url, kwargs.items())
