@@ -61,6 +61,7 @@ class AuthorizationServer(object):
         if not timestamp:
             raise MissingRequiredParameterError('oauth_timestamp')
         try:
+            # The timestamp value MUST be a positive integer
             delta = time.time() - int(timestamp)
             if delta > self.EXPIRY_TIME:
                 raise InvalidRequestError()
@@ -70,7 +71,7 @@ class AuthorizationServer(object):
         if not nonce:
             raise MissingRequiredParameterError('oauth_nonce')
 
-        if self.exists_timestamp_and_nonce(timestamp, nonce, request):
+        if self.exists_nonce(nonce, request):
             raise InvalidNonceError()
 
     def validate_oauth_signature(self, request):
@@ -114,7 +115,39 @@ class AuthorizationServer(object):
 
     def create_valid_temporary_credentials_response(
             self, method, uri, body=None, headers=None):
+        """Validate temporary credentials token request and create response
+        for temporary credentials token. Assume the endpoint of temporary
+        credentials request is ``https://photos.example.net/initiate``:
 
+        .. code-block:: http
+
+            POST /initiate HTTP/1.1
+            Host: photos.example.net
+            Authorization: OAuth realm="Photos",
+                oauth_consumer_key="dpf43f3p2l4k3l03",
+                oauth_signature_method="HMAC-SHA1",
+                oauth_timestamp="137131200",
+                oauth_nonce="wIjqoS",
+                oauth_callback="http%3A%2F%2Fprinter.example.com%2Fready",
+                oauth_signature="74KNZJeDHnMBp0EMJ9ZHt%2FXKycU%3D"
+
+        The server validates the request and replies with a set of temporary
+        credentials in the body of the HTTP response:
+
+        .. code-block:: http
+
+            HTTP/1.1 200 OK
+            Content-Type: application/x-www-form-urlencoded
+
+            oauth_token=hh5s93j4hdidpola&oauth_token_secret=hdhd0244k9j7ao03&
+            oauth_callback_confirmed=true
+
+        :param method: HTTP request method.
+        :param uri: HTTP request URI string.
+        :param body: HTTP request payload body.
+        :param headers: HTTP request headers.
+        :returns: (status_code, body, headers)
+        """
         request = OAuth1Request(method, uri, body, headers)
         try:
             self.validate_temporary_credentials_request(request)
@@ -130,26 +163,51 @@ class AuthorizationServer(object):
         return 200, payload, self.TOKEN_RESPONSE_HEADER
 
     def validate_authorization_request(self, request):
-        """Validate
-        """
-        if not request.resource_owner_key:
+        """Validate the request for resource owner authorization."""
+        if not request.token:
             raise MissingRequiredParameterError('oauth_token')
 
         token = self.get_temporary_credentials_token(request)
         if not token:
             raise InvalidTokenError()
 
-        request.token = token
+        # assign token for later use
+        request.credential = token
         return request
 
     def create_valid_authorization_response(
             self, method, uri, body=None, headers=None, grant_user=None):
+        """Validate authorization request and create authorization response.
+        Assume the endpoint for authorization request is
+        ``https://photos.example.net/authorize``, the client redirects Jane's
+        user-agent to the server's Resource Owner Authorization endpoint to
+        obtain Jane's approval for accessing her private photos::
 
+            https://photos.example.net/authorize?oauth_token=hh5s93j4hdidpola
+
+        The server requests Jane to sign in using her username and password
+        and if successful, asks her to approve granting 'printer.example.com'
+        access to her private photos.  Jane approves the request and her
+        user-agent is redirected to the callback URI provided by the client
+        in the previous request (line breaks are for display purposes only):
+
+            http://printer.example.com/ready?
+            oauth_token=hh5s93j4hdidpola&oauth_verifier=hfdp7dh39dks9884
+
+        :param method: HTTP request method.
+        :param uri: HTTP request URI string.
+        :param body: HTTP request payload body.
+        :param headers: HTTP request headers.
+        :param grant_user: if granted, it is resource owner's ID. If denied,
+            it is None.
+        :returns: (status_code, body, headers)
+        """
         request = OAuth1Request(method, uri, body, headers)
+
         # authorize endpoint should try catch this error
         self.validate_authorization_request(request)
 
-        temporary_credentials = request.token
+        temporary_credentials = request.credential
         redirect_uri = temporary_credentials.get_redirect_uri()
         if not redirect_uri:
             redirect_uri = request.client.get_default_redirect_uri()
@@ -163,13 +221,14 @@ class AuthorizationServer(object):
         verifier = self.create_authorization_verifier(request)
 
         params = [
-            ('oauth_token', request.resource_owner_key),
+            ('oauth_token', request.token),
             ('oauth_verifier', verifier)
         ]
         location = add_params_to_uri(redirect_uri, params)
         return 302, '', [('Location', location)]
 
     def validate_token_request(self, request):
+        """Validate request for issuing token."""
 
         if not request.client_id:
             raise MissingRequiredParameterError('oauth_consumer_key')
@@ -178,7 +237,7 @@ class AuthorizationServer(object):
         if not client:
             raise InvalidClientError()
 
-        if not request.resource_owner_key:
+        if not request.token:
             raise MissingRequiredParameterError('oauth_token')
 
         token = self.get_temporary_credentials_token(request)
@@ -192,13 +251,50 @@ class AuthorizationServer(object):
         if not token.check_verifier(verifier):
             raise InvalidRequestError('Invalid "oauth_verifier"')
 
-        request.token = token
+        request.credential = token
         self.validate_timestamp_and_nonce(request)
         self.validate_oauth_signature(request)
         return request
 
     def create_valid_token_response(
             self, method, uri, body=None, headers=None):
+        """Validate token request and create token response. Assuming the
+        endpoint of token request is ``https://photos.example.net/token``,
+        the callback request informs the client that Jane completed the
+        authorization process.  The client then requests a set of token
+        credentials using its temporary credentials (over a secure Transport
+        Layer Security (TLS) channel):
+
+        .. code-block:: http
+
+            POST /token HTTP/1.1
+            Host: photos.example.net
+            Authorization: OAuth realm="Photos",
+                oauth_consumer_key="dpf43f3p2l4k3l03",
+                oauth_token="hh5s93j4hdidpola",
+                oauth_signature_method="HMAC-SHA1",
+                oauth_timestamp="137131201",
+                oauth_nonce="walatlh",
+                oauth_verifier="hfdp7dh39dks9884",
+                oauth_signature="gKgrFCywp7rO0OXSjdot%2FIHF7IU%3D"
+
+        The server validates the request and replies with a set of token
+        credentials in the body of the HTTP response:
+
+        .. code-block:: http
+
+            HTTP/1.1 200 OK
+            Content-Type: application/x-www-form-urlencoded
+
+            oauth_token=nnch734d00sl2jdk&oauth_token_secret=pfkkdhi9sl3r4s00
+
+        :param method: HTTP request method.
+        :param uri: HTTP request URI string.
+        :param body: HTTP request payload body.
+        :param headers: HTTP request headers.
+        :returns: (status_code, body, headers)
+        """
+
         request = OAuth1Request(method, uri, body, headers)
 
         try:
@@ -215,7 +311,10 @@ class AuthorizationServer(object):
         self.delete_temporary_credentials_token(request)
         return 200, payload, self.TOKEN_RESPONSE_HEADER
 
-    def exists_timestamp_and_nonce(self, timestamp, nonce, request):
+    def exists_nonce(self, nonce, request):
+        """The nonce value MUST be unique across all requests with the same
+        timestamp, client credentials, and token combinations.
+        """
         raise NotImplementedError()
 
     def create_temporary_credentials_token(self, request):

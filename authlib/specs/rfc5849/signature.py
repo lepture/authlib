@@ -510,7 +510,7 @@ def verify_hmac_sha1(request):
     params = normalize_parameters(request.params)
     base_string = construct_base_string(request.method, uri, params)
     sig = sign_hmac_sha1(
-        base_string, request.client_secret, request.resource_owner_secret)
+        base_string, request.client_secret, request.token_secret)
     return safe_string_equals(sig, request.signature)
 
 
@@ -533,8 +533,8 @@ def verify_rsa_sha1(request):
     """
     from .rsa import verify_sha1
     uri = normalize_base_string_uri(request.uri)
-    norm_params = normalize_parameters(request.params)
-    text = construct_base_string(request.method, uri, norm_params)
+    params = normalize_parameters(request.params)
+    text = construct_base_string(request.method, uri, params)
     sig = binascii.a2b_base64(to_bytes(request.signature))
     return verify_sha1(sig, to_bytes(text), request.rsa_public_key)
 
@@ -546,5 +546,5 @@ def verify_plaintext(request):
 
     .. _`section 3.4`: http://tools.ietf.org/html/rfc5849#section-3.4
     """
-    sig = sign_plaintext(request.client_secret, request.resource_owner_secret)
+    sig = sign_plaintext(request.client_secret, request.token_secret)
     return safe_string_equals(sig, request.signature)

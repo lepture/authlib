@@ -17,7 +17,7 @@ class OAuth1Request(object):
 
         # states namespaces
         self.client = None
-        self.token = None
+        self.credential = None
         self.grant_user = None
 
         self.query = urlparse.urlparse(uri).query
@@ -81,13 +81,13 @@ class OAuth1Request(object):
         return self.oauth_params.get('oauth_signature_method')
 
     @property
-    def resource_owner_key(self):
+    def token(self):
         return self.oauth_params.get('oauth_token')
 
     @property
-    def resource_owner_secret(self):
-        if self.token:
-            return self.token.oauth_token_secret
+    def token_secret(self):
+        if self.credential:
+            return self.credential.get_oauth_token_secret()
 
 
 def _filter_oauth(params):
