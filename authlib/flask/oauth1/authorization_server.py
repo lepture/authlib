@@ -22,27 +22,29 @@ class AuthorizationServer(_AuthorizationServer):
         server.init_app(app)
     """
 
-    def __init__(self, client_model, app=None):
+    def __init__(self, client_model, token_generator=None, app=None):
         super(AuthorizationServer, self).__init__(client_model)
         self.app = None
         self.cache = None
+        self.token_generator = token_generator
 
         self._hooks = {
             'exists_nonce': None,
-            'create_temporary_credentials_token': None,
-            'get_temporary_credentials_token': None,
-            'delete_temporary_credentials_token': None,
+            'create_temporary_credential': None,
+            'get_temporary_credential': None,
+            'delete_temporary_credential': None,
             'create_authorization_verifier': None,
-            'create_token_credentials_token': None,
+            'create_authorization_credential': None,
         }
-        self.token_generator = None
         if app is not None:
             self.init_app(app)
 
     def init_app(self, app):
-        self.token_generator = self.create_token_generator(app)
+        if self.token_generator is None:
+            self.token_generator = self.create_token_generator(app)
         if app.config.get('OAUTH1_AUTH_CACHE_TYPE'):
             self.cache = Cache(app, config_prefix='OAUTH1_AUTH')
+        self.app = app
 
     def register_hook(self, name, func):
         if name not in self._hooks:
@@ -84,14 +86,14 @@ class AuthorizationServer(_AuthorizationServer):
             func = self._exists_cache_nonce
 
         if callable(func):
-            timestamp = request.oauth_params.get('oauth_timestamp')
+            timestamp = request.timestamp
             client_id = request.client_id
             token = request.token
             return func(nonce, timestamp, client_id, token)
 
         raise RuntimeError('"exists_nonce" hook is required.')
 
-    def _create_cache_temporary_credentials_token(
+    def _create_cache_temporary_credential(
             self, token, client_id, redirect_uri):
 
         key = 'temporary_credential:{}'.format(token['oauth_token'])
@@ -102,51 +104,51 @@ class AuthorizationServer(_AuthorizationServer):
         self.cache.set(key, token, timeout=86400)  # cache for one day
         return TemporaryCredential(token)
 
-    def create_temporary_credentials_token(self, request):
-        func = self._hooks['create_temporary_credentials_token']
+    def create_temporary_credential(self, request):
+        func = self._hooks['create_temporary_credential']
 
         if func is None and self.cache:
-            func = self._create_cache_temporary_credentials_token
+            func = self._create_cache_temporary_credential
 
         if callable(func):
             token = self.token_generator()
             return func(token, request.client_id, request.redirect_uri)
         raise RuntimeError(
-            '"create_temporary_credentials_token" hook is required.'
+            '"create_temporary_credential" hook is required.'
         )
 
-    def _get_cache_temporary_credentials_token(self, token):
+    def _get_cache_temporary_credential(self, token):
         key = 'temporary_credential:{}'.format(token)
         value = self.cache.get(key)
         if value:
             return TemporaryCredential(value)
 
-    def get_temporary_credentials_token(self, request):
-        func = self._hooks['get_temporary_credentials_token']
+    def get_temporary_credential(self, request):
+        func = self._hooks['get_temporary_credential']
         if func is None and self.cache:
-            func = self._get_cache_temporary_credentials_token
+            func = self._get_cache_temporary_credential
 
         if callable(func):
             return func(request.token)
 
         raise RuntimeError(
-            '"get_temporary_credentials_token" hook is required.'
+            '"get_temporary_credential" hook is required.'
         )
 
-    def _delete_cache_temporary_credentials_token(self, token):
+    def _delete_cache_temporary_credential(self, token):
         key = 'temporary_credential:{}'.format(token)
         self.cache.delete(key)
 
-    def delete_temporary_credentials_token(self, request):
-        func = self._hooks['delete_temporary_credentials_token']
+    def delete_temporary_credential(self, request):
+        func = self._hooks['delete_temporary_credential']
         if func is None and self.cache:
-            func = self._delete_cache_temporary_credentials_token
+            func = self._delete_cache_temporary_credential
 
         if callable(func):
             func(request.token)
 
         raise RuntimeError(
-            '"delete_temporary_credentials_token" hook is required.'
+            '"delete_temporary_credential" hook is required.'
         )
 
     def _create_cache_authorization_verifier(self, token, grant_user, verifier):
@@ -169,18 +171,18 @@ class AuthorizationServer(_AuthorizationServer):
             '"create_authorization_verifier" hook is required.'
         )
 
-    def create_token_credentials_token(self, request):
-        func = self._hooks['create_token_credentials_token']
+    def create_authorization_credential(self, request):
+        func = self._hooks['create_authorization_credential']
         if callable(func):
             temporary_credentials = request.credential
             token = self.token_generator()
             return func(token, temporary_credentials)
 
         raise RuntimeError(
-            '"create_token_credentials_token" hook is required.'
+            '"create_token_credential" hook is required.'
         )
 
-    def create_temporary_credentials_response(self):
+    def create_temporary_credential_response(self):
         status, body, headers = self.create_valid_temporary_credentials_response(
             _req.method,
             _req.full_path,

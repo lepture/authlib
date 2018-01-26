@@ -1,6 +1,8 @@
 from sqlalchemy import Column, String, Text
 from authlib.specs.rfc5849 import (
-    ClientMixin, TemporaryCredentialMixin, TokenMixin
+    ClientMixin,
+    TemporaryCredentialMixin,
+    AuthorizationCredentialMixin,
 )
 
 
@@ -16,6 +18,12 @@ class OAuth1ClientMixin(ClientMixin):
     def get_default_redirect_uri(self):
         return self.default_redirect_uri
 
+    def get_client_secret(self):
+        return self.client_secret
+
+    def get_rsa_public_key(self):
+        return None
+
 
 class OAuth1TemporaryCredentialMixin(TemporaryCredentialMixin):
     client_id = Column(String(48), index=True)
@@ -23,6 +31,9 @@ class OAuth1TemporaryCredentialMixin(TemporaryCredentialMixin):
     oauth_token_secret = Column(String(84))
     oauth_verifier = Column(String(84))
     oauth_callback = Column(Text, default='')
+
+    def get_client_id(self):
+        return self.client_id
 
     def get_redirect_uri(self):
         return self.oauth_callback
@@ -37,7 +48,7 @@ class OAuth1TemporaryCredentialMixin(TemporaryCredentialMixin):
         return self.oauth_token_secret
 
 
-class OAuth1AccessTokenMixin(TokenMixin):
+class OAuth1AuthorizationCredentialMixin(AuthorizationCredentialMixin):
     client_id = Column(String(48), index=True)
     oauth_token = Column(String(84), unique=True, index=True)
     oauth_token_secret = Column(String(84))
@@ -47,3 +58,26 @@ class OAuth1AccessTokenMixin(TokenMixin):
 
     def get_oauth_token_secret(self):
         return self.oauth_token_secret
+
+
+def register_hooks(
+        authorization_server, session,
+        authorization_credential_model,
+        temporary_credential_model=None):
+
+    def create_authorization_credential(token, temporary_credentials):
+        item = authorization_credential_model(
+            oauth_token=token['oauth_token'],
+            oauth_token_secret=token['oauth_token_secret'],
+            client_id=temporary_credentials.get_client_id()
+        )
+        item.set_grant_user(temporary_credentials.get_grant_user())
+        session.add(item)
+        session.commit()
+
+    authorization_server.register_hook(
+        'create_authorization_credential', create_authorization_credential
+    )
+
+    if temporary_credential_model is None:
+        return

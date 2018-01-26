@@ -71,6 +71,10 @@ class OAuth1Request(object):
             return self.client.get_rsa_public_key()
 
     @property
+    def timestamp(self):
+        return self.oauth_params.get('oauth_timestamp')
+
+    @property
     def redirect_uri(self):
         return self.oauth_params.get('oauth_callback')
 

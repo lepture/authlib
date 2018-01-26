@@ -32,7 +32,7 @@ class ClientMixin(object):
         raise NotImplementedError()
 
 
-class TokenMixin(object):
+class CredentialMixin(object):
     def get_oauth_token(self):
         """A method to get the value of ``oauth_token``. For instance, the
         database table has a column called ``oauth_token``::
@@ -56,7 +56,7 @@ class TokenMixin(object):
         raise NotImplementedError()
 
 
-class TemporaryCredentialMixin(TokenMixin):
+class TemporaryCredentialMixin(CredentialMixin):
     def get_client_id(self):
         raise NotImplementedError()
 
@@ -94,4 +94,9 @@ class TemporaryCredentialMixin(TokenMixin):
 
         :return: Boolean
         """
+        raise NotImplementedError()
+
+
+class AuthorizationCredentialMixin(CredentialMixin):
+    def set_grant_user(self, grant_user):
         raise NotImplementedError()

@@ -154,7 +154,7 @@ class AuthorizationServer(object):
         except OAuth1Error as error:
             return error.status_code, error.get_body(), error.get_headers()
 
-        token = self.create_temporary_credentials_token(request)
+        token = self.create_temporary_credential(request)
         payload = [
             ('oauth_token', token.get_oauth_token()),
             ('oauth_token_secret', token.get_oauth_token_secret()),
@@ -167,7 +167,7 @@ class AuthorizationServer(object):
         if not request.token:
             raise MissingRequiredParameterError('oauth_token')
 
-        token = self.get_temporary_credentials_token(request)
+        token = self.get_temporary_credential(request)
         if not token:
             raise InvalidTokenError()
 
@@ -240,7 +240,7 @@ class AuthorizationServer(object):
         if not request.token:
             raise MissingRequiredParameterError('oauth_token')
 
-        token = self.get_temporary_credentials_token(request)
+        token = self.get_temporary_credential(request)
         if not token:
             raise InvalidTokenError()
 
@@ -300,15 +300,15 @@ class AuthorizationServer(object):
         try:
             self.validate_token_request(request)
         except OAuth1Error as error:
-            self.delete_temporary_credentials_token(request)
+            self.delete_temporary_credential(request)
             return error.status_code, error.get_body(), error.get_headers()
 
-        token = self.create_token_credentials_token(request)
+        token = self.create_authorization_credential(request)
         payload = [
             ('oauth_token', token.get_oauth_token()),
             ('oauth_token_secret', token.get_oauth_token_secret()),
         ]
-        self.delete_temporary_credentials_token(request)
+        self.delete_temporary_credential(request)
         return 200, payload, self.TOKEN_RESPONSE_HEADER
 
     def exists_nonce(self, nonce, request):
@@ -317,17 +317,17 @@ class AuthorizationServer(object):
         """
         raise NotImplementedError()
 
-    def create_temporary_credentials_token(self, request):
+    def create_temporary_credential(self, request):
         raise NotImplementedError()
 
-    def get_temporary_credentials_token(self, request):
+    def get_temporary_credential(self, request):
         raise NotImplementedError()
 
-    def delete_temporary_credentials_token(self, request):
+    def delete_temporary_credential(self, request):
         raise NotImplementedError()
 
     def create_authorization_verifier(self, request):
         raise NotImplementedError()
 
-    def create_token_credentials_token(self, request):
+    def create_authorization_credential(self, request):
         raise NotImplementedError()
