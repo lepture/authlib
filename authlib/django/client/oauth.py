@@ -4,7 +4,7 @@ from django.dispatch import Signal
 from django.http import HttpResponseRedirect
 from authlib.client.client import OAuthClient
 from authlib.client.errors import OAuthException
-from authlib.common.compat import AuthlibDeprecationWarning
+from authlib.common.compat import deprecate
 
 __all__ = ['token_update', 'OAuth', 'RemoteApp']
 
@@ -71,9 +71,7 @@ class RemoteApp(OAuthClient):
                     kwargs[k] = config.get(k, None)
 
             if not kwargs['client_id']:
-                warnings.warn(AuthlibDeprecationWarning(
-                    '"client_key" has been renamed to "client_id".'
-                ), stacklevel=2)
+                deprecate('"client_key" has been renamed to "client_id".')
                 kwargs['client_id'] = config.get('client_key', None)
 
         super(RemoteApp, self).__init__(*args, **kwargs)

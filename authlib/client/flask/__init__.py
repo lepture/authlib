@@ -1,8 +1,6 @@
 # flake8: noqa
 import warnings
-from authlib.common.compat import AuthlibDeprecationWarning
+from authlib.common.compat import deprecate
 from authlib.flask.client import OAuth, RemoteApp
 
-warnings.warn(AuthlibDeprecationWarning(
-    'Please use "from authlib.flask.client import OAuth, RemoteApp"'
-), stacklevel=2)
+deprecate('Use "from authlib.flask.client import OAuth, RemoteApp"')

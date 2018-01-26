@@ -6,3 +6,7 @@ class AuthlibDeprecationWarning(DeprecationWarning):
 
 
 warnings.simplefilter('always', AuthlibDeprecationWarning)
+
+
+def deprecate(message, stacklevel=2):
+    warnings.warn(AuthlibDeprecationWarning(message), stacklevel=stacklevel)

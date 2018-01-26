@@ -5,6 +5,7 @@ import json
 from requests import Session
 from requests.auth import AuthBase
 from requests.utils import to_native_string
+from authlib.common.compat import deprecate
 from .errors import OAuthException
 from ..common.encoding import to_unicode
 from ..common.urls import (
@@ -32,9 +33,9 @@ class OAuth1Session(Session):
     :param client_id: Consumer key, which you get from registration.
     :param client_secret: Consumer Secret, which you get from registration.
     :param token: A token string, also referred to as request token or access
-        token depending on when in the workflow it is used.
+                  token depending on when in the workflow it is used.
     :param token_secret: A token secret obtained with either a request or
-        access token. Often referred to as token secret.
+                         access token. Often referred to as token secret.
     :param callback_uri: The URL the user is redirect back to after
                          authorization.
     :param rsa_key: The private RSA key as a string. Can only be used with
@@ -68,6 +69,16 @@ class OAuth1Session(Session):
                  signature_type=SIGNATURE_TYPE_HEADER,
                  force_include_body=False, **kwargs):
         super(OAuth1Session, self).__init__()
+
+        if 'resource_owner_key' in kwargs:
+            deprecate('Use "token" instead of "resource_owner_key"')
+            if token is None:
+                token = kwargs.pop('resource_owner_key', None)
+
+        if 'resource_owner_secret' in kwargs:
+            deprecate('Use "token_secret" instead of "resource_owner_secret"')
+            if token_secret is None:
+                token_secret = kwargs.pop('resource_owner_secret', None)
 
         self._client = OAuth1(
             client_id, client_secret=client_secret,

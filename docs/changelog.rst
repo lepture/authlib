@@ -40,6 +40,16 @@ This is a feature releasing for OAuth 1 server, with several bug fixes.
     the meantime, the implementation of ``AuthorizationCodeGrant`` and
     ``ImplicitGrant`` should be changed too. Read the documentation on :ref:`flask_oauth2_server`.
 
+.. admonition:: Deprecated Changes
+
+    There are parameters naming changes in the client part:
+
+    * ``client_key`` has been changed to ``client_id``
+    * ``resource_owner_key`` has been changed to ``token``
+    * ``resource_owner_secret`` has been changed to ``token_secret``
+
+    Currently, they are backward compatible. You will be notified by warnings.
+
 Version 0.3: Nagato
 -------------------
 
