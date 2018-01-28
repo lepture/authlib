@@ -115,7 +115,7 @@ class OAuth(object):
         When a remote app is registered, it can be accessed with
         *named* attribute::
 
-            oauth.register('twitter', client_key='', ...)
+            oauth.register('twitter', client_id='', ...)
             oauth.twitter.get('timeline')
         """
         self._registry[name] = kwargs
