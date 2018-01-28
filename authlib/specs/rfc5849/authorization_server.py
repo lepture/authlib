@@ -64,9 +64,9 @@ class AuthorizationServer(object):
             # The timestamp value MUST be a positive integer
             delta = time.time() - int(timestamp)
             if delta > self.EXPIRY_TIME:
-                raise InvalidRequestError()
+                raise InvalidRequestError('Invalid "oauth_timestamp" value')
         except (ValueError, TypeError):
-            raise InvalidRequestError()
+            raise InvalidRequestError('Invalid "oauth_timestamp" value')
 
         if not nonce:
             raise MissingRequiredParameterError('oauth_nonce')
