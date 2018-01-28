@@ -74,6 +74,7 @@ def register_authorization_hooks(
         item.set_grant_user(temporary_credentials.get_grant_user())
         session.add(item)
         session.commit()
+        return item
 
     authorization_server.register_hook(
         'create_authorization_credential', create_authorization_credential

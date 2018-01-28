@@ -1,5 +1,3 @@
-import time
-from authlib.specs.rfc5849 import signature
 from .oauth1_server import db, User, Client
 from .oauth1_server import (
     TestCase,

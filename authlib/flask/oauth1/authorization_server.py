@@ -145,7 +145,7 @@ class AuthorizationServer(_AuthorizationServer):
             func = self._delete_cache_temporary_credential
 
         if callable(func):
-            func(request.token)
+            return func(request.token)
 
         raise RuntimeError(
             '"delete_temporary_credential" hook is required.'
