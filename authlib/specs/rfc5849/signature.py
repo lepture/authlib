@@ -29,7 +29,7 @@ SIGNATURE_TYPE_QUERY = 'QUERY'
 SIGNATURE_TYPE_BODY = 'BODY'
 
 
-def create_signature_base_string(request):
+def construct_base_string(method, uri, params, host=None):
     """Generate signature base string from request, per `Section 3.4.1`_.
 
     For example, the HTTP request::
@@ -60,13 +60,11 @@ def create_signature_base_string(request):
     """
 
     # Create base string URI per Section 3.4.1.2
-    base_string_uri = normalize_base_string_uri(
-        request.uri, request.headers.get('Host', None)
-    )
+    base_string_uri = normalize_base_string_uri(uri, host)
 
     # Cleanup parameter sources per Section 3.4.1.3.1
     unescaped_params = []
-    for k, v in request.params:
+    for k, v in params:
         # The "oauth_signature" parameter MUST be excluded from the signature
         if k in ('oauth_signature', 'realm'):
             continue
@@ -81,7 +79,7 @@ def create_signature_base_string(request):
 
     # construct base string
     return '&'.join([
-        escape(request.method.upper()),
+        escape(method.upper()),
         escape(base_string_uri),
         escape(normalized_params),
     ])
@@ -296,6 +294,13 @@ def hmac_sha1_signature(base_string, client_secret, token_secret):
     return to_unicode(sig)
 
 
+def generate_signature_base_string(request):
+    """Generate signature base string from request."""
+    host = request.headers.get('Host', None)
+    return construct_base_string(
+        request.method, request.uri, request.params, host)
+
+
 def rsa_sha1_signature(base_string, rsa_private_key):
     """Generate signature via RSA-SHA1 method, per `Section 3.4.3`_.
 
@@ -350,14 +355,14 @@ def plaintext_signature(client_secret, token_secret):
 
 def sign_hmac_sha1(client, request):
     """Sign a HMAC-SHA1 signature."""
-    base_string = create_signature_base_string(request)
+    base_string = generate_signature_base_string(request)
     return hmac_sha1_signature(
         base_string, client.client_secret, client.token_secret)
 
 
 def sign_rsa_sha1(client, request):
     """Sign a RSASSA-PKCS #1 v1.5 base64 encoded signature."""
-    base_string = create_signature_base_string(request)
+    base_string = generate_signature_base_string(request)
     return rsa_sha1_signature(base_string, client.rsa_key)
 
 
@@ -368,7 +373,7 @@ def sign_plaintext(client, request):
 
 def verify_hmac_sha1(request):
     """Verify a HMAC-SHA1 signature."""
-    base_string = create_signature_base_string(request)
+    base_string = generate_signature_base_string(request)
     sig = hmac_sha1_signature(
         base_string, request.client_secret, request.token_secret)
     return safe_string_equals(sig, request.signature)
@@ -377,7 +382,7 @@ def verify_hmac_sha1(request):
 def verify_rsa_sha1(request):
     """Verify a RSASSA-PKCS #1 v1.5 base64 encoded signature."""
     from .rsa import verify_sha1
-    base_string = create_signature_base_string(request)
+    base_string = generate_signature_base_string(request)
     sig = binascii.a2b_base64(to_bytes(request.signature))
     return verify_sha1(sig, to_bytes(base_string), request.rsa_public_key)
 

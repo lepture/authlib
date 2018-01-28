@@ -185,7 +185,7 @@ class AuthorizationServer(_AuthorizationServer):
     def create_temporary_credential_response(self):
         status, body, headers = self.create_valid_temporary_credentials_response(
             _req.method,
-            _req.full_path,
+            _req.url,
             _req.form.to_dict(flat=True),
             _req.headers
         )
@@ -194,7 +194,7 @@ class AuthorizationServer(_AuthorizationServer):
     def create_authorization_response(self, grant_user):
         status, body, headers = self.create_valid_authorization_response(
             _req.method,
-            _req.full_path,
+            _req.url,
             _req.form.to_dict(flat=True),
             _req.headers,
             grant_user
@@ -204,7 +204,7 @@ class AuthorizationServer(_AuthorizationServer):
     def create_token_response(self):
         status, body, headers = self.create_valid_token_response(
             _req.method,
-            _req.full_path,
+            _req.url,
             _req.form.to_dict(flat=True),
             _req.headers,
         )
