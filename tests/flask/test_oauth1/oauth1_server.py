@@ -11,7 +11,7 @@ from authlib.flask.oauth1.sqla import (
     register_authorization_hooks,
 )
 from authlib.specs.rfc5849 import OAuth1Error
-from authlib.common.urls import url_decode
+from authlib.common.urls import url_decode, url_encode
 from authlib.common.encoding import to_unicode
 from tests.util import get_rsa_public_key
 os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
@@ -65,7 +65,7 @@ def create_authorization_server(app, use_cache=False):
     def authorize():
         if request.method == 'GET':
             try:
-                server.validate_authorization_request()
+                server.check_authorization_request()
                 return 'ok'
             except OAuth1Error:
                 return 'error'
@@ -76,7 +76,10 @@ def create_authorization_server(app, use_cache=False):
                 grant_user = user.id
             else:
                 grant_user = None
-        return server.create_authorization_response(grant_user)
+        try:
+            return server.create_authorization_response(grant_user)
+        except OAuth1Error as error:
+            return url_encode(error.get_body())
 
     @app.route('/oauth/token', methods=['GET', 'POST'])
     def issue_token():

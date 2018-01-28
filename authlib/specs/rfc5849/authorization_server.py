@@ -216,8 +216,10 @@ class AuthorizationServer(object):
 
         temporary_credentials = request.credential
         redirect_uri = temporary_credentials.get_redirect_uri()
-        if not redirect_uri:
-            redirect_uri = request.client.get_default_redirect_uri()
+        if not redirect_uri or redirect_uri == 'oob':
+            client_id = temporary_credentials.get_client_id()
+            client = self.client_model.get_by_client_id(client_id)
+            redirect_uri = client.get_default_redirect_uri()
 
         if grant_user is None:
             error = AccessDeniedError()

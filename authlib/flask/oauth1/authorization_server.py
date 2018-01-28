@@ -3,7 +3,7 @@ from werkzeug.utils import import_string
 from flask import Response, request as _req
 from authlib.specs.rfc5849 import (
     AuthorizationServer as _AuthorizationServer,
-    TemporaryCredentialMixin,
+    TemporaryCredentialMixin, OAuth1Request,
 )
 from authlib.common.security import generate_token
 from authlib.common.urls import url_encode
@@ -165,7 +165,8 @@ class AuthorizationServer(_AuthorizationServer):
 
         if callable(func):
             verifier = generate_token(36)
-            return func(request.credential, request.grant_user, verifier)
+            func(request.credential, request.grant_user, verifier)
+            return verifier
 
         raise RuntimeError(
             '"create_authorization_verifier" hook is required.'
@@ -190,6 +191,15 @@ class AuthorizationServer(_AuthorizationServer):
             _req.headers
         )
         return Response(url_encode(body), status=status, headers=headers)
+
+    def check_authorization_request(self):
+        req = OAuth1Request(
+            _req.method,
+            _req.url,
+            _req.form.to_dict(flat=True),
+            _req.headers
+        )
+        return self.validate_authorization_request(req)
 
     def create_authorization_response(self, grant_user):
         status, body, headers = self.create_valid_authorization_response(
