@@ -48,7 +48,7 @@ class OAuth1Error(Exception):
     def get_headers(self):
         """Get a list of headers."""
         return [
-            ('Content-Type', 'application/json'),
+            ('Content-Type', 'application/x-www-form-urlencoded'),
             ('Cache-Control', 'no-store'),
             ('Pragma', 'no-cache')
         ]

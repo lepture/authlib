@@ -1,37 +1,18 @@
-import time
 from authlib.common.urls import is_valid_url, add_params_to_uri
-from .signature import (
-    SIGNATURE_HMAC_SHA1,
-    SIGNATURE_PLAINTEXT,
-    SIGNATURE_RSA_SHA1,
-)
-from .signature import (
-    verify_hmac_sha1,
-    verify_plaintext,
-    verify_rsa_sha1,
-)
+from .base_server import BaseServer
 from .errors import (
     OAuth1Error,
     InvalidRequestError,
     MissingRequiredParameterError,
-    UnsupportedSignatureMethodError,
     InvalidClientError,
-    InvalidNonceError,
     InvalidTokenError,
-    InvalidSignatureError,
     AccessDeniedError,
     MethodNotAllowedError,
 )
 from .wrapper import OAuth1Request
 
 
-class AuthorizationServer(object):
-    SIGNATURE_METHODS = {
-        SIGNATURE_HMAC_SHA1: verify_hmac_sha1,
-        SIGNATURE_RSA_SHA1: verify_rsa_sha1,
-        SIGNATURE_PLAINTEXT: verify_plaintext,
-    }
-
+class AuthorizationServer(BaseServer):
     TOKEN_RESPONSE_HEADER = [
         ('Content-Type', 'application/x-www-form-urlencoded'),
         ('Cache-Control', 'no-store'),
@@ -39,54 +20,11 @@ class AuthorizationServer(object):
     ]
 
     TEMPORARY_CREDENTIALS_METHOD = 'POST'
-    EXPIRY_TIME = 300
-
-    def __init__(self, client_model):
-        self.client_model = client_model
 
     def _get_client(self, request):
         client = self.client_model.get_by_client_id(request.client_id)
         request.client = client
         return client
-
-    def validate_timestamp_and_nonce(self, request):
-        # The parameters MAY be omitted when using the "PLAINTEXT"
-        # signature method
-        if request.signature_method == SIGNATURE_PLAINTEXT:
-            return False
-
-        timestamp = request.oauth_params.get('oauth_timestamp')
-        nonce = request.oauth_params.get('oauth_nonce')
-
-        if not timestamp:
-            raise MissingRequiredParameterError('oauth_timestamp')
-        try:
-            # The timestamp value MUST be a positive integer
-            delta = time.time() - int(timestamp)
-            if delta > self.EXPIRY_TIME:
-                raise InvalidRequestError('Invalid "oauth_timestamp" value')
-        except (ValueError, TypeError):
-            raise InvalidRequestError('Invalid "oauth_timestamp" value')
-
-        if not nonce:
-            raise MissingRequiredParameterError('oauth_nonce')
-
-        if self.exists_nonce(nonce, request):
-            raise InvalidNonceError()
-
-    def validate_oauth_signature(self, request):
-        if not request.signature_method:
-            raise MissingRequiredParameterError('oauth_signature_method')
-
-        if not request.signature:
-            raise MissingRequiredParameterError('oauth_signature')
-
-        verify = self.SIGNATURE_METHODS.get(request.signature_method)
-        if not verify:
-            raise UnsupportedSignatureMethodError()
-
-        if not verify(request):
-            raise InvalidSignatureError()
 
     def validate_temporary_credentials_request(self, request):
         """Validate HTTP request for temporary credentials."""
@@ -322,12 +260,6 @@ class AuthorizationServer(object):
         ]
         self.delete_temporary_credential(request)
         return 200, payload, self.TOKEN_RESPONSE_HEADER
-
-    def exists_nonce(self, nonce, request):
-        """The nonce value MUST be unique across all requests with the same
-        timestamp, client credentials, and token combinations.
-        """
-        raise NotImplementedError()
 
     def create_temporary_credential(self, request):
         raise NotImplementedError()

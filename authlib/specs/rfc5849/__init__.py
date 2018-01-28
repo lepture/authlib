@@ -10,6 +10,8 @@
 
 # flake8: noqa
 
+from .errors import *
+from .wrapper import OAuth1Request
 from .signature import (
     SIGNATURE_HMAC_SHA1,
     SIGNATURE_RSA_SHA1,
@@ -26,5 +28,4 @@ from .models import (
     AuthorizationCredentialMixin
 )
 from .authorization_server import AuthorizationServer
-from .wrapper import OAuth1Request
-from .errors import *
+from .resource_protector import ResourceProtector

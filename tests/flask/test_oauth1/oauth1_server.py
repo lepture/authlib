@@ -1,9 +1,9 @@
 import os
 import unittest
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from authlib.flask.oauth1 import (
-    AuthorizationServer,
+    AuthorizationServer, ResourceProtector, current_token
 )
 from authlib.flask.oauth1.sqla import (
     OAuth1ClientMixin,
@@ -86,6 +86,25 @@ def create_authorization_server(app, use_cache=False):
         return server.create_token_response()
 
     return server
+
+
+def create_resource_server(app, use_cache=False):
+    if use_cache:
+        app.config.update({'OAUTH1_RESOURCE_CACHE_TYPE': 'simple'})
+
+    def get_token(client_id, token_string):
+        return Token.query.filter_by(
+            client_id=client_id,
+            oauth_token=token_string
+        ).first()
+
+    require_oauth = ResourceProtector(Client, get_token, app=app)
+
+    @app.route('/user')
+    @require_oauth()
+    def user_profile():
+        user = current_token.user
+        return jsonify(id=user.id, username=user.username)
 
 
 def create_flask_app():
