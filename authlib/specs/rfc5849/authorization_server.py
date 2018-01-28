@@ -75,6 +75,12 @@ class AuthorizationServer(object):
             raise InvalidNonceError()
 
     def validate_oauth_signature(self, request):
+        if not request.signature_method:
+            raise MissingRequiredParameterError('oauth_signature_method')
+
+        if not request.signature:
+            raise MissingRequiredParameterError('oauth_signature')
+
         verify = self.SIGNATURE_METHODS.get(request.signature_method)
         if not verify:
             raise UnsupportedSignatureMethodError()
@@ -93,6 +99,10 @@ class AuthorizationServer(object):
             raise MethodNotAllowedError()
 
         # REQUIRED parameter
+        if not request.client_id:
+            raise MissingRequiredParameterError('oauth_consumer_key')
+
+        # REQUIRED parameter
         oauth_callback = request.redirect_uri
         if not request.redirect_uri:
             raise MissingRequiredParameterError('oauth_callback')
@@ -100,10 +110,7 @@ class AuthorizationServer(object):
         # An absolute URI or
         # other means (the parameter value MUST be set to "oob"
         if oauth_callback != 'oob' and not is_valid_url(oauth_callback):
-            raise InvalidRequestError()
-
-        if not request.client_id:
-            raise MissingRequiredParameterError('oauth_consumer_key')
+            raise InvalidRequestError('Invalid "oauth_callback" value')
 
         client = self._get_client(request)
         if not client:
@@ -148,8 +155,8 @@ class AuthorizationServer(object):
         :param headers: HTTP request headers.
         :returns: (status_code, body, headers)
         """
-        request = OAuth1Request(method, uri, body, headers)
         try:
+            request = OAuth1Request(method, uri, body, headers)
             self.validate_temporary_credentials_request(request)
         except OAuth1Error as error:
             return error.status_code, error.get_body(), error.get_headers()
@@ -294,8 +301,11 @@ class AuthorizationServer(object):
         :param headers: HTTP request headers.
         :returns: (status_code, body, headers)
         """
-
-        request = OAuth1Request(method, uri, body, headers)
+        try:
+            request = OAuth1Request(method, uri, body, headers)
+        except OAuth1Error as error:
+            # DuplicatedOAuthProtocolParameterError
+            return error.status_code, error.get_body(), error.get_headers()
 
         try:
             self.validate_token_request(request)

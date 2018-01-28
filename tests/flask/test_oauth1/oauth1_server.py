@@ -50,7 +50,7 @@ def create_authorization_server(app, use_cache=False):
     if use_cache:
         app.config.update({'OAUTH1_AUTH_CACHE_TYPE': 'simple'})
 
-    server = AuthorizationServer(Client, app)
+    server = AuthorizationServer(Client, app=app)
     register_authorization_hooks(server, db.session, Token)
 
     @app.route('/oauth/initiate', methods=['POST'])
