@@ -1,5 +1,6 @@
 import time
 from authlib.specs.rfc5849 import signature
+from tests.util import get_rsa_private_key
 from .oauth1_server import db, User, Client
 from .oauth1_server import (
     TestCase,
@@ -139,6 +140,29 @@ class TemporaryCredentialsTest(TestCase):
             'POST', 'http://localhost/oauth/initiate', params
         )
         sig = signature.hmac_sha1_signature(base_string, 'secret', None)
+        params.append(('oauth_signature', sig))
+        auth_param = ','.join(['{}="{}"'.format(k, v) for k, v in params])
+        auth_header = 'OAuth ' + auth_param
+        headers = {'Authorization': auth_header}
+        rv = self.client.post(url, headers=headers)
+        data = decode_response(rv.data)
+        self.assertIn('oauth_token', data)
+
+    def test_rsa_sha1_signature(self):
+        self.prepare_data(True)
+        url = '/oauth/initiate'
+
+        params = [
+            ('oauth_consumer_key', 'client'),
+            ('oauth_callback', 'oob'),
+            ('oauth_signature_method', 'RSA-SHA1'),
+            ('oauth_timestamp', str(int(time.time()))),
+            ('oauth_nonce', 'a'),
+        ]
+        base_string = signature.construct_base_string(
+            'POST', 'http://localhost/oauth/initiate', params
+        )
+        sig = signature.rsa_sha1_signature(base_string, get_rsa_private_key())
         params.append(('oauth_signature', sig))
         auth_param = ','.join(['{}="{}"'.format(k, v) for k, v in params])
         auth_header = 'OAuth ' + auth_param

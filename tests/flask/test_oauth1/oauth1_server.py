@@ -13,6 +13,7 @@ from authlib.flask.oauth1.sqla import (
 from authlib.specs.rfc5849 import OAuth1Error
 from authlib.common.urls import url_decode
 from authlib.common.encoding import to_unicode
+from tests.util import get_rsa_public_key
 os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
 
 
@@ -33,6 +34,9 @@ class Client(db.Model, OAuth1ClientMixin):
         db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')
     )
     user = db.relationship('User')
+
+    def get_rsa_public_key(self):
+        return get_rsa_public_key()
 
 
 class Token(db.Model, OAuth1AuthorizationCredentialMixin):
