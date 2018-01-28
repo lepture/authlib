@@ -47,8 +47,12 @@ class OAuth1Request(object):
                 'but were found in {}'.format(','.join(found_types))
             )
 
-        self.signature_type = oauth_params_set[0][0]
-        self.oauth_params = dict(oauth_params_set[0][1])
+        if oauth_params_set:
+            self.signature_type = oauth_params_set[0][0]
+            self.oauth_params = dict(oauth_params_set[0][1])
+        else:
+            self.signature_type = None
+            self.oauth_params = {}
 
         params = []
         params.extend(self.query_params)

@@ -60,7 +60,7 @@ class OAuth1AuthorizationCredentialMixin(AuthorizationCredentialMixin):
         return self.oauth_token_secret
 
 
-def register_hooks(
+def register_authorization_hooks(
         authorization_server, session,
         authorization_credential_model,
         temporary_credential_model=None):
