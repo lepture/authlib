@@ -11,7 +11,18 @@ Version 0.4
 
 **Release Date not Decided**
 
-This is a feature releasing for OAuth 1 server, with several bug fixes.
+This is a feature releasing for OAuth 1 server. Things are not settled yet,
+there will still be breaking changes in the future. Some of the breaking
+changes are compatible with deprecated messages, a few are not. I'll keep the
+deprecated message for 2 versions. Here is the main features:
+
+- :ref:`RFC5847 <specs/rfc5849>`, OAuth 1 client and server
+- :ref:`Flask implementation <flask_oauth1_server>` of OAuth 1 authorization
+  server and resource protector.
+- Mixin of SQLAlchemy models for easy integration with OAuth 1.
+
+In version 0.4, there is also several bug fixes. Thanks for the early
+contributors.
 
 - Allow Flask OAuth register ``fetch_token`` and ``update_token``.
 - Bug fix for OAuthClient when ``refresh_token_params`` is None via `PR#14`_.
@@ -63,9 +74,9 @@ security vulnerabilities, and uncertainties. Try it bravely.
 - :ref:`RFC6750 <specs/rfc6750>`, bearer token creation and validation.
 - :ref:`RFC7009 <specs/rfc7009>`, token revocation.
 - :ref:`Flask implementation <flask_oauth2_server>` of authorization server and resource protector.
-- Mixin of SQLAlchemy models for easy integration.
+- Mixin of SQLAlchemy models for easy integration with OAuth 2.
 
-.. admonition:: Breaking Changes
+.. admonition:: Deprecated Changes
 
     The directory structure has been changed. Import Flask and Django client with
     the new modules::

@@ -448,7 +448,7 @@ If the resource is not protected by a scope, use ``None``::
         return jsonify(user)
 
 The ``current_token`` is a proxy to the Token model you have defined above.
-Since there is a `user` relationship on the Token model, we can access this
+Since there is a ``user`` relationship on the Token model, we can access this
 ``user`` with ``current_token.user``.
 
 MethodView & Flask-Restful

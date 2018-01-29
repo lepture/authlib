@@ -15,19 +15,25 @@ APIs to high level APIs, to meet the needs of everyone.
 Features
 --------
 
-Lovely features that Authlib has built-in:
+Generic specification implementations that Authlib has built-in:
 
-- Generic specification implementations
-- OAuth 1 (RFC5849)
-- OAuth 2 (RFC6749, RFC6750, RFC7009)
-- OpenID Connect
-- OAuth 1, OAuth 2 Requests Sessions
-- Mixed OAuth 1 and OAuth 2 Client
-- Integrated client with Flask
-- Integrated client with Django
-- **TODO** Flask OAuth 1 Server
-- Flask OAuth 2 Authorization server and resource protector
-- **TODO** Django OAuth 1 / OAuth 2 Servers
+- RFC5849: The OAuth 1.0 Protocol
+- RFC6749: The OAuth 2.0 Authorization Framework
+- RFC6750: The OAuth 2.0 Authorization Framework: Bearer Token Usage
+- RFC7009: OAuth 2.0 Token Revocation
+- **TODO** RFC7662: OAuth 2.0 Token Introspection
+- OpenID Connect 1.0 (Client is supported)
+
+Framework integrations with current specification implementations:
+
+- Requests OAuth 1 Session
+- Requests OAuth 2 Session
+- Flask OAuth 1/2 Client
+- Django OAuth 1/2 Client
+- Flask OAuth 1 Server
+- Flask OAuth 2 Server
+- **TODO** Django OAuth 1 Server
+- **TODO** Django OAuth 2 Server
 
 Authlib is compatible with Python2.7+ and Python3.5+.
 
@@ -56,6 +62,7 @@ This part of the documentation contains information on the server parts.
 .. toctree::
    :maxdepth: 2
 
+   flask/oauth1
    flask/oauth2
 
 .. note:: Django support will be added later.
@@ -118,7 +125,5 @@ Stay tuned with Authlib, here is a history of Authlib changes.
 
    changelog
 
-
-.. admonition:: Subscribe the Newsletter
-
-   Here is a NEWSLETTER for you: https://tinyletter.com/authlib
+- Subscribe the Newsletter: https://tinyletter.com/authlib
+- Follow Authlib on Twitter: https://twitter.com/authlib

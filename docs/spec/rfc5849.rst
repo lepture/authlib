@@ -7,4 +7,19 @@ This section contains the generic implementation of RFC5849_.
 
 .. _RFC5849: https://tools.ietf.org/html/rfc5849
 
-.. note:: This documentation will be finished in the future.
+.. module:: authlib.specs.rfc5849
+
+
+Models Mixin
+------------
+
+.. autoclass:: ClientMixin
+   :members:
+
+
+.. autoclass:: TemporaryCredentialMixin
+   :members:
+
+
+.. autoclass:: TokenCredentialMixin
+   :members:
