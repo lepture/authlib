@@ -15,9 +15,9 @@ _JSON_HEADERS = [
 
 class ResourceProtector(_ResourceProtector):
     def __init__(
-            self, client_model, token_query, exists_nonce=None, app=None):
+            self, client_model, query_token, exists_nonce=None, app=None):
         super(ResourceProtector, self).__init__(client_model)
-        self._token_query = token_query
+        self._query_token = query_token
         self._exists_nonce = exists_nonce
         self.cache = None
         self.app = None
@@ -27,10 +27,15 @@ class ResourceProtector(_ResourceProtector):
     def init_app(self, app):
         if app.config.get('OAUTH1_RESOURCE_CACHE_TYPE'):
             self.cache = Cache(app, config_prefix='OAUTH1_RESOURCE')
+
+        methods = app.config.get('OAUTH1_SUPPORTED_SIGNATURE_METHODS')
+        if methods and isinstance(methods, (list, tuple)):
+            self.SUPPORTED_SIGNATURE_METHODS = methods
+
         self.app = app
 
     def get_token_credential(self, request):
-        return self._token_query(request.client_id, request.token)
+        return self._query_token(request.client_id, request.token)
 
     def _exists_cache_nonce(self, nonce, timestamp, client_id, token):
         key = 'nonce:{}-{}-{}'.format(nonce, timestamp, client_id)

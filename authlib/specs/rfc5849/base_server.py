@@ -24,8 +24,25 @@ class BaseServer(object):
         SIGNATURE_RSA_SHA1: verify_rsa_sha1,
         SIGNATURE_PLAINTEXT: verify_plaintext,
     }
-
+    SUPPORTED_SIGNATURE_METHODS = [SIGNATURE_HMAC_SHA1]
     EXPIRY_TIME = 300
+
+    @classmethod
+    def register_signature_method(cls, name, verify):
+        """Extend signature method verification.
+
+        :param name: A string to represent signature method.
+        :param verify: A function to verify signature.
+
+        The ``verify`` method accept ``OAuth1Request`` as parameter::
+
+            def verify_custom_method(request):
+                # verify this request, return True or False
+                return True
+
+            Server.register_signature_method('custom-name', verify_custom_method)
+        """
+        cls.SIGNATURE_METHODS[name] = verify
 
     def __init__(self, client_model):
         self.client_model = client_model
@@ -64,13 +81,17 @@ class BaseServer(object):
 
         :param request: OAuth1Request instance
         """
-        if not request.signature_method:
+        method = request.signature_method
+        if not method:
             raise MissingRequiredParameterError('oauth_signature_method')
+
+        if method not in self.SUPPORTED_SIGNATURE_METHODS:
+            raise UnsupportedSignatureMethodError()
 
         if not request.signature:
             raise MissingRequiredParameterError('oauth_signature')
 
-        verify = self.SIGNATURE_METHODS.get(request.signature_method)
+        verify = self.SIGNATURE_METHODS.get(method)
         if not verify:
             raise UnsupportedSignatureMethodError()
 

@@ -26,9 +26,21 @@ class ClientMixin(object):
         raise NotImplementedError()
 
     def get_client_secret(self):
+        """A method to return the client_secret of this client. For instance,
+        the database table has a column called ``client_secret``::
+
+            def get_client_secret(self):
+                return self.client_secret
+        """
         raise NotImplementedError()
 
     def get_rsa_public_key(self):
+        """A method to get the RSA public key for RSA-SHA1 signature method.
+        For instance, the value is saved on column ``rsa_public_key``::
+
+            def get_rsa_public_key(self):
+                return self.rsa_public_key
+        """
         raise NotImplementedError()
 
 
@@ -58,6 +70,12 @@ class CredentialMixin(object):
 
 class TemporaryCredentialMixin(CredentialMixin):
     def get_client_id(self):
+        """A method to get the client_id associated with this credential.
+        For instance, the table in the database has a column ``client_id``::
+
+            def get_client_id(self):
+                return self.client_id
+        """
         raise NotImplementedError()
 
     def get_redirect_uri(self):
@@ -99,4 +117,10 @@ class TemporaryCredentialMixin(CredentialMixin):
 
 class TokenCredentialMixin(CredentialMixin):
     def set_grant_user(self, grant_user):
+        """A method to save ``grant_user`` information into token credential.
+        A ``grant_user`` is usually a string/int of the user's ID::
+
+            def set_grant_user(self, grant_user):
+                self.user_id = grant_user
+        """
         raise NotImplementedError()

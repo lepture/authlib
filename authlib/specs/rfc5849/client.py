@@ -43,7 +43,7 @@ class Client(object):
         :param name: A string to represent signature method.
         :param sign: A function to generate signature.
 
-        The ``sign`` method accept 5 parameters::
+        The ``sign`` method accept 2 parameters::
 
             def custom_sign_method(client, request):
                 # client is the instance of Client.

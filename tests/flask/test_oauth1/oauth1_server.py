@@ -113,6 +113,7 @@ def create_flask_app():
     app.testing = True
     app.secret_key = 'testing'
     app.config.update({
+        'OAUTH1_SUPPORTED_SIGNATURE_METHODS': ['PLAINTEXT', 'HMAC-SHA1', 'RSA-SHA1'],
         'SQLALCHEMY_TRACK_MODIFICATIONS': False,
         'SQLALCHEMY_DATABASE_URI': 'sqlite://'
     })

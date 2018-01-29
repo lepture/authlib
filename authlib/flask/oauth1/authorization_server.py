@@ -44,6 +44,11 @@ class AuthorizationServer(_AuthorizationServer):
             self.token_generator = self.create_token_generator(app)
         if app.config.get('OAUTH1_AUTH_CACHE_TYPE'):
             self.cache = Cache(app, config_prefix='OAUTH1_AUTH')
+
+        methods = app.config.get('OAUTH1_SUPPORTED_SIGNATURE_METHODS')
+        if methods and isinstance(methods, (list, tuple)):
+            self.SUPPORTED_SIGNATURE_METHODS = methods
+
         self.app = app
 
     def register_hook(self, name, func):

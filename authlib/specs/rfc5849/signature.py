@@ -248,6 +248,13 @@ def normalize_parameters(params):
     return '&'.join(parameter_parts)
 
 
+def generate_signature_base_string(request):
+    """Generate signature base string from request."""
+    host = request.headers.get('Host', None)
+    return construct_base_string(
+        request.method, request.uri, request.params, host)
+
+
 def hmac_sha1_signature(base_string, client_secret, token_secret):
     """Generate signature via HMAC-SHA1 method, per `Section 3.4.2`_.
 
@@ -292,13 +299,6 @@ def hmac_sha1_signature(base_string, client_secret, token_secret):
     # .. _`RFC2045, Section 6.8`: http://tools.ietf.org/html/rfc2045#section-6.8
     sig = binascii.b2a_base64(signature.digest())[:-1]
     return to_unicode(sig)
-
-
-def generate_signature_base_string(request):
-    """Generate signature base string from request."""
-    host = request.headers.get('Host', None)
-    return construct_base_string(
-        request.method, request.uri, request.params, host)
 
 
 def rsa_sha1_signature(base_string, rsa_private_key):
