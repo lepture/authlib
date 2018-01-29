@@ -160,3 +160,8 @@ def extract_basic_authorization(token):
     if ':' in query:
         return query.split(':', 1)
     return query, None
+
+
+def is_valid_url(url):
+    parsed = urlparse.urlparse(url)
+    return parsed.scheme and parsed.hostname

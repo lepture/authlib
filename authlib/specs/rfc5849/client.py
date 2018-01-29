@@ -4,6 +4,7 @@ import hashlib
 from authlib.common.encoding import to_unicode, to_bytes
 from authlib.common.security import generate_token
 from authlib.common.urls import extract_params
+from .wrapper import OAuth1Request
 from .signature import (
     SIGNATURE_HMAC_SHA1,
     SIGNATURE_PLAINTEXT,
@@ -12,10 +13,9 @@ from .signature import (
     SIGNATURE_TYPE_BODY,
     SIGNATURE_TYPE_QUERY,
 )
-from .signature import base_string_from_request
 from .signature import (
-    sign_rsa_sha1,
     sign_hmac_sha1,
+    sign_rsa_sha1,
     sign_plaintext
 )
 from .parameters import (
@@ -29,27 +29,11 @@ CONTENT_TYPE_FORM_URLENCODED = 'application/x-www-form-urlencoded'
 CONTENT_TYPE_MULTI_PART = 'multipart/form-data'
 
 
-def client_sign_hmac_sha1(client, method, uri, body, headers):
-    base_string = base_string_from_request(method, uri, body, headers)
-    return sign_hmac_sha1(
-        base_string, client.client_secret, client.resource_owner_secret
-    )
-
-
-def client_sign_rsa_sha1(client, method, uri, body, headers):
-    base_string = base_string_from_request(method, uri, body, headers)
-    return sign_rsa_sha1(base_string, client.rsa_key)
-
-
-def client_sign_plaintext(client, *args, **kwargs):
-    return sign_plaintext(client.client_secret, client.resource_owner_secret)
-
-
 class Client(object):
     SIGNATURE_METHODS = {
-        SIGNATURE_HMAC_SHA1: client_sign_hmac_sha1,
-        SIGNATURE_RSA_SHA1: client_sign_rsa_sha1,
-        SIGNATURE_PLAINTEXT: client_sign_plaintext,
+        SIGNATURE_HMAC_SHA1: sign_hmac_sha1,
+        SIGNATURE_RSA_SHA1: sign_rsa_sha1,
+        SIGNATURE_PLAINTEXT: sign_plaintext,
     }
 
     @classmethod
@@ -59,9 +43,9 @@ class Client(object):
         :param name: A string to represent signature method.
         :param sign: A function to generate signature.
 
-        The ``sign`` method accept 5 parameters::
+        The ``sign`` method accept 2 parameters::
 
-            def custom_sign_method(client, method, uri, body, headers):
+            def custom_sign_method(client, request):
                 # client is the instance of Client.
                 return 'your-signed-string'
 
@@ -69,16 +53,16 @@ class Client(object):
         """
         cls.SIGNATURE_METHODS[name] = sign
 
-    def __init__(self, client_key, client_secret=None,
-                 resource_owner_key=None, resource_owner_secret=None,
+    def __init__(self, client_id, client_secret=None,
+                 token=None, token_secret=None,
                  callback_uri=None, rsa_key=None, verifier=None,
                  signature_method=SIGNATURE_HMAC_SHA1,
                  signature_type=SIGNATURE_TYPE_HEADER,
                  realm=None, force_include_body=False):
-        self.client_key = client_key
+        self.client_id = client_id
         self.client_secret = client_secret
-        self.resource_owner_key = resource_owner_key
-        self.resource_owner_secret = resource_owner_secret
+        self.token = token
+        self.token_secret = token_secret
         self.callback_uri = callback_uri
         self.signature_method = signature_method
         self.signature_type = signature_type
@@ -100,7 +84,9 @@ class Client(object):
         sign = self.SIGNATURE_METHODS.get(self.signature_method)
         if not sign:
             raise ValueError('Invalid signature method.')
-        return sign(self, method, uri, body, headers)
+
+        request = OAuth1Request(method, uri, body, headers)
+        return sign(self, request)
 
     def get_oauth_params(self, body, headers, nonce, timestamp):
         oauth_params = [
@@ -108,10 +94,10 @@ class Client(object):
             ('oauth_timestamp', timestamp),
             ('oauth_version', '1.0'),
             ('oauth_signature_method', self.signature_method),
-            ('oauth_consumer_key', self.client_key),
+            ('oauth_consumer_key', self.client_id),
         ]
-        if self.resource_owner_key:
-            oauth_params.append(('oauth_token', self.resource_owner_key))
+        if self.token:
+            oauth_params.append(('oauth_token', self.token))
         if self.callback_uri:
             oauth_params.append(('oauth_callback', self.callback_uri))
         if self.verifier:

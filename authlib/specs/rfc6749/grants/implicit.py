@@ -177,8 +177,8 @@ class ImplicitGrant(BaseGrant):
 
         .. _`Section 4.2.2`: http://tools.ietf.org/html/rfc6749#section-4.2.2
 
-        :param grant_user: pass user model if resource owner granted the
-            request, otherwise pass None.
+        :param grant_user: if resource owner granted the request, pass this
+            resource owner's ID, otherwise pass None.
         :returns: (status_code, body, headers)
         """
         if grant_user:
@@ -213,13 +213,13 @@ class ImplicitGrant(BaseGrant):
             def create_access_token(self, token, client, grant_user):
                 item = Token(
                     client_id=client.client_id,
-                    user_id=grant_user.id,
+                    user_id=grant_user,
                     **token
                 )
                 item.save()
 
         :param token: A dict contains the token information.
         :param client: Current client related to the token.
-        :param grant_user: resource owner.
+        :param grant_user: resource owner (user) ID.
         """
         raise NotImplementedError()

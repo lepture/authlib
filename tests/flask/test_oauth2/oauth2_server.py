@@ -74,14 +74,14 @@ class Token(db.Model, OAuth2TokenMixin):
 
 
 class AuthorizationCodeGrant(_AuthorizationCodeGrant):
-    def create_authorization_code(self, client, user, **kwargs):
+    def create_authorization_code(self, client, grant_user, **kwargs):
         code = generate_token(48)
         item = AuthorizationCode(
             code=code,
             client_id=client.client_id,
             redirect_uri=kwargs.get('redirect_uri', ''),
             scope=kwargs.get('scope', ''),
-            user_id=user.id,
+            user_id=grant_user,
         )
         db.session.add(item)
         db.session.commit()
@@ -113,7 +113,7 @@ class ImplicitGrant(_ImplicitGrant):
     def create_access_token(self, token, client, grant_user):
         item = Token(
             client_id=client.client_id,
-            user_id=grant_user.id,
+            user_id=grant_user,
             **token
         )
         db.session.add(item)
@@ -175,12 +175,14 @@ def create_authorization_server(app):
                 return 'ok'
             except OAuth2Error:
                 return 'error'
-        user_id = request.form.get('user_id')
-        if user_id:
-            user = User.query.get(int(user_id))
-        else:
-            user = None
-        return server.create_authorization_response(user)
+        grant_user = request.form.get('user_id')
+        if grant_user:
+            user = User.query.get(int(grant_user))
+            if user:
+                grant_user = user.id
+            else:
+                grant_user = None
+        return server.create_authorization_response(grant_user)
 
     @app.route('/oauth/token', methods=['GET', 'POST'])
     def issue_token():

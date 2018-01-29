@@ -80,11 +80,12 @@ class AuthorizationServer(object):
                     )
         raise InvalidGrantError()
 
-    def create_valid_authorization_response(self, uri, user):
+    def create_valid_authorization_response(self, uri, grant_user):
         """Validate authorization request and create authorization response.
 
         :param uri: requested URI string
-        :param user: if granted, user is resource owner. If denied, it is None.
+        :param grant_user: if granted, it is resource owner's ID. If denied,
+            it is None.
         :returns: (status_code, body, headers)
         """
         try:
@@ -94,7 +95,7 @@ class AuthorizationServer(object):
             return error.status_code, body, error.get_headers()
         try:
             grant.validate_authorization_request()
-            return grant.create_authorization_response(user)
+            return grant.create_authorization_response(grant_user)
         except OAuth2Error as error:
             params = error.get_body()
             loc = add_params_to_uri(grant.redirect_uri, params)

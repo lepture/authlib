@@ -13,12 +13,11 @@ from __future__ import absolute_import, unicode_literals
 import binascii
 import hashlib
 import hmac
-from authlib.common.urls import urlparse, url_decode, extract_params
+from authlib.common.urls import urlparse
 from authlib.common.encoding import to_unicode, to_bytes
 from .util import (
     escape, unescape,
     safe_string_equals,
-    parse_authorization_header,
 )
 
 SIGNATURE_HMAC_SHA1 = "HMAC-SHA1"
@@ -30,9 +29,8 @@ SIGNATURE_TYPE_QUERY = 'QUERY'
 SIGNATURE_TYPE_BODY = 'BODY'
 
 
-def construct_base_string(method, uri, normalized_parameters):
-    """**String Construction**
-    Per `section 3.4.1.1`_ of the spec.
+def construct_base_string(method, uri, params, host=None):
+    """Generate signature base string from request, per `Section 3.4.1`_.
 
     For example, the HTTP request::
 
@@ -58,19 +56,37 @@ def construct_base_string(method, uri, normalized_parameters):
         ethod%3DHMAC-SHA1%26oauth_timestamp%3D137131201%26oauth_token%3Dkkk
         9d7dh3k39sjv7
 
-    .. _`section 3.4.1.1`: http://tools.ietf.org/html/rfc5849#section-3.4.1.1
+    .. _`Section 3.4.1`: http://tools.ietf.org/html/rfc5849#section-3.4.1
     """
-    params = [
+
+    # Create base string URI per Section 3.4.1.2
+    base_string_uri = normalize_base_string_uri(uri, host)
+
+    # Cleanup parameter sources per Section 3.4.1.3.1
+    unescaped_params = []
+    for k, v in params:
+        # The "oauth_signature" parameter MUST be excluded from the signature
+        if k in ('oauth_signature', 'realm'):
+            continue
+
+        # ensure oauth params are unescaped
+        if k.startswith('oauth_'):
+            v = unescape(v)
+        unescaped_params.append((k, v))
+
+    # Normalize parameters per Section 3.4.1.3.2
+    normalized_params = normalize_parameters(unescaped_params)
+
+    # construct base string
+    return '&'.join([
         escape(method.upper()),
-        escape(uri),
-        escape(normalized_parameters),
-    ]
-    return '&'.join(params)
+        escape(base_string_uri),
+        escape(normalized_params),
+    ])
 
 
 def normalize_base_string_uri(uri, host=None):
-    """**Base String URI**
-    Per `section 3.4.1.2`_ of the spec.
+    """Normalize Base String URI per `Section 3.4.1.2`_.
 
     For example, the HTTP request::
 
@@ -86,7 +102,7 @@ def normalize_base_string_uri(uri, host=None):
 
     is represented by the base string URI: "https://www.example.net:8080/".
 
-    .. _`section 3.4.1.2`: http://tools.ietf.org/html/rfc5849#section-3.4.1.2
+    .. _`Section 3.4.1.2`: http://tools.ietf.org/html/rfc5849#section-3.4.1.2
 
     The host argument overrides the netloc part of the uri argument.
     """
@@ -140,139 +156,8 @@ def normalize_base_string_uri(uri, host=None):
     return urlparse.urlunparse((scheme, netloc, path, params, '', ''))
 
 
-# ** Request Parameters **
-#
-#    Per `section 3.4.1.3`_ of the spec.
-#
-#    In order to guarantee a consistent and reproducible representation of
-#    the request parameters, the parameters are collected and decoded to
-#    their original decoded form.  They are then sorted and encoded in a
-#    particular manner that is often different from their original
-#    encoding scheme, and concatenated into a single string.
-#
-# .. _`section 3.4.1.3`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3
-
-
-def collect_parameters(uri_query='', body=None, headers=None,
-                       exclude_oauth_signature=True, with_realm=False):
-    """**Parameter Sources**
-
-    Parameters starting with `oauth_` will be unescaped.
-
-    Body parameters must be supplied as a dict, a list of 2-tuples, or a
-    formencoded query string.
-
-    Headers must be supplied as a dict.
-
-    Per `section 3.4.1.3.1`_ of the spec.
-
-    For example, the HTTP request::
-
-        POST /request?b5=%3D%253D&a3=a&c%40=&a2=r%20b HTTP/1.1
-        Host: example.com
-        Content-Type: application/x-www-form-urlencoded
-        Authorization: OAuth realm="Example",
-            oauth_consumer_key="9djdj82h48djs9d2",
-            oauth_token="kkk9d7dh3k39sjv7",
-            oauth_signature_method="HMAC-SHA1",
-            oauth_timestamp="137131201",
-            oauth_nonce="7d8f3e4a",
-            oauth_signature="djosJKDKJSD8743243%2Fjdk33klY%3D"
-
-        c2&a3=2+q
-
-    contains the following (fully decoded) parameters used in the
-    signature base sting::
-
-        +------------------------+------------------+
-        |          Name          |       Value      |
-        +------------------------+------------------+
-        |           b5           |       =%3D       |
-        |           a3           |         a        |
-        |           c@           |                  |
-        |           a2           |        r b       |
-        |   oauth_consumer_key   | 9djdj82h48djs9d2 |
-        |       oauth_token      | kkk9d7dh3k39sjv7 |
-        | oauth_signature_method |     HMAC-SHA1    |
-        |     oauth_timestamp    |     137131201    |
-        |       oauth_nonce      |     7d8f3e4a     |
-        |           c2           |                  |
-        |           a3           |        2 q       |
-        +------------------------+------------------+
-
-    Note that the value of "b5" is "=%3D" and not "==".  Both "c@" and
-    "c2" have empty values.  While the encoding rules specified in this
-    specification for the purpose of constructing the signature base
-    string exclude the use of a "+" character (ASCII code 43) to
-    represent an encoded space character (ASCII code 32), this practice
-    is widely used in "application/x-www-form-urlencoded" encoded values,
-    and MUST be properly decoded, as demonstrated by one of the "a3"
-    parameter instances (the "a3" parameter is used twice in this
-    request).
-
-    .. _`section 3.4.1.3.1`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3.1
-    """
-    params = []
-
-    # The parameters from the following sources are collected into a single
-    # list of name/value pairs:
-
-    # *  The query component of the HTTP request URI as defined by
-    #    `RFC3986, Section 3.4`_.  The query component is parsed into a list
-    #    of name/value pairs by treating it as an
-    #    "application/x-www-form-urlencoded" string, separating the names
-    #    and values and decoding them as defined by
-    #    `W3C.REC-html40-19980424`_, Section 17.13.4.
-    #
-    # .. _`RFC3986, Section 3.4`: http://tools.ietf.org/html/rfc3986#section-3.4
-    # .. _`W3C.REC-html40-19980424`: http://tools.ietf.org/html/rfc5849#ref-W3C.REC-html40-19980424
-    if uri_query:
-        params.extend(url_decode(uri_query))
-
-    # *  The OAuth HTTP "Authorization" header field (`Section 3.5.1`_) if
-    #    present. The header's content is parsed into a list of name/value
-    #    pairs excluding the "realm" parameter if present.  The parameter
-    #    values are decoded as defined by `Section 3.5.1`_.
-    #
-    # .. _`Section 3.5.1`: http://tools.ietf.org/html/rfc5849#section-3.5.1
-    if headers:
-        for k, v in headers.items():
-            if k.lower() == 'authorization' and v is not None:
-                params.extend(parse_authorization_header(v, with_realm))
-
-    # *  The HTTP request entity-body, but only if all of the following
-    #    conditions are met:
-    #     *  The entity-body is single-part.
-    #
-    #     *  The entity-body follows the encoding requirements of the
-    #        "application/x-www-form-urlencoded" content-type as defined by
-    #        `W3C.REC-html40-19980424`_.
-
-    #     *  The HTTP request entity-header includes the "Content-Type"
-    #        header field set to "application/x-www-form-urlencoded".
-    #
-    # .._`W3C.REC-html40-19980424`: http://tools.ietf.org/html/rfc5849#ref-W3C.REC-html40-19980424
-
-    if body:
-        params.extend(extract_params(body))
-
-    # ensure all oauth params are unescaped
-    unescaped_params = []
-    for k, v in params:
-        # The "oauth_signature" parameter MUST be excluded from the signature
-        if exclude_oauth_signature and k == 'oauth_signature':
-            continue
-
-        if k.startswith('oauth_'):
-            v = unescape(v)
-        unescaped_params.append((k, v))
-
-    return unescaped_params
-
-
 def normalize_parameters(params):
-    """**Parameters Normalization**
-    Per `section 3.4.1.3.2`_ of the spec.
+    """Normalize parameters per `Section 3.4.1.3.2`_.
 
     For example, the list of parameters from the previous section would
     be normalized as follows:
@@ -338,13 +223,8 @@ def normalize_parameters(params):
         dj82h48djs9d2&oauth_nonce=7d8f3e4a&oauth_signature_method=HMAC-SHA1
         &oauth_timestamp=137131201&oauth_token=kkk9d7dh3k39sjv7
 
-    .. _`section 3.4.1.3.2`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3.2
+    .. _`Section 3.4.1.3.2`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3.2
     """
-
-    # The parameters collected in `Section 3.4.1.3`_ are normalized into a
-    # single string as follows:
-    #
-    # .. _`Section 3.4.1.3`: http://tools.ietf.org/html/rfc5849#section-3.4.1.3
 
     # 1.  First, the name and value of each parameter are encoded
     #     (`Section 3.6`_).
@@ -368,34 +248,23 @@ def normalize_parameters(params):
     return '&'.join(parameter_parts)
 
 
-def base_string_from_request(method, uri, body, headers):
-    """Construct base string from a HTTP request."""
-    collected_params = collect_parameters(
-        uri_query=urlparse.urlparse(uri).query,
-        body=body,
-        headers=headers
-    )
-
-    normalized_params = normalize_parameters(collected_params)
-    normalized_uri = normalize_base_string_uri(
-        uri, headers.get('Host', None)
-    )
-
-    return construct_base_string(method, normalized_uri, normalized_params)
+def generate_signature_base_string(request):
+    """Generate signature base string from request."""
+    host = request.headers.get('Host', None)
+    return construct_base_string(
+        request.method, request.uri, request.params, host)
 
 
-def sign_hmac_sha1(base_string, client_secret, resource_owner_secret):
-    """**HMAC-SHA1**
+def hmac_sha1_signature(base_string, client_secret, token_secret):
+    """Generate signature via HMAC-SHA1 method, per `Section 3.4.2`_.
 
     The "HMAC-SHA1" signature method uses the HMAC-SHA1 signature
     algorithm as defined in `RFC2104`_::
 
         digest = HMAC-SHA1 (key, text)
 
-    Per `section 3.4.2`_ of the spec.
-
     .. _`RFC2104`: http://tools.ietf.org/html/rfc2104
-    .. _`section 3.4.2`: http://tools.ietf.org/html/rfc5849#section-3.4.2
+    .. _`Section 3.4.2`: http://tools.ietf.org/html/rfc5849#section-3.4.2
     """
 
     # The HMAC-SHA1 function variables are used in following way:
@@ -419,7 +288,7 @@ def sign_hmac_sha1(base_string, client_secret, resource_owner_secret):
     # 3.  The token shared-secret, after being encoded (`Section 3.6`_).
     #
     # .. _`Section 3.6`: http://tools.ietf.org/html/rfc5849#section-3.6
-    key += escape(resource_owner_secret or '')
+    key += escape(token_secret or '')
 
     signature = hmac.new(to_bytes(key), to_bytes(text), hashlib.sha1)
 
@@ -432,10 +301,8 @@ def sign_hmac_sha1(base_string, client_secret, resource_owner_secret):
     return to_unicode(sig)
 
 
-def sign_rsa_sha1(base_string, rsa_private_key):
-    """**RSA-SHA1**
-
-    Per `section 3.4.3`_ of the spec.
+def rsa_sha1_signature(base_string, rsa_private_key):
+    """Generate signature via RSA-SHA1 method, per `Section 3.4.3`_.
 
     The "RSA-SHA1" signature method uses the RSASSA-PKCS1-v1_5 signature
     algorithm as defined in `RFC3447, Section 8.2`_ (also known as
@@ -444,9 +311,8 @@ def sign_rsa_sha1(base_string, rsa_private_key):
     with the server that included its RSA public key (in a manner that is
     beyond the scope of this specification).
 
-    .. _`section 3.4.3`: http://tools.ietf.org/html/rfc5849#section-3.4.3
+    .. _`Section 3.4.3`: http://tools.ietf.org/html/rfc5849#section-3.4.3
     .. _`RFC3447, Section 8.2`: http://tools.ietf.org/html/rfc3447#section-8.2
-
     """
     from .rsa import sign_sha1
     base_string = to_bytes(base_string)
@@ -455,10 +321,8 @@ def sign_rsa_sha1(base_string, rsa_private_key):
     return to_unicode(sig)
 
 
-def sign_plaintext(client_secret, resource_owner_secret):
-    """Sign a request using plaintext.
-
-    Per `section 3.4.4`_ of the spec.
+def plaintext_signature(client_secret, token_secret):
+    """Generate signature via PLAINTEXT method, per `Section 3.4.4`_.
 
     The "PLAINTEXT" method does not employ a signature algorithm.  It
     MUST be used with a transport-layer mechanism such as TLS or SSL (or
@@ -466,8 +330,7 @@ def sign_plaintext(client_secret, resource_owner_secret):
     utilize the signature base string or the "oauth_timestamp" and
     "oauth_nonce" parameters.
 
-    .. _`section 3.4.4`: http://tools.ietf.org/html/rfc5849#section-3.4.4
-
+    .. _`Section 3.4.4`: http://tools.ietf.org/html/rfc5849#section-3.4.4
     """
 
     # The "oauth_signature" protocol parameter is set to the concatenated
@@ -485,66 +348,46 @@ def sign_plaintext(client_secret, resource_owner_secret):
     # 3.  The token shared-secret, after being encoded (`Section 3.6`_).
     #
     # .. _`Section 3.6`: http://tools.ietf.org/html/rfc5849#section-3.6
-    signature += escape(resource_owner_secret or '')
+    signature += escape(token_secret or '')
 
     return signature
 
 
-def verify_hmac_sha1(signature, http_method, uri, params,
-                     client_secret=None, resource_owner_secret=None):
-    """Verify a HMAC-SHA1 signature.
-
-    Per `section 3.4`_ of the spec.
-
-    .. _`section 3.4`: http://tools.ietf.org/html/rfc5849#section-3.4
-
-    To satisfy `RFC2616 section 5.2`_ item 1, the request argument's uri
-    attribute MUST be an absolute URI whose netloc part identifies the
-    origin server or gateway on which the resource resides. Any Host
-    item of the request argument's headers dict attribute will be
-    ignored.
-
-    .. _`RFC2616 section 5.2`: http://tools.ietf.org/html/rfc2616#section-5.2
-
-    """
-    uri = normalize_base_string_uri(uri)
-    params = normalize_parameters(params)
-    base_string = construct_base_string(http_method, uri, params)
-    sig = sign_hmac_sha1(base_string, client_secret, resource_owner_secret)
-    return safe_string_equals(sig, signature)
+def sign_hmac_sha1(client, request):
+    """Sign a HMAC-SHA1 signature."""
+    base_string = generate_signature_base_string(request)
+    return hmac_sha1_signature(
+        base_string, client.client_secret, client.token_secret)
 
 
-def verify_rsa_sha1(signature, http_method, uri, params, rsa_public_key):
-    """Verify a RSASSA-PKCS #1 v1.5 base64 encoded signature.
+def sign_rsa_sha1(client, request):
+    """Sign a RSASSA-PKCS #1 v1.5 base64 encoded signature."""
+    base_string = generate_signature_base_string(request)
+    return rsa_sha1_signature(base_string, client.rsa_key)
 
-    Per `section 3.4.3`_ of the spec.
 
-    Note this method requires the jwt and cryptography libraries.
+def sign_plaintext(client, request):
+    """Sign a PLAINTEXT signature."""
+    return plaintext_signature(client.client_secret, client.token_secret)
 
-    .. _`section 3.4.3`: http://tools.ietf.org/html/rfc5849#section-3.4.3
 
-    To satisfy `RFC2616 section 5.2`_ item 1, the request argument's uri
-    attribute MUST be an absolute URI whose netloc part identifies the
-    origin server or gateway on which the resource resides. Any Host
-    item of the request argument's headers dict attribute will be
-    ignored.
+def verify_hmac_sha1(request):
+    """Verify a HMAC-SHA1 signature."""
+    base_string = generate_signature_base_string(request)
+    sig = hmac_sha1_signature(
+        base_string, request.client_secret, request.token_secret)
+    return safe_string_equals(sig, request.signature)
 
-    .. _`RFC2616 section 5.2`: http://tools.ietf.org/html/rfc2616#section-5.2
-    """
+
+def verify_rsa_sha1(request):
+    """Verify a RSASSA-PKCS #1 v1.5 base64 encoded signature."""
     from .rsa import verify_sha1
-    uri = normalize_base_string_uri(uri)
-    norm_params = normalize_parameters(params)
-    text = construct_base_string(http_method, uri, norm_params)
-    sig = binascii.a2b_base64(to_bytes(signature))
-    return verify_sha1(sig, to_bytes(text), rsa_public_key)
+    base_string = generate_signature_base_string(request)
+    sig = binascii.a2b_base64(to_bytes(request.signature))
+    return verify_sha1(sig, to_bytes(base_string), request.rsa_public_key)
 
 
-def verify_plaintext(signature, client_secret=None, resource_owner_secret=None):
-    """Verify a PLAINTEXT signature.
-
-    Per `section 3.4`_ of the spec.
-
-    .. _`section 3.4`: http://tools.ietf.org/html/rfc5849#section-3.4
-    """
-    sig = sign_plaintext(client_secret, resource_owner_secret)
-    return safe_string_equals(sig, signature)
+def verify_plaintext(request):
+    """Verify a PLAINTEXT signature."""
+    sig = plaintext_signature(request.client_secret, request.token_secret)
+    return safe_string_equals(sig, request.signature)

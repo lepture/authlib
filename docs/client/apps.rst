@@ -24,7 +24,7 @@ Register Twitter to the oauth registry::
 If you are using Flask, you need to configure the consumer key and secret:
 
 ========================== =========================
-TWITTER_CLIENT_KEY         Twitter Consumer Key
+TWITTER_CLIENT_ID          Twitter Consumer Key
 TWITTER_CLIENT_SECRET      Twitter Consumer Secret
 ========================== =========================
 
@@ -33,7 +33,7 @@ settings::
 
     AUTHLIB_OAUTH_CLIENTS = {
         'twitter': {
-            'client_key': 'Twitter Consumer Key',
+            'client_id': 'Twitter Consumer Key',
             'client_secret': 'Twitter Consumer Secret',
         }
     }
@@ -62,7 +62,7 @@ Register Facebook to the oauth registry::
 If you are using Flask, you need to configure your client ID and secret.
 
 ========================== ================================
-FACEBOOK_CLIENT_KEY        Your Facebook client ID
+FACEBOOK_CLIENT_ID         Your Facebook client ID
 FACEBOOK_CLIENT_SECRET     Your Facebook client secret
 FACEBOOK_CLIENT_KWARGS     Configure scope and other things
 ========================== ================================
@@ -73,7 +73,7 @@ For Django registry, configure client ID and secret in settings::
 
     AUTHLIB_OAUTH_CLIENTS = {
         'facebook': {
-            'client_key': 'Facebook Client ID',
+            'client_id': 'Facebook Client ID',
             'client_secret': 'Facebook Client Secret',
             'client_kwargs': {'scope': 'Redefine scope here'},
         }
@@ -93,7 +93,7 @@ Register Google to the oauth registry::
 If you are using Flask, you need to configure your client ID and secret.
 
 ========================== ================================
-GOOGLE_CLIENT_KEY          Your Google client ID
+GOOGLE_CLIENT_ID           Your Google client ID
 GOOGLE_CLIENT_SECRET       Your Google client secret
 GOOGLE_CLIENT_KWARGS       Configure scope and other things
 ========================== ================================
@@ -117,7 +117,7 @@ Register GitHub to the oauth registry::
 If you are using Flask, you need to configure your client ID and secret.
 
 ========================== ================================
-GITHUB_CLIENT_KEY          Your GitHub client ID
+GITHUB_CLIENT_ID           Your GitHub client ID
 GITHUB_CLIENT_SECRET       Your GitHub client secret
 GITHUB_CLIENT_KWARGS       Configure scope and other things
 ========================== ================================
@@ -128,7 +128,7 @@ For Django registry, configure client ID and secret in settings::
 
     AUTHLIB_OAUTH_CLIENTS = {
         'github': {
-            'client_key': 'GitHub Client ID',
+            'client_id': 'GitHub Client ID',
             'client_secret': 'GitHub Client Secret',
             'client_kwargs': {'scope': 'Redefine scope here'},
         }
@@ -148,7 +148,7 @@ Register Dropbox to the oauth registry::
 If you are using Flask, you need to configure your client ID and secret.
 
 ========================== ================================
-DROPBOX_CLIENT_KEY         Your Dropbox client ID
+DROPBOX_CLIENT_ID          Your Dropbox client ID
 DROPBOX_CLIENT_SECRET      Your Dropbox client secret
 DROPBOX_CLIENT_KWARGS      Configure scope and other things
 ========================== ================================
@@ -159,7 +159,7 @@ For Django registry, configure client ID and secret in settings::
 
     AUTHLIB_OAUTH_CLIENTS = {
         'dropbox': {
-            'client_key': 'Dropbox Client ID',
+            'client_id': 'Dropbox Client ID',
             'client_secret': 'Dropbox Client Secret',
             'client_kwargs': {'scope': 'Redefine scope here'},
         }

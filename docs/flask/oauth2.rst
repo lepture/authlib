@@ -97,7 +97,6 @@ which has built-in tools to handle requests and responses::
 
     from authlib.flask.oauth2 import AuthorizationServer
 
-    # Client is defined above
     server = AuthorizationServer(Client, app)
 
 It can also be initialized lazily with init_app::
@@ -145,7 +144,7 @@ Now define an endpoint for authorization. This endpoint is used by
         confirmed = request.form['confirm']
         if confirmed:
             # granted by resource owner
-            return server.create_authorization_response(current_user)
+            return server.create_authorization_response(current_user.id)
         # denied by resource owner
         return server.create_authorization_response(None)
 
@@ -203,7 +202,7 @@ Implement this grant by subclass :class:`AuthorizationCodeGrant`::
     from authlib.common.security import generate_token
 
     class AuthorizationCodeGrant(_AuthorizationCodeGrant):
-        def create_authorization_code(self, client, user, **kwargs):
+        def create_authorization_code(self, client, grant_user, **kwargs):
             # you can use other method to generate this code
             code = generate_token(48)
             item = AuthorizationCode(
@@ -211,7 +210,7 @@ Implement this grant by subclass :class:`AuthorizationCodeGrant`::
                 client_id=client.client_id,
                 redirect_uri=kwargs.get('redirect_uri', ''),
                 scope=kwargs.get('scope', ''),
-                user_id=user.id,
+                user_id=grant_user,
             )
             db.session.add(item)
             db.session.commit()
@@ -259,15 +258,10 @@ function ``register_cache_authorization_code``, it can be much simpler::
         # we can add more data into token
         token['user_id'] = authorization_code.user_id
 
-    def get_user_id(user):
-        return user.id
-
     register_cache_authorization_code(
         app, server,
         create_access_token,
-        get_user_id
     )
-    # get_user_id can be optional, the default one will return user.id
 
 A configuration for :ref:`flask_cache` is required, which is prefixed with
 ``OAUTH2_CODE``::
@@ -289,7 +283,7 @@ implement it with a subclass of :class:`ImplicitGrant`::
         def create_access_token(self, token, client, grant_user, **kwargs):
             item = Token(
                 client_id=client.client_id,
-                user_id=grant_user.id,
+                user_id=grant_user,
                 **token
             )
             db.session.add(item)
@@ -454,5 +448,22 @@ If the resource is not protected by a scope, use ``None``::
         return jsonify(user)
 
 The ``current_token`` is a proxy to the Token model you have defined above.
-Since there is a `user` relationship on the Token model, we can access this
+Since there is a ``user`` relationship on the Token model, we can access this
 ``user`` with ``current_token.user``.
+
+MethodView & Flask-Restful
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can also use the ``require_oauth`` decorator in ``flask.views.MethodView``
+and ``flask_restful.Resource``::
+
+    from flask.views import MethodView
+
+    class UserAPI(MethodView):
+        decorators = [require_oauth('profile')]
+
+
+    from flask_restful import Resource
+
+    class UserAPI(Resource):
+        method_decorators = [require_oauth('profile')]

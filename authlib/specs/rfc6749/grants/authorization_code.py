@@ -156,8 +156,8 @@ class AuthorizationCodeGrant(BaseGrant):
 
         .. _`Section 4.1.2`: http://tools.ietf.org/html/rfc6749#section-4.1.2
 
-        :param grant_user: pass user model if resource owner granted the
-            request, otherwise pass None.
+        :param grant_user: if resource owner granted the request, pass this
+            resource owner's ID, otherwise pass None.
         :returns: (status_code, body, headers)
         """
         if grant_user:
@@ -339,26 +339,26 @@ class AuthorizationCodeGrant(BaseGrant):
 
         return client
 
-    def create_authorization_code(self, client, user, **kwargs):
+    def create_authorization_code(self, client, grant_user, **kwargs):
         """Save authorization_code for later use. Developers should implement
         it in subclass. Here is an example::
 
             from authlib.common.security import generate_token
 
-            def create_authorization_code(self, client, user, **kwargs):
+            def create_authorization_code(self, client, grant_user, **kwargs):
                 code = generate_token(48)
                 item = AuthorizationCode(
                     code=code,
                     client_id=client.client_id,
                     redirect_uri=kwargs.get('redirect_uri', ''),
                     scope=kwargs.get('scope', ''),
-                    user_id=user.id,
+                    user_id=grant_user,
                 )
                 item.save()
                 return code
 
         :param client: the client that requesting the token.
-        :param user: resource owner (user) object.
+        :param grant_user: resource owner (user) ID.
         :param kwargs: other parameters.
         :return: code string
         """

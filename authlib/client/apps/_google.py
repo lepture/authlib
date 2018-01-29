@@ -3,7 +3,7 @@ try:
 except ImportError:  # pragma: no cover
     verify_id_token = None
 
-from .base import AppFactory, User, patch_method
+from .base import AppFactory, UserInfo, patch_method, compatible_fetch_user
 
 GOOGLE_API_URL = 'https://www.googleapis.com/'
 GOOGLE_TOKEN_URL = GOOGLE_API_URL + 'oauth2/v4/token'
@@ -16,32 +16,26 @@ GOOGLE_REVOKE_URL = 'https://accounts.google.com/o/oauth2/revoke'
 GOOGLE_JWK_SET = None
 
 
-def google_parse_id_token(client, response, nonce=None):
+def parse_id_token(client, response, nonce=None):
     jwk_set = _get_google_jwk_set(client)
-
-    client_id = getattr(client, 'client_key', None)
-    if not client_id:
-        # client can be OAuth2Session
-        client_id = client.client_id
 
     id_token = verify_id_token(
         response, jwk_set,
         issuers=('https://accounts.google.com', 'accounts.google.com'),
-        client_id=client_id,
+        client_id=client.client_id,
         nonce=nonce,
     )
-    return _parse_profile(id_token.token)
+    return UserInfo(**id_token.token)
 
 
-def google_revoke_token(client):
+def revoke_token(client):
     token = client.get_token()['access_token']
     return client.post(GOOGLE_AUTH_URL, params={'token': token})
 
 
-def google_fetch_user(client):
+def fetch_profile(client):
     resp = client.get('oauth2/v3/userinfo')
-    profile = resp.json()
-    return _parse_profile(profile)
+    return UserInfo(**resp.json())
 
 
 def _get_google_jwk_set(client):
@@ -52,13 +46,6 @@ def _get_google_jwk_set(client):
     return GOOGLE_JWK_SET
 
 
-def _parse_profile(profile):
-    uid = profile.get('sub')
-    name = profile.get('name')
-    email = profile.get('email')
-    return User(uid, name=name, email=email, data=profile)
-
-
 google = AppFactory('google', {
     'api_base_url': GOOGLE_API_URL,
     'access_token_url': GOOGLE_TOKEN_URL,
@@ -66,6 +53,7 @@ google = AppFactory('google', {
     'client_kwargs': {'scope': 'openid email profile'},
 }, "The OAuth app for Google API.")
 
-patch_method(google, google_revoke_token, 'revoke_token')
-patch_method(google, google_fetch_user, 'fetch_user')
-patch_method(google, google_parse_id_token, 'parse_openid')
+patch_method(google, revoke_token, 'revoke_token')
+patch_method(google, fetch_profile, 'profile')
+patch_method(google, parse_id_token, 'parse_openid')
+compatible_fetch_user(google, fetch_profile)

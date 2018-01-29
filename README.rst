@@ -1,8 +1,8 @@
 Authlib
 =======
 
-Authlib is a ready to use authentication client and server for
-OAuth 1, OAuth 2 and more.
+Authlib is an ambitious authentication library for OAuth 1, OAuth 2, OpenID
+clients, servers and more.
 
 Useful Links
 ------------

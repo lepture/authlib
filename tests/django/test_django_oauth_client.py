@@ -11,7 +11,7 @@ from ..client_base import (
 )
 
 dev_client = {
-    'client_key': 'dev-key',
+    'client_id': 'dev-key',
     'client_secret': 'dev-secret'
 }
 
@@ -40,7 +40,7 @@ class DjangoOAuthTest(TestCase):
 
         oauth.register(
             'dev',
-            client_key='dev',
+            client_id='dev',
             client_secret='dev',
             request_token_url='https://i.b/reqeust-token',
             base_url='https://i.b/api',
@@ -48,13 +48,13 @@ class DjangoOAuthTest(TestCase):
             authorize_url='https://i.b/authorize'
         )
         self.assertEqual(oauth.dev.name, 'dev')
-        self.assertEqual(oauth.dev.client_key, 'dev')
+        self.assertEqual(oauth.dev.client_id, 'dev')
 
     @override_settings(AUTHLIB_OAUTH_CLIENTS={'dev': dev_client})
     def test_register_from_settings(self):
         oauth = OAuth()
         oauth.register('dev')
-        self.assertEqual(oauth.dev.client_key, 'dev-key')
+        self.assertEqual(oauth.dev.client_id, 'dev-key')
         self.assertEqual(oauth.dev.client_secret, 'dev-secret')
 
     def test_oauth1_authorize(self):
@@ -63,7 +63,7 @@ class DjangoOAuthTest(TestCase):
 
         client = RemoteApp(
             'dev',
-            client_key='dev',
+            client_id='dev',
             client_secret='dev',
             request_token_url='https://i.b/reqeust-token',
             base_url='https://i.b/api',
@@ -90,7 +90,7 @@ class DjangoOAuthTest(TestCase):
 
         client = RemoteApp(
             'dev',
-            client_key='dev',
+            client_id='dev',
             client_secret='dev',
             base_url='https://i.b/api',
             access_token_url='https://i.b/token',

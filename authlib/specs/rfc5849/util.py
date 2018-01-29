@@ -1,7 +1,4 @@
-from authlib.common.urls import (
-    quote, unquote,
-    parse_http_list, parse_keqv_list,
-)
+from authlib.common.urls import quote, unquote
 
 
 def escape(s):
@@ -28,22 +25,3 @@ def safe_string_equals(a, b):
     for x, y in zip(a, b):
         result |= ord(x) ^ ord(y)
     return result == 0
-
-
-def parse_authorization_header(authorization_header, with_realm=False):
-    """Parse an OAuth authorization header into a list of 2-tuples"""
-    auth_scheme = 'OAuth '.lower()
-    if authorization_header.lower().startswith(auth_scheme):
-        items = parse_http_list(authorization_header[len(auth_scheme):])
-        try:
-            params = []
-            for k, v in parse_keqv_list(items).items():
-                if k == 'realm':
-                    if with_realm:
-                        params.append((k, v))
-                else:
-                    params.append((k, v))
-            return params
-        except (IndexError, ValueError):
-            pass
-    raise ValueError('Malformed authorization header')
