@@ -3,11 +3,11 @@ import unittest
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from authlib.flask.oauth1 import (
-    AuthorizationServer, ResourceProtector, current_token
+    AuthorizationServer, ResourceProtector, current_credential
 )
 from authlib.flask.oauth1.sqla import (
     OAuth1ClientMixin,
-    OAuth1AuthorizationCredentialMixin,
+    OAuth1TokenCredentialMixin,
     register_authorization_hooks,
 )
 from authlib.specs.rfc5849 import OAuth1Error
@@ -39,7 +39,7 @@ class Client(db.Model, OAuth1ClientMixin):
         return get_rsa_public_key()
 
 
-class Token(db.Model, OAuth1AuthorizationCredentialMixin):
+class Token(db.Model, OAuth1TokenCredentialMixin):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
         db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')
@@ -103,7 +103,7 @@ def create_resource_server(app, use_cache=False):
     @app.route('/user')
     @require_oauth()
     def user_profile():
-        user = current_token.user
+        user = current_credential.user
         return jsonify(id=user.id, username=user.username)
 
 

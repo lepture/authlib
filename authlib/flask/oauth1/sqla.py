@@ -2,7 +2,7 @@ from sqlalchemy import Column, String, Text
 from authlib.specs.rfc5849 import (
     ClientMixin,
     TemporaryCredentialMixin,
-    AuthorizationCredentialMixin,
+    TokenCredentialMixin,
 )
 
 
@@ -48,7 +48,7 @@ class OAuth1TemporaryCredentialMixin(TemporaryCredentialMixin):
         return self.oauth_token_secret
 
 
-class OAuth1AuthorizationCredentialMixin(AuthorizationCredentialMixin):
+class OAuth1TokenCredentialMixin(TokenCredentialMixin):
     client_id = Column(String(48), index=True)
     oauth_token = Column(String(84), unique=True, index=True)
     oauth_token_secret = Column(String(84))
@@ -62,11 +62,11 @@ class OAuth1AuthorizationCredentialMixin(AuthorizationCredentialMixin):
 
 def register_authorization_hooks(
         authorization_server, session,
-        authorization_credential_model,
+        token_credential_model,
         temporary_credential_model=None):
 
-    def create_authorization_credential(token, temporary_credentials):
-        item = authorization_credential_model(
+    def create_token_credential(token, temporary_credentials):
+        item = token_credential_model(
             oauth_token=token['oauth_token'],
             oauth_token_secret=token['oauth_token_secret'],
             client_id=temporary_credentials.get_client_id()
@@ -77,7 +77,7 @@ def register_authorization_hooks(
         return item
 
     authorization_server.register_hook(
-        'create_authorization_credential', create_authorization_credential
+        'create_token_credential', create_token_credential
     )
 
     if temporary_credential_model is None:

@@ -7,6 +7,7 @@
 
     .. _`Section 10`: https://oauth.net/core/1.0a/#rfc.section.10
 """
+from authlib.common.security import is_secure_transport
 
 
 class OAuth1Error(Exception):
@@ -52,6 +53,16 @@ class OAuth1Error(Exception):
             ('Cache-Control', 'no-store'),
             ('Pragma', 'no-cache')
         ]
+
+
+class InsecureTransportError(OAuth1Error):
+    error = 'insecure_transport'
+    description = 'OAuth 2 MUST utilize https.'
+
+    @classmethod
+    def check(cls, uri):
+        if not is_secure_transport(uri):
+            raise cls()
 
 
 class InvalidRequestError(OAuth1Error):

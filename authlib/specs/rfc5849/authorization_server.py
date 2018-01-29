@@ -2,6 +2,7 @@ from authlib.common.urls import is_valid_url, add_params_to_uri
 from .base_server import BaseServer
 from .errors import (
     OAuth1Error,
+    InsecureTransportError,
     InvalidRequestError,
     MissingRequiredParameterError,
     InvalidClientError,
@@ -94,15 +95,16 @@ class AuthorizationServer(BaseServer):
         :returns: (status_code, body, headers)
         """
         try:
+            InsecureTransportError.check(uri)
             request = OAuth1Request(method, uri, body, headers)
             self.validate_temporary_credentials_request(request)
         except OAuth1Error as error:
             return error.status_code, error.get_body(), error.get_headers()
 
-        token = self.create_temporary_credential(request)
+        credential = self.create_temporary_credential(request)
         payload = [
-            ('oauth_token', token.get_oauth_token()),
-            ('oauth_token_secret', token.get_oauth_token_secret()),
+            ('oauth_token', credential.get_oauth_token()),
+            ('oauth_token_secret', credential.get_oauth_token_secret()),
             ('oauth_callback_confirmed', True)
         ]
         return 200, payload, self.TOKEN_RESPONSE_HEADER
@@ -112,12 +114,12 @@ class AuthorizationServer(BaseServer):
         if not request.token:
             raise MissingRequiredParameterError('oauth_token')
 
-        token = self.get_temporary_credential(request)
-        if not token:
+        credential = self.get_temporary_credential(request)
+        if not credential:
             raise InvalidTokenError()
 
-        # assign token for later use
-        request.credential = token
+        # assign credential for later use
+        request.credential = credential
         return request
 
     def create_valid_authorization_response(
@@ -147,6 +149,7 @@ class AuthorizationServer(BaseServer):
             it is None.
         :returns: (status_code, body, headers)
         """
+        InsecureTransportError.check(uri)
         request = OAuth1Request(method, uri, body, headers)
 
         # authorize endpoint should try catch this error
@@ -242,6 +245,7 @@ class AuthorizationServer(BaseServer):
         :returns: (status_code, body, headers)
         """
         try:
+            InsecureTransportError.check(uri)
             request = OAuth1Request(method, uri, body, headers)
         except OAuth1Error as error:
             # DuplicatedOAuthProtocolParameterError
@@ -253,15 +257,18 @@ class AuthorizationServer(BaseServer):
             self.delete_temporary_credential(request)
             return error.status_code, error.get_body(), error.get_headers()
 
-        token = self.create_authorization_credential(request)
+        credential = self.create_token_credential(request)
         payload = [
-            ('oauth_token', token.get_oauth_token()),
-            ('oauth_token_secret', token.get_oauth_token_secret()),
+            ('oauth_token', credential.get_oauth_token()),
+            ('oauth_token_secret', credential.get_oauth_token_secret()),
         ]
         self.delete_temporary_credential(request)
         return 200, payload, self.TOKEN_RESPONSE_HEADER
 
     def create_temporary_credential(self, request):
+        """Generate and save a temporary credential into database or cache.
+        A temporary credential is used for exchanging token credential.
+        """
         raise NotImplementedError()
 
     def get_temporary_credential(self, request):
@@ -273,5 +280,5 @@ class AuthorizationServer(BaseServer):
     def create_authorization_verifier(self, request):
         raise NotImplementedError()
 
-    def create_authorization_credential(self, request):
+    def create_token_credential(self, request):
         raise NotImplementedError()

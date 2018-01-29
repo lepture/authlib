@@ -34,7 +34,7 @@ class AuthorizationServer(_AuthorizationServer):
             'get_temporary_credential': None,
             'delete_temporary_credential': None,
             'create_authorization_verifier': None,
-            'create_authorization_credential': None,
+            'create_token_credential': None,
         }
         if app is not None:
             self.init_app(app)
@@ -172,8 +172,8 @@ class AuthorizationServer(_AuthorizationServer):
             '"create_authorization_verifier" hook is required.'
         )
 
-    def create_authorization_credential(self, request):
-        func = self._hooks['create_authorization_credential']
+    def create_token_credential(self, request):
+        func = self._hooks['create_token_credential']
         if callable(func):
             temporary_credentials = request.credential
             token = self.token_generator()

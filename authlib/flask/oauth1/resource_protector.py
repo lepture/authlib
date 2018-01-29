@@ -64,7 +64,7 @@ class ResourceProtector(_ResourceProtector):
                         _req.form.to_dict(flat=True),
                         _req.headers
                     )
-                    g._oauth1_token_ = req.credential
+                    g._oauth1_credential_ = req.credential
                 except OAuth1Error as error:
                     body = dict(error.get_body())
                     return Response(
@@ -77,8 +77,8 @@ class ResourceProtector(_ResourceProtector):
         return wrapper
 
 
-def _get_current_token():
-    return getattr(g, '_oauth1_token_', None)
+def _get_current_credential():
+    return getattr(g, '_oauth1_credential_', None)
 
 
-current_token = LocalProxy(_get_current_token)
+current_credential = LocalProxy(_get_current_credential)

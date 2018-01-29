@@ -31,6 +31,10 @@ class BaseServer(object):
         self.client_model = client_model
 
     def validate_timestamp_and_nonce(self, request):
+        """Validate ``oauth_timestamp`` and ``oauth_nonce`` in HTTP request.
+
+        :param request: OAuth1Request instance
+        """
         # The parameters MAY be omitted when using the "PLAINTEXT"
         # signature method
         if request.signature_method == SIGNATURE_PLAINTEXT:
@@ -56,6 +60,10 @@ class BaseServer(object):
             raise InvalidNonceError()
 
     def validate_oauth_signature(self, request):
+        """Validate ``oauth_signature`` from HTTP request.
+
+        :param request: OAuth1Request instance
+        """
         if not request.signature_method:
             raise MissingRequiredParameterError('oauth_signature_method')
 
@@ -72,5 +80,9 @@ class BaseServer(object):
     def exists_nonce(self, nonce, request):
         """The nonce value MUST be unique across all requests with the same
         timestamp, client credentials, and token combinations.
+
+        :param nonce: A string value of ``oauth_nonce``
+        :param request: OAuth1Request instance
+        :return: Boolean
         """
         raise NotImplementedError()

@@ -97,6 +97,6 @@ class TemporaryCredentialMixin(CredentialMixin):
         raise NotImplementedError()
 
 
-class AuthorizationCredentialMixin(CredentialMixin):
+class TokenCredentialMixin(CredentialMixin):
     def set_grant_user(self, grant_user):
         raise NotImplementedError()
