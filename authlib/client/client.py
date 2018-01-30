@@ -84,6 +84,9 @@ class OAuthClient(object):
         :param kwargs: Extra parameters to include.
         :return: (url, state)
         """
+        if not self.authorize_url:
+            raise RuntimeError('Missing "authorize_url" value')
+
         if self.request_token_url:
             self.session.callback_uri = callback_uri
             params = {}
