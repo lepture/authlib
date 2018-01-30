@@ -52,20 +52,25 @@ class BaseServer(object):
 
         :param request: OAuth1Request instance
         """
-        # The parameters MAY be omitted when using the "PLAINTEXT"
-        # signature method
-        if request.signature_method == SIGNATURE_PLAINTEXT:
-            return False
-
         timestamp = request.oauth_params.get('oauth_timestamp')
         nonce = request.oauth_params.get('oauth_nonce')
 
+        if request.signature_method == SIGNATURE_PLAINTEXT:
+            # The parameters MAY be omitted when using the "PLAINTEXT"
+            # signature method
+            if not timestamp and not nonce:
+                return
+
         if not timestamp:
             raise MissingRequiredParameterError('oauth_timestamp')
+
         try:
             # The timestamp value MUST be a positive integer
-            delta = time.time() - int(timestamp)
-            if delta > self.EXPIRY_TIME:
+            timestamp = int(timestamp)
+            if timestamp < 0:
+                raise InvalidRequestError('Invalid "oauth_timestamp" value')
+
+            if self.EXPIRY_TIME and time.time() - timestamp > self.EXPIRY_TIME:
                 raise InvalidRequestError('Invalid "oauth_timestamp" value')
         except (ValueError, TypeError):
             raise InvalidRequestError('Invalid "oauth_timestamp" value')
