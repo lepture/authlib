@@ -16,7 +16,7 @@ class AuthorizationServer(_AuthorizationServer):
     """Flask implementation of :class:`authlib.rfc5849.AuthorizationServer`.
     Initialize it with a client model class and Flask app instance::
 
-        server = AuthorizationServer(OAuth1Client, app)
+        server = AuthorizationServer(OAuth1Client, app=app)
         # or initialize lazily
         server = AuthorizationServer(OAuth1Client)
         server.init_app(app)
@@ -62,13 +62,15 @@ class AuthorizationServer(_AuthorizationServer):
         if isinstance(token_generator, str):
             token_generator = import_string(token_generator)
         else:
-            token_generator = lambda: generate_token(42)
+            length = app.config.get('OAUTH1_TOKEN_LENGTH', 42)
+            token_generator = lambda: generate_token(length)
 
         secret_generator = app.config.get('OAUTH1_TOKEN_SECRET_GENERATOR')
         if isinstance(secret_generator, str):
             secret_generator = import_string(secret_generator)
         else:
-            secret_generator = lambda: generate_token(48)
+            length = app.config.get('OAUTH1_TOKEN_SECRET_LENGTH', 48)
+            secret_generator = lambda: generate_token(length)
 
         def create_token():
             return {
@@ -180,9 +182,9 @@ class AuthorizationServer(_AuthorizationServer):
     def create_token_credential(self, request):
         func = self._hooks['create_token_credential']
         if callable(func):
-            temporary_credentials = request.credential
+            temporary_credential = request.credential
             token = self.token_generator()
-            return func(token, temporary_credentials)
+            return func(token, temporary_credential)
 
         raise RuntimeError(
             '"create_token_credential" hook is required.'
@@ -204,7 +206,8 @@ class AuthorizationServer(_AuthorizationServer):
             _req.form.to_dict(flat=True),
             _req.headers
         )
-        return self.validate_authorization_request(req)
+        self.validate_authorization_request(req)
+        return req
 
     def create_authorization_response(self, grant_user):
         status, body, headers = self.create_valid_authorization_response(

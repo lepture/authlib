@@ -117,8 +117,146 @@ methods.
 Timestamp and Nonce
 ~~~~~~~~~~~~~~~~~~~
 
+The nonce value MUST be unique across all requests with the same timestamp,
+client credentials, and token combinations. Authlib Flask integration has a
+built-in validation with cache::
+
+    OAUTH1_AUTH_CACHE_TYPE = '{{ cache_type }}'
+
+If you want to use other means, you need to register a hook to check the
+exists of the given nonce.
+
+Define A Server
+~~~~~~~~~~~~~~~
+
+Authlib provides a ready to use :class:`~authlib.flask.oauth1.AuthorizationServer`
+which has built-in tools to handle requests and responses::
+
+    from authlib.flask.oauth1 import AuthorizationServer
+
+    server = AuthorizationServer(Client, token_generator=None, app=app)
+
+It can also be initialized lazily with init_app::
+
+    server = AuthorizationServer(Client)
+    server.init_app(app)
+
+It is strongly suggested that you use a cache configuration. In this way, you
+don't have to re-implement a lot of the missing methods::
+
+    OAUTH1_AUTH_CACHE_TYPE = 'redis'
+    # here are the configuration for redis cache
+    OAUTH1_AUTH_REDIS_HOST = 'localhost'
+    OAUTH1_AUTH_REDIS_PORT = 6379
+    OAUTH1_AUTH_REDIS_PASSWORD = None
+    OAUTH1_AUTH_REDIS_DB = 0
+    OAUTH1_AUTH_KEY_PREFIX = None
+
+There are several **CACHE TYPE** available in :ref:`flask_cache`. Above shows
+an example of Redis ``CACHE_TYPE``.
+
+There are other configurations. It works well without any changes. Here is a
+list of them:
+
+================================== ===============================================
+OAUTH1_TOKEN_GENERATOR             A string of module path for importing a
+                                   function to generate ``oauth_token``
+OAUTH1_TOKEN_SECRET_GENERATOR      A string of module path for importing a
+                                   function to generate ``oauth_token_secret``.
+OAUTH1_TOKEN_LENGTH                If ``OAUTH1_TOKEN_GENERATOR`` is not
+                                   configured, a random function will generate
+                                   the given length of ``oauth_token``. Default
+                                   value is ``42``.
+OAUTH1_TOKEN_SECRET_LENGTH         A random function will generate the given
+                                   length of ``oauth_token_secret``. Default
+                                   value is ``48``.
+================================== ===============================================
+
+These configurations are used to create the ``token_generator`` function. But
+you can pass the ``token_generator`` when initializing the AuthorizationServer::
+
+    def token_generator():
+        return {
+            'oauth_token': random_string(20),
+            'oauth_token_secret': random_string(46)
+        }
+
+    server = AuthorizationServer(Client, token_generator, app=app)
+
+Server Hooks
+~~~~~~~~~~~~
+
+There are missing hooks that should be ``register_hook`` to AuthorizationServer.
+If **CACHE** is available, the only missing hook is ``create_token_credential``,
+which can be easily created in this way::
+
+    def create_token_credential(token, temporary_credential):
+        item = TokenCredential(
+            oauth_token=token['oauth_token'],
+            oauth_token_secret=token['oauth_token_secret'],
+            client_id=temporary_credentials.get_client_id()
+        )
+        item.set_grant_user(temporary_credential.get_grant_user())
+        session.add(item)
+        session.commit()
+        return item
+
+    server.register_hook(
+        'create_token_credential', create_token_credential
+    )
+
+With this hook registered, the AuthorizationServer is ready to use. But if
+**CACHE** is not available, there are other hooks that you need to implement:
+
+- ``exists_nonce``
+- ``create_temporary_credential``
+- ``get_temporary_credential``
+- ``delete_temporary_credential``
+- ``create_authorization_verifier``
+
 Server Implementation
 ~~~~~~~~~~~~~~~~~~~~~
+
+It is ready to create the endpoints for authorization and issuing tokens.
+Let's start with the temporary credentials endpoint, which is used for clients
+to fetch a temporary credential::
+
+    @app.route('/initiate', methods=['POST'])
+    def initiate_temporary_credential():
+        return server.create_temporary_credential_response()
+
+The endpoint for resource owner authorization. OAuth 1 Client will redirect
+user to this authorization page, so that resource owner can grant or deny this
+request::
+
+    @app.route('/authorize', methods=['GET', 'POST'])
+    def authorize():
+        # make sure that user is logged in for yourself
+        if request.method == 'GET':
+            try:
+                req = server.check_authorization_request()
+                return render_template('authorize.html', req=req)
+            except OAuth1Error as error:
+                return render_template('error.html', error=error)
+
+        granted = request.form.get('granted')
+        if granted:
+            grant_user = current_user.id
+        else:
+            grant_user = None
+
+        try:
+            return server.create_authorization_response(grant_user)
+        except OAuth1Error as error:
+            return render_template('error.html', error=error)
+
+Then the final token endpoint. OAuth 1 Client will use the given temporary
+credential and the ``oauth_verifier`` authorized by resource owner to exchange
+the token credential::
+
+    @app.route('/token', methods=['POST'])
+    def issue_token():
+        return server.create_token_response()
 
 Protect Resources
 -----------------
@@ -170,3 +308,45 @@ and ``flask_restful.Resource``::
 
 Customize Signature Methods
 ---------------------------
+
+The ``AuthorizationServer`` and ``ResourceProtector`` only support **HMAC-SHA1**
+signature method by default. There are three signature methods built-in, which
+can be enabled with the configuration::
+
+    OAUTH1_SUPPORTED_SIGNATURE_METHODS = ['HMAC-SHA1', 'PLAINTEXT', 'RSA-SHA1']
+
+To support ``RSA-SHA1`` signature method, you need to install Authlib with extra
+dependencies::
+
+    $ pip install Authlib[crypto]
+
+It is also possible to extend the signature methods. For example, you want to
+create a **HMAC-SHA256** signature method::
+
+    import hmac
+    from authlib.common.encoding import to_bytes
+    from authlib.specs.rfc5849 import signature
+
+    def verify_hmac_sha256(request):
+        text = signature.generate_signature_base_string(request)
+
+        key = escape(request.client_secret or '')
+        key += '&'
+        key += escape(request.token_secret or '')
+
+        sig = hmac.new(to_bytes(key), to_bytes(text), hashlib.sha256)
+        return binascii.b2a_base64(sig.digest())[:-1]
+
+    AuthorizationServer.register_signature_method(
+        'HMAC-SHA256', verify_hmac_sha256
+    )
+    ResourceProtector.register_signature_method(
+        'HMAC-SHA256', verify_hmac_sha256
+    )
+
+Then add this method into **SUPPORTED_SIGNATURE_METHODS**::
+
+    OAUTH1_SUPPORTED_SIGNATURE_METHODS = ['HMAC-SHA256']
+
+With this configuration, your server will support **HMAC-SHA256** signature
+method only. If you want to support more methods, add them to the list.

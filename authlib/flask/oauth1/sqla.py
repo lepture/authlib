@@ -65,13 +65,13 @@ def register_authorization_hooks(
         token_credential_model,
         temporary_credential_model=None):
 
-    def create_token_credential(token, temporary_credentials):
+    def create_token_credential(token, temporary_credential):
         item = token_credential_model(
             oauth_token=token['oauth_token'],
             oauth_token_secret=token['oauth_token_secret'],
-            client_id=temporary_credentials.get_client_id()
+            client_id=temporary_credential.get_client_id()
         )
-        item.set_grant_user(temporary_credentials.get_grant_user())
+        item.set_grant_user(temporary_credential.get_grant_user())
         session.add(item)
         session.commit()
         return item

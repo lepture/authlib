@@ -14,12 +14,14 @@ Models Mixin
 ------------
 
 .. autoclass:: ClientMixin
-   :members:
+    :members:
 
 
 .. autoclass:: TemporaryCredentialMixin
-   :members:
+    :members:
+    :inherited-members:
 
 
 .. autoclass:: TokenCredentialMixin
-   :members:
+    :members:
+    :inherited-members:
