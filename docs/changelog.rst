@@ -6,10 +6,10 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
-Version 0.4
------------
+Version 0.4: Tsukino
+--------------------
 
-**Release Date not Decided**
+**Released on Jan 31, 2018. Enjoy the Super Blue Blood Moon!**
 
 This is a feature releasing for OAuth 1 server. Things are not settled yet,
 there will still be breaking changes in the future. Some of the breaking
