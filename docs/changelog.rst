@@ -59,6 +59,10 @@ contributors.
     * ``resource_owner_key`` has been changed to ``token``
     * ``resource_owner_secret`` has been changed to ``token_secret``
 
+    There is a huge change in client apps. Instead of ``fetch_user``, it is
+    suggested that you use ``profile()`` instead, which will return a UserInfo
+    object.
+
     Currently, they are backward compatible. You will be notified by warnings.
 
 Version 0.3: Nagato

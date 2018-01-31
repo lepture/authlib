@@ -44,10 +44,10 @@ registry::
     twitter.authorize_redirect(callback_uri)  # Flask
     twitter.authorize_redirect(request, callback_uri)  # Django
 
-There is a built-in ``fetch_user`` in every app, you can get the user info
+There is a built-in ``profile`` in every app, you can get the user info
 with a simple function invoke::
 
-    user = twitter.fetch_user()
+    user = twitter.profile()
     # user contains: id, name, email, data
 
 Facebook
@@ -79,7 +79,7 @@ For Django registry, configure client ID and secret in settings::
         }
     }
 
-It has a built-in ``fetch_user`` method too.
+It has a built-in ``profile`` method too.
 
 Google
 ------
@@ -99,7 +99,7 @@ GOOGLE_CLIENT_KWARGS       Configure scope and other things
 ========================== ================================
 
 The default scope in ``GOOGLE_CLIENT_KWARGS`` is ``openid email profile``.
-Although there is a ``fetch_user`` method with Google app, you don't have
+Although there is a ``profile`` method with Google app, you don't have
 to use it, since Google supports OpenID Connect::
 
     >>> token = google.authorize_access_token()
@@ -134,7 +134,7 @@ For Django registry, configure client ID and secret in settings::
         }
     }
 
-It has a built-in ``fetch_user`` method too.
+It has a built-in ``profile`` method too.
 
 Dropbox
 -------
@@ -165,4 +165,15 @@ For Django registry, configure client ID and secret in settings::
         }
     }
 
-It has a built-in ``fetch_user`` method too.
+It has a built-in ``profile`` method too.
+
+
+Shortcuts
+---------
+
+There are shortcuts for register apps into oauth. It is called ``register_apps``,
+with this function, one can register many services at one time::
+
+   from authlib.client.apps import register_apps
+
+   register_apps(oauth, ['twitter', 'google', 'github', 'facebook'])

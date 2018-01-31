@@ -15,13 +15,16 @@ GOOGLE_AUTH_URL = (
 GOOGLE_REVOKE_URL = 'https://accounts.google.com/o/oauth2/revoke'
 GOOGLE_JWK_SET = None
 
+# the second one doesn't respect spec
+GOOGLE_ISSUES = ('https://accounts.google.com', 'accounts.google.com')
+
 
 def parse_id_token(client, response, nonce=None):
     jwk_set = _get_google_jwk_set(client)
 
     id_token = verify_id_token(
         response, jwk_set,
-        issuers=('https://accounts.google.com', 'accounts.google.com'),
+        issuers=GOOGLE_ISSUES,
         client_id=client.client_id,
         nonce=nonce,
     )
