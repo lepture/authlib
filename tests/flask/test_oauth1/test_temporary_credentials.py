@@ -11,7 +11,7 @@ from .oauth1_server import (
 
 class TemporaryCredentialsTest(TestCase):
     def prepare_data(self, use_cache=False):
-        create_authorization_server(self.app, use_cache)
+        self.server = create_authorization_server(self.app, use_cache)
         user = User(username='foo')
         db.session.add(user)
         db.session.commit()
@@ -27,6 +27,10 @@ class TemporaryCredentialsTest(TestCase):
     def test_temporary_credential_parameters_errors(self):
         self.prepare_data(True)
         url = '/oauth/initiate'
+
+        rv = self.client.get(url)
+        data = decode_response(rv.data)
+        self.assertEqual(data['error'], 'method_not_allowed')
 
         # case 1
         rv = self.client.post(url)
@@ -97,6 +101,16 @@ class TemporaryCredentialsTest(TestCase):
             'oauth_timestamp': 'sss'
         })
         data = decode_response(rv.data)
+        self.assertEqual(data['error'], 'invalid_request')
+        self.assertIn('oauth_timestamp', data['error_description'])
+
+        # case 9
+        rv = self.client.post(url, data={
+            'oauth_consumer_key': 'client',
+            'oauth_callback': 'oob',
+            'oauth_timestamp': '-1',
+            'oauth_signature_method': 'PLAINTEXT'
+        })
         self.assertEqual(data['error'], 'invalid_request')
         self.assertIn('oauth_timestamp', data['error_description'])
 
@@ -230,3 +244,38 @@ class TemporaryCredentialsTest(TestCase):
         rv = self.client.post(url, headers=headers)
         data = decode_response(rv.data)
         self.assertEqual(data['error'], 'invalid_signature')
+
+    def test_invalid_signature(self):
+        self.app.config.update({
+            'OAUTH1_SUPPORTED_SIGNATURE_METHODS': ['INVALID']
+        })
+        self.prepare_data(True)
+        url = '/oauth/initiate'
+        rv = self.client.post(url, data={
+            'oauth_consumer_key': 'client',
+            'oauth_callback': 'oob',
+            'oauth_signature_method': 'PLAINTEXT',
+            'oauth_signature': 'secret&'
+        })
+        data = decode_response(rv.data)
+        self.assertEqual(data['error'], 'unsupported_signature_method')
+
+        rv = self.client.post(url, data={
+            'oauth_consumer_key': 'client',
+            'oauth_callback': 'oob',
+            'oauth_signature_method': 'INVALID',
+            'oauth_timestamp': str(int(time.time())),
+            'oauth_nonce': 'invalid-nonce',
+            'oauth_signature': 'secret&'
+        })
+        data = decode_response(rv.data)
+        self.assertEqual(data['error'], 'unsupported_signature_method')
+
+    def test_register_signature_method(self):
+        self.prepare_data(True)
+
+        def foo():
+            pass
+
+        self.server.register_signature_method('foo', foo)
+        self.assertEqual(self.server.SIGNATURE_METHODS['foo'], foo)

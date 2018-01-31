@@ -95,6 +95,17 @@ class AuthorizationTest(TestCase):
         self.assertEqual(data['error'], 'invalid_request')
         self.assertIn('oauth_verifier', data['error_description'])
 
+    def test_duplicated_oauth_parameters(self):
+        self.prepare_data(True)
+        url = '/oauth/token?oauth_consumer_key=client'
+        rv = self.client.post(url, data={
+            'oauth_consumer_key': 'client',
+            'oauth_token': 'abc',
+            'oauth_verifier': 'abc'
+        })
+        data = decode_response(rv.data)
+        self.assertEqual(data['error'], 'duplicated_oauth_protocol_parameter')
+
     def test_plaintext_signature(self):
         self.prepare_data(True)
         url = '/oauth/token'

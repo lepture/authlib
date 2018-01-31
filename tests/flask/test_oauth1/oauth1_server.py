@@ -57,7 +57,7 @@ def create_authorization_server(app, use_cache=False):
     server = AuthorizationServer(Client, app=app)
     register_authorization_hooks(server, db.session, Token)
 
-    @app.route('/oauth/initiate', methods=['POST'])
+    @app.route('/oauth/initiate', methods=['GET', 'POST'])
     def initiate():
         return server.create_temporary_credential_response()
 
@@ -81,7 +81,7 @@ def create_authorization_server(app, use_cache=False):
         except OAuth1Error as error:
             return url_encode(error.get_body())
 
-    @app.route('/oauth/token', methods=['GET', 'POST'])
+    @app.route('/oauth/token', methods=['POST'])
     def issue_token():
         return server.create_token_response()
 
