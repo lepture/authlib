@@ -136,7 +136,7 @@ class AuthorizationServer(BaseServer):
         and if successful, asks her to approve granting 'printer.example.com'
         access to her private photos.  Jane approves the request and her
         user-agent is redirected to the callback URI provided by the client
-        in the previous request (line breaks are for display purposes only):
+        in the previous request (line breaks are for display purposes only)::
 
             http://printer.example.com/ready?
             oauth_token=hh5s93j4hdidpola&oauth_verifier=hfdp7dh39dks9884
@@ -267,18 +267,96 @@ class AuthorizationServer(BaseServer):
 
     def create_temporary_credential(self, request):
         """Generate and save a temporary credential into database or cache.
-        A temporary credential is used for exchanging token credential.
+        A temporary credential is used for exchanging token credential. This
+        method should be re-implemented::
+
+            def create_temporary_credential(self, request):
+                oauth_token = generate_token(36)
+                oauth_token_secret = generate_token(48)
+                temporary_credential = TemporaryCredential(
+                    oauth_token=oauth_token,
+                    oauth_token_secret=oauth_token_secret,
+                    client_id=request.client_id,
+                    redirect_uri=request.redirect_uri,
+                )
+                # if the credential has a save method
+                temporary_credential.save()
+                return temporary_credential
+
+        :param request: OAuth1Request instance
+        :return: TemporaryCredential instance
         """
         raise NotImplementedError()
 
     def get_temporary_credential(self, request):
+        """Get the temporary credential from database or cache. A temporary
+        credential should share the same methods as described in models of
+        ``TemporaryCredentialMixin``::
+
+            def get_temporary_credential(self, request):
+                key = 'a-key-prefix:{}'.format(request.token)
+                data = cache.get(key)
+                # TemporaryCredential shares methods from TemporaryCredentialMixin
+                return TemporaryCredential(data)
+
+        :param request: OAuth1Request instance
+        :return: TemporaryCredential instance
+        """
         raise NotImplementedError()
 
     def delete_temporary_credential(self, request):
+        """Delete temporary credential from database or cache. For instance,
+        if temporary credential is saved in cache::
+
+            def delete_temporary_credential(self, request):
+                key = 'a-key-prefix:{}'.format(request.token)
+                cache.delete(key)
+
+        :param request: OAuth1Request instance
+        """
         raise NotImplementedError()
 
     def create_authorization_verifier(self, request):
+        """Create and bind ``oauth_verifier`` to temporary credential. It
+        could be re-implemented in this way::
+
+            def create_authorization_verifier(self, request):
+                verifier = generate_token(36)
+
+                temporary_credential = request.credential
+                temporary_credential.user_id = request.grant_user
+                temporary_credential.oauth_verifier = verifier
+                # if the credential has a save method
+                temporary_credential.save()
+
+                # remember to return the verifier
+                return verifier
+
+        :param request: OAuth1Request instance
+        :return: A string of ``oauth_verifier``
+        """
         raise NotImplementedError()
 
     def create_token_credential(self, request):
+        """Create and save token credential into database. This method would
+        be re-implemented like this::
+
+            def create_token_credential(self, request):
+                oauth_token = generate_token(36)
+                oauth_token_secret = generate_token(48)
+                temporary_credential = request.credential
+
+                token_credential = TokenCredential(
+                    oauth_token=oauth_token,
+                    oauth_token_secret=oauth_token_secret,
+                    client_id=temporary_credential.get_client_id(),
+                    user_id=temporary_credential.get_grant_user()
+                )
+                # if the credential has a save method
+                token_credential.save()
+                return token_credential
+
+        :param request: OAuth1Request instance
+        :return: TokenCredential instance
+        """
         raise NotImplementedError()

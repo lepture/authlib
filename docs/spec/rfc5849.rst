@@ -10,6 +10,18 @@ This section contains the generic implementation of RFC5849_.
 .. module:: authlib.specs.rfc5849
 
 
+Servers
+-------
+
+.. autoclass:: AuthorizationServer
+    :members:
+    :inherited-members:
+
+.. autoclass:: ResourceProtector
+    :members:
+    :inherited-members:
+
+
 Models Mixin
 ------------
 
