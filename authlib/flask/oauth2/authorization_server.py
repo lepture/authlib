@@ -116,7 +116,11 @@ class AuthorizationServer(_AuthorizationServer):
                         error=error
                     )
         """
-        grant = self.get_authorization_grant(request.full_path)
+        grant = self.get_authorization_grant(
+            request.method,
+            request.full_path,
+            request.form.to_dict(flat=True)
+        )
         grant.validate_authorization_request()
         return grant
 
@@ -134,7 +138,10 @@ class AuthorizationServer(_AuthorizationServer):
                 return server.create_authorization_response(grant_user)
         """
         status, body, headers = self.create_valid_authorization_response(
-            request.full_path, grant_user=grant_user
+            request.method,
+            request.full_path,
+            request.form.to_dict(flat=True),
+            grant_user=grant_user
         )
         if isinstance(body, dict):
             body = json.dumps(body)

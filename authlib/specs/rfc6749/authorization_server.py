@@ -35,14 +35,23 @@ class AuthorizationServer(object):
         if grant_cls.ACCESS_TOKEN_ENDPOINT:
             self._token_endpoints.add(grant_cls)
 
-    def get_authorization_grant(self, uri):
+    def get_authorization_grant(self, method, uri, body):
         """Find the authorization grant for current request.
 
+        :param method: HTTP request method.
         :param uri: HTTP request URI string.
+        :param body: HTTP request payload body.
         :return: grant instance
         """
         InsecureTransportError.check(uri)
         params = dict(url_decode(urlparse.urlparse(uri).query))
+
+        if method == 'POST' and body:
+            if isinstance(body, dict):
+                params.update(body)
+            else:
+                params.update(dict(url_decode(body)))
+
         for grant_cls in self._authorization_endpoints:
             if grant_cls.check_authorization_endpoint(params):
                 return grant_cls(
@@ -80,16 +89,18 @@ class AuthorizationServer(object):
                     )
         raise InvalidGrantError()
 
-    def create_valid_authorization_response(self, uri, grant_user):
+    def create_valid_authorization_response(self, method, uri, body, grant_user):
         """Validate authorization request and create authorization response.
 
-        :param uri: requested URI string
+        :param method: HTTP request method.
+        :param uri: HTTP request URI string.
+        :param body: HTTP request payload body.
         :param grant_user: if granted, it is resource owner's ID. If denied,
             it is None.
         :returns: (status_code, body, headers)
         """
         try:
-            grant = self.get_authorization_grant(uri)
+            grant = self.get_authorization_grant(method, uri, body)
         except InvalidGrantError as error:
             body = dict(error.get_body())
             return error.status_code, body, error.get_headers()
