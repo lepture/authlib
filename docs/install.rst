@@ -31,7 +31,7 @@ Authlib is actively developed on GitHub, where the code is
 
 You can either clone the public repository::
 
-    git clone git://github.com/lepture/authlib.git
+    $ git clone git://github.com/lepture/authlib.git
 
 Download the `tarball <https://github.com/lepture/authlib/tarball/master>`_::
 

@@ -46,7 +46,7 @@ html_theme_options = {
     'logo': 'authlib.png',
     'color': '#3E7FCB',
     'navs': [
-        {'url': 'https://authlib.org/', 'title': 'Homepage'},
+        {'url': 'https://authlib.org/', 'title': 'Home'},
         {'url': 'https://play.authlib.org/', 'title': 'Playground'},
         {'url': 'https://github.com/lepture/authlib', 'title': 'GitHub'},
     ],
@@ -72,6 +72,7 @@ html_sidebars = {
         'project.html',
         'localtoc.html',
         'relations.html',
+        'links.html',
         'searchbox.html',
     ]
 }
