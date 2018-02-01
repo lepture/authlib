@@ -201,8 +201,7 @@ class RemoteApp(OAuthClient):
             params = request.args.to_dict(flat=True)
         else:
             request_token = None
-            params = {}
-
+            params = {'code': request.args['code']}
             # verify state
             state_key = '_{}_state_'.format(self.name)
             state = session.pop(state_key, None)
