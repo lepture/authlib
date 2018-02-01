@@ -6,6 +6,14 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 0.4.1
+-------------
+
+**Released on Feb 2, 2018. A Quick Bugfix**
+
+- Fixed missing code params when fetching access token. This bug is
+  introduced when fixing `issue#16`_.
+
 Version 0.4: Tsukino
 --------------------
 
