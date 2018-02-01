@@ -135,7 +135,7 @@ class FlaskOAuthTest(TestCase):
             state = session['_dev_state_']
             self.assertIsNotNone(state)
 
-        with app.test_request_context(path='/?state={}'.format(state)):
+        with app.test_request_context(path='/?code=a&state={}'.format(state)):
             self.assertRaises(OAuthException, client.authorize_access_token)
             # session is cleared in tests
             session['_dev_state_'] = state
