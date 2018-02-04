@@ -120,7 +120,6 @@ class ImplicitGrant(BaseGrant):
                 'The client is not authorized to request an authorization '
                 'code using this method',
                 state=self.state,
-                uri=self.uri,
             )
 
         self.validate_authorization_redirect_uri(client)
@@ -199,7 +198,7 @@ class ImplicitGrant(BaseGrant):
             if self.state:
                 params.append(('state', self.state))
         else:
-            error = AccessDeniedError(state=self.state, uri=self.uri)
+            error = AccessDeniedError(state=self.state)
             params = error.get_body()
 
         uri = add_params_to_uri(self.redirect_uri, params, fragment=True)

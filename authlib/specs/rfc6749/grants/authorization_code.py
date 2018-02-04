@@ -116,7 +116,6 @@ class AuthorizationCodeGrant(BaseGrant):
                 'The client is not authorized to request an authorization '
                 'code using this method',
                 state=self.state,
-                uri=self.uri,
             )
 
         self.validate_authorization_redirect_uri(client)
@@ -167,7 +166,7 @@ class AuthorizationCodeGrant(BaseGrant):
             if self.state:
                 params.append(('state', self.state))
         else:
-            error = AccessDeniedError(state=self.state, uri=self.uri)
+            error = AccessDeniedError(state=self.state)
             params = error.get_body()
 
         uri = add_params_to_uri(self.redirect_uri, params)
@@ -222,13 +221,12 @@ class AuthorizationCodeGrant(BaseGrant):
         client = self.authenticate_client()
 
         if not client.check_grant_type(self.GRANT_TYPE):
-            raise UnauthorizedClientError(uri=self.uri)
+            raise UnauthorizedClientError()
 
         code = self.params.get('code')
         if code is None:
             raise InvalidRequestError(
                 'Missing "code" in request.',
-                uri=self.uri,
             )
 
         # ensure that the authorization code was issued to the authenticated
@@ -238,7 +236,6 @@ class AuthorizationCodeGrant(BaseGrant):
         if not authorization_code:
             raise InvalidRequestError(
                 'Invalid "code" in request.',
-                uri=self.uri,
             )
 
         # validate redirect_uri parameter
@@ -248,7 +245,6 @@ class AuthorizationCodeGrant(BaseGrant):
         if redirect_uri != original_redirect_uri:
             raise InvalidRequestError(
                 'Invalid "redirect_uri" in request.',
-                uri=self.uri,
             )
 
         # save for create_access_token_response
@@ -325,7 +321,7 @@ class AuthorizationCodeGrant(BaseGrant):
             client_id, client_secret = client_params
             client = self.get_and_validate_client(client_id)
             if client_secret != client.client_secret:
-                raise InvalidClientError(uri=self.uri)
+                raise InvalidClientError()
 
             return client
 
@@ -335,7 +331,7 @@ class AuthorizationCodeGrant(BaseGrant):
         client_id = self.params.get('client_id')
         client = self.get_and_validate_client(client_id)
         if client.check_client_type('confidential') or client.client_secret:
-            raise UnauthorizedClientError(uri=self.uri)
+            raise UnauthorizedClientError()
 
         return client
 

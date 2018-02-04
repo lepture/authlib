@@ -96,17 +96,15 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
         client = self.authenticate_client()
 
         if not client.check_grant_type(self.GRANT_TYPE):
-            raise UnauthorizedClientError(uri=self.uri)
+            raise UnauthorizedClientError()
 
         if 'username' not in self.params:
             raise InvalidRequestError(
                 'Missing "username" in request.',
-                uri=self.uri,
             )
         if 'password' not in self.params:
             raise InvalidRequestError(
                 'Missing "password" in request.',
-                uri=self.uri,
             )
 
         user = self.authenticate_user(
@@ -116,7 +114,6 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
         if not user:
             raise InvalidGrantError(
                 'Invalid "username" or "password" in request.',
-                uri=self.uri,
             )
         self.validate_requested_scope(client)
         self._authenticated_client = client
@@ -167,14 +164,14 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
         """
         client_params = self.parse_basic_auth_header()
         if not client_params:
-            raise InvalidClientError(uri=self.uri)
+            raise InvalidClientError()
 
         client_id, client_secret = client_params
         client = self.get_and_validate_client(client_id)
 
         # authenticate the client if client authentication is included
         if client_secret != client.client_secret:
-            raise InvalidClientError(uri=self.uri)
+            raise InvalidClientError()
 
         return client
 

@@ -81,10 +81,10 @@ class RefreshTokenGrant(BaseGrant):
         client = self.authenticate_client()
 
         if not client.check_client_type('confidential'):
-            raise UnauthorizedClientError(uri=self.uri)
+            raise UnauthorizedClientError()
 
         if not client.check_grant_type(self.GRANT_TYPE):
-            raise UnauthorizedClientError(uri=self.uri)
+            raise UnauthorizedClientError()
 
         self._authenticated_client = client
 
@@ -92,24 +92,22 @@ class RefreshTokenGrant(BaseGrant):
         if refresh_token is None:
             raise InvalidRequestError(
                 'Missing "refresh_token" in request.',
-                uri=self.uri,
             )
 
         token = self.authenticate_refresh_token(refresh_token)
         if not token:
             raise InvalidRequestError(
                 'Invalid "refresh_token" in request.',
-                uri=self.uri,
             )
 
         scope = self.params.get('scope')
         if scope:
             original_scope = get_obj_value(token, 'scope')
             if not original_scope:
-                raise InvalidScopeError(uri=self.uri)
+                raise InvalidScopeError()
             original_scope = set(scope_to_list(original_scope))
             if not original_scope.issuperset(set(scope_to_list(scope))):
-                raise InvalidScopeError(uri=self.uri)
+                raise InvalidScopeError()
 
         self._authenticated_token = token
 
@@ -144,14 +142,14 @@ class RefreshTokenGrant(BaseGrant):
         """
         client_params = self.parse_basic_auth_header()
         if not client_params:
-            raise InvalidClientError(uri=self.uri)
+            raise InvalidClientError()
 
         client_id, client_secret = client_params
         client = self.get_and_validate_client(client_id)
 
         # authenticate the client if client authentication is included
         if client_secret != client.client_secret:
-            raise InvalidClientError(uri=self.uri)
+            raise InvalidClientError()
 
         return client
 

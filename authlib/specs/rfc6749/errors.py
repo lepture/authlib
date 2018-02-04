@@ -34,6 +34,7 @@ from authlib.common.security import is_secure_transport
 
 class OAuth2Error(Exception):
     error = None
+    uri = None
     status_code = 400
     description = ''
 
@@ -48,7 +49,8 @@ class OAuth2Error(Exception):
         if status_code is not None:
             self.status_code = status_code
 
-        self.uri = uri
+        if uri is not None:
+            self.uri = uri
         self.state = state
 
     def __str__(self):

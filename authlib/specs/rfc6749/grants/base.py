@@ -53,14 +53,12 @@ class BaseGrant(object):
         if client_id is None:
             raise InvalidClientError(
                 state=self.state,
-                uri=self.uri,
             )
 
         client = self.get_client_by_id(client_id)
         if not client:
             raise InvalidClientError(
                 state=self.state,
-                uri=self.uri,
             )
         return client
 
@@ -77,7 +75,6 @@ class BaseGrant(object):
                 raise InvalidRequestError(
                     'Invalid "redirect_uri" in request.',
                     state=self.state,
-                    uri=self.uri,
                 )
         else:
             redirect_uri = client.get_default_redirect_uri()
@@ -90,4 +87,4 @@ class BaseGrant(object):
     def validate_requested_scope(self, client):
         scopes = self.scopes
         if scopes and not client.check_requested_scopes(set(scopes)):
-            raise InvalidScopeError(state=self.state, uri=self.uri)
+            raise InvalidScopeError(state=self.state)
