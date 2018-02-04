@@ -67,7 +67,7 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
 
 
 def prepare_token_request(grant_type, body='', redirect_uri=None, **kwargs):
-    """Prepare the access token request.
+    """Prepare the access token request. Per `Section 4.1.3`_.
 
     The client makes a request to the token endpoint by adding the
     following parameters using the ``application/x-www-form-urlencoded``
@@ -76,8 +76,6 @@ def prepare_token_request(grant_type, body='', redirect_uri=None, **kwargs):
     :param grant_type: To indicate grant type being used, i.e. "password",
             "authorization_code" or "client_credentials".
     :param body: Existing request body to embed parameters in.
-    :param code: If using authorization code grant, pass the previously
-                 obtained authorization code as the ``code`` argument.
     :param redirect_uri: If the "redirect_uri" parameter was included in the
                          authorization request as described in
                          `Section 4.1.1`_, and their values MUST be identical.
@@ -89,6 +87,7 @@ def prepare_token_request(grant_type, body='', redirect_uri=None, **kwargs):
         &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb
 
     .. _`Section 4.1.1`: http://tools.ietf.org/html/rfc6749#section-4.1.1
+    .. _`Section 4.1.3`: https://tools.ietf.org/html/rfc6749#section-4.1.3
     """
     params = [('grant_type', grant_type)]
 
@@ -97,6 +96,9 @@ def prepare_token_request(grant_type, body='', redirect_uri=None, **kwargs):
 
     if 'scope' in kwargs:
         kwargs['scope'] = list_to_scope(kwargs['scope'])
+
+    if grant_type == 'authorization_code' and 'code' not in kwargs:
+        raise MissingCodeError()
 
     for k in kwargs:
         if kwargs[k]:
