@@ -42,15 +42,15 @@ class RevocationEndpoint(object):
         """
         client_params = self.parse_basic_auth_header()
         if not client_params:
-            raise InvalidClientError(uri=self.uri)
+            raise InvalidClientError()
 
         client_id, client_secret = client_params
         client = self.client_model.get_by_client_id(client_id)
         if not client:
-            raise InvalidClientError(uri=self.uri)
+            raise InvalidClientError()
 
         if client.client_secret != client_secret:
-            raise InvalidClientError(uri=self.uri)
+            raise InvalidClientError()
 
         self._client = client
 
@@ -67,16 +67,16 @@ class RevocationEndpoint(object):
             revocation.
         """
         if 'token' not in self.params:
-            raise InvalidRequestError(uri=self.uri)
+            raise InvalidRequestError()
 
         token_type = self.params.get('token_type_hint')
         if token_type and token_type not in self.supported_token_types:
-            raise UnsupportedTokenTypeError(uri=self.uri)
+            raise UnsupportedTokenTypeError()
         token = self.query_token(
             self.params['token'], token_type, self._client
         )
         if not token:
-            raise InvalidRequestError(uri=self.uri)
+            raise InvalidRequestError()
         self._token = token
 
     def create_revocation_response(self):

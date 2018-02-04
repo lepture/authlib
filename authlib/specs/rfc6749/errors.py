@@ -34,30 +34,30 @@ from authlib.common.security import is_secure_transport
 
 class OAuth2Error(Exception):
     error = None
-    uri = None
+    error_uri = None
+    error_description = ''
     status_code = 400
-    description = ''
 
-    def __init__(self, description=None, status_code=None,
-                 uri=None, state=None):
-        if description is not None:
-            self.description = description
+    def __init__(self, error_description=None, error_uri=None,
+                 state=None, status_code=None):
+        if error_description is not None:
+            self.error_description = error_description
 
-        message = '%s: %s' % (self.error, self.description)
+        message = '%s: %s' % (self.error, self.error_description)
         super(OAuth2Error, self).__init__(message)
 
         if status_code is not None:
             self.status_code = status_code
 
-        if uri is not None:
-            self.uri = uri
+        if error_uri is not None:
+            self.error_uri = error_uri
         self.state = state
 
     def __str__(self):
         return '{} {}: {}'.format(
             self.status_code,
             self.error,
-            self.description
+            self.error_description
         )
 
     def __repr__(self):
@@ -70,10 +70,10 @@ class OAuth2Error(Exception):
     def get_body(self):
         """Get a list of body."""
         error = [('error', self.error)]
-        if self.description:
-            error.append(('error_description', self.description))
-        if self.uri:
-            error.append(('error_uri', self.uri))
+        if self.error_description:
+            error.append(('error_description', self.error_description))
+        if self.error_uri:
+            error.append(('error_uri', self.error_uri))
         if self.state:
             error.append(('state', self.state))
         return error
@@ -89,7 +89,7 @@ class OAuth2Error(Exception):
 
 class InsecureTransportError(OAuth2Error):
     error = 'insecure_transport'
-    description = 'OAuth 2 MUST utilize https.'
+    error_description = 'OAuth 2 MUST utilize https.'
 
     @classmethod
     def check(cls, uri):
@@ -164,7 +164,7 @@ class InvalidScopeError(OAuth2Error):
     https://tools.ietf.org/html/rfc6749#section-5.2
     """
     error = 'invalid_scope'
-    description = 'The requested scope is invalid, unknown, or malformed.'
+    error_description = 'The requested scope is invalid, unknown, or malformed.'
 
 
 class AccessDeniedError(OAuth2Error):
@@ -176,7 +176,7 @@ class AccessDeniedError(OAuth2Error):
     .. _`Section 4.1.2.1`: https://tools.ietf.org/html/rfc6749#section-4.1.2.1
     """
     error = 'access_denied'
-    description = (
+    error_description = (
         'The resource owner or authorization server denied the request'
     )
 
@@ -186,19 +186,19 @@ class AccessDeniedError(OAuth2Error):
 
 class MissingCodeError(OAuth2Error):
     error = 'missing_code'
-    description = 'Missing "code" in response.'
+    error_description = 'Missing "code" in response.'
 
 
 class MissingTokenError(OAuth2Error):
     error = 'missing_token'
-    description = 'Missing "access_token" in response.'
+    error_description = 'Missing "access_token" in response.'
 
 
 class MissingTokenTypeError(OAuth2Error):
     error = 'missing_token_type'
-    description = 'Missing "token_type" in response.'
+    error_description = 'Missing "token_type" in response.'
 
 
 class MismatchingStateError(OAuth2Error):
     error = 'mismatching_state'
-    description = 'CSRF Warning! State not equal in request and response.'
+    error_description = 'CSRF Warning! State not equal in request and response.'

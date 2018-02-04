@@ -12,14 +12,14 @@ from authlib.common.security import is_secure_transport
 
 class OAuth1Error(Exception):
     error = None
+    error_description = ''
     status_code = 400
-    description = ''
 
-    def __init__(self, description=None, status_code=None):
-        if description is not None:
-            self.description = description
+    def __init__(self, error_description=None, status_code=None):
+        if error_description is not None:
+            self.error_description = error_description
 
-        message = '%s: %s' % (self.error, self.description)
+        message = '%s: %s' % (self.error, self.error_description)
         super(OAuth1Error, self).__init__(message)
 
         if status_code is not None:
@@ -29,7 +29,7 @@ class OAuth1Error(Exception):
         return '{} {}: {}'.format(
             self.status_code,
             self.error,
-            self.description
+            self.error_description
         )
 
     def __repr__(self):
@@ -42,8 +42,8 @@ class OAuth1Error(Exception):
     def get_body(self):
         """Get a list of body."""
         error = [('error', self.error)]
-        if self.description:
-            error.append(('error_description', self.description))
+        if self.error_description:
+            error.append(('error_description', self.error_description))
         return error
 
     def get_headers(self):
@@ -57,7 +57,7 @@ class OAuth1Error(Exception):
 
 class InsecureTransportError(OAuth1Error):
     error = 'insecure_transport'
-    description = 'OAuth 2 MUST utilize https.'
+    error_description = 'OAuth 2 MUST utilize https.'
 
     @classmethod
     def check(cls, uri):
@@ -96,7 +96,7 @@ class InvalidClientError(OAuth1Error):
 
 class InvalidTokenError(OAuth1Error):
     error = 'invalid_token'
-    description = 'Invalid or expired "oauth_token" in parameters'
+    error_description = 'Invalid or expired "oauth_token" in parameters'
     status_code = 401
 
 
@@ -112,7 +112,7 @@ class InvalidNonceError(OAuth1Error):
 
 class AccessDeniedError(OAuth1Error):
     error = 'access_denied'
-    description = (
+    error_description = (
         'The resource owner or authorization server denied the request'
     )
 
