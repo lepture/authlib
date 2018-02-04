@@ -15,4 +15,5 @@ htmlcov/
 venv/
 .tox
 .coverage*
+.pytest_cache/
 *.egg
