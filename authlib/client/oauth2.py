@@ -2,6 +2,7 @@ import logging
 from requests import Session
 from requests.auth import HTTPBasicAuth
 from .errors import OAuthException
+from ..deprecate import deprecate
 from ..common.security import generate_token
 from ..common.urls import url_decode
 from ..specs.rfc6749.parameters import (
@@ -54,11 +55,13 @@ class OAuth2Session(Session):
         if refresh_token_url is None and 'auto_refresh_url' in kwargs:
             # compatible with requests-oauthlib
             refresh_token_url = kwargs.pop('auto_refresh_url')
+            deprecate('Use "refresh_token_url" instead of "auto_refresh_url"', '0.7')
         self.refresh_token_url = refresh_token_url
 
         if refresh_token_params is None and 'auto_refresh_kwargs' in kwargs:
             # compatible with requests-oauthlib
             refresh_token_params = kwargs.pop('auto_refresh_kwargs')
+            deprecate('Use "refresh_token_params" instead of "auto_refresh_kwargs"', '0.7')
         self.refresh_token_params = refresh_token_params
 
         self.scope = scope

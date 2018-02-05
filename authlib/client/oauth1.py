@@ -71,12 +71,12 @@ class OAuth1Session(Session):
         super(OAuth1Session, self).__init__()
 
         if 'resource_owner_key' in kwargs:
-            deprecate('Use "token" instead of "resource_owner_key"', '0.6')
+            deprecate('Use "token" instead of "resource_owner_key"', '0.7')
             if token is None:
                 token = kwargs.pop('resource_owner_key', None)
 
         if 'resource_owner_secret' in kwargs:
-            deprecate('Use "token_secret" instead of "resource_owner_secret"', '0.6')
+            deprecate('Use "token_secret" instead of "resource_owner_secret"', '0.7')
             if token_secret is None:
                 token_secret = kwargs.pop('resource_owner_secret', None)
 
