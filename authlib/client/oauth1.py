@@ -5,8 +5,8 @@ import json
 from requests import Session
 from requests.auth import AuthBase
 from requests.utils import to_native_string
-from authlib.common.compat import deprecate
 from .errors import OAuthException
+from ..deprecate import deprecate
 from ..common.encoding import to_unicode
 from ..common.urls import (
     url_decode,
@@ -71,12 +71,12 @@ class OAuth1Session(Session):
         super(OAuth1Session, self).__init__()
 
         if 'resource_owner_key' in kwargs:
-            deprecate('Use "token" instead of "resource_owner_key"')
+            deprecate('Use "token" instead of "resource_owner_key"', '0.6')
             if token is None:
                 token = kwargs.pop('resource_owner_key', None)
 
         if 'resource_owner_secret' in kwargs:
-            deprecate('Use "token_secret" instead of "resource_owner_secret"')
+            deprecate('Use "token_secret" instead of "resource_owner_secret"', '0.6')
             if token_secret is None:
                 token_secret = kwargs.pop('resource_owner_secret', None)
 

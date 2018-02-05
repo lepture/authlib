@@ -1,11 +1,10 @@
 import uuid
-import warnings
 import functools
 from flask import request, redirect, session
 from werkzeug.local import LocalProxy
 from authlib.client.errors import OAuthException
 from authlib.client.client import OAuthClient
-from authlib.common.compat import deprecate
+from authlib.deprecate import deprecate
 from ..cache import Cache
 
 __all__ = ['OAuth', 'RemoteApp']
@@ -85,7 +84,8 @@ class OAuth(object):
                 'Use "{}" instead of "{}".'.format(
                     conf_key.replace('CLIENT_KEY', 'CLIENT_ID'),
                     conf_key
-                )
+                ),
+                '0.6'
             )
 
         fetch_token = kwargs.pop('fetch_token', None)
