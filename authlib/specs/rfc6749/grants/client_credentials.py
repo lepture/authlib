@@ -126,7 +126,7 @@ class ClientCredentialsGrant(BaseGrant):
         client = self.get_and_validate_client(client_id)
 
         # authenticate the client if client authentication is included
-        if client_secret != client.client_secret:
+        if not client.check_client_secret(client_secret):
             raise InvalidClientError()
 
         return client

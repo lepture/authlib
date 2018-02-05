@@ -320,7 +320,7 @@ class AuthorizationCodeGrant(BaseGrant):
             # authenticate the client if client authentication is included
             client_id, client_secret = client_params
             client = self.get_and_validate_client(client_id)
-            if client_secret != client.client_secret:
+            if not client.check_client_secret(client_secret):
                 raise InvalidClientError()
 
             return client
@@ -330,7 +330,8 @@ class AuthorizationCodeGrant(BaseGrant):
         # authentication requirements)
         client_id = self.params.get('client_id')
         client = self.get_and_validate_client(client_id)
-        if client.check_client_type('confidential') or client.client_secret:
+        if client.check_client_type('confidential') or \
+                client.has_client_secret():
             raise UnauthorizedClientError()
 
         return client
