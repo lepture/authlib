@@ -11,7 +11,8 @@ class AuthorizationCodeTest(TestCase):
     def register_grant_endpoint(self, server):
         server.register_grant_endpoint(AuthorizationCodeGrant)
 
-    def prepare_data(self, is_confidential=True, response_types='code'):
+    def prepare_data(self, is_confidential=True,
+                     response_types='code', grant_type='authorization_code'):
         server = create_authorization_server(self.app)
         self.register_grant_endpoint(server)
 
@@ -26,6 +27,7 @@ class AuthorizationCodeTest(TestCase):
             allowed_scopes='profile address',
             is_confidential=is_confidential,
             allowed_response_types=response_types,
+            allowed_grant_types=grant_type,
         )
         self.authorize_url = (
             '/oauth/authorize?response_type=code'
@@ -121,6 +123,16 @@ class AuthorizationCodeTest(TestCase):
             'code': code,
             'client_id': 'code-client',
         })
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['error'], 'unauthorized_client')
+
+    def test_invalid_grant_type(self):
+        self.prepare_data(False, grant_type='invalid')
+        headers = self.create_basic_header('code-client', 'code-secret')
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': 'authorization_code',
+            'code': 'a',
+        }, headers=headers)
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'unauthorized_client')
 

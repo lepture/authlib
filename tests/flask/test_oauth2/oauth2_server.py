@@ -44,9 +44,13 @@ class Client(db.Model, OAuth2ClientMixin):
     )
     user = db.relationship('User')
     allowed_response_types = db.Column(db.Text, default='code token')
+    allowed_grant_types = db.Column(db.Text, default='')
 
     def check_response_type(self, response_type):
         return response_type in self.allowed_response_types.split()
+
+    def check_grant_type(self, grant_type):
+        return grant_type in self.allowed_grant_types.split()
 
 
 class AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):

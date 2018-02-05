@@ -6,7 +6,7 @@ from .oauth2_server import create_authorization_server
 
 
 class ClientCredentialsTest(TestCase):
-    def prepare_data(self):
+    def prepare_data(self, grant_type='client_credentials'):
         server = create_authorization_server(self.app)
         server.register_grant_endpoint(ClientCredentialsGrant)
 
@@ -20,6 +20,7 @@ class ClientCredentialsTest(TestCase):
             default_redirect_uri='http://localhost/authorized',
             allowed_scopes='profile',
             is_confidential=True,
+            allowed_grant_types=grant_type,
         )
         db.session.add(client)
         db.session.commit()
@@ -40,6 +41,17 @@ class ClientCredentialsTest(TestCase):
         }, headers=headers)
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'invalid_client')
+
+    def test_invalid_grant_type(self):
+        self.prepare_data(grant_type='invalid')
+        headers = self.create_basic_header(
+            'credential-client', 'credential-secret'
+        )
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': 'client_credentials',
+        }, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['error'], 'unauthorized_client')
 
     def test_invalid_scope(self):
         self.prepare_data()

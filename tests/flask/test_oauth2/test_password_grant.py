@@ -6,7 +6,7 @@ from .oauth2_server import create_authorization_server
 
 
 class PasswordTest(TestCase):
-    def prepare_data(self):
+    def prepare_data(self, grant_type='password'):
         server = create_authorization_server(self.app)
         server.register_grant_endpoint(AuthorizationCodeGrant)
         server.register_grant_endpoint(PasswordGrant)
@@ -20,6 +20,7 @@ class PasswordTest(TestCase):
             client_secret='password-secret',
             default_redirect_uri='http://localhost/authorized',
             allowed_scopes='profile',
+            allowed_grant_types=grant_type,
             is_confidential=True,
         )
         db.session.add(client)
@@ -92,6 +93,19 @@ class PasswordTest(TestCase):
         }, headers=headers)
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'invalid_grant')
+
+    def test_invalid_grant_type(self):
+        self.prepare_data(grant_type='invalid')
+        headers = self.create_basic_header(
+            'password-client', 'password-secret'
+        )
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': 'password',
+            'username': 'foo',
+            'password': 'ok',
+        }, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['error'], 'unauthorized_client')
 
     def test_authorize_token(self):
         self.prepare_data()
