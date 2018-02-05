@@ -125,7 +125,7 @@ class AuthorizationServer(_AuthorizationServer):
         """
         grant = self.get_authorization_grant(
             request.method,
-            request.full_path,
+            request.url,
             request.form.to_dict(flat=True)
         )
         grant.validate_authorization_request()
@@ -146,7 +146,7 @@ class AuthorizationServer(_AuthorizationServer):
         """
         status, body, headers = self.create_valid_authorization_response(
             request.method,
-            request.full_path,
+            request.url,
             request.form.to_dict(flat=True),
             grant_user=grant_user
         )
@@ -164,7 +164,7 @@ class AuthorizationServer(_AuthorizationServer):
         """
         status, body, headers = self.create_valid_token_response(
             request.method,
-            request.full_path,
+            request.url,
             request.form.to_dict(flat=True),
             request.headers
         )
@@ -185,7 +185,7 @@ class AuthorizationServer(_AuthorizationServer):
             params = request.form.to_dict(flat=True)
 
         endpoint = self.revoke_token_endpoint(
-            request.full_path, params, request.headers, self.client_model
+            request.url, params, request.headers, self.client_model
         )
         status, body, headers = endpoint.create_revocation_response()
         return Response(json.dumps(body), status=status, headers=headers)
