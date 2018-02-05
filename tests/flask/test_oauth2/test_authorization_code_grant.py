@@ -70,6 +70,7 @@ class AuthorizationCodeTest(TestCase):
         }, headers=headers)
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'invalid_client')
+        self.assertEqual(resp['error_uri'], 'https://a.b/e#invalid_client')
 
     def test_invalid_code(self):
         self.prepare_data()

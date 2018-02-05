@@ -32,6 +32,22 @@
 from authlib.common.security import is_secure_transport
 
 
+_error_uris = {}
+
+
+def register_error_uri(error, error_uri):
+    """Register ``error_uri`` for each error code. When raise an OAuth2Error
+    without ``error_uri``, it will use the URI in this registry::
+
+        register_error_uri('invalid_client', 'https://example.com/errors#invalid-client')
+
+    :param error: OAuth 2 error code.
+    :param error_uri: A human-readable web page with information about the error.
+    """
+    global _error_uris
+    _error_uris[error] = error_uri
+
+
 class OAuth2Error(Exception):
     error = None
     error_uri = None
@@ -49,7 +65,9 @@ class OAuth2Error(Exception):
         if status_code is not None:
             self.status_code = status_code
 
-        if error_uri is not None:
+        if error_uri is None:
+            self.error_uri = _error_uris.get(self.error)
+        else:
             self.error_uri = error_uri
         self.state = state
 

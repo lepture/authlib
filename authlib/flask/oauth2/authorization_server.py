@@ -1,6 +1,7 @@
 from werkzeug.utils import import_string
 from flask import request, Response, json
 from authlib.specs.rfc6749 import (
+    register_error_uri,
     AuthorizationServer as _AuthorizationServer,
 )
 from authlib.specs.rfc6750 import BearerToken
@@ -44,6 +45,12 @@ class AuthorizationServer(_AuthorizationServer):
         for k in GRANT_TYPES_EXPIRES:
             conf_key = 'OAUTH2_EXPIRES_{}'.format(k.upper())
             app.config.setdefault(conf_key, GRANT_TYPES_EXPIRES[k])
+
+        # register error uri
+        error_uris = app.config.get('OAUTH2_ERROR_URIS')
+        if error_uris:
+            for k, v in error_uris:
+                register_error_uri(k, v)
 
         self.app = app
         self.token_generator = self.create_bearer_token_generator(app)

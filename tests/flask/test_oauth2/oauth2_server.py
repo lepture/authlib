@@ -223,7 +223,10 @@ def create_flask_app():
     app.secret_key = 'testing'
     app.config.update({
         'SQLALCHEMY_TRACK_MODIFICATIONS': False,
-        'SQLALCHEMY_DATABASE_URI': 'sqlite://'
+        'SQLALCHEMY_DATABASE_URI': 'sqlite://',
+        'OAUTH2_ERROR_URIS': [
+            ('invalid_client', 'https://a.b/e#invalid_client')
+        ]
     })
     return app
 

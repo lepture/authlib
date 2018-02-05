@@ -121,6 +121,7 @@ OAUTH2_ACCESS_TOKEN_GENERATOR      A string of module path for importing a
 OAUTH2_REFRESH_TOKEN_GENERATOR     A string of module path for importing a
                                    function to generate ``refresh_token``. It can
                                    also be ``True/False``
+OAUTH2_ERROR_URIS                  A list of tuple for (``error``, ``error_uri``)
 ================================== ===============================================
 
 Now define an endpoint for authorization. This endpoint is used by
