@@ -63,14 +63,18 @@ class AuthorizationServer(_AuthorizationServer):
             token_generator = import_string(token_generator)
         else:
             length = app.config.get('OAUTH1_TOKEN_LENGTH', 42)
-            token_generator = lambda: generate_token(length)
+
+            def token_generator():
+                return generate_token(length)
 
         secret_generator = app.config.get('OAUTH1_TOKEN_SECRET_GENERATOR')
         if isinstance(secret_generator, str):
             secret_generator = import_string(secret_generator)
         else:
             length = app.config.get('OAUTH1_TOKEN_SECRET_LENGTH', 48)
-            secret_generator = lambda: generate_token(length)
+
+            def secret_generator():
+                return generate_token(length)
 
         def create_token():
             return {

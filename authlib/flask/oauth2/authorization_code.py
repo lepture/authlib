@@ -53,4 +53,3 @@ def register_cache_authorization_code(
             create_access_token(token, client, authorization_code)
 
     authorization_server.register_grant_endpoint(CodeGrant)
-
