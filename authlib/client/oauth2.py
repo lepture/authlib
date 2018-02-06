@@ -135,8 +135,8 @@ class OAuth2Session(Session):
         :param body: Optional application/x-www-form-urlencoded body to add the
                      include in the token request. Prefer kwargs over body.
         :param auth: An auth tuple or method as accepted by requests.
-        :param username: Username used by legacy clients.
-        :param password: Password used by legacy clients.
+        :param username: Username of the resource owner for password grant.
+        :param password: Password of the resource owner for password grant.
         :param method: The HTTP method used to make the request. Defaults
                        to POST, but may also be GET. Other methods should
                        be added as needed.
@@ -152,17 +152,27 @@ class OAuth2Session(Session):
 
         InsecureTransportError.check(url)
 
-        body = self._prepare_authorization_code_body(
-            code, authorization_response, body, **kwargs)
+        if code or authorization_response:
+            body = self._prepare_authorization_code_body(
+                code, authorization_response, body, **kwargs)
+        elif username and password:
+            body = prepare_token_request(
+                'password', body,
+                username=username, password=password,
+                client_id=self.client_id, **kwargs
+            )
+        else:
+            grant_type = kwargs.pop('grant_type', 'client_credentials')
+            body = prepare_token_request(
+                grant_type, body,
+                client_id=self.client_id, **kwargs
+            )
 
         if auth is None:
-            if username and password:
-                auth = HTTPBasicAuth(username, password)
-            else:
-                client_secret = self.client_secret
-                if client_secret is None:
-                    client_secret = ''
-                auth = HTTPBasicAuth(self.client_id, client_secret)
+            client_secret = self.client_secret
+            if client_secret is None:
+                client_secret = ''
+            auth = HTTPBasicAuth(self.client_id, client_secret)
 
         if headers is None:
             headers = DEFAULT_HEADERS
@@ -281,13 +291,13 @@ class OAuth2Session(Session):
         )
 
     def request(self, method, url, data=None, headers=None,
-                withhold_token=False, **kwargs):
+                withhold_token=False, auth=None, **kwargs):
 
         if self.token and not withhold_token:
             if self.token.is_expired():
                 if not self.refresh_token_url:
                     raise OAuthException('Token is expired.')
-                auth = kwargs.pop('auth', None)
+
                 if auth is None and self.client_id and self.client_secret:
                     auth = HTTPBasicAuth(self.client_id, self.client_secret)
 

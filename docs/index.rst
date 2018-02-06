@@ -65,7 +65,7 @@ This part of the documentation contains information on the server parts.
    flask/oauth1
    flask/oauth2
 
-.. note:: Django support will be added later.
+.. note:: Django support will be added in Version 0.6.
 
 Specifications
 --------------

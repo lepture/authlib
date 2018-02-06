@@ -4,7 +4,7 @@ OAuth 1 Session
 ===============
 
 .. meta::
-   :description: An OAuth 1 implementation for requests Session, powered
+    :description: An OAuth 1 implementation for requests Session, powered
         by Authlib.
 
 .. module:: authlib.client
@@ -89,6 +89,7 @@ Now fetch the access token with this response::
         'screen_name': 'lepture',
         'x_auth_expires': '0'
     }
+    >>> save_request_token(token)
 
 Save this token to access protected resources.
 
@@ -97,14 +98,14 @@ redirected to authorization endpoint, our session is over. In this case, when
 the authorization server send us back to our server, we need to create another
 session::
 
-    >>> # restore your saved request token
-    >>> request_token = restore_request_token_back()
-    >>> resource_owner_key = request_token['oauth_token']
-    >>> resource_owner_secret = request_token['oauth_token_secret']
+    >>> # restore your saved request token, which is a dict
+    >>> request_token = restore_request_token()
+    >>> oauth_token = request_token['oauth_token']
+    >>> oauth_token_secret = request_token['oauth_token_secret']
     >>> session = OAuth1Session(
     ...     client_id, client_secret,
-    ...     resource_owner_key=resource_owner_key,
-    ...     resource_owner_secret=resource_owner_secret)
+    ...     token=oauth_token,
+    ...     token_secret=oauth_token_secret)
     >>> # there is no need for `parse_authorization_response` if you can get `verifier`
     >>> verifier = request.args.get('verifier')
     >>> access_token_url = 'https://api.twitter.com/oauth/access_token'
@@ -126,12 +127,12 @@ The above is not the real flow, just like what we did in
 :ref:`fetch_oauth1_access_token`, we need to create another session ourselves::
 
     >>> access_token = restore_access_token_from_database()
-    >>> resource_owner_key = access_token['oauth_token']
-    >>> resource_owner_secret = access_token['oauth_token_secret']
+    >>> oauth_token = access_token['oauth_token']
+    >>> oauth_token_secret = access_token['oauth_token_secret']
     >>> session = OAuth1Session(
     ...     client_id, client_secret,
-    ...     resource_owner_key=resource_owner_key,
-    ...     resource_owner_secret=resource_owner_secret)
+    ...     token=oauth_token,
+    ...     token_secret=oauth_token_secret)
     >>> account_url = 'https://api.twitter.com/1.1/account/verify_credentials.json'
     >>> resp = session.get(account_url)
 

@@ -13,9 +13,6 @@ from authlib.specs.rfc6749 import (
 from ..client_base import mock_json_response
 
 
-fake_time = int(time.time())
-
-
 class OAuth2SessionTest(TestCase):
 
     def setUp(self):
@@ -24,7 +21,7 @@ class OAuth2SessionTest(TestCase):
             'access_token': 'a',
             'refresh_token': 'b',
             'expires_in': '3600',
-            'expires_at': fake_time + 3600,
+            'expires_at': int(time.time()) + 3600,
         }
         self.client_id = 'foo'
 
@@ -78,7 +75,6 @@ class OAuth2SessionTest(TestCase):
         self.assertIn(self.client_id, auth_url)
         self.assertIn('response_type=code', auth_url)
 
-    @mock.patch("time.time", new=lambda: fake_time)
     def test_token_from_fragment(self):
         sess = OAuth2Session(self.client_id)
         response_url = 'https://i.b/callback#' + url_encode(self.token.items())
@@ -86,19 +82,20 @@ class OAuth2SessionTest(TestCase):
         token = sess.fetch_access_token(authorization_response=response_url)
         self.assertEqual(token, self.token)
 
-    @mock.patch("time.time", new=lambda: fake_time)
-    def test_fetch_token(self):
+    def test_fetch_access_token_with_post(self):
         url = 'https://example.com/token'
 
         def fake_send(r, **kwargs):
             self.assertIn('code=v', r.body)
+            self.assertIn('grant_type=authorization_code', r.body)
             resp = mock.MagicMock()
             resp.json = lambda: self.token
             return resp
 
-        sess = OAuth2Session(client_id=self.client_id, token=self.token)
+        sess = OAuth2Session(client_id=self.client_id)
         sess.send = fake_send
         self.assertEqual(sess.fetch_access_token(url, code='v'), self.token)
+
         self.assertEqual(
             sess.fetch_access_token(
                 url, authorization_response='https://i.b/?code=v'),
@@ -109,7 +106,21 @@ class OAuth2SessionTest(TestCase):
         sess.send = mock_json_response(error)
         self.assertRaises(OAuthException, sess.fetch_access_token, url)
 
-    @mock.patch("time.time", new=lambda: fake_time)
+    def test_fetch_access_token_with_get(self):
+        url = 'https://example.com/token'
+
+        def fake_send(r, **kwargs):
+            self.assertIn('code=v', r.url)
+            self.assertIn('grant_type=authorization_code', r.url)
+            resp = mock.MagicMock()
+            resp.json = lambda: self.token
+            return resp
+
+        sess = OAuth2Session(client_id=self.client_id)
+        sess.send = fake_send
+        token = sess.fetch_access_token(url, code='v', method='GET')
+        self.assertEqual(token, self.token)
+
     def test_access_token_response_hook(self):
         url = 'https://example.com/token'
 
@@ -124,6 +135,35 @@ class OAuth2SessionTest(TestCase):
         )
         sess.send = mock_json_response(self.token)
         self.assertEqual(sess.fetch_access_token(url), self.token)
+
+    def test_password_grant_type(self):
+        url = 'https://example.com/token'
+
+        def fake_send(r, **kwargs):
+            self.assertIn('username=v', r.body)
+            self.assertIn('grant_type=password', r.body)
+            resp = mock.MagicMock()
+            resp.json = lambda: self.token
+            return resp
+
+        sess = OAuth2Session(client_id=self.client_id)
+        sess.send = fake_send
+        token = sess.fetch_access_token(url, username='v', password='v')
+        self.assertEqual(token, self.token)
+
+    def test_client_credentials_type(self):
+        url = 'https://example.com/token'
+
+        def fake_send(r, **kwargs):
+            self.assertIn('grant_type=client_credentials', r.body)
+            resp = mock.MagicMock()
+            resp.json = lambda: self.token
+            return resp
+
+        sess = OAuth2Session(client_id=self.client_id, client_secret='v')
+        sess.send = fake_send
+        token = sess.fetch_access_token(url)
+        self.assertEqual(token, self.token)
 
     def test_cleans_previous_token_before_fetching_new_one(self):
         """Makes sure the previous token is cleaned before fetching a new one.

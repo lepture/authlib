@@ -4,7 +4,7 @@ OAuth 2 Session
 ===============
 
 .. meta::
-   :description: An OAuth 2 implementation for requests Session, powered
+    :description: An OAuth 2 implementation for requests Session, powered
         by Authlib.
 
 .. module:: authlib.client
@@ -13,8 +13,12 @@ The :class:`OAuth2Session` in Authlib is designed to be compatible
 with the one in **requests-oauthlib**. This section is a guide on
 how to obtain an access token in OAuth 2 flow.
 
-There are two steps in OAuth 2 to obtain an access token. Initialize
-the session for reuse::
+
+OAuth2Session for Authorization Code
+------------------------------------
+
+There are two steps in OAuth 2 to obtain an access token with authorization
+code grant type. Initialize the session for reuse::
 
     >>> from authlib.client import OAuth2Session
     >>> client_id = 'Your GitHub client ID'
@@ -26,7 +30,7 @@ You can assign a ``redirect_uri`` in case you want to specify the callback
 url.
 
 Redirect to Authorization Endpoint
-----------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Unlike OAuth 1, there is no request token. The first step is to jump to
 the remote authorization server::
@@ -44,7 +48,7 @@ Now head over to the generated authorization url, and grant the authorization.
 .. _fetch_oauth2_access_token:
 
 Fetch Access Token
-------------------
+~~~~~~~~~~~~~~~~~~
 
 The authorization server will redirect you back to your site with a code and
 state arguments::
@@ -73,11 +77,13 @@ another website. You need to create another session yourself::
     >>> session = OAuth2Session(client_id, client_secret, state=state)
     >>> session.fetch_access_token(access_token_url, authorization_response=authorization_response)
 
-The Token Response Type
------------------------
+Authlib has a built-in Flask/Django integration. Learn from them.
 
-The default ``response_type`` is ``code``. There are other response types in
-OAuth 2. Let's try ``token``::
+OAuth2Session for Implicit
+--------------------------
+
+OAuth2Session supports implicit grant type. It can fetch the access token with
+the ``response_type`` of ``token``::
 
     >>> uri, state = session.authorization_url(authorize_url, response_type='token')
 
@@ -89,8 +95,47 @@ Fetch access token from the fragment with :meth:`OAuth2Session.fetch_access_toke
 
     >>> token = session.fetch_access_token(authorization_response=authorization_response)
     >>> # if you don't specify access token endpoint, it will fetch from fragment.
+    >>> print(token)
+    {'access_token': '2..WpA', 'token_type': 'bearer', 'expires_in': 3600}
 
 .. note:: GitHub doesn't support ``token`` response type, try with other services.
+
+
+OAuth2Session for Password
+--------------------------
+
+The ``password`` grant type is supported since Version 0.5. Use ``username``
+and ``password`` to fetch the access token::
+
+    >>> token = session.fetch_access_token(token_url, username='a-name', password='a-password')
+
+OAuth2Session for Client Credentials
+------------------------------------
+
+The ``client_credentials`` grant type is supported since Version 0.5. If no
+``code`` or no user info provided, it would be a ``client_credentials``
+request. But it is suggested that you specify a ``grant_type`` for it::
+
+    >>> token = session.fetch_access_token(token_url)
+    >>> # or with grant_type
+    >>> token = session.fetch_access_token(token_url, grant_type='client_credentials')
+
+Client Authentication
+---------------------
+
+When fetching access token, the authorization server will require a client
+authentication, which is usually a **Basic** HTTP authentication of client_id
+and client_secret. :class:`OAuth2Session` is using this authenticate method
+by default, which is::
+
+    >>> from requests.auth import HTTPBasicAuth
+    >>> auth = HTTPBasicAuth(client_id, client_secret)
+
+If the authorization server requires other means of authentication, you can
+construct an ``auth`` for requests, and pass it to ``fetch_access_token``::
+
+    >>> auth = YourAuth(...)
+    >>> token = session.fetch_access_token(token_url, auth=auth, ...)
 
 Access Protected Resources
 --------------------------
@@ -109,6 +154,7 @@ The above is not the real flow, just like what we did in
 ourselves::
 
     >>> token = restore_access_token_from_database()
+    >>> # token is a dict which must contain ``access_token``, ``token_type``
     >>> session = OAuth2Session(client_id, client_secret, token=token)
     >>> account_url = 'https://api.github.com/user'
     >>> resp = session.get(account_url)
