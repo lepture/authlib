@@ -14,6 +14,7 @@ from authlib.specs.rfc5849 import OAuth1Error
 from authlib.common.urls import url_decode, url_encode
 from authlib.common.encoding import to_unicode
 from tests.util import get_rsa_public_key
+from ..cache import SimpleCache
 os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
 
 
@@ -52,9 +53,11 @@ class Token(db.Model, OAuth1TokenCredentialMixin):
 
 def create_authorization_server(app, use_cache=False):
     if use_cache:
-        app.config.update({'OAUTH1_AUTH_CACHE_TYPE': 'simple'})
+        cache = SimpleCache()
+    else:
+        cache = None
 
-    server = AuthorizationServer(Client, app=app)
+    server = AuthorizationServer(Client, app=app, cache=cache)
     register_authorization_hooks(server, db.session, Token)
 
     @app.route('/oauth/initiate', methods=['GET', 'POST'])
@@ -90,15 +93,20 @@ def create_authorization_server(app, use_cache=False):
 
 def create_resource_server(app, use_cache=False):
     if use_cache:
-        app.config.update({'OAUTH1_RESOURCE_CACHE_TYPE': 'simple'})
+        cache = SimpleCache()
+    else:
+        cache = None
 
-    def get_token(client_id, token_string):
+    def query_token(client_id, token_string):
         return Token.query.filter_by(
             client_id=client_id,
             oauth_token=token_string
         ).first()
 
-    require_oauth = ResourceProtector(Client, get_token, app=app)
+    require_oauth = ResourceProtector(
+        Client, app=app, cache=cache,
+        query_token=query_token
+    )
 
     @app.route('/user')
     @require_oauth()

@@ -22,10 +22,10 @@ class AuthorizationServer(_AuthorizationServer):
         server.init_app(app)
     """
 
-    def __init__(self, client_model, token_generator=None, app=None):
+    def __init__(self, client_model, app=None, cache=None, token_generator=None):
         super(AuthorizationServer, self).__init__(client_model)
-        self.app = None
-        self.cache = None
+        self.app = app
+        self.cache = cache
         self.token_generator = token_generator
 
         self._hooks = {
@@ -39,11 +39,17 @@ class AuthorizationServer(_AuthorizationServer):
         if app is not None:
             self.init_app(app)
 
-    def init_app(self, app):
+    def init_app(self, app, cache=None, token_generator=None):
+        if token_generator:
+            self.token_generator = token_generator
+
         if self.token_generator is None:
             self.token_generator = self.create_token_generator(app)
+
         if app.config.get('OAUTH1_AUTH_CACHE_TYPE'):
             self.cache = Cache(app, config_prefix='OAUTH1_AUTH')
+        elif cache:
+            self.cache = cache
 
         methods = app.config.get('OAUTH1_SUPPORTED_SIGNATURE_METHODS')
         if methods and isinstance(methods, (list, tuple)):

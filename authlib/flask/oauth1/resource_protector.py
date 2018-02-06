@@ -14,19 +14,21 @@ _JSON_HEADERS = [
 
 
 class ResourceProtector(_ResourceProtector):
-    def __init__(
-            self, client_model, query_token, exists_nonce=None, app=None):
+    def __init__(self, client_model, app=None, cache=None,
+                 query_token=None, exists_nonce=None):
         super(ResourceProtector, self).__init__(client_model)
         self._query_token = query_token
         self._exists_nonce = exists_nonce
-        self.cache = None
-        self.app = None
+        self.cache = cache
+        self.app = app
         if app:
             self.init_app(app)
 
-    def init_app(self, app):
+    def init_app(self, app, cache=None):
         if app.config.get('OAUTH1_RESOURCE_CACHE_TYPE'):
             self.cache = Cache(app, config_prefix='OAUTH1_RESOURCE')
+        elif cache:
+            self.cache = cache
 
         methods = app.config.get('OAUTH1_SUPPORTED_SIGNATURE_METHODS')
         if methods and isinstance(methods, (list, tuple)):
