@@ -4,7 +4,7 @@ The OAuth 2.0 Authorization Framework
 =====================================
 
 .. meta::
-   :description: API references on RFC6749 Authlib implementation.
+    :description: API references on RFC6749 Authlib implementation.
 
 This section contains the generic implementation of RFC6749_.
 
@@ -16,16 +16,43 @@ Servers
 .. module:: authlib.specs.rfc6749
 
 .. autoclass:: AuthorizationServer
-   :members:
+    :members:
 
 .. autoclass:: ResourceProtector
-   :members:
+    :members:
 
 Client Model
 ------------
 
 .. autoclass:: ClientMixin
-   :members:
+    :members:
+
+.. _specs/rfc6949-errors:
+
+Errors
+------
+
+.. autoclass:: OAuth2Error
+    :members:
+
+.. autofunction:: register_error_uri
+
+.. autoclass:: InsecureTransportError
+    :members:
+
+.. autoclass:: InvalidRequestError
+
+.. autoclass:: InvalidClientError
+
+.. autoclass:: InvalidGrantError
+
+.. autoclass:: UnauthorizedClientError
+
+.. autoclass:: UnsupportedGrantTypeError
+
+.. autoclass:: InvalidScopeError
+
+.. autoclass:: AccessDeniedError
 
 Grants
 ------
@@ -33,24 +60,24 @@ Grants
 .. module:: authlib.specs.rfc6749.grants
 
 .. autoclass:: AuthorizationCodeGrant
-   :member-order: bysource
-   :members:
+    :member-order: bysource
+    :members:
 
 .. autoclass:: ImplicitGrant
-   :member-order: bysource
-   :members:
+    :member-order: bysource
+    :members:
 
 .. autoclass:: ResourceOwnerPasswordCredentialsGrant
-   :member-order: bysource
-   :members:
+    :member-order: bysource
+    :members:
 
 .. autoclass:: ClientCredentialsGrant
-   :member-order: bysource
-   :members:
+    :member-order: bysource
+    :members:
 
 Refresh Token
 -------------
 
 .. autoclass:: RefreshTokenGrant
-   :member-order: bysource
-   :members:
+    :member-order: bysource
+    :members:

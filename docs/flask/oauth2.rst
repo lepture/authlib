@@ -468,3 +468,32 @@ and ``flask_restful.Resource``::
 
     class UserAPI(Resource):
         method_decorators = [require_oauth('profile')]
+
+
+Register Error URIs
+-------------------
+
+To create a better developer experience for debugging, it is suggested that
+you creating some documentation for errors. Here is a list of built-in
+:ref:`specs/rfc6949-errors`.
+
+You can design a documentation page with a description of each error. For
+instance, there is a web page for ``invalid_client``::
+
+   https://developer.your-company.com/errors#invalid-client
+
+In this case, you can register the error URI with ``OAUTH2_ERROR_URIS``
+configuration::
+
+   OAUTH2_ERROR_URIS = [
+      ('invalid_client', 'https://developer.your-company.com/errors#invalid-client'),
+      # other error URIs
+   ]
+
+
+Create Custom Grant Types
+-------------------------
+
+It is possible to create your own grant types.
+
+(TODO)
