@@ -6,6 +6,17 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+
+Version 0.5
+-----------
+
+**Release Date not Decided**
+
+- Added :meth:`~authlib.specs.rfc6749.register_error_uri` and its Flask
+  integration.
+- :class:`~authlib.client.OAuth2Session` supports more grant types.
+
+
 Version 0.4.1
 -------------
 
@@ -87,17 +98,6 @@ security vulnerabilities, and uncertainties. Try it bravely.
 - :ref:`RFC7009 <specs/rfc7009>`, token revocation.
 - :ref:`Flask implementation <flask_oauth2_server>` of authorization server and resource protector.
 - Mixin of SQLAlchemy models for easy integration with OAuth 2.
-
-.. admonition:: Deprecated Changes
-
-    The directory structure has been changed. Import Flask and Django client with
-    the new modules::
-
-        from authlib.flask.client import OAuth, RemoteApp
-        from authlib.django.client import OAuth, RemoteApp
-
-    Don't worry, they are backward compatible. You will be notified by warning
-    messages.
 
 Version 0.2.1
 -------------
