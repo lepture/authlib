@@ -4,8 +4,8 @@ Flask OAuth 1 Server
 ====================
 
 .. meta::
-   :description: How to create an OAuth 1 server in Flask with Authlib.
-       And understand how OAuth 1 works.
+    :description: How to create an OAuth 1 server in Flask with Authlib.
+        And understand how OAuth 1 works.
 
 Implement OAuth 1 provider in Flask. An OAuth 1 provider contains two servers:
 
@@ -64,17 +64,15 @@ Temporary Credentials
 
 A temporary credential is used to exchange a token credential. It is also
 known as "request token and secret". Since it is temporary, it is better to
-save them into cache instead of database.
+save them into cache instead of database. A cache instance should has these
+methods:
 
-The cache implementation will be enabled by default if you have set a Flask
-configuration::
+- ``.get(key)``
+- ``.set(key, value, expires=None)``
+- ``.delete(key)``
 
-    OAUTH1_AUTH_CACHE_TYPE = '{{ cache_type }}'
-
-This is a ``OAUTH1_AUTH`` prefixed configuration for cache, find more
-configuration at :ref:`flask_cache`.
-
-If cache is not available, there is also a SQLAlchemy mixin::
+A cache can be a memcache, redis or something else. If cache is not available,
+there is also a SQLAlchemy mixin::
 
     from authlib.flask.oauth1.sqla import OAuth1TemporaryCredentialMixin
 
@@ -119,9 +117,7 @@ Timestamp and Nonce
 
 The nonce value MUST be unique across all requests with the same timestamp,
 client credentials, and token combinations. Authlib Flask integration has a
-built-in validation with cache::
-
-    OAUTH1_AUTH_CACHE_TYPE = '{{ cache_type }}'
+built-in validation with cache.
 
 If you want to use other means, you need to register a hook to check the
 exists of the given nonce.
@@ -134,26 +130,15 @@ which has built-in tools to handle requests and responses::
 
     from authlib.flask.oauth1 import AuthorizationServer
 
-    server = AuthorizationServer(Client, token_generator=None, app=app)
+    server = AuthorizationServer(Client, app=app, cache=cache)
 
 It can also be initialized lazily with init_app::
 
     server = AuthorizationServer(Client)
-    server.init_app(app)
+    server.init_app(app, cache=cache)
 
-It is strongly suggested that you use a cache configuration. In this way, you
-don't have to re-implement a lot of the missing methods::
-
-    OAUTH1_AUTH_CACHE_TYPE = 'redis'
-    # here are the configuration for redis cache
-    OAUTH1_AUTH_REDIS_HOST = 'localhost'
-    OAUTH1_AUTH_REDIS_PORT = 6379
-    OAUTH1_AUTH_REDIS_PASSWORD = None
-    OAUTH1_AUTH_REDIS_DB = 0
-    OAUTH1_AUTH_KEY_PREFIX = None
-
-There are several **CACHE TYPE** available in :ref:`flask_cache`. Above shows
-an example of Redis ``CACHE_TYPE``.
+It is strongly suggested that you use a cache. In this way, you
+don't have to re-implement a lot of the missing methods.
 
 There are other configurations. It works well without any changes. Here is a
 list of them:
@@ -275,7 +260,10 @@ server. Here is the way to protect your users' resources::
             client_id=client_id, oauth_token=token
         ).first()
 
-    require_oauth = ResourceProtector(Client, query_token)
+    require_oauth = ResourceProtector(
+        Client, app=app, cache=cache,
+        query_token=query_token
+    )
 
     @app.route('/user')
     @require_oauth()
