@@ -4,6 +4,7 @@ from werkzeug.contrib.cache import (
     NullCache, SimpleCache, FileSystemCache,
     MemcachedCache, RedisCache,
 )
+from authlib.deprecate import deprecate
 
 
 class Missing(object):
@@ -11,6 +12,11 @@ class Missing(object):
 
 
 _missing = Missing()
+
+DEPRECATE_MESSAGE = (
+    'Built-in cache system is deprecated.\n'
+    'Please read <https://github.com/lepture/authlib/issues/23>'
+)
 
 
 class Cache(object):
@@ -60,6 +66,8 @@ class Cache(object):
           AUTHLIB_CACHE_THRESHOLD = 500
     """
     def __init__(self, app, config_prefix='AUTHLIB', **kwargs):
+        deprecate(DEPRECATE_MESSAGE, 0.7)
+
         self.config_prefix = config_prefix
         self.config = app.config
 

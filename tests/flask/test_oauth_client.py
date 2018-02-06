@@ -4,6 +4,7 @@ from flask import Flask, session
 from authlib.client import OAuthException
 from authlib.flask.client import OAuth
 from authlib.client.apps import register_apps, get_oauth_app, get_app
+from .cache import SimpleCache
 from ..client_base import (
     mock_json_response,
     mock_text_response,
@@ -50,7 +51,6 @@ class FlaskOAuthTest(TestCase):
 
     def test_register_oauth1_remote_app(self):
         app = Flask(__name__)
-        app.config.update({'OAUTH_CLIENT_CACHE_TYPE': 'null'})
         oauth = OAuth(app)
         oauth.register(
             'dev',
@@ -67,7 +67,6 @@ class FlaskOAuthTest(TestCase):
     def test_register_built_in_app(self):
         app = Flask(__name__)
         app.config.update({
-            'OAUTH_CLIENT_CACHE_TYPE': 'null',
             'TWITTER_CLIENT_ID': 'twitter_key',
             'TWITTER_CLIENT_SECRET': 'twitter_secret',
         })
@@ -84,8 +83,7 @@ class FlaskOAuthTest(TestCase):
     def test_oauth1_authorize(self):
         app = Flask(__name__)
         app.secret_key = '!'
-        app.config.update({'OAUTH_CLIENT_CACHE_TYPE': 'simple'})
-        oauth = OAuth(app)
+        oauth = OAuth(app, cache=SimpleCache())
         client = oauth.register(
             'dev',
             client_id='dev',

@@ -17,34 +17,38 @@ class OAuth(object):
 
     Create an instance with Flask::
 
-        oauth = OAuth(app)
+        oauth = OAuth(app, cache=cache)
 
     You can also pass the instance of Flask later::
 
         oauth = OAuth()
-        oauth.init_app(app)
+        oauth.init_app(app, cache=cache)
 
     :param app: Flask application instance
+    :param cache: A cache instance that has .get .set and .delete methods
     :param fetch_token: a shared function to get current user's token
     :param update_token: a share function to update current user's token
     """
 
-    def __init__(self, app=None, fetch_token=None, update_token=None):
+    def __init__(self, app=None, cache=None,
+                 fetch_token=None, update_token=None):
         self._registry = {}
         self._clients = {}
 
         self.app = app
         self.fetch_token = fetch_token
         self.update_token = update_token
-        self.cache = None
+        self.cache = cache
         if app:
             self.init_app(app)
 
-    def init_app(self, app, fetch_token=None, update_token=None):
+    def init_app(self, app, cache=None, fetch_token=None, update_token=None):
         """Init app with Flask instance."""
         self.app = app
         if 'OAUTH_CLIENT_CACHE_TYPE' in app.config:
             self.cache = Cache(app, config_prefix='OAUTH_CLIENT')
+        elif cache:
+            self.cache = cache
 
         if fetch_token:
             self.fetch_token = fetch_token
