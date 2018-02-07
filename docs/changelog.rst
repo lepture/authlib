@@ -15,7 +15,26 @@ Version 0.5
 - Added :meth:`~authlib.specs.rfc6749.register_error_uri` and its Flask
   integration.
 - :class:`~authlib.client.OAuth2Session` supports more grant types.
+- Deprecate built-in cache. Read more on `issue#23`_.
 
+.. _`issue#23`: https://github.com/lepture/authlib/issues/23
+
+.. admonition:: Rollback
+
+    Rollback the breaking change in Version 0.4. Pass ``grant_user`` as a
+    user instance::
+
+        @app.route('/authorize', methods=['POST'])
+        def confirm_authorize():
+            if request.form['confirm'] == 'ok':
+                # HERE
+                grant_user = current_user
+            else:
+                grant_user = None
+            return server.create_authorization_response(grant_user)
+
+    Read the documentation on :ref:`flask_oauth2_server`, and search for
+    ``grant_user``.
 
 Version 0.4.1
 -------------

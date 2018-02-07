@@ -85,7 +85,7 @@ class AuthorizationCodeGrant(_AuthorizationCodeGrant):
             client_id=client.client_id,
             redirect_uri=kwargs.get('redirect_uri', ''),
             scope=kwargs.get('scope', ''),
-            user_id=grant_user,
+            user_id=grant_user.id,
         )
         db.session.add(item)
         db.session.commit()
@@ -117,7 +117,7 @@ class ImplicitGrant(_ImplicitGrant):
     def create_access_token(self, token, client, grant_user):
         item = Token(
             client_id=client.client_id,
-            user_id=grant_user,
+            user_id=grant_user.id,
             **token
         )
         db.session.add(item)
@@ -179,13 +179,11 @@ def create_authorization_server(app):
                 return 'ok'
             except OAuth2Error:
                 return 'error'
-        grant_user = request.form.get('user_id')
-        if grant_user:
-            user = User.query.get(int(grant_user))
-            if user:
-                grant_user = user.id
-            else:
-                grant_user = None
+        user_id = request.form.get('user_id')
+        if user_id:
+            grant_user = User.query.get(int(user_id))
+        else:
+            grant_user = None
         return server.create_authorization_response(grant_user)
 
     @app.route('/oauth/token', methods=['GET', 'POST'])

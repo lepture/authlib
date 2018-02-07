@@ -141,7 +141,7 @@ class AuthorizationServer(_AuthorizationServer):
             @app.route('/authorize', methods=['POST'])
             def confirm_authorize():
                 if request.form['confirm'] == 'ok':
-                    grant_user = current_user.id
+                    grant_user = current_user
                 else:
                     grant_user = None
                 return server.create_authorization_response(grant_user)

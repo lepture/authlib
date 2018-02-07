@@ -145,7 +145,7 @@ Now define an endpoint for authorization. This endpoint is used by
         confirmed = request.form['confirm']
         if confirmed:
             # granted by resource owner
-            return server.create_authorization_response(current_user.id)
+            return server.create_authorization_response(current_user)
         # denied by resource owner
         return server.create_authorization_response(None)
 
@@ -211,7 +211,7 @@ Implement this grant by subclass :class:`AuthorizationCodeGrant`::
                 client_id=client.client_id,
                 redirect_uri=kwargs.get('redirect_uri', ''),
                 scope=kwargs.get('scope', ''),
-                user_id=grant_user,
+                user_id=grant_user.id,
             )
             db.session.add(item)
             db.session.commit()
@@ -258,7 +258,7 @@ implement it with a subclass of :class:`ImplicitGrant`::
         def create_access_token(self, token, client, grant_user, **kwargs):
             item = Token(
                 client_id=client.client_id,
-                user_id=grant_user,
+                user_id=grant_user.id,
                 **token
             )
             db.session.add(item)

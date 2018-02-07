@@ -156,7 +156,7 @@ class AuthorizationCodeGrant(BaseGrant):
         .. _`Section 4.1.2`: http://tools.ietf.org/html/rfc6749#section-4.1.2
 
         :param grant_user: if resource owner granted the request, pass this
-            resource owner's ID, otherwise pass None.
+            resource owner, otherwise pass None.
         :returns: (status_code, body, headers)
         """
         if grant_user:
@@ -349,13 +349,13 @@ class AuthorizationCodeGrant(BaseGrant):
                     client_id=client.client_id,
                     redirect_uri=kwargs.get('redirect_uri', ''),
                     scope=kwargs.get('scope', ''),
-                    user_id=grant_user,
+                    user_id=grant_user.id,
                 )
                 item.save()
                 return code
 
         :param client: the client that requesting the token.
-        :param grant_user: resource owner (user) ID.
+        :param grant_user: resource owner (user).
         :param kwargs: other parameters.
         :return: code string
         """

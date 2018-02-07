@@ -95,7 +95,7 @@ class AuthorizationServer(object):
         :param method: HTTP request method.
         :param uri: HTTP request URI string.
         :param body: HTTP request payload body.
-        :param grant_user: if granted, it is resource owner's ID. If denied,
+        :param grant_user: if granted, it is resource owner. If denied,
             it is None.
         :returns: (status_code, body, headers)
         """

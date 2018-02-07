@@ -30,7 +30,7 @@ def register_cache_authorization_code(
                 client_id=client.client_id,
                 redirect_uri=kwargs.get('redirect_uri', ''),
                 scope=kwargs.get('scope', ''),
-                user_id=grant_user,
+                user_id=grant_user.id,
             )
             key = key_tpl.format(code, client.client_id)
             cache.set(key, data, timeout=600)
