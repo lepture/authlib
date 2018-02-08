@@ -17,9 +17,3 @@ def scope_to_list(scope):
     elif scope is None:
         return None
     return scope.strip().split()
-
-
-def get_obj_value(obj, key):
-    if isinstance(obj, dict):
-        return obj.get(key)
-    return getattr(obj, key, None)

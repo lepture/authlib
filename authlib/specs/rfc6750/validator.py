@@ -8,7 +8,7 @@
 """
 
 import time
-from ..rfc6749.util import get_obj_value, scope_to_list
+from ..rfc6749.util import scope_to_list
 from .errors import (
     InvalidRequestError,
     InvalidTokenError,
@@ -27,13 +27,13 @@ class BearerTokenValidator(object):
         raise NotImplementedError()
 
     def token_expired(self, token):
-        expires_at = get_obj_value(token, 'expires_at')
+        expires_at = token.get_expires_at()
         return expires_at < time.time()
 
     def scope_insufficient(self, token, scope):
         if not scope:
             return False
-        token_scopes = set(scope_to_list(get_obj_value(token, 'scope')))
+        token_scopes = set(scope_to_list(token.get_scope()))
         resource_scopes = set(scope_to_list(scope))
         return not token_scopes.issuperset(resource_scopes)
 

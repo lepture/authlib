@@ -1,6 +1,8 @@
 import time
 from sqlalchemy import Column, Boolean, String, Text, Integer
-from authlib.specs.rfc6749 import ClientMixin
+from authlib.specs.rfc6749 import (
+    ClientMixin, AuthorizationCodeMixin, TokenMixin
+)
 
 
 class OAuth2ClientMixin(ClientMixin):
@@ -47,7 +49,7 @@ class OAuth2ClientMixin(ClientMixin):
         return allowed.issuperset(set(scopes))
 
 
-class OAuth2AuthorizationCodeMixin(object):
+class OAuth2AuthorizationCodeMixin(AuthorizationCodeMixin):
     code = Column(String(120), unique=True, nullable=False)
     client_id = Column(String(48))
     redirect_uri = Column(Text, default='')
@@ -61,8 +63,14 @@ class OAuth2AuthorizationCodeMixin(object):
     def is_expired(self):
         return self.expires_at < time.time()
 
+    def get_redirect_uri(self):
+        return self.redirect_uri
 
-class OAuth2TokenMixin(object):
+    def get_scope(self):
+        return self.scope
+
+
+class OAuth2TokenMixin(TokenMixin):
     client_id = Column(String(48))
     token_type = Column(String(40))
     access_token = Column(String(255), unique=True, nullable=False)
@@ -73,6 +81,11 @@ class OAuth2TokenMixin(object):
     )
     expires_in = Column(Integer, nullable=False, default=0)
 
-    @property
-    def expires_at(self):
+    def get_scope(self):
+        return self.scope
+
+    def get_expires_in(self):
+        return self.expires_in
+
+    def get_expires_at(self):
         return self.created_at + self.expires_in

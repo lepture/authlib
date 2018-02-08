@@ -12,7 +12,7 @@
 """
 
 from .base import BaseGrant
-from ..util import get_obj_value, scope_to_list
+from ..util import scope_to_list
 from ..errors import (
     InvalidRequestError,
     InvalidScopeError,
@@ -102,7 +102,7 @@ class RefreshTokenGrant(BaseGrant):
 
         scope = self.params.get('scope')
         if scope:
-            original_scope = get_obj_value(token, 'scope')
+            original_scope = token.get_scope()
             if not original_scope:
                 raise InvalidScopeError()
             original_scope = set(scope_to_list(original_scope))
@@ -119,9 +119,9 @@ class RefreshTokenGrant(BaseGrant):
         """
         scope = self.params.get('scope')
         if not scope:
-            scope = get_obj_value(self._authenticated_token, 'scope')
+            scope = self._authenticated_token.get_scope()
 
-        expires_in = get_obj_value(self._authenticated_token, 'expires_in')
+        expires_in = self._authenticated_token.get_expires_in()
         token = self.token_generator(
             self._authenticated_client, self.GRANT_TYPE,
             expires_in=expires_in,

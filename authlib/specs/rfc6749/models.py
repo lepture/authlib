@@ -1,3 +1,10 @@
+"""
+    authlib.specs.rfc6749.models
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    This module defines how to construct Client, AuthorizationCode and Token.
+"""
+
 
 class ClientMixin(object):
     """Implementation of OAuth 2 Client described in `Section 2`_ with
@@ -134,5 +141,65 @@ class ClientMixin(object):
 
         :param scopes: the requested scopes set.
         :return: bool
+        """
+        raise NotImplementedError()
+
+
+class AuthorizationCodeMixin(object):
+    def get_redirect_uri(self):
+        """A method to get authorization code's ``redirect_uri``.
+        For instance, the database table for authorization code has a
+        column called ``redirect_uri``::
+
+            def get_redirect_uri(self):
+                return self.redirect_uri
+
+        :return: A URL string
+        """
+        raise NotImplementedError()
+
+    def get_scope(self):
+        """A method to get scope of the authorization code. For instance,
+        the column is called ``scope``::
+
+            def get_scope(self):
+                return self.scope
+
+        :return: scope string
+        """
+        raise NotImplementedError()
+
+
+class TokenMixin(object):
+    def get_scope(self):
+        """A method to get scope of the authorization code. For instance,
+        the column is called ``scope``::
+
+            def get_scope(self):
+                return self.scope
+
+        :return: scope string
+        """
+        raise NotImplementedError()
+
+    def get_expires_in(self):
+        """A method to get the ``expires_in`` value of the token. e.g.
+        the column is called ``expires_in``::
+
+            def get_expires_in(self):
+                return self.expires_in
+
+        :return: timestamp int
+        """
+        raise NotImplementedError()
+
+    def get_expires_at(self):
+        """A method to get the value when this token will be expired. e.g.
+        it would be::
+
+            def get_expires_at(self):
+                return self.created_at + self.expires_in
+
+        :return: timestamp int
         """
         raise NotImplementedError()

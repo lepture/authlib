@@ -9,6 +9,12 @@ class AuthorizationCode(dict):
             return self[key]
         raise AttributeError()
 
+    def get_redirect_uri(self):
+        return self.get('redirect_uri')
+
+    def get_scope(self):
+        return self.get('scope')
+
 
 def register_cache_authorization_code(
         app, authorization_server, create_access_token):

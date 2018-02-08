@@ -1,6 +1,5 @@
 from authlib.common.urls import add_params_to_uri
 from .base import BaseGrant
-from ..util import get_obj_value
 from ..errors import (
     UnauthorizedClientError,
     InvalidRequestError,
@@ -240,7 +239,7 @@ class AuthorizationCodeGrant(BaseGrant):
 
         # validate redirect_uri parameter
         redirect_uri = self.params.get('redirect_uri')
-        _redirect_uri = get_obj_value(authorization_code, 'redirect_uri')
+        _redirect_uri = authorization_code.get_redirect_uri()
         original_redirect_uri = _redirect_uri or None
         if redirect_uri != original_redirect_uri:
             raise InvalidRequestError(
@@ -281,10 +280,11 @@ class AuthorizationCodeGrant(BaseGrant):
         """
         client = self._authenticated_client
         is_confidential = client.check_client_type('confidential')
+        scope = self._authorization_code.get_scope()
         token = self.token_generator(
             client,
             self.GRANT_TYPE,
-            scope=get_obj_value(self._authorization_code, 'scope'),
+            scope=scope,
             include_refresh_token=is_confidential,
         )
         self.create_access_token(
