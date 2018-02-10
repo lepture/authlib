@@ -57,7 +57,7 @@ def create_authorization_server(app, use_cache=False):
     else:
         cache = None
 
-    server = AuthorizationServer(Client, app=app, cache=cache)
+    server = AuthorizationServer(app, client_model=Client, cache=cache)
     register_authorization_hooks(server, db.session, Token)
 
     @app.route('/oauth/initiate', methods=['GET', 'POST'])
@@ -104,8 +104,8 @@ def create_resource_server(app, use_cache=False):
         ).first()
 
     require_oauth = ResourceProtector(
-        Client, app=app, cache=cache,
-        query_token=query_token
+        app, client_model=Client,
+        cache=cache, query_token=query_token
     )
 
     @app.route('/user')

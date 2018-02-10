@@ -36,6 +36,37 @@ Version 0.5
     Read the documentation on :ref:`flask_oauth2_server`, and search for
     ``grant_user``.
 
+.. admonition:: Breaking Changes
+
+    Update the initialization for AuthorizationServer and ResourceProtector
+    for both OAuth 1 and OAuth 2::
+
+        from authlib.flask.oauth2 import AuthorizationServer
+        from your_project.models import Client
+
+        server = AuthorizationServer(app, client_model=Client)
+        # or lazily
+        server = AuthorizationServer()
+        server.init_app(app, client_model=Client)
+
+
+        from authlib.flask.oauth1 import AuthorizationServer, ResourceProtector
+
+        server = AuthorizationServer(app, client_model=Client, cache=cache)
+        # or lazily
+        server.init_app(app, client_model=Client, cache=cache)
+
+        require_oauth = ResourceProtector(
+            app, client_model=Client,
+            cache=cache, query_token=query_token
+        )
+        # or initialize it lazily
+        require_oauth = ResourceProtector()
+        require_oauth.init_app(
+            app, client_model=Client,
+            cache=cache, query_token=query_token
+        )
+
 Version 0.4.1
 -------------
 

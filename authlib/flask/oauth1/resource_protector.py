@@ -14,7 +14,31 @@ _JSON_HEADERS = [
 
 
 class ResourceProtector(_ResourceProtector):
-    def __init__(self, client_model, app=None, cache=None,
+    """A protecting method for resource servers. Initialize a resource
+    protector with the query_token method::
+
+        from authlib.flask.oauth1 import ResourceProtector, current_credential
+        from your_project.models import Token, User, cache
+
+        # you need to define a ``cache`` instance yourself
+
+        def query_token(client_id, oauth_token):
+            return Token.query.filter_by(
+                client_id=client_id, oauth_token=oauth_token
+            ).first()
+
+        require_oauth= ResourceProtector(
+            app, client_model=OAuth1Client,
+            cache=cache, query_token=query_token
+        )
+        # or initialize it lazily
+        require_oauth = ResourceProtector()
+        require_oauth.init_app(
+            app, client_model=OAuth1Client,
+            cache=cache, query_token=query_token
+        )
+    """
+    def __init__(self, app=None, client_model=None, cache=None,
                  query_token=None, exists_nonce=None):
         super(ResourceProtector, self).__init__(client_model)
         self._query_token = query_token
@@ -24,7 +48,15 @@ class ResourceProtector(_ResourceProtector):
         if app:
             self.init_app(app)
 
-    def init_app(self, app, cache=None):
+    def init_app(self, app, client_model=None, cache=None,
+                 query_token=None, exists_nonce=None):
+        if client_model is not None:
+            self.client_model = client_model
+        if query_token is not None:
+            self._query_token = query_token
+        if exists_nonce is not None:
+            self._exists_nonce = exists_nonce
+
         if app.config.get('OAUTH1_RESOURCE_CACHE_TYPE'):
             self.cache = Cache(app, config_prefix='OAUTH1_RESOURCE')
         elif cache:

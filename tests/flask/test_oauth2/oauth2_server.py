@@ -169,7 +169,7 @@ class RefreshTokenGrant(_RefreshTokenGrant):
 
 
 def create_authorization_server(app):
-    server = AuthorizationServer(Client, app)
+    server = AuthorizationServer(app, Client)
 
     @app.route('/oauth/authorize', methods=['GET', 'POST'])
     def authorize():

@@ -31,7 +31,7 @@ class ResourceProtector(_ResourceProtector):
         from authlib.flask.oauth2 import ResourceProtector, current_token
         from your_project.models import Token, User
 
-        def query_token(cls, access_token):
+        def query_token(access_token):
             return Token.query.filter_by(access_token=access_token).first()
 
         require_oauth= ResourceProtector(query_token)

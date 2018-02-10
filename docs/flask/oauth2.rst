@@ -97,12 +97,12 @@ which has built-in tools to handle requests and responses::
 
     from authlib.flask.oauth2 import AuthorizationServer
 
-    server = AuthorizationServer(Client, app)
+    server = AuthorizationServer(app, client_model=Client)
 
 It can also be initialized lazily with init_app::
 
-    server = AuthorizationServer(Client)
-    server.init_app(app)
+    server = AuthorizationServer()
+    server.init_app(app, client_model=Client)
 
 It works well without configuration. However, it can be configured with these
 settings:

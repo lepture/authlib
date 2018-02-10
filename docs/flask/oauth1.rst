@@ -130,12 +130,12 @@ which has built-in tools to handle requests and responses::
 
     from authlib.flask.oauth1 import AuthorizationServer
 
-    server = AuthorizationServer(Client, app=app, cache=cache)
+    server = AuthorizationServer(app, client_model=Client, cache=cache)
 
 It can also be initialized lazily with init_app::
 
-    server = AuthorizationServer(Client)
-    server.init_app(app, cache=cache)
+    server = AuthorizationServer()
+    server.init_app(app, client_model=Client, cache=cache)
 
 It is strongly suggested that you use a cache. In this way, you
 don't have to re-implement a lot of the missing methods.
@@ -261,8 +261,14 @@ server. Here is the way to protect your users' resources::
         ).first()
 
     require_oauth = ResourceProtector(
-        Client, app=app, cache=cache,
-        query_token=query_token
+        app, client_model=Client,
+        cache=cache, query_token=query_token
+    )
+    # or initialize it lazily
+    require_oauth = ResourceProtector()
+    require_oauth.init_app(
+        app, client_model=Client,
+        cache=cache, query_token=query_token
     )
 
     @app.route('/user')

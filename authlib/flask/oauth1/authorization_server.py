@@ -14,15 +14,21 @@ log = logging.getLogger(__name__)
 
 class AuthorizationServer(_AuthorizationServer):
     """Flask implementation of :class:`authlib.rfc5849.AuthorizationServer`.
-    Initialize it with a client model class and Flask app instance::
+    Initialize it with Flask app instance, client model class and cache::
 
-        server = AuthorizationServer(OAuth1Client, app=app)
+        server = AuthorizationServer(app=app, client_model=OAuth1Client)
         # or initialize lazily
-        server = AuthorizationServer(OAuth1Client)
-        server.init_app(app)
+        server = AuthorizationServer()
+        server.init_app(app, client_model=OAuth1Client)
+
+    :param app: A Flask app instance
+    :param client_model: Client class
+    :param cache: A cache instance
+    :param token_generator: A function to generate token
     """
 
-    def __init__(self, client_model, app=None, cache=None, token_generator=None):
+    def __init__(self, app=None, client_model=None,
+                 cache=None, token_generator=None):
         super(AuthorizationServer, self).__init__(client_model)
         self.app = app
         self.cache = cache
@@ -39,8 +45,10 @@ class AuthorizationServer(_AuthorizationServer):
         if app is not None:
             self.init_app(app)
 
-    def init_app(self, app, cache=None, token_generator=None):
-        if token_generator:
+    def init_app(self, app, client_model=None, cache=None, token_generator=None):
+        if client_model is not None:
+            self.client_model = client_model
+        if token_generator is not None:
             self.token_generator = token_generator
 
         if self.token_generator is None:

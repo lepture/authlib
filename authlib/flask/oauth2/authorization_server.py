@@ -19,15 +19,15 @@ class AuthorizationServer(_AuthorizationServer):
     """Flask implementation of :class:`authlib.rfc6749.AuthorizationServer`.
     Initialize it with a client model class and Flask app instance::
 
-        server = AuthorizationServer(OAuth2Client, app)
+        server = AuthorizationServer(app, OAuth2Client)
         # or initialize lazily
-        server = AuthorizationServer(OAuth2Client)
-        server.init_app(app)
+        server = AuthorizationServer()
+        server.init_app(app, OAuth2Client)
     """
-    def __init__(self, client_model, app=None):
+    def __init__(self, app=None, client_model=None):
         super(AuthorizationServer, self).__init__(client_model, None)
         self.revoke_token_endpoint = None
-        self.app = None
+        self.app = app
         if app is not None:
             self.init_app(app)
 
@@ -40,8 +40,10 @@ class AuthorizationServer(_AuthorizationServer):
         """
         self.revoke_token_endpoint = cls
 
-    def init_app(self, app):
+    def init_app(self, app, client_model=None):
         """Initialize later with Flask app instance."""
+        if client_model is not None:
+            self.client_model = client_model
         for k in GRANT_TYPES_EXPIRES:
             conf_key = 'OAUTH2_EXPIRES_{}'.format(k.upper())
             app.config.setdefault(conf_key, GRANT_TYPES_EXPIRES[k])
