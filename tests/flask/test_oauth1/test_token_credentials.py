@@ -10,8 +10,10 @@ from .oauth1_server import (
 
 
 class AuthorizationTest(TestCase):
-    def prepare_data(self, use_cache=False):
-        self.server = create_authorization_server(self.app, use_cache)
+    USE_CACHE = True
+
+    def prepare_data(self):
+        self.server = create_authorization_server(self.app, self.USE_CACHE)
         user = User(username='foo')
         db.session.add(user)
         db.session.commit()
@@ -35,7 +37,7 @@ class AuthorizationTest(TestCase):
         func(credential, 'client', 'oob')
 
     def test_invalid_token_request_parameters(self):
-        self.prepare_data(True)
+        self.prepare_data()
         url = '/oauth/token'
 
         # case 1
@@ -64,7 +66,7 @@ class AuthorizationTest(TestCase):
         self.assertEqual(data['error'], 'invalid_token')
 
     def test_invalid_token_and_verifiers(self):
-        self.prepare_data(True)
+        self.prepare_data()
         url = '/oauth/token'
         hook = self.server._hooks['create_temporary_credential']
 
@@ -96,7 +98,7 @@ class AuthorizationTest(TestCase):
         self.assertIn('oauth_verifier', data['error_description'])
 
     def test_duplicated_oauth_parameters(self):
-        self.prepare_data(True)
+        self.prepare_data()
         url = '/oauth/token?oauth_consumer_key=client'
         rv = self.client.post(url, data={
             'oauth_consumer_key': 'client',
@@ -107,7 +109,7 @@ class AuthorizationTest(TestCase):
         self.assertEqual(data['error'], 'duplicated_oauth_protocol_parameter')
 
     def test_plaintext_signature(self):
-        self.prepare_data(True)
+        self.prepare_data()
         url = '/oauth/token'
 
         # case 1: success
@@ -137,7 +139,7 @@ class AuthorizationTest(TestCase):
         self.assertEqual(data['error'], 'invalid_signature')
 
     def test_hmac_sha1_signature(self):
-        self.prepare_data(True)
+        self.prepare_data()
         url = '/oauth/token'
 
         params = [
@@ -171,7 +173,7 @@ class AuthorizationTest(TestCase):
         self.assertEqual(data['error'], 'invalid_nonce')
 
     def test_rsa_sha1_signature(self):
-        self.prepare_data(True)
+        self.prepare_data()
         url = '/oauth/token'
 
         self.prepare_temporary_credential()

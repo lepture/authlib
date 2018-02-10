@@ -9,9 +9,11 @@ from .oauth1_server import (
 )
 
 
-class TemporaryCredentialsTest(TestCase):
-    def prepare_data(self, use_cache=False):
-        self.server = create_authorization_server(self.app, use_cache)
+class TemporaryCredentialsWithCacheTest(TestCase):
+    USE_CACHE = True
+
+    def prepare_data(self):
+        self.server = create_authorization_server(self.app, self.USE_CACHE)
         user = User(username='foo')
         db.session.add(user)
         db.session.commit()
@@ -25,7 +27,7 @@ class TemporaryCredentialsTest(TestCase):
         db.session.commit()
 
     def test_temporary_credential_parameters_errors(self):
-        self.prepare_data(True)
+        self.prepare_data()
         url = '/oauth/initiate'
 
         rv = self.client.get(url)
@@ -62,7 +64,7 @@ class TemporaryCredentialsTest(TestCase):
         self.assertEqual(data['error'], 'invalid_client')
 
     def test_validate_timestamp_and_nonce(self):
-        self.prepare_data(True)
+        self.prepare_data()
         url = '/oauth/initiate'
 
         # case 5
@@ -115,7 +117,7 @@ class TemporaryCredentialsTest(TestCase):
         self.assertIn('oauth_timestamp', data['error_description'])
 
     def test_temporary_credential_signatures_errors(self):
-        self.prepare_data(True)
+        self.prepare_data()
         url = '/oauth/initiate'
 
         rv = self.client.post(url, data={
@@ -149,7 +151,7 @@ class TemporaryCredentialsTest(TestCase):
         self.assertEqual(data['error'], 'unsupported_signature_method')
 
     def test_plaintext_signature(self):
-        self.prepare_data(True)
+        self.prepare_data()
         url = '/oauth/initiate'
 
         # case 1: use payload
@@ -185,7 +187,7 @@ class TemporaryCredentialsTest(TestCase):
         self.assertEqual(data['error'], 'invalid_signature')
 
     def test_hmac_sha1_signature(self):
-        self.prepare_data(True)
+        self.prepare_data()
         url = '/oauth/initiate'
 
         params = [
@@ -215,7 +217,7 @@ class TemporaryCredentialsTest(TestCase):
         self.assertEqual(data['error'], 'invalid_nonce')
 
     def test_rsa_sha1_signature(self):
-        self.prepare_data(True)
+        self.prepare_data()
         url = '/oauth/initiate'
 
         params = [
@@ -249,7 +251,7 @@ class TemporaryCredentialsTest(TestCase):
         self.app.config.update({
             'OAUTH1_SUPPORTED_SIGNATURE_METHODS': ['INVALID']
         })
-        self.prepare_data(True)
+        self.prepare_data()
         url = '/oauth/initiate'
         rv = self.client.post(url, data={
             'oauth_consumer_key': 'client',
@@ -272,10 +274,14 @@ class TemporaryCredentialsTest(TestCase):
         self.assertEqual(data['error'], 'unsupported_signature_method')
 
     def test_register_signature_method(self):
-        self.prepare_data(True)
+        self.prepare_data()
 
         def foo():
             pass
 
         self.server.register_signature_method('foo', foo)
         self.assertEqual(self.server.SIGNATURE_METHODS['foo'], foo)
+
+
+class TemporaryCredentialsNoCacheTest(TemporaryCredentialsWithCacheTest):
+    USE_CACHE = False

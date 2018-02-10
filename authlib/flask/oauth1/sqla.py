@@ -200,5 +200,5 @@ def register_authorization_hooks(
             authorization_server, session, temporary_credential_model)
 
     if timestamp_nonce_model is not None:
-        register_temporary_credential_hooks(
+        register_exists_nonce(
             authorization_server, session, timestamp_nonce_model)

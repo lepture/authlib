@@ -8,7 +8,13 @@ from authlib.flask.oauth1 import (
 from authlib.flask.oauth1.sqla import (
     OAuth1ClientMixin,
     OAuth1TokenCredentialMixin,
+    OAuth1TemporaryCredentialMixin,
+    OAuth1TimestampNonceMixin,
     register_authorization_hooks,
+)
+from authlib.flask.oauth1.cache import (
+    register_temporary_credential_hooks,
+    register_exists_nonce,
 )
 from authlib.specs.rfc5849 import OAuth1Error
 from authlib.common.urls import url_decode, url_encode
@@ -43,7 +49,7 @@ class Client(db.Model, OAuth1ClientMixin):
         return get_rsa_public_key()
 
 
-class Token(db.Model, OAuth1TokenCredentialMixin):
+class TokenCredential(db.Model, OAuth1TokenCredentialMixin):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
         db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')
@@ -51,14 +57,32 @@ class Token(db.Model, OAuth1TokenCredentialMixin):
     user = db.relationship('User')
 
 
+class TemporaryCredential(db.Model, OAuth1TemporaryCredentialMixin):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')
+    )
+    user = db.relationship('User')
+
+
+class TimestampNonce(db.Model, OAuth1TimestampNonceMixin):
+    id = db.Column(db.Integer, primary_key=True)
+
+
 def create_authorization_server(app, use_cache=False):
+    server = AuthorizationServer(app, client_model=Client)
     if use_cache:
         cache = SimpleCache()
+        register_exists_nonce(server, cache)
+        register_temporary_credential_hooks(server, cache)
+        register_authorization_hooks(server, db.session, TokenCredential)
     else:
-        cache = None
-
-    server = AuthorizationServer(app, client_model=Client, cache=cache)
-    register_authorization_hooks(server, db.session, Token)
+        register_authorization_hooks(
+            server, db.session,
+            token_credential_model=TokenCredential,
+            temporary_credential_model=TemporaryCredential,
+            timestamp_nonce_model=TimestampNonce,
+        )
 
     @app.route('/oauth/initiate', methods=['GET', 'POST'])
     def initiate():
@@ -96,7 +120,7 @@ def create_resource_server(app, use_cache=False):
         cache = None
 
     def query_token(client_id, token_string):
-        return Token.query.filter_by(
+        return TokenCredential.query.filter_by(
             client_id=client_id,
             oauth_token=token_string
         ).first()

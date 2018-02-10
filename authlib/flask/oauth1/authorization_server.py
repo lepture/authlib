@@ -7,11 +7,6 @@ from authlib.specs.rfc5849 import (
 )
 from authlib.common.security import generate_token
 from authlib.common.urls import url_encode
-from .cache import (
-    register_exists_nonce,
-    register_temporary_credential_hooks
-)
-from ..cache import Cache
 
 log = logging.getLogger(__name__)
 
@@ -27,15 +22,12 @@ class AuthorizationServer(_AuthorizationServer):
 
     :param app: A Flask app instance
     :param client_model: Client class
-    :param cache: A cache instance
     :param token_generator: A function to generate token
     """
 
-    def __init__(self, app=None, client_model=None,
-                 cache=None, token_generator=None):
+    def __init__(self, app=None, client_model=None, token_generator=None):
         super(AuthorizationServer, self).__init__(client_model)
         self.app = app
-        self.cache = cache
         self.token_generator = token_generator
 
         self._hooks = {
@@ -49,7 +41,7 @@ class AuthorizationServer(_AuthorizationServer):
         if app is not None:
             self.init_app(app)
 
-    def init_app(self, app, client_model=None, cache=None, token_generator=None):
+    def init_app(self, app, client_model=None, token_generator=None):
         if client_model is not None:
             self.client_model = client_model
         if token_generator is not None:
@@ -58,20 +50,11 @@ class AuthorizationServer(_AuthorizationServer):
         if self.token_generator is None:
             self.token_generator = self.create_token_generator(app)
 
-        if app.config.get('OAUTH1_AUTH_CACHE_TYPE'):
-            self.cache = Cache(app, config_prefix='OAUTH1_AUTH')
-        elif cache:
-            self.cache = cache
-
         methods = app.config.get('OAUTH1_SUPPORTED_SIGNATURE_METHODS')
         if methods and isinstance(methods, (list, tuple)):
             self.SUPPORTED_SIGNATURE_METHODS = methods
 
         self.app = app
-        if self.cache:
-            # compatible support
-            register_exists_nonce(self, self.cache, expires=self.EXPIRY_TIME)
-            register_temporary_credential_hooks(self, self.cache)
 
     def register_hook(self, name, func):
         if name not in self._hooks:

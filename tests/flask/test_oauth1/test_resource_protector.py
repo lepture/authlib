@@ -3,7 +3,7 @@ from flask import json
 from authlib.specs.rfc5849 import signature
 from authlib.common.urls import add_params_to_uri
 from tests.util import get_rsa_private_key
-from .oauth1_server import db, User, Client, Token
+from .oauth1_server import db, User, Client, TokenCredential
 from .oauth1_server import (
     TestCase,
     create_resource_server,
@@ -26,7 +26,7 @@ class AuthorizationTest(TestCase):
         db.session.add(client)
         db.session.commit()
 
-        tok = Token(
+        tok = TokenCredential(
             user_id=user.id,
             client_id=client.client_id,
             oauth_token='valid-token',

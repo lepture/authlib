@@ -6,9 +6,11 @@ from .oauth1_server import (
 )
 
 
-class AuthorizationTest(TestCase):
-    def prepare_data(self, use_cache=False):
-        create_authorization_server(self.app, use_cache)
+class AuthorizationWithCacheTest(TestCase):
+    USE_CACHE = True
+
+    def prepare_data(self):
+        create_authorization_server(self.app, self.USE_CACHE)
         user = User(username='foo')
         db.session.add(user)
         db.session.commit()
@@ -22,7 +24,7 @@ class AuthorizationTest(TestCase):
         db.session.commit()
 
     def test_invalid_authorization(self):
-        self.prepare_data(True)
+        self.prepare_data()
         url = '/oauth/authorize'
 
         # case 1
@@ -37,7 +39,7 @@ class AuthorizationTest(TestCase):
         self.assertEqual(data['error'], 'invalid_token')
 
     def test_authorize_denied(self):
-        self.prepare_data(True)
+        self.prepare_data()
         initiate_url = '/oauth/initiate'
         authorize_url = '/oauth/authorize'
 
@@ -74,7 +76,7 @@ class AuthorizationTest(TestCase):
         self.assertIn('https://i.test', rv.headers['Location'])
 
     def test_authorize_granted(self):
-        self.prepare_data(True)
+        self.prepare_data()
         initiate_url = '/oauth/initiate'
         authorize_url = '/oauth/authorize'
 
@@ -111,3 +113,7 @@ class AuthorizationTest(TestCase):
         self.assertEqual(rv.status_code, 302)
         self.assertIn('oauth_verifier', rv.headers['Location'])
         self.assertIn('https://i.test', rv.headers['Location'])
+
+
+class AuthorizationNoCacheTest(AuthorizationWithCacheTest):
+    USE_CACHE = False
