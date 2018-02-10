@@ -141,9 +141,7 @@ def register_temporary_credential_hooks(
         'create_authorization_verifier', create_authorization_verifier)
 
 
-def register_exists_nonce(
-        authorization_server, session, model_class):
-
+def create_exists_nonce_func(session, model_class):
     def exists_nonce(nonce, timestamp, client_id, oauth_token):
         q = session.query(model_class.nonce).filter_by(
             nonce=nonce,
@@ -165,10 +163,15 @@ def register_exists_nonce(
         session.add(item)
         session.commit()
         return False
+    return exists_nonce
+
+
+def register_nonce_hooks(authorization_server, session, model_class):
+    exists_nonce = create_exists_nonce_func(session, model_class)
     authorization_server.register_hook('exists_nonce', exists_nonce)
 
 
-def register_create_token_credential(
+def register_token_credential_hooks(
         authorization_server, session, model_class):
 
     def create_token_credential(token, temporary_credential):
@@ -192,7 +195,7 @@ def register_authorization_hooks(
         temporary_credential_model=None,
         timestamp_nonce_model=None):
 
-    register_create_token_credential(
+    register_token_credential_hooks(
         authorization_server, session, token_credential_model)
 
     if temporary_credential_model is not None:
@@ -200,5 +203,5 @@ def register_authorization_hooks(
             authorization_server, session, temporary_credential_model)
 
     if timestamp_nonce_model is not None:
-        register_exists_nonce(
+        register_nonce_hooks(
             authorization_server, session, timestamp_nonce_model)

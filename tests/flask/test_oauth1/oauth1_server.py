@@ -11,10 +11,12 @@ from authlib.flask.oauth1.sqla import (
     OAuth1TemporaryCredentialMixin,
     OAuth1TimestampNonceMixin,
     register_authorization_hooks,
+    create_exists_nonce_func as create_db_exists_nonce_func,
 )
 from authlib.flask.oauth1.cache import (
     register_temporary_credential_hooks,
-    register_exists_nonce,
+    register_nonce_hooks,
+    create_exists_nonce_func as create_cache_exists_nonce_func,
 )
 from authlib.specs.rfc5849 import OAuth1Error
 from authlib.common.urls import url_decode, url_encode
@@ -73,7 +75,7 @@ def create_authorization_server(app, use_cache=False):
     server = AuthorizationServer(app, client_model=Client)
     if use_cache:
         cache = SimpleCache()
-        register_exists_nonce(server, cache)
+        register_nonce_hooks(server, cache)
         register_temporary_credential_hooks(server, cache)
         register_authorization_hooks(server, db.session, TokenCredential)
     else:
@@ -116,8 +118,9 @@ def create_authorization_server(app, use_cache=False):
 def create_resource_server(app, use_cache=False):
     if use_cache:
         cache = SimpleCache()
+        exists_nonce = create_cache_exists_nonce_func(cache)
     else:
-        cache = None
+        exists_nonce = create_db_exists_nonce_func(db.session, TimestampNonce)
 
     def query_token(client_id, token_string):
         return TokenCredential.query.filter_by(
@@ -127,7 +130,7 @@ def create_resource_server(app, use_cache=False):
 
     require_oauth = ResourceProtector(
         app, client_model=Client,
-        cache=cache, query_token=query_token
+        query_token=query_token, exists_nonce=exists_nonce,
     )
 
     @app.route('/user')

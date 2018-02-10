@@ -63,9 +63,7 @@ def register_temporary_credential_hooks(
         'create_authorization_verifier', create_authorization_verifier)
 
 
-def register_exists_nonce(
-        authorization_server, cache, key_prefix='nonce:', expires=300):
-
+def create_exists_nonce_func(cache, key_prefix='nonce:', expires=300):
     def exists_nonce(nonce, timestamp, client_id, oauth_token):
         key = '{}{}-{}-{}'.format(key_prefix, nonce, timestamp, client_id)
         if oauth_token:
@@ -73,5 +71,10 @@ def register_exists_nonce(
         rv = cache.has(key)
         cache.set(key, 1, timeout=expires)
         return rv
+    return exists_nonce
 
+
+def register_nonce_hooks(
+        authorization_server, cache, key_prefix='nonce:', expires=300):
+    exists_nonce = create_exists_nonce_func(cache, key_prefix, expires)
     authorization_server.register_hook('exists_nonce', exists_nonce)

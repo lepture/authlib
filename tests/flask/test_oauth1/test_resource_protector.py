@@ -10,9 +10,11 @@ from .oauth1_server import (
 )
 
 
-class AuthorizationTest(TestCase):
-    def prepare_data(self, use_cache=False):
-        create_resource_server(self.app, use_cache)
+class ResourceCacheTest(TestCase):
+    USE_CACHE = True
+
+    def prepare_data(self):
+        create_resource_server(self.app, self.USE_CACHE)
         user = User(username='foo')
         db.session.add(user)
         db.session.commit()
@@ -36,7 +38,7 @@ class AuthorizationTest(TestCase):
         db.session.commit()
 
     def test_invalid_request_parameters(self):
-        self.prepare_data(True)
+        self.prepare_data()
         url = '/user'
 
         # case 1
@@ -80,7 +82,7 @@ class AuthorizationTest(TestCase):
         self.assertIn('oauth_timestamp', data['error_description'])
 
     def test_plaintext_signature(self):
-        self.prepare_data(True)
+        self.prepare_data()
         url = '/user'
 
         # case 1: success
@@ -103,7 +105,7 @@ class AuthorizationTest(TestCase):
         self.assertEqual(data['error'], 'invalid_signature')
 
     def test_hmac_sha1_signature(self):
-        self.prepare_data(True)
+        self.prepare_data()
         url = '/user'
 
         params = [
@@ -134,7 +136,7 @@ class AuthorizationTest(TestCase):
         self.assertEqual(data['error'], 'invalid_nonce')
 
     def test_rsa_sha1_signature(self):
-        self.prepare_data(True)
+        self.prepare_data()
         url = '/user'
 
         params = [
@@ -163,3 +165,7 @@ class AuthorizationTest(TestCase):
         rv = self.client.get(url, headers=headers)
         data = json.loads(rv.data)
         self.assertEqual(data['error'], 'invalid_signature')
+
+
+class ResourceDBTest(ResourceCacheTest):
+    USE_CACHE = False
