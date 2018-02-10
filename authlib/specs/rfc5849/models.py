@@ -101,4 +101,3 @@ class TemporaryCredentialMixin(TokenCredentialMixin):
         :return: Boolean
         """
         raise NotImplementedError()
-

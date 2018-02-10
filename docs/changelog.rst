@@ -16,6 +16,7 @@ Version 0.5
   integration.
 - :class:`~authlib.client.OAuth2Session` supports more grant types.
 - Deprecate built-in cache. Read more on `issue#23`_.
+- Redesigned OAuth 1 Flask server. Read the docs :ref:`flask_oauth1_server`.
 
 .. _`issue#23`: https://github.com/lepture/authlib/issues/23
 
@@ -52,19 +53,21 @@ Version 0.5
 
         from authlib.flask.oauth1 import AuthorizationServer, ResourceProtector
 
-        server = AuthorizationServer(app, client_model=Client, cache=cache)
+        server = AuthorizationServer(app, client_model=Client)
         # or lazily
-        server.init_app(app, client_model=Client, cache=cache)
+        server.init_app(app, client_model=Client)
 
         require_oauth = ResourceProtector(
             app, client_model=Client,
-            cache=cache, query_token=query_token
+            query_token=query_token,
+            exists_nonce=exists_nonce,
         )
         # or initialize it lazily
         require_oauth = ResourceProtector()
         require_oauth.init_app(
             app, client_model=Client,
-            cache=cache, query_token=query_token
+            query_token=query_token,
+            exists_nonce=exists_nonce,
         )
 
 Version 0.4.1

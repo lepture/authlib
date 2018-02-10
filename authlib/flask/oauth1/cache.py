@@ -23,6 +23,12 @@ class TemporaryCredential(dict, TemporaryCredentialMixin):
 
 def register_temporary_credential_hooks(
         authorization_server, cache, key_prefix='temporary_credential:'):
+    """Register temporary credential related hooks to authorization server.
+
+    :param authorization_server: AuthorizationServer instance
+    :param cache: Cache instance
+    :param key_prefix: key prefix for temporary credential
+    """
 
     def create_temporary_credential(token, client_id, redirect_uri):
         key = key_prefix + token['oauth_token']
@@ -64,6 +70,13 @@ def register_temporary_credential_hooks(
 
 
 def create_exists_nonce_func(cache, key_prefix='nonce:', expires=300):
+    """Create an ``exists_nonce`` function that can be used in hooks and
+    resource protector.
+
+    :param cache: Cache instance
+    :param key_prefix: key prefix for temporary credential
+    :param expires: Expire time for nonce
+    """
     def exists_nonce(nonce, timestamp, client_id, oauth_token):
         key = '{}{}-{}-{}'.format(key_prefix, nonce, timestamp, client_id)
         if oauth_token:
@@ -76,5 +89,12 @@ def create_exists_nonce_func(cache, key_prefix='nonce:', expires=300):
 
 def register_nonce_hooks(
         authorization_server, cache, key_prefix='nonce:', expires=300):
+    """Register nonce related hooks to authorization server.
+
+    :param authorization_server: AuthorizationServer instance
+    :param cache: Cache instance
+    :param key_prefix: key prefix for temporary credential
+    :param expires: Expire time for nonce
+    """
     exists_nonce = create_exists_nonce_func(cache, key_prefix, expires)
     authorization_server.register_hook('exists_nonce', exists_nonce)

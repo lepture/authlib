@@ -34,6 +34,14 @@ Resource Owner
 Resource Owner is the user who is using your service. A resource owner can
 log in your website with username/email and password, or other methods.
 
+A resource owner MUST implement ``get_user_id()`` method::
+
+    class User(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+
+        def get_user_id(self):
+            return self.id
+
 Client
 ~~~~~~
 
@@ -76,7 +84,7 @@ there is also a SQLAlchemy mixin::
 
     from authlib.flask.oauth1.sqla import OAuth1TemporaryCredentialMixin
 
-    class TemporaryCredential(OAuth1TemporaryCredentialMixin):
+    class TemporaryCredential(db.Model, OAuth1TemporaryCredentialMixin):
         id = db.Column(db.Integer, primary_key=True)
         user_id = db.Column(
             db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')
@@ -97,16 +105,15 @@ Here is a SQLAlchemy mixin for easy integration::
 
     from authlib.flask.oauth1.sqla import OAuth1TokenCredentialMixin
 
-    class TokenCredential(OAuth1TokenCredentialMixin):
+    class TokenCredential(db.Model, OAuth1TokenCredentialMixin):
         id = db.Column(db.Integer, primary_key=True)
         user_id = db.Column(
             db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')
         )
         user = db.relationship('User')
 
-    def set_grant_user(self, grant_user):
-         # it is required to implement this method
-        self.user_id = grant_user
+    def set_user_id(self, user_id):
+        self.user_id = user_id
 
 If SQLAlchemy is not what you want, read the API reference of
 :class:`~authlib.specs.rfc5849.TokenCredentialMixin` and implement the missing
@@ -119,8 +126,13 @@ The nonce value MUST be unique across all requests with the same timestamp,
 client credentials, and token combinations. Authlib Flask integration has a
 built-in validation with cache.
 
-If you want to use other means, you need to register a hook to check the
-exists of the given nonce.
+If cache is not available, there is also a SQLAlchemy mixin::
+
+    from authlib.flask.oauth1.sqla import OAuth1TokenCredentialMixin
+
+    class TimestampNonce(db.Model, OAuth1TokenCredentialMixin)
+        id = db.Column(db.Integer, primary_key=True)
+
 
 Define A Server
 ~~~~~~~~~~~~~~~
@@ -130,12 +142,12 @@ which has built-in tools to handle requests and responses::
 
     from authlib.flask.oauth1 import AuthorizationServer
 
-    server = AuthorizationServer(app, client_model=Client, cache=cache)
+    server = AuthorizationServer(app, client_model=Client)
 
 It can also be initialized lazily with init_app::
 
     server = AuthorizationServer()
-    server.init_app(app, client_model=Client, cache=cache)
+    server.init_app(app, client_model=Client)
 
 It is strongly suggested that you use a cache. In this way, you
 don't have to re-implement a lot of the missing methods.
@@ -172,32 +184,31 @@ Server Hooks
 ~~~~~~~~~~~~
 
 There are missing hooks that should be ``register_hook`` to AuthorizationServer.
-If **CACHE** is available, the only missing hook is ``create_token_credential``,
-which can be easily created in this way::
+There are helper functions for registering hooks. If cache is available, you
+can take the advantage with::
 
-    def create_token_credential(token, temporary_credential):
-        item = TokenCredential(
-            oauth_token=token['oauth_token'],
-            oauth_token_secret=token['oauth_token_secret'],
-            client_id=temporary_credentials.get_client_id()
-        )
-        item.set_grant_user(temporary_credential.get_grant_user())
-        session.add(item)
-        session.commit()
-        return item
+    from authlib.flask.oauth1.cache import (
+        register_nonce_hooks,
+        register_temporary_credential_hooks
+    )
+    from authlib.flask.oauth1.sqla import register_token_credential_hooks
 
-    server.register_hook(
-        'create_token_credential', create_token_credential
+    register_nonce_hooks(server, cache)
+    register_temporary_credential_hooks(server, cache)
+    register_token_credential_hooks(server, db.session, TokenCredential)
+
+If cache is not available, here are the helpers for SQLAlchemy::
+
+    from authlib.flask.oauth1.sqla import (
+        register_nonce_hooks,
+        register_temporary_credential_hooks,
+        register_token_credential_hooks
     )
 
-With this hook registered, the AuthorizationServer is ready to use. But if
-**CACHE** is not available, there are other hooks that you need to implement:
+    register_nonce_hooks(server, db.session, TimestampNonce)
+    register_temporary_credential_hooks(server, db.session, TemporaryCredential)
+    register_token_credential_hooks(server, db.session, TokenCredential)
 
-- ``exists_nonce``
-- ``create_temporary_credential``
-- ``get_temporary_credential``
-- ``delete_temporary_credential``
-- ``create_authorization_verifier``
 
 Server Implementation
 ~~~~~~~~~~~~~~~~~~~~~
@@ -226,7 +237,7 @@ request::
 
         granted = request.form.get('granted')
         if granted:
-            grant_user = current_user.id
+            grant_user = current_user
         else:
             grant_user = None
 
@@ -254,21 +265,27 @@ server. Here is the way to protect your users' resources::
 
     from flask import jsonify
     from authlib.flask.oauth1 import ResourceProtector, current_credential
+    from authlib.flask.oauth1.cache import create_exists_nonce_func
 
     def query_token(client_id, token):
         return TokenCredential.query.filter_by(
             client_id=client_id, oauth_token=token
         ).first()
 
+    exists_nonce = create_exists_nonce_func(cache)
+    # OR: authlib.flask.oauth1.sqla.create_exists_nonce_func
+
     require_oauth = ResourceProtector(
         app, client_model=Client,
-        cache=cache, query_token=query_token
+        query_token=query_token,
+        exists_nonce=exists_nonce,
     )
     # or initialize it lazily
     require_oauth = ResourceProtector()
     require_oauth.init_app(
         app, client_model=Client,
-        cache=cache, query_token=query_token
+        query_token=query_token,
+        exists_nonce=exists_nonce,
     )
 
     @app.route('/user')

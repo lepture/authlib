@@ -103,6 +103,12 @@ class OAuth1TokenCredentialMixin(TokenCredentialMixin):
 
 def register_temporary_credential_hooks(
         authorization_server, session, model_class):
+    """Register temporary credential related hooks to authorization server.
+
+    :param authorization_server: AuthorizationServer instance
+    :param session: SQLAlchemy session
+    :param model_class: TemporaryCredential class
+    """
 
     def create_temporary_credential(token, client_id, redirect_uri):
         item = model_class(
@@ -142,6 +148,12 @@ def register_temporary_credential_hooks(
 
 
 def create_exists_nonce_func(session, model_class):
+    """Create an ``exists_nonce`` function that can be used in hooks and
+    resource protector.
+
+    :param session: SQLAlchemy session
+    :param model_class: TimestampNonce class
+    """
     def exists_nonce(nonce, timestamp, client_id, oauth_token):
         q = session.query(model_class.nonce).filter_by(
             nonce=nonce,
@@ -167,13 +179,24 @@ def create_exists_nonce_func(session, model_class):
 
 
 def register_nonce_hooks(authorization_server, session, model_class):
+    """Register nonce related hooks to authorization server.
+
+    :param authorization_server: AuthorizationServer instance
+    :param session: SQLAlchemy session
+    :param model_class: TimestampNonce class
+    """
     exists_nonce = create_exists_nonce_func(session, model_class)
     authorization_server.register_hook('exists_nonce', exists_nonce)
 
 
 def register_token_credential_hooks(
         authorization_server, session, model_class):
+    """Register token credential related hooks to authorization server.
 
+    :param authorization_server: AuthorizationServer instance
+    :param session: SQLAlchemy session
+    :param model_class: TokenCredential class
+    """
     def create_token_credential(token, temporary_credential):
         item = model_class(
             oauth_token=token['oauth_token'],
