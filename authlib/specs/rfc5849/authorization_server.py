@@ -145,8 +145,7 @@ class AuthorizationServer(BaseServer):
         :param uri: HTTP request URI string.
         :param body: HTTP request payload body.
         :param headers: HTTP request headers.
-        :param grant_user: if granted, it is resource owner's ID. If denied,
-            it is None.
+        :param grant_user: if granted, pass the grant user, otherwise None.
         :returns: (status_code, body, headers)
         """
         InsecureTransportError.check(uri)
@@ -324,7 +323,7 @@ class AuthorizationServer(BaseServer):
                 verifier = generate_token(36)
 
                 temporary_credential = request.credential
-                temporary_credential.user_id = request.grant_user
+                temporary_credential.user_id = request.grant_user.id
                 temporary_credential.oauth_verifier = verifier
                 # if the credential has a save method
                 temporary_credential.save()
@@ -350,7 +349,7 @@ class AuthorizationServer(BaseServer):
                     oauth_token=oauth_token,
                     oauth_token_secret=oauth_token_secret,
                     client_id=temporary_credential.get_client_id(),
-                    user_id=temporary_credential.get_grant_user()
+                    user_id=temporary_credential.get_user_id()
                 )
                 # if the credential has a save method
                 token_credential.save()

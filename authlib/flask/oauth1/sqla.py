@@ -1,4 +1,5 @@
-from sqlalchemy import Column, String, Text
+from sqlalchemy import Column, UniqueConstraint
+from sqlalchemy import String, Integer, Text
 from authlib.specs.rfc5849 import (
     ClientMixin,
     TemporaryCredentialMixin,
@@ -32,6 +33,27 @@ class OAuth1TemporaryCredentialMixin(TemporaryCredentialMixin):
     oauth_verifier = Column(String(84))
     oauth_callback = Column(Text, default='')
 
+    def get_user_id(self):
+        """A method to get the grant user information of this temporary
+        credential. For instance, grant user is stored in database on
+        ``user_id`` column::
+
+            def get_user_id(self):
+                return self.user_id
+
+        :return: User ID
+        """
+        if hasattr(self, 'user_id'):
+            return self.user_id
+        else:
+            raise NotImplementedError()
+
+    def set_user_id(self, user_id):
+        if hasattr(self, 'user_id'):
+            setattr(self, 'user_id', user_id)
+        else:
+            raise NotImplementedError()
+
     def get_client_id(self):
         return self.client_id
 
@@ -48,10 +70,29 @@ class OAuth1TemporaryCredentialMixin(TemporaryCredentialMixin):
         return self.oauth_token_secret
 
 
+class OAuth1TimestampNonceMixin(object):
+    __table_args__ = (
+        UniqueConstraint(
+            'client_id', 'timestamp', 'nonce', 'oauth_token',
+            name='unique_nonce'
+        ),
+    )
+    client_id = Column(String(48), nullable=False)
+    timestamp = Column(Integer, nullable=False)
+    nonce = Column(String(48), nullable=False)
+    oauth_token = Column(String(84))
+
+
 class OAuth1TokenCredentialMixin(TokenCredentialMixin):
     client_id = Column(String(48), index=True)
     oauth_token = Column(String(84), unique=True, index=True)
     oauth_token_secret = Column(String(84))
+
+    def set_user_id(self, user_id):
+        if hasattr(self, 'user_id'):
+            setattr(self, 'user_id', user_id)
+        else:
+            raise NotImplementedError()
 
     def get_oauth_token(self):
         return self.oauth_token
@@ -60,25 +101,104 @@ class OAuth1TokenCredentialMixin(TokenCredentialMixin):
         return self.oauth_token_secret
 
 
-def register_authorization_hooks(
-        authorization_server, session,
-        token_credential_model,
-        temporary_credential_model=None):
+def register_temporary_credential_hooks(
+        authorization_server, session, model_class):
+
+    def create_temporary_credential(token, client_id, redirect_uri):
+        item = model_class(
+            client_id=client_id,
+            oauth_token=token['oauth_token'],
+            oauth_token_secret=token['oauth_token_secret'],
+            oauth_callback=redirect_uri,
+        )
+        session.add(item)
+        session.commit()
+        return item
+
+    def get_temporary_credential(oauth_token):
+        q = session.query(model_class).filter_by(oauth_token=oauth_token)
+        return q.first()
+
+    def delete_temporary_credential(oauth_token):
+        q = session.query(model_class).filter_by(oauth_token=oauth_token)
+        q.delete(synchronize_session=False)
+        session.commit()
+
+    def create_authorization_verifier(credential, grant_user, verifier):
+        credential.set_user_id(grant_user.get_user_id())
+        credential.oauth_verifier = verifier
+        session.add(credential)
+        session.commit()
+        return credential
+
+    authorization_server.register_hook(
+        'create_temporary_credential', create_temporary_credential)
+    authorization_server.register_hook(
+        'get_temporary_credential', get_temporary_credential)
+    authorization_server.register_hook(
+        'delete_temporary_credential', delete_temporary_credential)
+    authorization_server.register_hook(
+        'create_authorization_verifier', create_authorization_verifier)
+
+
+def register_exists_nonce(
+        authorization_server, session, model_class):
+
+    def exists_nonce(nonce, timestamp, client_id, oauth_token):
+        q = session.query(model_class.nonce).filter_by(
+            nonce=nonce,
+            timestamp=timestamp,
+            client_id=client_id,
+        )
+        if oauth_token:
+            q = q.filter_by(oauth_token=oauth_token)
+        rv = q.first()
+        if rv:
+            return True
+
+        item = model_class(
+            nonce=nonce,
+            timestamp=timestamp,
+            client_id=client_id,
+            oauth_token=oauth_token,
+        )
+        session.add(item)
+        session.commit()
+        return False
+    authorization_server.register_hook('exists_nonce', exists_nonce)
+
+
+def register_create_token_credential(
+        authorization_server, session, model_class):
 
     def create_token_credential(token, temporary_credential):
-        item = token_credential_model(
+        item = model_class(
             oauth_token=token['oauth_token'],
             oauth_token_secret=token['oauth_token_secret'],
             client_id=temporary_credential.get_client_id()
         )
-        item.set_grant_user(temporary_credential.get_grant_user())
+        item.set_user_id(temporary_credential.get_user_id())
         session.add(item)
         session.commit()
         return item
 
     authorization_server.register_hook(
-        'create_token_credential', create_token_credential
-    )
+        'create_token_credential', create_token_credential)
 
-    if temporary_credential_model is None:
-        return
+
+def register_authorization_hooks(
+        authorization_server, session,
+        token_credential_model,
+        temporary_credential_model=None,
+        timestamp_nonce_model=None):
+
+    register_create_token_credential(
+        authorization_server, session, token_credential_model)
+
+    if temporary_credential_model is not None:
+        register_temporary_credential_hooks(
+            authorization_server, session, temporary_credential_model)
+
+    if timestamp_nonce_model is not None:
+        register_temporary_credential_hooks(
+            authorization_server, session, timestamp_nonce_model)

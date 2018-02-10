@@ -31,9 +31,8 @@ class AuthorizationTest(TestCase):
             'oauth_verifier': 'abc-verifier',
             'user': 1
         }
-        self.server._create_cache_temporary_credential(
-            credential, 'client', 'oob'
-        )
+        func = self.server._hooks['create_temporary_credential']
+        func(credential, 'client', 'oob')
 
     def test_invalid_token_request_parameters(self):
         self.prepare_data(True)
@@ -67,9 +66,10 @@ class AuthorizationTest(TestCase):
     def test_invalid_token_and_verifiers(self):
         self.prepare_data(True)
         url = '/oauth/token'
+        hook = self.server._hooks['create_temporary_credential']
 
         # case 5
-        self.server._create_cache_temporary_credential(
+        hook(
             {'oauth_token': 'abc', 'oauth_token_secret': 'abc-secret'},
             'client', 'oob'
         )
@@ -82,7 +82,7 @@ class AuthorizationTest(TestCase):
         self.assertIn('oauth_verifier', data['error_description'])
 
         # case 6
-        self.server._create_cache_temporary_credential(
+        hook(
             {'oauth_token': 'abc', 'oauth_token_secret': 'abc-secret'},
             'client', 'oob'
         )

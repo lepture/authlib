@@ -25,6 +25,9 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(40), unique=True, nullable=False)
 
+    def get_user_id(self):
+        return self.id
+
     def check_password(self, password):
         return password != 'wrong'
 
@@ -46,9 +49,6 @@ class Token(db.Model, OAuth1TokenCredentialMixin):
         db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')
     )
     user = db.relationship('User')
-
-    def set_grant_user(self, grant_user):
-        self.user_id = grant_user
 
 
 def create_authorization_server(app, use_cache=False):
@@ -72,13 +72,11 @@ def create_authorization_server(app, use_cache=False):
                 return 'ok'
             except OAuth1Error:
                 return 'error'
-        grant_user = request.form.get('user_id')
-        if grant_user:
-            user = User.query.get(int(grant_user))
-            if user:
-                grant_user = user.id
-            else:
-                grant_user = None
+        user_id = request.form.get('user_id')
+        if user_id:
+            grant_user = User.query.get(int(user_id))
+        else:
+            grant_user = None
         try:
             return server.create_authorization_response(grant_user)
         except OAuth1Error as error:

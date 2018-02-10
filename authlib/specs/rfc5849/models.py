@@ -44,7 +44,7 @@ class ClientMixin(object):
         raise NotImplementedError()
 
 
-class CredentialMixin(object):
+class TokenCredentialMixin(object):
     def get_oauth_token(self):
         """A method to get the value of ``oauth_token``. For instance, the
         database table has a column called ``oauth_token``::
@@ -68,7 +68,7 @@ class CredentialMixin(object):
         raise NotImplementedError()
 
 
-class TemporaryCredentialMixin(CredentialMixin):
+class TemporaryCredentialMixin(TokenCredentialMixin):
     def get_client_id(self):
         """A method to get the client_id associated with this credential.
         For instance, the table in the database has a column ``client_id``::
@@ -90,18 +90,6 @@ class TemporaryCredentialMixin(CredentialMixin):
         """
         raise NotImplementedError()
 
-    def get_grant_user(self):
-        """A method to get the grant user information of this temporary
-        credential. For instance, grant user is stored in database on
-        ``user_id`` column::
-
-            def get_grant_user(self):
-                return self.user_id
-
-        :return: grant user ID
-        """
-        raise NotImplementedError()
-
     def check_verifier(self, verifier):
         """A method to check if the given verifier matches this temporary
         credential. For instance that this temporary credential has recorded
@@ -114,13 +102,3 @@ class TemporaryCredentialMixin(CredentialMixin):
         """
         raise NotImplementedError()
 
-
-class TokenCredentialMixin(CredentialMixin):
-    def set_grant_user(self, grant_user):
-        """A method to save ``grant_user`` information into token credential.
-        A ``grant_user`` is usually a string/int of the user's ID::
-
-            def set_grant_user(self, grant_user):
-                self.user_id = grant_user
-        """
-        raise NotImplementedError()
