@@ -75,10 +75,10 @@ class OAuthClient(object):
         self._sess = None
 
     def generate_authorize_redirect(
-            self, callback_uri=None, save_request_token=None, **kwargs):
+            self, redirect_uri=None, save_request_token=None, **kwargs):
         """Generate the authorize redirect.
 
-        :param callback_uri: Callback or redirect URI for authorization.
+        :param redirect_uri: Callback or redirect URI for authorization.
         :param save_request_token: A function to save request token.
         :param kwargs: Extra parameters to include.
         :return: (url, state)
@@ -87,7 +87,7 @@ class OAuthClient(object):
             raise RuntimeError('Missing "authorize_url" value')
 
         if self.request_token_url:
-            self.session.callback_uri = callback_uri
+            self.session.redirect_uri = redirect_uri
             params = {}
             if self.request_token_params:
                 params.update(self.request_token_params)
@@ -98,26 +98,26 @@ class OAuthClient(object):
             save_request_token(token)
             url = self.session.authorization_url(
                 self.authorize_url,  **kwargs)
-            self.session.callback_uri = None
+            self.session.redirect_uri = None
             state = None
         else:
-            self.session.redirect_uri = callback_uri
+            self.session.redirect_uri = redirect_uri
             url, state = self.session.authorization_url(
                 self.authorize_url, **kwargs)
         return url, state
 
-    def fetch_access_token(self, callback_uri=None, request_token=None,
+    def fetch_access_token(self, redirect_uri=None, request_token=None,
                            **params):
         """Fetch access token in one step.
 
-        :param callback_uri: Callback or Redirect URI that is used in
+        :param redirect_uri: Callback or Redirect URI that is used in
                              previous :meth:`authorize_redirect`.
         :param request_token: A previous request token for OAuth 1.
         :param params: Extra parameters to fetch access token.
         :return: A token dict.
         """
         if self.request_token_url:
-            self.session.callback_uri = callback_uri
+            self.session.redirect_uri = redirect_uri
             if request_token is None:
                 raise OAuthException('Missing request token')
             # merge request token with verifier
@@ -128,9 +128,9 @@ class OAuthClient(object):
             kwargs = self.access_token_params or {}
             token = self.session.fetch_access_token(
                 self.access_token_url, **kwargs)
-            self.session.callback_uri = None
+            self.session.redirect_uri = None
         else:
-            self.session.redirect_uri = callback_uri
+            self.session.redirect_uri = redirect_uri
             kwargs = {}
             if self.access_token_params:
                 kwargs.update(self.access_token_params)

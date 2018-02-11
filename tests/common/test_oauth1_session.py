@@ -125,10 +125,10 @@ class OAuth1SessionTest(TestCase):
 
     def test_callback_uri(self):
         sess = OAuth1Session('foo')
-        self.assertIsNone(sess.callback_uri)
+        self.assertIsNone(sess.redirect_uri)
         url = 'https://i.b'
-        sess.callback_uri = url
-        self.assertEqual(sess.callback_uri, url)
+        sess.redirect_uri = url
+        self.assertEqual(sess.redirect_uri, url)
 
     def test_set_token(self):
         sess = OAuth1Session('foo')

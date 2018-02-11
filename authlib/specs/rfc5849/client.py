@@ -55,7 +55,7 @@ class Client(object):
 
     def __init__(self, client_id, client_secret=None,
                  token=None, token_secret=None,
-                 callback_uri=None, rsa_key=None, verifier=None,
+                 redirect_uri=None, rsa_key=None, verifier=None,
                  signature_method=SIGNATURE_HMAC_SHA1,
                  signature_type=SIGNATURE_TYPE_HEADER,
                  realm=None, force_include_body=False):
@@ -63,7 +63,7 @@ class Client(object):
         self.client_secret = client_secret
         self.token = token
         self.token_secret = token_secret
-        self.callback_uri = callback_uri
+        self.redirect_uri = redirect_uri
         self.signature_method = signature_method
         self.signature_type = signature_type
         self.rsa_key = rsa_key
@@ -98,8 +98,8 @@ class Client(object):
         ]
         if self.token:
             oauth_params.append(('oauth_token', self.token))
-        if self.callback_uri:
-            oauth_params.append(('oauth_callback', self.callback_uri))
+        if self.redirect_uri:
+            oauth_params.append(('oauth_callback', self.redirect_uri))
         if self.verifier:
             oauth_params.append(('oauth_verifier', self.verifier))
 

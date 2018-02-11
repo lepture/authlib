@@ -20,6 +20,7 @@ Version 0.5
 - Deprecate ``client_model``. Read more on `issue#27`_.
 - **Breaking change** on ``AuthorizationCodeGrant.create_authorization_code``,
   last parameter is changed to an `OAuth2Request` instance.
+- Rename ``callback_uri`` to ``redirect_uri`` in client.
 
 .. _`issue#23`: https://github.com/lepture/authlib/issues/23
 .. _`issue#27`: https://github.com/lepture/authlib/issues/27

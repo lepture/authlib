@@ -89,20 +89,20 @@ class RemoteApp(OAuthClient):
     def get_token(self):
         return self.token
 
-    def authorize_redirect(self, request, callback_uri=None, **kwargs):
+    def authorize_redirect(self, request, redirect_uri=None, **kwargs):
         """Create a HTTP Redirect for Authorization Endpoint.
 
         :param request: HTTP request instance from Django view.
-        :param callback_uri: Callback or redirect URI for authorization.
+        :param redirect_uri: Callback or redirect URI for authorization.
         :param kwargs: Extra parameters to include.
         :return: A HTTP redirect response.
         """
-        if callback_uri:
+        if redirect_uri:
             key = '_{}_callback_'.format(self.name)
-            request.session[key] = callback_uri
+            request.session[key] = redirect_uri
 
         if self.request_token_url:
-            self.session.callback_uri = callback_uri
+            self.session.redirect_uri = redirect_uri
             params = {}
             if self.request_token_params:
                 params.update(self.request_token_params)
@@ -114,9 +114,9 @@ class RemoteApp(OAuthClient):
             request.session[key] = token
             url = self.session.authorization_url(
                 self.authorize_url,  **kwargs)
-            self.session.callback_uri = None
+            self.session.redirect_uri = None
         else:
-            self.session.redirect_uri = callback_uri
+            self.session.redirect_uri = redirect_uri
             url, state = self.session.authorization_url(
                 self.authorize_url, **kwargs)
             if state:
@@ -142,11 +142,11 @@ class RemoteApp(OAuthClient):
                     'State not equal in request and response.')
 
         key = '_{}_callback_'.format(self.name)
-        callback_uri = request.session.get(key, None)
+        redirect_uri = request.session.get(key, None)
         params = request.GET.dict()
         params.update(kwargs)
         return self.fetch_access_token(
-            callback_uri,
+            redirect_uri,
             request_token,
             **params
         )

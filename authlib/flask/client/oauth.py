@@ -172,16 +172,16 @@ class RemoteApp(OAuthClient):
     def get_token(self):
         return self._fetch_token()
 
-    def authorize_redirect(self, callback_uri=None, **kwargs):
+    def authorize_redirect(self, redirect_uri=None, **kwargs):
         """Create a HTTP Redirect for Authorization Endpoint.
 
-        :param callback_uri: Callback or redirect URI for authorization.
+        :param redirect_uri: Callback or redirect URI for authorization.
         :param kwargs: Extra parameters to include.
         :return: A HTTP redirect response.
         """
-        if callback_uri:
+        if redirect_uri:
             key = '_{}_callback_'.format(self.name)
-            session[key] = callback_uri
+            session[key] = redirect_uri
 
         if self.request_token_url:
             save_request_token = self._save_request_token
@@ -189,7 +189,7 @@ class RemoteApp(OAuthClient):
             save_request_token = None
 
         uri, state = self.generate_authorize_redirect(
-            callback_uri,
+            redirect_uri,
             save_request_token,
             **kwargs
         )
@@ -216,10 +216,6 @@ class RemoteApp(OAuthClient):
                 params['state'] = state
 
         cb_key = '_{}_callback_'.format(self.name)
-        callback_uri = session.pop(cb_key, None)
+        redirect_uri = session.pop(cb_key, None)
         params.update(kwargs)
-        return self.fetch_access_token(
-            callback_uri,
-            request_token,
-            **params
-        )
+        return self.fetch_access_token(redirect_uri, request_token, **params)

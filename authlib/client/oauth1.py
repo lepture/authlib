@@ -64,7 +64,7 @@ class OAuth1Session(Session):
     """
     def __init__(self, client_id, client_secret=None,
                  token=None, token_secret=None,
-                 callback_uri=None, rsa_key=None, verifier=None,
+                 redirect_uri=None, rsa_key=None, verifier=None,
                  signature_method=SIGNATURE_HMAC_SHA1,
                  signature_type=SIGNATURE_TYPE_HEADER,
                  force_include_body=False, **kwargs):
@@ -80,11 +80,16 @@ class OAuth1Session(Session):
             if token_secret is None:
                 token_secret = kwargs.pop('resource_owner_secret', None)
 
+        if 'callback_uri' in kwargs:
+            deprecate('Use "redirect_uri" instead of "callback_uri"', '0.7')
+            if redirect_uri is None:
+                redirect_uri = kwargs.pop('callback_uri', None)
+
         self._client = OAuth1(
             client_id, client_secret=client_secret,
             token=token,
             token_secret=token_secret,
-            callback_uri=callback_uri,
+            redirect_uri=redirect_uri,
             signature_method=signature_method,
             signature_type=signature_type,
             rsa_key=rsa_key,
@@ -95,12 +100,12 @@ class OAuth1Session(Session):
         self._kwargs = kwargs
 
     @property
-    def callback_uri(self):
-        return self._client.callback_uri
+    def redirect_uri(self):
+        return self._client.redirect_uri
 
-    @callback_uri.setter
-    def callback_uri(self, uri):
-        self._client.callback_uri = uri
+    @redirect_uri.setter
+    def redirect_uri(self, uri):
+        self._client.redirect_uri = uri
 
     @property
     def token(self):
@@ -141,8 +146,8 @@ class OAuth1Session(Session):
         :returns: The authorization URL with new parameters embedded.
         """
         kwargs['oauth_token'] = request_token or self._client.token
-        if self._client.callback_uri:
-            kwargs['oauth_callback'] = self._client.callback_uri
+        if self._client.redirect_uri:
+            kwargs['oauth_callback'] = self._client.redirect_uri
         return add_params_to_uri(url, kwargs.items())
 
     def fetch_request_token(self, url, realm=None, **kwargs):
@@ -171,7 +176,7 @@ class OAuth1Session(Session):
         else:
             self._client.realm = None
         token = self._fetch_token(url, **kwargs)
-        self._client.callback_uri = None
+        self._client.redirect_uri = None
         self._client.realm = None
         return token
 
