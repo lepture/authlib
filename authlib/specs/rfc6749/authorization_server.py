@@ -1,5 +1,5 @@
-from authlib.common.urls import urlparse, url_decode
 from authlib.common.urls import add_params_to_uri
+from .wrappers import OAuth2Request
 from .errors import InvalidGrantError, InsecureTransportError, OAuth2Error
 
 
@@ -45,21 +45,11 @@ class AuthorizationServer(object):
         :return: grant instance
         """
         InsecureTransportError.check(uri)
-        params = dict(url_decode(urlparse.urlparse(uri).query))
-
-        if method == 'POST' and body:
-            if isinstance(body, dict):
-                params.update(body)
-            else:
-                params.update(dict(url_decode(body)))
-
+        request = OAuth2Request(method, uri, body)
         for grant_cls in self._authorization_endpoints:
-            if grant_cls.check_authorization_endpoint(params):
+            if grant_cls.check_authorization_endpoint(request):
                 return grant_cls(
-                    uri, params, {},
-                    self.query_client,
-                    self.token_generator
-                )
+                    request, self.query_client, self.token_generator)
         raise InvalidGrantError()
 
     def get_token_grant(self, method, uri, body, headers):
@@ -72,22 +62,13 @@ class AuthorizationServer(object):
         :return: grant instance
         """
         InsecureTransportError.check(uri)
-        if method == 'GET':
-            params = dict(url_decode(urlparse.urlparse(uri).query))
-        else:
-            if isinstance(body, dict):
-                params = body
-            else:
-                params = dict(url_decode(body))
 
+        request = OAuth2Request(method, uri, body, headers)
         for grant_cls in self._token_endpoints:
-            if grant_cls.check_token_endpoint(params):
+            if grant_cls.check_token_endpoint(request):
                 if method in grant_cls.ACCESS_TOKEN_METHODS:
                     return grant_cls(
-                        uri, params, headers,
-                        self.query_client,
-                        self.token_generator
-                    )
+                        request, self.query_client, self.token_generator)
         raise InvalidGrantError()
 
     def create_valid_authorization_response(self, method, uri, body, grant_user):

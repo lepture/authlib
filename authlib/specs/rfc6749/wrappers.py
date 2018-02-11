@@ -1,4 +1,8 @@
 import time
+from authlib.common.urls import (
+    urlparse, extract_params, url_decode,
+    extract_basic_authorization,
+)
 
 
 class OAuth2Token(dict):
@@ -15,3 +19,63 @@ class OAuth2Token(dict):
         if not expires_at:
             return None
         return expires_at < time.time()
+
+
+class OAuth2Request(object):
+    def __init__(self, method, uri, body=None, headers=None):
+        self.method = method
+        self.uri = uri
+        self.body = body
+        self.headers = headers or {}
+
+        self.query = urlparse.urlparse(uri).query
+        self.query_params = url_decode(self.query)
+        self.body_params = extract_params(body) or []
+
+        params = {}
+        if self.query_params:
+            params.update(dict(self.query_params))
+        if self.body_params:
+            params.update(dict(self.body_params))
+        self.data = params
+
+        self.grant_user = None
+        self.credential = None
+        self.client = None
+
+    def extract_authorization_header(self):
+        auth = self.headers.get('Authorization')
+        if auth and ' ' in auth:
+            auth_type, auth_token = auth.split(None, 1)
+            if auth_type.lower() == 'basic':
+                client_id, secret = extract_basic_authorization(auth_token)
+                return {'client_id': client_id, 'client_secret': secret}
+        return {}
+
+    @property
+    def client_id(self):
+        return self.data.get('client_id')
+
+    @property
+    def code(self):
+        return self.data.get('code')
+
+    @property
+    def redirect_uri(self):
+        return self.data.get('redirect_uri')
+
+    @property
+    def scope(self):
+        return self.data.get('scope')
+
+    @property
+    def state(self):
+        return self.data.get('state')
+
+    @property
+    def response_type(self):
+        return self.data.get('response_type')
+
+    @property
+    def grant_type(self):
+        return self.data.get('grant_type')

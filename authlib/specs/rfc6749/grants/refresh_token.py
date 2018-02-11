@@ -30,15 +30,9 @@ class RefreshTokenGrant(BaseGrant):
     ACCESS_TOKEN_ENDPOINT = True
     GRANT_TYPE = 'refresh_token'
 
-    def __init__(self, uri, params, headers, query_client, token_generator):
-        super(RefreshTokenGrant, self).__init__(
-            uri, params, headers, query_client, token_generator)
-        self._authenticated_client = None
-        self._authenticated_token = None
-
     @staticmethod
-    def check_token_endpoint(params):
-        return params.get('grant_type') == RefreshTokenGrant.GRANT_TYPE
+    def check_token_endpoint(request):
+        return request.grant_type == RefreshTokenGrant.GRANT_TYPE
 
     def validate_access_token_request(self):
         """If the authorization server issued a refresh token to the client, the
@@ -86,9 +80,7 @@ class RefreshTokenGrant(BaseGrant):
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError()
 
-        self._authenticated_client = client
-
-        refresh_token = self.params.get('refresh_token')
+        refresh_token = self.request.data.get('refresh_token')
         if refresh_token is None:
             raise InvalidRequestError(
                 'Missing "refresh_token" in request.',
@@ -100,7 +92,7 @@ class RefreshTokenGrant(BaseGrant):
                 'Invalid "refresh_token" in request.',
             )
 
-        scope = self.params.get('scope')
+        scope = self.request.scope
         if scope:
             original_scope = token.get_scope()
             if not original_scope:
@@ -109,7 +101,8 @@ class RefreshTokenGrant(BaseGrant):
             if not original_scope.issuperset(set(scope_to_list(scope))):
                 raise InvalidScopeError()
 
-        self._authenticated_token = token
+        self.request.client = client
+        self.request.credential = token
 
     def create_access_token_response(self):
         """If valid and authorized, the authorization server issues an access
@@ -117,21 +110,19 @@ class RefreshTokenGrant(BaseGrant):
         verification or is invalid, the authorization server returns an error
         response as described in Section 5.2.
         """
-        scope = self.params.get('scope')
+        scope = self.request.scope
+        credential = self.request.credential
         if not scope:
-            scope = self._authenticated_token.get_scope()
+            scope = credential.get_scope()
 
-        expires_in = self._authenticated_token.get_expires_in()
+        client = self.request.client
+        expires_in = credential.get_expires_in()
         token = self.token_generator(
-            self._authenticated_client, self.GRANT_TYPE,
+            client, self.GRANT_TYPE,
             expires_in=expires_in,
             scope=scope,
         )
-        self.create_access_token(
-            token,
-            self._authenticated_client,
-            self._authenticated_token
-        )
+        self.create_access_token(token, client, credential)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_client(self):
@@ -140,11 +131,12 @@ class RefreshTokenGrant(BaseGrant):
 
         :return: client
         """
-        client_params = self.parse_basic_auth_header()
+        client_params = self.request.extract_authorization_header()
         if not client_params:
             raise InvalidClientError()
 
-        client_id, client_secret = client_params
+        client_id = client_params.get('client_id')
+        client_secret = client_params.get('client_secret')
         client = self.get_and_validate_client(client_id)
 
         # authenticate the client if client authentication is included

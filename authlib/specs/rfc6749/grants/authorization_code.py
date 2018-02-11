@@ -46,19 +46,13 @@ class AuthorizationCodeGrant(BaseGrant):
     ACCESS_TOKEN_ENDPOINT = True
     GRANT_TYPE = 'authorization_code'
 
-    def __init__(self, uri, params, headers, query_client, token_generator):
-        super(AuthorizationCodeGrant, self).__init__(
-            uri, params, headers, query_client, token_generator)
-        self._authenticated_client = None
-        self._authorization_code = None
+    @staticmethod
+    def check_authorization_endpoint(request):
+        return request.response_type == 'code'
 
     @staticmethod
-    def check_authorization_endpoint(params):
-        return params.get('response_type') == 'code'
-
-    @staticmethod
-    def check_token_endpoint(params):
-        return params.get('grant_type') == AuthorizationCodeGrant.GRANT_TYPE
+    def check_token_endpoint(request):
+        return request.grant_type == AuthorizationCodeGrant.GRANT_TYPE
 
     def validate_authorization_request(self):
         """The client constructs the request URI by adding the following
@@ -108,13 +102,13 @@ class AuthorizationCodeGrant(BaseGrant):
         """
         # ignore validate for response_type, since it is validated by
         # check_authorization_endpoint
-        client_id = self.params.get('client_id')
+        client_id = self.request.client_id
         client = self.get_and_validate_client(client_id)
         if not client.check_response_type('code'):
             raise UnauthorizedClientError(
                 'The client is not authorized to request an authorization '
                 'code using this method',
-                state=self.state,
+                state=self.request.state,
             )
 
         self.validate_authorization_redirect_uri(client)
@@ -158,14 +152,16 @@ class AuthorizationCodeGrant(BaseGrant):
             resource owner, otherwise pass None.
         :returns: (status_code, body, headers)
         """
+        state = self.request.state
         if grant_user:
+            self.request.grant_user = grant_user
             code = self.create_authorization_code(
-                self.client, grant_user, **self.params)
+                self.client, grant_user, self.request)
             params = [('code', code)]
-            if self.state:
-                params.append(('state', self.state))
+            if state:
+                params.append(('state', state))
         else:
-            error = AccessDeniedError(state=self.state)
+            error = AccessDeniedError(state=state)
             params = error.get_body()
 
         uri = add_params_to_uri(self.redirect_uri, params)
@@ -222,7 +218,7 @@ class AuthorizationCodeGrant(BaseGrant):
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError()
 
-        code = self.params.get('code')
+        code = self.request.code
         if code is None:
             raise InvalidRequestError(
                 'Missing "code" in request.',
@@ -238,7 +234,7 @@ class AuthorizationCodeGrant(BaseGrant):
             )
 
         # validate redirect_uri parameter
-        redirect_uri = self.params.get('redirect_uri')
+        redirect_uri = self.request.redirect_uri
         _redirect_uri = authorization_code.get_redirect_uri()
         original_redirect_uri = _redirect_uri or None
         if redirect_uri != original_redirect_uri:
@@ -247,8 +243,8 @@ class AuthorizationCodeGrant(BaseGrant):
             )
 
         # save for create_access_token_response
-        self._authenticated_client = client
-        self._authorization_code = authorization_code
+        self.request.client = client
+        self.request.credential = authorization_code
 
     def create_access_token_response(self):
         """If the access token request is valid and authorized, the
@@ -278,21 +274,19 @@ class AuthorizationCodeGrant(BaseGrant):
 
         .. _`Section 4.1.4`: http://tools.ietf.org/html/rfc6749#section-4.1.4
         """
-        client = self._authenticated_client
+        client = self.request.client
+        authorization_code = self.request.credential
+
         is_confidential = client.check_client_type('confidential')
-        scope = self._authorization_code.get_scope()
+        scope = authorization_code.get_scope()
         token = self.token_generator(
             client,
             self.GRANT_TYPE,
             scope=scope,
             include_refresh_token=is_confidential,
         )
-        self.create_access_token(
-            token,
-            client,
-            self._authorization_code
-        )
-        self.delete_authorization_code(self._authorization_code)
+        self.create_access_token(token, client, authorization_code)
+        self.delete_authorization_code(authorization_code)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_client(self):
@@ -315,20 +309,20 @@ class AuthorizationCodeGrant(BaseGrant):
 
         :return: client
         """
-        client_params = self.parse_basic_auth_header()
+        client_params = self.request.extract_authorization_header()
         if client_params:
             # authenticate the client if client authentication is included
-            client_id, client_secret = client_params
+            client_id = client_params.get('client_id')
+            client_secret = client_params.get('client_secret')
             client = self.get_and_validate_client(client_id)
             if not client.check_client_secret(client_secret):
                 raise InvalidClientError()
-
             return client
 
         # require client authentication for confidential clients or for any
         # client that was issued client credentials (or with other
         # authentication requirements)
-        client_id = self.params.get('client_id')
+        client_id = self.request.client_id
         client = self.get_and_validate_client(client_id)
         if client.check_client_type('confidential') or \
                 client.has_client_secret():
@@ -336,27 +330,26 @@ class AuthorizationCodeGrant(BaseGrant):
 
         return client
 
-    def create_authorization_code(self, client, grant_user, **kwargs):
+    def create_authorization_code(self, client, grant_user, request):
         """Save authorization_code for later use. Developers should implement
         it in subclass. Here is an example::
 
             from authlib.common.security import generate_token
 
-            def create_authorization_code(self, client, grant_user, **kwargs):
+            def create_authorization_code(self, client, request):
                 code = generate_token(48)
                 item = AuthorizationCode(
                     code=code,
                     client_id=client.client_id,
-                    redirect_uri=kwargs.get('redirect_uri', ''),
-                    scope=kwargs.get('scope', ''),
+                    redirect_uri=request.redirect_uri,
+                    scope=request.scope,
                     user_id=grant_user.id,
                 )
                 item.save()
                 return code
 
         :param client: the client that requesting the token.
-        :param grant_user: resource owner (user).
-        :param kwargs: other parameters.
+        :param request: OAuth2Request instance.
         :return: code string
         """
         raise NotImplementedError()

@@ -22,13 +22,13 @@ def create_authorization_code_grant(
     key_tpl = key_prefix + '{}_{}'
 
     class CodeGrant(AuthorizationCodeGrant):
-        def create_authorization_code(self, client, grant_user, **kwargs):
+        def create_authorization_code(self, client, grant_user, request):
             code = generate_token(48)
             data = dict(
                 code=code,
                 client_id=client.client_id,
-                redirect_uri=kwargs.get('redirect_uri', ''),
-                scope=kwargs.get('scope', ''),
+                redirect_uri=request.redirect_uri,
+                scope=request.scope,
                 user_id=grant_user.id,
             )
             key = key_tpl.format(code, client.client_id)

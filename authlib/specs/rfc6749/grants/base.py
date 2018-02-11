@@ -1,4 +1,3 @@
-from authlib.common.urls import extract_basic_authorization
 from ..errors import (
     InvalidRequestError,
     InvalidScopeError,
@@ -23,24 +22,20 @@ class BaseGrant(object):
         ('Pragma', 'no-cache'),
     ]
 
-    def __init__(self, uri, params, headers, query_client, token_generator):
-        self.headers = headers
-        self.uri = uri
-        self.params = params or {}
+    def __init__(self, request, query_client, token_generator):
+        self.request = request
+        self.redirect_uri = request.redirect_uri
         self.query_client = query_client
         self.token_generator = token_generator
-        self.state = params.get('state')
-        self.redirect_uri = self.params.get('redirect_uri')
         self._clients = {}
 
     @property
     def client(self):
-        return self.get_client_by_id(self.params['client_id'])
+        return self.get_client_by_id(self.request.client_id)
 
     @property
     def scopes(self):
-        if 'scope' in self.params:
-            return scope_to_list(self.params['scope'])
+        return scope_to_list(self.request.scope)
 
     def get_client_by_id(self, client_id):
         if client_id in self._clients:
@@ -52,29 +47,22 @@ class BaseGrant(object):
     def get_and_validate_client(self, client_id):
         if client_id is None:
             raise InvalidClientError(
-                state=self.state,
+                state=self.request.state,
             )
 
         client = self.get_client_by_id(client_id)
         if not client:
             raise InvalidClientError(
-                state=self.state,
+                state=self.request.state,
             )
         return client
-
-    def parse_basic_auth_header(self):
-        auth_header = self.headers.get('Authorization', '')
-        if auth_header and ' ' in auth_header:
-            auth_type, auth_token = auth_header.split(None, 1)
-            if auth_type.lower() == 'basic':
-                return extract_basic_authorization(auth_token)
 
     def validate_authorization_redirect_uri(self, client):
         if self.redirect_uri:
             if not client.check_redirect_uri(self.redirect_uri):
                 raise InvalidRequestError(
                     'Invalid "redirect_uri" in request.',
-                    state=self.state,
+                    state=self.request.state,
                 )
         else:
             redirect_uri = client.get_default_redirect_uri()
@@ -87,4 +75,4 @@ class BaseGrant(object):
     def validate_requested_scope(self, client):
         scopes = self.scopes
         if scopes and not client.check_requested_scopes(set(scopes)):
-            raise InvalidScopeError(state=self.state)
+            raise InvalidScopeError(state=self.request.state)

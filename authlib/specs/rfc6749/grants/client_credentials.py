@@ -28,14 +28,9 @@ class ClientCredentialsGrant(BaseGrant):
     ACCESS_TOKEN_ENDPOINT = True
     GRANT_TYPE = 'client_credentials'
 
-    def __init__(self, uri, params, headers, query_client, token_generator):
-        super(ClientCredentialsGrant, self).__init__(
-            uri, params, headers, query_client, token_generator)
-        self._authenticated_client = None
-
     @staticmethod
-    def check_token_endpoint(params):
-        return params.get('grant_type') == ClientCredentialsGrant.GRANT_TYPE
+    def check_token_endpoint(request):
+        return request.grant_type == ClientCredentialsGrant.GRANT_TYPE
 
     def validate_access_token_request(self):
         """The client makes a request to the token endpoint by adding the
@@ -77,7 +72,7 @@ class ClientCredentialsGrant(BaseGrant):
             raise UnauthorizedClientError()
 
         self.validate_requested_scope(client)
-        self._authenticated_client = client
+        self.request.client = client
 
     def create_access_token_response(self):
         """If the access token request is valid and authorized, the
@@ -104,12 +99,13 @@ class ClientCredentialsGrant(BaseGrant):
 
         :returns: (status_code, body, headers)
         """
+        client = self.request.client
         token = self.token_generator(
-            self._authenticated_client, self.GRANT_TYPE,
-            scope=self.params.get('scope'),
+            client, self.GRANT_TYPE,
+            scope=self.request.scope,
             include_refresh_token=False,
         )
-        self.create_access_token(token, self._authenticated_client)
+        self.create_access_token(token, client)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_client(self):
@@ -118,11 +114,12 @@ class ClientCredentialsGrant(BaseGrant):
 
         :return: client
         """
-        client_params = self.parse_basic_auth_header()
+        client_params = self.request.extract_authorization_header()
         if not client_params:
             raise InvalidClientError()
 
-        client_id, client_secret = client_params
+        client_id = client_params.get('client_id')
+        client_secret = client_params.get('client_secret')
         client = self.get_and_validate_client(client_id)
 
         # authenticate the client if client authentication is included

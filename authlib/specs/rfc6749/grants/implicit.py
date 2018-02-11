@@ -66,8 +66,8 @@ class ImplicitGrant(BaseGrant):
     GRANT_TYPE = 'implicit'
 
     @staticmethod
-    def check_authorization_endpoint(params):
-        return params.get('response_type') == 'token'
+    def check_authorization_endpoint(request):
+        return request.response_type == 'token'
 
     def validate_authorization_request(self):
         """The client constructs the request URI by adding the following
@@ -110,7 +110,7 @@ class ImplicitGrant(BaseGrant):
         """
         # ignore validate for response_type, since it is validated by
         # check_authorization_endpoint
-        client_id = self.params.get('client_id')
+        client_id = self.request.client_id
         client = self.get_and_validate_client(client_id)
 
         # The implicit grant type is optimized for public clients
@@ -119,7 +119,7 @@ class ImplicitGrant(BaseGrant):
             raise UnauthorizedClientError(
                 'The client is not authorized to request an authorization '
                 'code using this method',
-                state=self.state,
+                state=self.request.state,
             )
 
         self.validate_authorization_redirect_uri(client)
@@ -180,13 +180,15 @@ class ImplicitGrant(BaseGrant):
             resource owner, otherwise pass None.
         :returns: (status_code, body, headers)
         """
+        state = self.request.state
         if grant_user:
+            client = self.client
             token = self.token_generator(
-                self.client, self.GRANT_TYPE,
-                scope=self.params.get('scope'),
+                client, self.GRANT_TYPE,
+                scope=self.request.scope,
                 include_refresh_token=False
             )
-            self.create_access_token(token, self.client, grant_user)
+            self.create_access_token(token, client, grant_user)
             params = [
                 ('access_token', token['access_token']),
                 ('token_type', token['token_type']),
@@ -195,10 +197,10 @@ class ImplicitGrant(BaseGrant):
                 params.append(('expires_in', token['expires_in']))
             if 'scope' in token:
                 params.append(('scope', token['scope']))
-            if self.state:
-                params.append(('state', self.state))
+            if state:
+                params.append(('state', state))
         else:
-            error = AccessDeniedError(state=self.state)
+            error = AccessDeniedError(state=state)
             params = error.get_body()
 
         uri = add_params_to_uri(self.redirect_uri, params, fragment=True)

@@ -44,15 +44,9 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
     ACCESS_TOKEN_ENDPOINT = True
     GRANT_TYPE = 'password'
 
-    def __init__(self, uri, params, headers, query_client, token_generator):
-        super(ResourceOwnerPasswordCredentialsGrant, self).__init__(
-            uri, params, headers, query_client, token_generator)
-        self._authenticated_client = None
-        self._authenticated_user = None
-
     @staticmethod
-    def check_token_endpoint(params):
-        return params.get('grant_type') == 'password'
+    def check_token_endpoint(request):
+        return request.grant_type == 'password'
 
     def validate_access_token_request(self):
         """The client makes a request to the token endpoint by adding the
@@ -98,26 +92,27 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError()
 
-        if 'username' not in self.params:
+        params = self.request.data
+        if 'username' not in params:
             raise InvalidRequestError(
                 'Missing "username" in request.',
             )
-        if 'password' not in self.params:
+        if 'password' not in params:
             raise InvalidRequestError(
                 'Missing "password" in request.',
             )
 
         user = self.authenticate_user(
-            self.params['username'],
-            self.params['password']
+            params['username'],
+            params['password']
         )
         if not user:
             raise InvalidGrantError(
                 'Invalid "username" or "password" in request.',
             )
         self.validate_requested_scope(client)
-        self._authenticated_client = client
-        self._authenticated_user = user
+        self.request.client = client
+        self.request.grant_user = user
 
     def create_access_token_response(self):
         """If the access token request is valid and authorized, the
@@ -145,15 +140,13 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
 
         :returns: (status_code, body, headers)
         """
+        client = self.request.client
+        user = self.request.grant_user
         token = self.token_generator(
-            self._authenticated_client, self.GRANT_TYPE,
-            scope=self.params.get('scope'),
+            client, self.GRANT_TYPE,
+            scope=self.request.scope,
         )
-        self.create_access_token(
-            token,
-            self._authenticated_client,
-            self._authenticated_user,
-        )
+        self.create_access_token(token, client, user)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_client(self):
@@ -162,11 +155,12 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
 
         :return: client
         """
-        client_params = self.parse_basic_auth_header()
+        client_params = self.request.extract_authorization_header()
         if not client_params:
             raise InvalidClientError()
 
-        client_id, client_secret = client_params
+        client_id = client_params.get('client_id')
+        client_secret = client_params.get('client_secret')
         client = self.get_and_validate_client(client_id)
 
         # authenticate the client if client authentication is included
