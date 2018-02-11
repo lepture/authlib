@@ -7,10 +7,14 @@ Changelog
 Here you can see the full list of changes between each Authlib release.
 
 
-Version 0.5
------------
+Version 0.5: Kirie
+------------------
 
-**Release Date not Decided**
+**Released on Feb 11, 2018. Breaking Changes!**
+
+This version breaks a lot of things. There are many redesigns in order to
+get a better stable API. It is still in Alpha stage, with these breaking
+changes, I hope Authlib will go into Beta in the next version.
 
 - Added :meth:`~authlib.specs.rfc6749.register_error_uri` and its Flask
   integration.
