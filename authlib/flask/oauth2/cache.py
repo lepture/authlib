@@ -1,3 +1,4 @@
+from flask import Flask
 from authlib.common.security import generate_token
 from authlib.specs.rfc6749.grants import AuthorizationCodeGrant
 from ..cache import Cache
@@ -16,17 +17,9 @@ class AuthorizationCode(dict):
         return self.get('scope')
 
 
-def register_cache_authorization_code(
-        app, authorization_server, create_access_token):
-    """Use cache for authorization code grant endpoint.
-
-    :param app: Flask app instance.
-    :param authorization_server: AuthorizationServer instance.
-    :param create_access_token: A function to create access_token.
-    """
-
-    cache = Cache(app, config_prefix='OAUTH2_CODE')
-    key_tpl = 'oauth2_authorization_code:{}_{}'
+def create_authorization_code_grant(
+        cache, create_access_token, key_prefix='oauth2_code:'):
+    key_tpl = key_prefix + '{}_{}'
 
     class CodeGrant(AuthorizationCodeGrant):
         def create_authorization_code(self, client, grant_user, **kwargs):
@@ -58,4 +51,19 @@ def register_cache_authorization_code(
         def create_access_token(self, token, client, authorization_code):
             create_access_token(token, client, authorization_code)
 
-    authorization_server.register_grant_endpoint(CodeGrant)
+    return CodeGrant
+
+
+def register_cache_authorization_code(
+        cache, authorization_server, create_access_token):
+    """Use cache for authorization code grant endpoint.
+
+    :param cache: Cache instance.
+    :param authorization_server: AuthorizationServer instance.
+    :param create_access_token: A function to create access_token.
+    """
+    if isinstance(cache, Flask):
+        cache = Cache(cache, config_prefix='OAUTH2_CODE')
+    authorization_server.register_grant_endpoint(
+        create_authorization_code_grant(cache, create_access_token)
+    )

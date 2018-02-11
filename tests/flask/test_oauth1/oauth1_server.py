@@ -36,9 +36,6 @@ class User(db.Model):
     def get_user_id(self):
         return self.id
 
-    def check_password(self, password):
-        return password != 'wrong'
-
 
 class Client(db.Model, OAuth1ClientMixin):
     id = db.Column(db.Integer, primary_key=True)
