@@ -18,26 +18,27 @@ class ResourceProtector(_ResourceProtector):
 
         from authlib.flask.oauth1 import ResourceProtector, current_credential
         from authlib.flask.oauth1.cache import create_exists_nonce_func
+        from authlib.flask.oauth1.sqla import (
+            create_query_client_func,
+            create_query_token_func,
+        )
         from your_project.models import Token, User, cache
 
         # you need to define a ``cache`` instance yourself
 
-        def query_token(client_id, oauth_token):
-            return Token.query.filter_by(
-                client_id=client_id, oauth_token=oauth_token
-            ).first()
-
         require_oauth= ResourceProtector(
-            app, client_model=OAuth1Client,
-            query_token=query_token,
+            app,
+            query_client=create_query_client_func(db.session, OAuth1Client),
+            query_token=create_query_token_func(db.session, OAuth1Token),
             exists_nonce=create_exists_nonce_func(cache)
         )
         # or initialize it lazily
         require_oauth = ResourceProtector()
         require_oauth.init_app(
-            app, client_model=OAuth1Client,
-            query_token=query_token,
-            create_exists_nonce_func(cache)
+            app,
+            query_client=create_query_client_func(db.session, OAuth1Client),
+            query_token=create_query_token_func(db.session, OAuth1Token),
+            exists_nonce=create_exists_nonce_func(cache)
         )
     """
     def __init__(self, app=None, query_client=None,

@@ -141,13 +141,15 @@ Authlib provides a ready to use :class:`~authlib.flask.oauth1.AuthorizationServe
 which has built-in tools to handle requests and responses::
 
     from authlib.flask.oauth1 import AuthorizationServer
+    from authlib.flask.oauth1.sqla import create_query_client_func
 
-    server = AuthorizationServer(app, client_model=Client)
+    query_client = create_query_client_func(db.session, Client)
+    server = AuthorizationServer(app, query_client=query_client)
 
 It can also be initialized lazily with init_app::
 
     server = AuthorizationServer()
-    server.init_app(app, client_model=Client)
+    server.init_app(app, query_client=query_client)
 
 It is strongly suggested that you use a cache. In this way, you
 don't have to re-implement a lot of the missing methods.
@@ -178,7 +180,11 @@ you can pass the ``token_generator`` when initializing the AuthorizationServer::
             'oauth_token_secret': random_string(46)
         }
 
-    server = AuthorizationServer(Client, token_generator, app=app)
+    server = AuthorizationServer(
+        app,
+        query_client=query_client,
+        token_generator=token_generator
+    )
 
 Server Hooks
 ~~~~~~~~~~~~
@@ -266,24 +272,26 @@ server. Here is the way to protect your users' resources::
     from flask import jsonify
     from authlib.flask.oauth1 import ResourceProtector, current_credential
     from authlib.flask.oauth1.cache import create_exists_nonce_func
+    from authlib.flask.oauth1.sqla import (
+        create_query_client_func,
+        create_query_token_func
+    )
 
-    def query_token(client_id, token):
-        return TokenCredential.query.filter_by(
-            client_id=client_id, oauth_token=token
-        ).first()
-
+    query_client = create_query_client_func(db.session, Client)
+    query_token = create_query_token_func(db.session, TokenCredential)
     exists_nonce = create_exists_nonce_func(cache)
     # OR: authlib.flask.oauth1.sqla.create_exists_nonce_func
 
     require_oauth = ResourceProtector(
-        app, client_model=Client,
+        app, query_client=query_client,
         query_token=query_token,
         exists_nonce=exists_nonce,
     )
     # or initialize it lazily
     require_oauth = ResourceProtector()
     require_oauth.init_app(
-        app, client_model=Client,
+        app,
+        query_client=query_client,
         query_token=query_token,
         exists_nonce=exists_nonce,
     )

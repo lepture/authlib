@@ -16,7 +16,7 @@ Version 0.5
   integration.
 - :class:`~authlib.client.OAuth2Session` supports more grant types.
 - Deprecate built-in cache. Read more on `issue#23`_.
-- Redesigned OAuth 1 Flask server. Read the docs :ref:`flask_oauth1_server`.
+- **Redesigned OAuth 1 Flask server**. Read the docs :ref:`flask_oauth1_server`.
 
 .. _`issue#23`: https://github.com/lepture/authlib/issues/23
 

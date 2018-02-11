@@ -15,10 +15,10 @@ class AuthorizationServer(_AuthorizationServer):
     """Flask implementation of :class:`authlib.rfc5849.AuthorizationServer`.
     Initialize it with Flask app instance, client model class and cache::
 
-        server = AuthorizationServer(app=app, client_model=OAuth1Client)
+        server = AuthorizationServer(app=app, query_client=query_client)
         # or initialize lazily
         server = AuthorizationServer()
-        server.init_app(app, client_model=OAuth1Client)
+        server.init_app(app, query_client=query_client)
 
     :param app: A Flask app instance
     :param query_client: A function to get client by client_id
