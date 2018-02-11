@@ -121,6 +121,10 @@ class OAuth1Session(Session):
         OAuthClient. Make sure both OAuth1Session and OAuth2Session
         have token setters.
         """
+        if token is None:
+            self._client.token = None
+            self._client.token_secret = None
+            self._client.verifier = None
         if 'oauth_token' in token:
             self._client.token = token['oauth_token']
         else:
