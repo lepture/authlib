@@ -311,7 +311,7 @@ class OAuth2Session(Session):
                 url, headers, data = hook(url, headers, data)
 
         return super(OAuth2Session, self).request(
-            method, url, headers=headers, data=data, **kwargs)
+            method, url, headers=headers, data=data, auth=auth, **kwargs)
 
     def register_compliance_hook(self, hook_type, hook):
         """Register a hook for request/response tweaking.

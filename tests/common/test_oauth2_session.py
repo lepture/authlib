@@ -86,6 +86,7 @@ class OAuth2SessionTest(TestCase):
         url = 'https://example.com/token'
 
         def fake_send(r, **kwargs):
+            self.assertIn('Authorization', r.headers)
             self.assertIn('code=v', r.body)
             self.assertIn('grant_type=authorization_code', r.body)
             resp = mock.MagicMock()
