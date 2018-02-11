@@ -6,6 +6,7 @@ from authlib.specs.rfc6749 import (
 )
 from authlib.specs.rfc6750 import BearerToken
 from authlib.common.security import generate_token
+from authlib.deprecate import deprecate
 
 GRANT_TYPES_EXPIRES = {
     'authorization_code': 864000,
@@ -19,13 +20,14 @@ class AuthorizationServer(_AuthorizationServer):
     """Flask implementation of :class:`authlib.rfc6749.AuthorizationServer`.
     Initialize it with a client model class and Flask app instance::
 
-        server = AuthorizationServer(app, OAuth2Client)
+        server = AuthorizationServer(app, query_client)
         # or initialize lazily
         server = AuthorizationServer()
-        server.init_app(app, OAuth2Client)
+        server.init_app(app, query_client)
     """
-    def __init__(self, app=None, client_model=None):
-        super(AuthorizationServer, self).__init__(client_model, None)
+    def __init__(self, app=None, query_client=None):
+        query_client = _compatible_query_client(query_client)
+        super(AuthorizationServer, self).__init__(query_client, None)
         self.revoke_token_endpoint = None
         self.app = app
         if app is not None:
@@ -40,10 +42,11 @@ class AuthorizationServer(_AuthorizationServer):
         """
         self.revoke_token_endpoint = cls
 
-    def init_app(self, app, client_model=None):
+    def init_app(self, app, query_client=None):
         """Initialize later with Flask app instance."""
-        if client_model is not None:
-            self.client_model = client_model
+        query_client = _compatible_query_client(query_client)
+        if query_client is not None:
+            self.query_client = query_client
         for k in GRANT_TYPES_EXPIRES:
             conf_key = 'OAUTH2_EXPIRES_{}'.format(k.upper())
             app.config.setdefault(conf_key, GRANT_TYPES_EXPIRES[k])
@@ -189,7 +192,19 @@ class AuthorizationServer(_AuthorizationServer):
             params = request.form.to_dict(flat=True)
 
         endpoint = self.revoke_token_endpoint(
-            request.url, params, request.headers, self.client_model
+            request.url, params, request.headers, self.query_client
         )
         status, body, headers = endpoint.create_revocation_response()
         return Response(json.dumps(body), status=status, headers=headers)
+
+
+def _compatible_query_client(query_client):
+    if query_client and hasattr(query_client, 'get_by_client_id'):
+        deprecate(
+            (
+                'client_model is deprecated.\n\n'
+                'Please read: <https://github.com/lepture/authlib/issues/27>'
+            ), version='0.7'
+        )
+        query_client = query_client.get_by_client_id
+    return query_client

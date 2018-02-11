@@ -7,12 +7,13 @@ class AuthorizationServer(object):
     """Authorization server that handles Authorization Endpoint and Token
     Endpoint.
 
-    :param client_model: A model class that implemented the methods described
-        by :class:`~authlib.specs.rfc6749.ClientMixin`.
+    :param query_client: A function to get client by client_id. The client
+        model class MUST implement the methods described by
+        :class:`~authlib.specs.rfc6749.ClientMixin`.
     :param token_generator: A method to generate tokens.
     """
-    def __init__(self, client_model, token_generator):
-        self.client_model = client_model
+    def __init__(self, query_client, token_generator):
+        self.query_client = query_client
         self.token_generator = token_generator
         self._authorization_endpoints = set()
         self._token_endpoints = set()
@@ -56,7 +57,7 @@ class AuthorizationServer(object):
             if grant_cls.check_authorization_endpoint(params):
                 return grant_cls(
                     uri, params, {},
-                    self.client_model,
+                    self.query_client,
                     self.token_generator
                 )
         raise InvalidGrantError()
@@ -84,7 +85,7 @@ class AuthorizationServer(object):
                 if method in grant_cls.ACCESS_TOKEN_METHODS:
                     return grant_cls(
                         uri, params, headers,
-                        self.client_model,
+                        self.query_client,
                         self.token_generator
                     )
         raise InvalidGrantError()

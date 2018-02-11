@@ -17,20 +17,6 @@ class ClientMixin(object):
     .. _`Section 2`: https://tools.ietf.org/html/rfc6749#section-2
     """
 
-    @classmethod
-    def get_by_client_id(cls, client_id):
-        """A class method to query client information by client_id. Developers
-        should implement it in subclass::
-
-            @classmethod
-            def get_by_client_id(cls, client_id):
-                return cls.query.get(client_id)
-
-        :param client_id: A client identifier string.
-        :return: client
-        """
-        raise NotImplementedError()
-
     def get_default_redirect_uri(self):
         """A method to get client default redirect_uri. For instance, the
         database table for client has a column called ``default_redirect_uri``::

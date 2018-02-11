@@ -23,11 +23,11 @@ class BaseGrant(object):
         ('Pragma', 'no-cache'),
     ]
 
-    def __init__(self, uri, params, headers, client_model, token_generator):
+    def __init__(self, uri, params, headers, query_client, token_generator):
         self.headers = headers
         self.uri = uri
         self.params = params or {}
-        self.client_model = client_model
+        self.query_client = query_client
         self.token_generator = token_generator
         self.state = params.get('state')
         self.redirect_uri = self.params.get('redirect_uri')
@@ -45,7 +45,7 @@ class BaseGrant(object):
     def get_client_by_id(self, client_id):
         if client_id in self._clients:
             return self._clients[client_id]
-        client = self.client_model.get_by_client_id(client_id)
+        client = self.query_client(client_id)
         self._clients[client_id] = client
         return client
 

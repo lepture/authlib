@@ -21,11 +21,11 @@ class RevocationEndpoint(object):
     """
     supported_token_types = ('access_token', 'refresh_token')
 
-    def __init__(self, uri, params, headers, client_model):
+    def __init__(self, uri, params, headers, query_client):
         self.uri = uri
         self.params = params
         self.headers = headers
-        self.client_model = client_model
+        self.query_client = query_client
         self._token = None
         self._client = None
 
@@ -45,7 +45,7 @@ class RevocationEndpoint(object):
             raise InvalidClientError()
 
         client_id, client_secret = client_params
-        client = self.client_model.get_by_client_id(client_id)
+        client = self.query_client(client_id)
         if not client:
             raise InvalidClientError()
 

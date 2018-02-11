@@ -28,9 +28,9 @@ class ClientCredentialsGrant(BaseGrant):
     ACCESS_TOKEN_ENDPOINT = True
     GRANT_TYPE = 'client_credentials'
 
-    def __init__(self, uri, params, headers, client_model, token_generator):
+    def __init__(self, uri, params, headers, query_client, token_generator):
         super(ClientCredentialsGrant, self).__init__(
-            uri, params, headers, client_model, token_generator)
+            uri, params, headers, query_client, token_generator)
         self._authenticated_client = None
 
     @staticmethod
