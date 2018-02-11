@@ -210,14 +210,14 @@ Implement this grant by subclass :class:`AuthorizationCodeGrant`::
     from authlib.common.security import generate_token
 
     class AuthorizationCodeGrant(_AuthorizationCodeGrant):
-        def create_authorization_code(self, client, grant_user, **kwargs):
+        def create_authorization_code(self, client, grant_user, request):
             # you can use other method to generate this code
             code = generate_token(48)
             item = AuthorizationCode(
                 code=code,
                 client_id=client.client_id,
-                redirect_uri=kwargs.get('redirect_uri', ''),
-                scope=kwargs.get('scope', ''),
+                redirect_uri=request.redirect_uri,
+                scope=request.scope,
                 user_id=grant_user.id,
             )
             db.session.add(item)
@@ -262,7 +262,7 @@ implement it with a subclass of :class:`ImplicitGrant`::
     )
 
     class ImplicitGrant(_ImplicitGrant):
-        def create_access_token(self, token, client, grant_user, **kwargs):
+        def create_access_token(self, token, client, grant_user):
             item = Token(
                 client_id=client.client_id,
                 user_id=grant_user.id,
@@ -293,7 +293,7 @@ it with a subclass of :class:`ResourceOwnerPasswordCredentialsGrant`::
             if user.check_password(password):
                 return user
 
-        def create_access_token(self, token, client, user, **kwargs):
+        def create_access_token(self, token, client, user):
             item = Token(
                 client_id=client.client_id,
                 user_id=user.id,
