@@ -3,13 +3,13 @@ from authlib.specs.rfc5849 import TemporaryCredentialMixin
 
 class TemporaryCredential(dict, TemporaryCredentialMixin):
     def get_client_id(self):
-        return self.get('oauth_consumer_key')
-
-    def get_redirect_uri(self):
-        return self.get('oauth_callback')
+        return self.get('client_id')
 
     def get_user_id(self):
         return self.get('user_id')
+
+    def get_redirect_uri(self):
+        return self.get('oauth_callback')
 
     def check_verifier(self, verifier):
         return self.get('oauth_verifier') == verifier
@@ -32,7 +32,7 @@ def register_temporary_credential_hooks(
 
     def create_temporary_credential(token, client_id, redirect_uri):
         key = key_prefix + token['oauth_token']
-        token['oauth_consumer_key'] = client_id
+        token['client_id'] = client_id
         if redirect_uri:
             token['oauth_callback'] = redirect_uri
 

@@ -12,10 +12,6 @@ class OAuth1ClientMixin(ClientMixin):
     client_secret = Column(String(120), nullable=False)
     default_redirect_uri = Column(Text, nullable=False, default='')
 
-    @classmethod
-    def get_by_client_id(cls, client_id):
-        return cls.query.filter_by(client_id=client_id).first()
-
     def get_default_redirect_uri(self):
         return self.default_redirect_uri
 
@@ -99,6 +95,27 @@ class OAuth1TokenCredentialMixin(TokenCredentialMixin):
 
     def get_oauth_token_secret(self):
         return self.oauth_token_secret
+
+
+def create_query_client_func(session, model_class):
+    """Create an ``query_client`` function that can be used in authorization
+    server and resource protector.
+
+    :param session: SQLAlchemy session
+    :param model_class: Client class
+    """
+    def query_client(client_id):
+        q = session.query(model_class)
+        return q.filter_by(client_id=client_id).first()
+    return query_client
+
+
+def create_query_token_func(session, model_class):
+    def query_token(client_id, oauth_token):
+        q = session.query(model_class)
+        return q.filter_by(
+            client_id=client_id, oauth_token=oauth_token).first()
+    return query_token
 
 
 def register_temporary_credential_hooks(

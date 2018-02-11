@@ -14,7 +14,7 @@ class ResourceProtector(BaseServer):
         if not request.client_id:
             raise MissingRequiredParameterError('oauth_consumer_key')
 
-        client = self.client_model.get_by_client_id(request.client_id)
+        client = self.get_client_by_id(request.client_id)
         if not client:
             raise InvalidClientError()
         request.client = client

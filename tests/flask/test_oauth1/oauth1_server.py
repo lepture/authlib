@@ -10,6 +10,8 @@ from authlib.flask.oauth1.sqla import (
     OAuth1TokenCredentialMixin,
     OAuth1TemporaryCredentialMixin,
     OAuth1TimestampNonceMixin,
+    create_query_client_func,
+    create_query_token_func,
     register_authorization_hooks,
     create_exists_nonce_func as create_db_exists_nonce_func,
 )
@@ -69,7 +71,8 @@ class TimestampNonce(db.Model, OAuth1TimestampNonceMixin):
 
 
 def create_authorization_server(app, use_cache=False):
-    server = AuthorizationServer(app, client_model=Client)
+    query_client = create_query_client_func(db.session, Client)
+    server = AuthorizationServer(app, query_client=query_client)
     if use_cache:
         cache = SimpleCache()
         register_nonce_hooks(server, cache)
@@ -119,15 +122,11 @@ def create_resource_server(app, use_cache=False):
     else:
         exists_nonce = create_db_exists_nonce_func(db.session, TimestampNonce)
 
-    def query_token(client_id, token_string):
-        return TokenCredential.query.filter_by(
-            client_id=client_id,
-            oauth_token=token_string
-        ).first()
-
     require_oauth = ResourceProtector(
-        app, client_model=Client,
-        query_token=query_token, exists_nonce=exists_nonce,
+        app,
+        query_client=create_query_client_func(db.session, Client),
+        query_token=create_query_token_func(db.session, TokenCredential),
+        exists_nonce=exists_nonce,
     )
 
     @app.route('/user')

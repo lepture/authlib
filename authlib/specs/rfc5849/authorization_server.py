@@ -23,7 +23,7 @@ class AuthorizationServer(BaseServer):
     TEMPORARY_CREDENTIALS_METHOD = 'POST'
 
     def _get_client(self, request):
-        client = self.client_model.get_by_client_id(request.client_id)
+        client = self.get_client_by_id(request.client_id)
         request.client = client
         return client
 
@@ -158,7 +158,7 @@ class AuthorizationServer(BaseServer):
         redirect_uri = temporary_credentials.get_redirect_uri()
         if not redirect_uri or redirect_uri == 'oob':
             client_id = temporary_credentials.get_client_id()
-            client = self.client_model.get_by_client_id(client_id)
+            client = self.get_client_by_id(client_id)
             redirect_uri = client.get_default_redirect_uri()
 
         if grant_user is None:

@@ -21,13 +21,13 @@ class AuthorizationServer(_AuthorizationServer):
         server.init_app(app, client_model=OAuth1Client)
 
     :param app: A Flask app instance
-    :param client_model: Client class
+    :param query_client: A function to get client by client_id
     :param token_generator: A function to generate token
     """
 
-    def __init__(self, app=None, client_model=None, token_generator=None):
-        super(AuthorizationServer, self).__init__(client_model)
+    def __init__(self, app=None, query_client=None, token_generator=None):
         self.app = app
+        self.query_client = query_client
         self.token_generator = token_generator
 
         self._hooks = {
@@ -41,9 +41,9 @@ class AuthorizationServer(_AuthorizationServer):
         if app is not None:
             self.init_app(app)
 
-    def init_app(self, app, client_model=None, token_generator=None):
-        if client_model is not None:
-            self.client_model = client_model
+    def init_app(self, app, query_client=None, token_generator=None):
+        if query_client is not None:
+            self.query_client = query_client
         if token_generator is not None:
             self.token_generator = token_generator
 
@@ -87,6 +87,9 @@ class AuthorizationServer(_AuthorizationServer):
                 'oauth_token_secret': secret_generator()
             }
         return create_token
+
+    def get_client_by_id(self, client_id):
+        return self.query_client(client_id)
 
     def exists_nonce(self, nonce, request):
         func = self._hooks['exists_nonce']

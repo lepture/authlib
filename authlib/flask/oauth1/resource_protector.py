@@ -40,22 +40,22 @@ class ResourceProtector(_ResourceProtector):
             create_exists_nonce_func(cache)
         )
     """
-    def __init__(self, app=None, client_model=None,
+    def __init__(self, app=None, query_client=None,
                  query_token=None, exists_nonce=None):
-        super(ResourceProtector, self).__init__(client_model)
-        self._query_token = query_token
+        self.query_client = query_client
+        self.query_token = query_token
         self._exists_nonce = exists_nonce
 
         self.app = app
         if app:
             self.init_app(app)
 
-    def init_app(self, app, client_model=None, cache=None,
+    def init_app(self, app, query_client=None, cache=None,
                  query_token=None, exists_nonce=None):
-        if client_model is not None:
-            self.client_model = client_model
+        if query_client is not None:
+            self.query_client = query_client
         if query_token is not None:
-            self._query_token = query_token
+            self.query_token = query_token
         if exists_nonce is not None:
             self._exists_nonce = exists_nonce
 
@@ -65,8 +65,11 @@ class ResourceProtector(_ResourceProtector):
 
         self.app = app
 
+    def get_client_by_id(self, client_id):
+        return self.query_client(client_id)
+
     def get_token_credential(self, request):
-        return self._query_token(request.client_id, request.token)
+        return self.query_token(request.client_id, request.token)
 
     def exists_nonce(self, nonce, request):
         if not self._exists_nonce:

@@ -44,9 +44,6 @@ class BaseServer(object):
         """
         cls.SIGNATURE_METHODS[name] = verify
 
-    def __init__(self, client_model):
-        self.client_model = client_model
-
     def validate_timestamp_and_nonce(self, request):
         """Validate ``oauth_timestamp`` and ``oauth_nonce`` in HTTP request.
 
@@ -102,6 +99,14 @@ class BaseServer(object):
 
         if not verify(request):
             raise InvalidSignatureError()
+
+    def get_client_by_id(self, client_id):
+        """Get client instance with the given ``client_id``.
+
+        :param client_id: A string of client_id
+        :return: Client instance
+        """
+        raise NotImplementedError()
 
     def exists_nonce(self, nonce, request):
         """The nonce value MUST be unique across all requests with the same
