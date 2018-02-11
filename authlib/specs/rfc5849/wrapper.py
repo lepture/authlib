@@ -8,6 +8,7 @@ from .signature import (
     SIGNATURE_TYPE_HEADER
 )
 from .errors import DuplicatedOAuthProtocolParameterError
+from .util import unescape
 
 
 class OAuth1Request(object):
@@ -112,7 +113,8 @@ def _parse_authorization_header(authorization_header):
     if authorization_header.lower().startswith(auth_scheme):
         items = parse_http_list(authorization_header[len(auth_scheme):])
         try:
-            return parse_keqv_list(items).items()
+            items = parse_keqv_list(items).items()
+            return [(unescape(k), unescape(v)) for k, v in items]
         except (IndexError, ValueError):
             pass
     raise ValueError('Malformed authorization header')

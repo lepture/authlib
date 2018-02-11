@@ -37,10 +37,10 @@ authorization URL::
 
 Save this request token for later use (if required).
 
-You can assign a ``callback_uri`` before fetching the request token, if
+You can assign a ``redirect_uri`` before fetching the request token, if
 you want to redirect back to another URL other than the one you registered::
 
-    >>> session.callback_uri = 'https://your-domain.org/auth'
+    >>> session.redirect_uri = 'https://your-domain.org/auth'
     >>> session.fetch_request_token(request_token_url)
 
 Redirect to Authorization Endpoint
@@ -70,7 +70,7 @@ registered callback URI. For instance::
 
     https://example.com/twitter?oauth_token=gA..H&oauth_verifier=fcg..1Dq
 
-If you assigned ``callback_uri`` in :ref:`fetch_oauth1_access_token`, the
+If you assigned ``redirect_uri`` in :ref:`fetch_oauth1_access_token`, the
 authorize response would be something like::
 
     https://your-domain.org/auth?oauth_token=gA..H&oauth_verifier=fcg..1Dq

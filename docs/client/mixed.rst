@@ -53,7 +53,7 @@ the request token before heading over to authorization endpoint::
     def save_request_token(token):
         session['token'] = token
 
-    # The first ``callback_uri`` parameter is optional.
+    # The first ``redirect_uri`` parameter is optional.
     url, state = client.generate_authorize_redirect(
         save_request_token=save_request_token)
 
@@ -68,10 +68,10 @@ If permission is granted, we can fetch the access token now::
     def get_request_token():
         return session.pop('token', None)
 
-    callback_uri = session.pop('callback_uri', None)
+    redirect_uri = session.pop('redirect_uri', None)
     params = parse_response_url_qs()
     token = client.fetch_access_token(
-        callback_uri, get_request_token=get_request_token, **params)
+        redirect_uri, get_request_token=get_request_token, **params)
     save_token_to_db(token)
 
 OAuth 2 Flow
@@ -95,8 +95,8 @@ Redirect to Authorization Endpoint
 Unlike OAuth 1, there is no request token. The process to authorization
 server is very simple::
 
-    callback_uri = 'https://example.com/auth'
-    url, state = client.generate_authorize_redirect(callback_uri)
+    redirect_uri = 'https://example.com/auth'
+    url, state = client.generate_authorize_redirect(redirect_uri)
     # save state for getting access token
     session['state'] = state
 
@@ -109,11 +109,11 @@ Get Access Token
 It's the same as OAuth 1. If permission is granted, we can fetch the access
 token now::
 
-    callback_uri = session.pop('callback_uri', None)
+    redirect_uri = session.pop('redirect_uri', None)
     params = parse_response_url_qs()
     # you need to verify state here
     assert params['state'] == session.pop('state')
-    token = client.fetch_access_token(callback_uri, **params)
+    token = client.fetch_access_token(redirect_uri, **params)
     save_token_to_db(token)
 
 .. _compliance_fix_mixed:

@@ -191,8 +191,8 @@ authorization::
 
     @bp.route('/login')
     def login():
-        callback_uri = url_for('.authorize', _external=True)
-        return oauth.twitter.authorize_redirect(callback_uri)
+        redirect_uri = url_for('.authorize', _external=True)
+        return oauth.twitter.authorize_redirect(redirect_uri)
 
     @bp.route('/authorize')
     def authorize():
@@ -327,8 +327,8 @@ There are two views to be completed, no matter it is OAuth 1 or OAuth 2::
 
     def login(request):
         # build a full authorize callback uri
-        callback_uri = request.build_absolute_uri('/authorize')
-        return oauth.twitter.authorize_redirect(request, callback_uri)
+        redirect_uri = request.build_absolute_uri('/authorize')
+        return oauth.twitter.authorize_redirect(request, redirect_uri)
 
     def authorize(request):
         token = oauth.twitter.authorize_access_token(request)

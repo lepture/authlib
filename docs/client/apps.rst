@@ -41,8 +41,8 @@ settings::
 You are use the ``twitter`` instance directly, or access it from ``oauth``
 registry::
 
-    twitter.authorize_redirect(callback_uri)  # Flask
-    twitter.authorize_redirect(request, callback_uri)  # Django
+    twitter.authorize_redirect(redirect_uri)  # Flask
+    twitter.authorize_redirect(request, redirect_uri)  # Django
 
 There is a built-in ``profile`` in every app, you can get the user info
 with a simple function invoke::
