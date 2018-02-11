@@ -10,6 +10,8 @@ from authlib.flask.oauth2.sqla import (
     OAuth2ClientMixin,
     OAuth2AuthorizationCodeMixin,
     OAuth2TokenMixin,
+    create_query_token_func,
+    create_query_client_func,
 )
 from authlib.flask.oauth2 import (
     AuthorizationServer,
@@ -71,10 +73,6 @@ class Token(db.Model, OAuth2TokenMixin):
     def is_refresh_token_expired(self):
         expired_at = self.created_at + self.expires_in * 2
         return expired_at < time.time()
-
-    @classmethod
-    def query_token(cls, access_token):
-        return cls.query.filter_by(access_token=access_token).first()
 
 
 class AuthorizationCodeGrant(_AuthorizationCodeGrant):
@@ -169,7 +167,8 @@ class RefreshTokenGrant(_RefreshTokenGrant):
 
 
 def create_authorization_server(app):
-    server = AuthorizationServer(app, Client)
+    query_client = create_query_client_func(db.session, Client)
+    server = AuthorizationServer(app, query_client)
 
     @app.route('/oauth/authorize', methods=['GET', 'POST'])
     def authorize():
@@ -198,7 +197,8 @@ def create_authorization_server(app):
 
 
 def create_resource_server(app):
-    require_oauth = ResourceProtector(Token.query_token)
+    query_token = create_query_token_func(db.session, Token)
+    require_oauth = ResourceProtector(query_token)
 
     @app.route('/user')
     @require_oauth('profile')

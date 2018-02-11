@@ -4,8 +4,8 @@ Flask OAuth 2 Server
 ====================
 
 .. meta::
-   :description: How to create an OAuth 2 server in Flask with Authlib.
-       And understand how OAuth 2 works.
+    :description: How to create an OAuth 2 server in Flask with Authlib.
+        And understand how OAuth 2 works.
 
 Implement OAuth 2 provider in Flask. An OAuth 2 provider contains two servers:
 
@@ -97,12 +97,19 @@ which has built-in tools to handle requests and responses::
 
     from authlib.flask.oauth2 import AuthorizationServer
 
-    server = AuthorizationServer(app, client_model=Client)
+    def query_client(client_id):
+        return Client.query.filter_by(client_id=client_id).first()
+
+    # or with the helper
+    from authlib.flask.oauth2.sqla import create_query_client_func
+    query_client = create_query_client_func(db.session, Client)
+
+    server = AuthorizationServer(app, query_client=query_client)
 
 It can also be initialized lazily with init_app::
 
     server = AuthorizationServer()
-    server.init_app(app, client_model=Client)
+    server.init_app(app, query_client=query_client)
 
 It works well without configuration. However, it can be configured with these
 settings:
@@ -397,6 +404,10 @@ server. Here is the way to protect your users' resources::
 
     def query_token(access_token=access_token):
         return Token.query.filter_by(access_token=access_token).first()
+
+    # or with the helper
+    from authlib.flask.oauth2.sqla import create_query_token_func
+    query_token = create_query_token_func(db.session, Token)
 
     require_oauth = ResourceProtector(query_token)
 

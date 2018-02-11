@@ -20,6 +20,9 @@ class AuthorizationServer(_AuthorizationServer):
     """Flask implementation of :class:`authlib.rfc6749.AuthorizationServer`.
     Initialize it with a client model class and Flask app instance::
 
+        def query_client(client_id):
+            return Client.query.filter_by(client_id=client_id).first()
+
         server = AuthorizationServer(app, query_client)
         # or initialize lazily
         server = AuthorizationServer()
@@ -200,11 +203,10 @@ class AuthorizationServer(_AuthorizationServer):
 
 def _compatible_query_client(query_client):
     if query_client and hasattr(query_client, 'get_by_client_id'):
-        deprecate(
-            (
-                'client_model is deprecated.\n\n'
-                'Please read: <https://github.com/lepture/authlib/issues/27>'
-            ), version='0.7'
+        message = (
+            'client_model is deprecated.\n\n'
+            'Please read: <https://github.com/lepture/authlib/issues/27>'
         )
+        deprecate(message, '0.7')
         query_client = query_client.get_by_client_id
     return query_client

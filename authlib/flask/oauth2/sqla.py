@@ -15,6 +15,7 @@ class OAuth2ClientMixin(ClientMixin):
 
     @classmethod
     def get_by_client_id(cls, client_id):
+        # TODO: remove in version 0.7
         return cls.query.filter_by(client_id=client_id).first()
 
     def get_default_redirect_uri(self):
@@ -89,3 +90,29 @@ class OAuth2TokenMixin(TokenMixin):
 
     def get_expires_at(self):
         return self.created_at + self.expires_in
+
+
+def create_query_client_func(session, model_class):
+    """Create an ``query_client`` function that can be used in authorization
+    server.
+
+    :param session: SQLAlchemy session
+    :param model_class: Client class
+    """
+    def query_client(client_id):
+        q = session.query(model_class)
+        return q.filter_by(client_id=client_id).first()
+    return query_client
+
+
+def create_query_token_func(session, model_class):
+    """Create an ``query_token`` function that can be used in
+    resource protector.
+
+    :param session: SQLAlchemy session
+    :param model_class: Token class
+    """
+    def query_token(access_token):
+        q = session.query(model_class)
+        return q.filter_by(access_token=access_token).first()
+    return query_token

@@ -14,8 +14,9 @@ class RevocationEndpoint(object):
     :param uri: HTTP request URI string.
     :param params: HTTP query or payload parameters.
     :param headers: HTTP request headers dict.
-    :param client_model: A model class that implemented the methods described
-        by :class:`~authlib.specs.rfc6749.ClientMixin`.
+    :param query_client: A function to get client by client_id. The client
+        model class MUST implement the methods described by
+        :class:`~authlib.specs.rfc6749.ClientMixin`.
 
     .. _RFC7009: https://tools.ietf.org/html/rfc7009
     """

@@ -111,6 +111,12 @@ def create_query_client_func(session, model_class):
 
 
 def create_query_token_func(session, model_class):
+    """Create an ``query_token`` function that can be used in
+    resource protector.
+
+    :param session: SQLAlchemy session
+    :param model_class: TokenCredential class
+    """
     def query_token(client_id, oauth_token):
         q = session.query(model_class)
         return q.filter_by(

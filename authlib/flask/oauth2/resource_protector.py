@@ -34,6 +34,10 @@ class ResourceProtector(_ResourceProtector):
         def query_token(access_token):
             return Token.query.filter_by(access_token=access_token).first()
 
+        # or with a helper
+        from authlib.flask.oauth2.sqla import create_query_token_func
+        query_token = create_query_token_func(db.session, Token)
+
         require_oauth= ResourceProtector(query_token)
 
         @app.route('/user')
