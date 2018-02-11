@@ -7,6 +7,16 @@ Changelog
 Here you can see the full list of changes between each Authlib release.
 
 
+Version 0.5.1
+-------------
+
+**Released on Feb 11, 2018.**
+
+Just a quick bug fix release.
+
+- Fixed ``OAuth2Session.request`` with auth.
+
+
 Version 0.5: Kirie
 ------------------
 
