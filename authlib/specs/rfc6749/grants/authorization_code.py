@@ -309,11 +309,9 @@ class AuthorizationCodeGrant(BaseGrant):
 
         :return: client
         """
-        client_params = self.request.extract_authorization_header()
-        if client_params:
+        client_id, client_secret = self.request.extract_authorization_header()
+        if client_id:
             # authenticate the client if client authentication is included
-            client_id = client_params.get('client_id')
-            client_secret = client_params.get('client_secret')
             client = self.get_and_validate_client(client_id)
             if not client.check_client_secret(client_secret):
                 raise InvalidClientError()

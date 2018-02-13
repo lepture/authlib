@@ -1,7 +1,8 @@
 import time
+import base64
+from authlib.common.encoding import to_unicode
 from authlib.common.urls import (
     urlparse, extract_params, url_decode,
-    extract_basic_authorization,
 )
 
 
@@ -48,9 +49,8 @@ class OAuth2Request(object):
         if auth and ' ' in auth:
             auth_type, auth_token = auth.split(None, 1)
             if auth_type.lower() == 'basic':
-                client_id, secret = extract_basic_authorization(auth_token)
-                return {'client_id': client_id, 'client_secret': secret}
-        return {}
+                return extract_basic_authorization(auth_token)
+        return None, None
 
     @property
     def client_id(self):
@@ -79,3 +79,14 @@ class OAuth2Request(object):
     @property
     def grant_type(self):
         return self.data.get('grant_type')
+
+
+def extract_basic_authorization(token):
+    """Extract token from Basic Authorization."""
+    try:
+        query = to_unicode(base64.b64decode(token))
+    except TypeError:
+        return None, None
+    if ':' in query:
+        return query.split(':', 1)
+    return query, None

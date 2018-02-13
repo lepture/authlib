@@ -6,7 +6,6 @@
 """
 
 import re
-import base64
 try:
     from urllib import quote as _quote
     from urllib import unquote as _unquote
@@ -152,14 +151,6 @@ def extract_params(raw):
         return url_decode(raw)
     except ValueError:
         return None
-
-
-def extract_basic_authorization(token):
-    """Extract token from Basic Authorization."""
-    query = to_unicode(base64.b64decode(token))
-    if ':' in query:
-        return query.split(':', 1)
-    return query, None
 
 
 def is_valid_url(url):

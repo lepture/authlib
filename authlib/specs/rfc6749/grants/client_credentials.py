@@ -114,12 +114,10 @@ class ClientCredentialsGrant(BaseGrant):
 
         :return: client
         """
-        client_params = self.request.extract_authorization_header()
-        if not client_params:
+        client_id, client_secret = self.request.extract_authorization_header()
+        if not client_id:
             raise InvalidClientError()
 
-        client_id = client_params.get('client_id')
-        client_secret = client_params.get('client_secret')
         client = self.get_and_validate_client(client_id)
 
         # authenticate the client if client authentication is included

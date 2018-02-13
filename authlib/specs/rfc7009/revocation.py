@@ -1,4 +1,3 @@
-from authlib.common.urls import extract_basic_authorization
 from .errors import (
     OAuth2Error,
     InvalidRequestError,
@@ -11,46 +10,34 @@ class RevocationEndpoint(object):
     """Implementation of revocation endpoint which is described in
     `RFC7009`_.
 
-    :param uri: HTTP request URI string.
-    :param params: HTTP query or payload parameters.
-    :param headers: HTTP request headers dict.
+    :param request: OAuth2Request instance
     :param query_client: A function to get client by client_id. The client
         model class MUST implement the methods described by
         :class:`~authlib.specs.rfc6749.ClientMixin`.
 
     .. _RFC7009: https://tools.ietf.org/html/rfc7009
     """
-    supported_token_types = ('access_token', 'refresh_token')
+    SUPPORTED_TOKEN_TYPES = ('access_token', 'refresh_token')
 
-    def __init__(self, uri, params, headers, query_client):
-        self.uri = uri
-        self.params = params
-        self.headers = headers
+    def __init__(self, request, query_client):
+        self.request = request
         self.query_client = query_client
         self._token = None
         self._client = None
-
-    def parse_basic_auth_header(self):
-        auth_header = self.headers.get('Authorization', '')
-        if auth_header and ' ' in auth_header:
-            auth_type, auth_token = auth_header.split(None, 1)
-            if auth_type.lower() == 'basic':
-                return extract_basic_authorization(auth_token)
 
     def validate_authenticate_client(self):
         """Validate requested client with Basic Authorization. Developers
         can re-implement this method for other authenticate means.
         """
-        client_params = self.parse_basic_auth_header()
-        if not client_params:
+        client_id, client_secret = self.request.extract_authorization_header()
+        if not client_id:
             raise InvalidClientError()
 
-        client_id, client_secret = client_params
         client = self.query_client(client_id)
         if not client:
             raise InvalidClientError()
 
-        if client.client_secret != client_secret:
+        if not client.check_client_secret(client_secret):
             raise InvalidClientError()
 
         self._client = client
@@ -67,14 +54,18 @@ class RevocationEndpoint(object):
             OPTIONAL.  A hint about the type of the token submitted for
             revocation.
         """
-        if 'token' not in self.params:
+        if self.request.body_params:
+            params = dict(self.request.body_params)
+        else:
+            params = dict(self.request.query_params)
+        if 'token' not in params:
             raise InvalidRequestError()
 
-        token_type = self.params.get('token_type_hint')
-        if token_type and token_type not in self.supported_token_types:
+        token_type = params.get('token_type_hint')
+        if token_type and token_type not in self.SUPPORTED_TOKEN_TYPES:
             raise UnsupportedTokenTypeError()
         token = self.query_token(
-            self.params['token'], token_type, self._client
+            params['token'], token_type, self._client
         )
         if not token:
             raise InvalidRequestError()

@@ -1,6 +1,7 @@
 from werkzeug.utils import import_string
 from flask import request, Response, json
 from authlib.specs.rfc6749 import (
+    OAuth2Request,
     register_error_uri,
     AuthorizationServer as _AuthorizationServer,
 )
@@ -189,14 +190,12 @@ class AuthorizationServer(_AuthorizationServer):
             def revoke_token():
                 return server.create_revocation_response()
         """
-        if request.method == 'GET':
-            params = request.args.to_dict(flat=True)
-        else:
-            params = request.form.to_dict(flat=True)
-
-        endpoint = self.revoke_token_endpoint(
-            request.url, params, request.headers, self.query_client
+        req = OAuth2Request(
+            request.method, request.url,
+            request.form.to_dict(flat=True),
+            request.headers
         )
+        endpoint = self.revoke_token_endpoint(req, self.query_client)
         status, body, headers = endpoint.create_revocation_response()
         return Response(json.dumps(body), status=status, headers=headers)
 
