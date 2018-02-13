@@ -59,8 +59,7 @@ class AuthorizationServer(BaseServer):
         self.validate_oauth_signature(request)
         return request
 
-    def create_valid_temporary_credentials_response(
-            self, method, uri, body=None, headers=None):
+    def create_valid_temporary_credentials_response(self, request):
         """Validate temporary credentials token request and create response
         for temporary credentials token. Assume the endpoint of temporary
         credentials request is ``https://photos.example.net/initiate``:
@@ -88,15 +87,10 @@ class AuthorizationServer(BaseServer):
             oauth_token=hh5s93j4hdidpola&oauth_token_secret=hdhd0244k9j7ao03&
             oauth_callback_confirmed=true
 
-        :param method: HTTP request method.
-        :param uri: HTTP request URI string.
-        :param body: HTTP request payload body.
-        :param headers: HTTP request headers.
+        :param request: OAuth1Request instance.
         :returns: (status_code, body, headers)
         """
         try:
-            InsecureTransportError.check(uri)
-            request = OAuth1Request(method, uri, body, headers)
             self.validate_temporary_credentials_request(request)
         except OAuth1Error as error:
             return error.status_code, error.get_body(), error.get_headers()
@@ -122,8 +116,7 @@ class AuthorizationServer(BaseServer):
         request.credential = credential
         return request
 
-    def create_valid_authorization_response(
-            self, method, uri, body=None, headers=None, grant_user=None):
+    def create_valid_authorization_response(self, request, grant_user=None):
         """Validate authorization request and create authorization response.
         Assume the endpoint for authorization request is
         ``https://photos.example.net/authorize``, the client redirects Jane's
@@ -141,16 +134,10 @@ class AuthorizationServer(BaseServer):
             http://printer.example.com/ready?
             oauth_token=hh5s93j4hdidpola&oauth_verifier=hfdp7dh39dks9884
 
-        :param method: HTTP request method.
-        :param uri: HTTP request URI string.
-        :param body: HTTP request payload body.
-        :param headers: HTTP request headers.
+        :param request: OAuth1Request instance.
         :param grant_user: if granted, pass the grant user, otherwise None.
         :returns: (status_code, body, headers)
         """
-        InsecureTransportError.check(uri)
-        request = OAuth1Request(method, uri, body, headers)
-
         # authorize endpoint should try catch this error
         self.validate_authorization_request(request)
 
@@ -205,8 +192,7 @@ class AuthorizationServer(BaseServer):
         self.validate_oauth_signature(request)
         return request
 
-    def create_valid_token_response(
-            self, method, uri, body=None, headers=None):
+    def create_valid_token_response(self, request):
         """Validate token request and create token response. Assuming the
         endpoint of token request is ``https://photos.example.net/token``,
         the callback request informs the client that Jane completed the
@@ -237,19 +223,9 @@ class AuthorizationServer(BaseServer):
 
             oauth_token=nnch734d00sl2jdk&oauth_token_secret=pfkkdhi9sl3r4s00
 
-        :param method: HTTP request method.
-        :param uri: HTTP request URI string.
-        :param body: HTTP request payload body.
-        :param headers: HTTP request headers.
+        :param request: OAuth1Request instance.
         :returns: (status_code, body, headers)
         """
-        try:
-            InsecureTransportError.check(uri)
-            request = OAuth1Request(method, uri, body, headers)
-        except OAuth1Error as error:
-            # DuplicatedOAuthProtocolParameterError
-            return error.status_code, error.get_body(), error.get_headers()
-
         try:
             self.validate_token_request(request)
         except OAuth1Error as error:

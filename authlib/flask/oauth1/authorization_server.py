@@ -2,11 +2,12 @@ import logging
 from werkzeug.utils import import_string
 from flask import Response, request as _req
 from authlib.specs.rfc5849 import (
+    OAuth1Request, OAuth1Error,
     AuthorizationServer as _AuthorizationServer,
-    OAuth1Request,
 )
 from authlib.common.security import generate_token
 from authlib.common.urls import url_encode
+from ..error import raise_http_exception
 
 log = logging.getLogger(__name__)
 
@@ -153,39 +154,34 @@ class AuthorizationServer(_AuthorizationServer):
         )
 
     def create_temporary_credential_response(self):
-        status, body, headers = self.create_valid_temporary_credentials_response(
-            _req.method,
-            _req.url,
-            _req.form.to_dict(flat=True),
-            _req.headers
-        )
+        req = _create_oauth1_request()
+        status, body, headers = self.create_valid_temporary_credentials_response(req)
         return Response(url_encode(body), status=status, headers=headers)
 
     def check_authorization_request(self):
-        req = OAuth1Request(
-            _req.method,
-            _req.url,
-            _req.form.to_dict(flat=True),
-            _req.headers
-        )
+        req = _create_oauth1_request()
         self.validate_authorization_request(req)
         return req
 
-    def create_authorization_response(self, grant_user):
+    def create_authorization_response(self, grant_user=None):
+        req = _create_oauth1_request()
         status, body, headers = self.create_valid_authorization_response(
-            _req.method,
-            _req.url,
-            _req.form.to_dict(flat=True),
-            _req.headers,
-            grant_user
-        )
+            req, grant_user)
         return Response(url_encode(body), status=status, headers=headers)
 
     def create_token_response(self):
-        status, body, headers = self.create_valid_token_response(
-            _req.method,
-            _req.url,
-            _req.form.to_dict(flat=True),
-            _req.headers,
-        )
+        req = _create_oauth1_request()
+        status, body, headers = self.create_valid_token_response(req)
         return Response(url_encode(body), status=status, headers=headers)
+
+
+def _create_oauth1_request():
+    if _req.method == 'POST':
+        body = _req.form.to_dict(flat=True)
+    else:
+        body = None
+    try:
+        return OAuth1Request(_req.method, _req.url, body, _req.headers)
+    except OAuth1Error as error:
+        body = url_encode(error.get_body())
+        raise_http_exception(error.status_code, body, error.get_headers())

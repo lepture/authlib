@@ -7,12 +7,16 @@ from .signature import (
     SIGNATURE_TYPE_BODY,
     SIGNATURE_TYPE_HEADER
 )
-from .errors import DuplicatedOAuthProtocolParameterError
+from .errors import (
+    InsecureTransportError,
+    DuplicatedOAuthProtocolParameterError
+)
 from .util import unescape
 
 
 class OAuth1Request(object):
     def __init__(self, method, uri, body=None, headers=None):
+        InsecureTransportError.check(uri)
         self.method = method
         self.uri = uri
         self.body = body
