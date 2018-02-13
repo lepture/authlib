@@ -1,11 +1,8 @@
-from .base import BaseGrant
-from ..errors import (
-    UnauthorizedClientError,
-    InvalidClientError,
-)
+from .base import BasicAuthGrant
+from ..errors import UnauthorizedClientError
 
 
-class ClientCredentialsGrant(BaseGrant):
+class ClientCredentialsGrant(BasicAuthGrant):
     """The client can request an access token using only its client
     credentials (or other supported means of authentication) when the
     client is requesting access to the protected resources under its
@@ -27,10 +24,6 @@ class ClientCredentialsGrant(BaseGrant):
     """
     ACCESS_TOKEN_ENDPOINT = True
     GRANT_TYPE = 'client_credentials'
-
-    @staticmethod
-    def check_token_endpoint(request):
-        return request.grant_type == ClientCredentialsGrant.GRANT_TYPE
 
     def validate_access_token_request(self):
         """The client makes a request to the token endpoint by adding the
@@ -107,24 +100,6 @@ class ClientCredentialsGrant(BaseGrant):
         )
         self.create_access_token(token, client)
         return 200, token, self.TOKEN_RESPONSE_HEADER
-
-    def authenticate_client(self):
-        """Authenticate client with Basic Authorization. Developers who want
-        to use other means for authentication can re-implement it in subclass.
-
-        :return: client
-        """
-        client_id, client_secret = self.request.extract_authorization_header()
-        if not client_id:
-            raise InvalidClientError()
-
-        client = self.get_and_validate_client(client_id)
-
-        # authenticate the client if client authentication is included
-        if not client.check_client_secret(client_secret):
-            raise InvalidClientError()
-
-        return client
 
     def create_access_token(self, token, client):
         """Save access_token into database. Developers should implement it in

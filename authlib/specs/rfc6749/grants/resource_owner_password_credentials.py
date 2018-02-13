@@ -1,13 +1,12 @@
-from .base import BaseGrant
+from .base import BasicAuthGrant
 from ..errors import (
     UnauthorizedClientError,
-    InvalidClientError,
     InvalidRequestError,
     InvalidGrantError,
 )
 
 
-class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
+class ResourceOwnerPasswordCredentialsGrant(BasicAuthGrant):
     """The resource owner password credentials grant type is suitable in
     cases where the resource owner has a trust relationship with the
     client, such as the device operating system or a highly privileged
@@ -43,10 +42,6 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
     """
     ACCESS_TOKEN_ENDPOINT = True
     GRANT_TYPE = 'password'
-
-    @staticmethod
-    def check_token_endpoint(request):
-        return request.grant_type == 'password'
 
     def validate_access_token_request(self):
         """The client makes a request to the token endpoint by adding the
@@ -148,24 +143,6 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
         )
         self.create_access_token(token, client, user)
         return 200, token, self.TOKEN_RESPONSE_HEADER
-
-    def authenticate_client(self):
-        """Authenticate client with Basic Authorization. Developers who want
-        to use other means for authentication can re-implement it in subclass.
-
-        :return: client
-        """
-        client_id, client_secret = self.request.extract_authorization_header()
-        if not client_id:
-            raise InvalidClientError()
-
-        client = self.get_and_validate_client(client_id)
-
-        # authenticate the client if client authentication is included
-        if not client.check_client_secret(client_secret):
-            raise InvalidClientError()
-
-        return client
 
     def authenticate_user(self, username, password):
         """validate the resource owner password credentials using its

@@ -1,5 +1,5 @@
 from authlib.common.urls import add_params_to_uri
-from .base import BaseGrant
+from .base import RedirectAuthGrant
 from ..errors import (
     UnauthorizedClientError,
     InvalidRequestError,
@@ -8,7 +8,7 @@ from ..errors import (
 )
 
 
-class AuthorizationCodeGrant(BaseGrant):
+class AuthorizationCodeGrant(RedirectAuthGrant):
     """The authorization code grant type is used to obtain both access
     tokens and refresh tokens and is optimized for confidential clients.
     Since this is a redirection-based flow, the client must be capable of
@@ -44,15 +44,13 @@ class AuthorizationCodeGrant(BaseGrant):
     """
     AUTHORIZATION_ENDPOINT = True
     ACCESS_TOKEN_ENDPOINT = True
+
+    RESPONSE_TYPE = 'code'
     GRANT_TYPE = 'authorization_code'
 
-    @staticmethod
-    def check_authorization_endpoint(request):
-        return request.response_type == 'code'
-
-    @staticmethod
-    def check_token_endpoint(request):
-        return request.grant_type == AuthorizationCodeGrant.GRANT_TYPE
+    @classmethod
+    def check_token_endpoint(cls, request):
+        return request.grant_type == cls.GRANT_TYPE
 
     def validate_authorization_request(self):
         """The client constructs the request URI by adding the following
@@ -104,7 +102,7 @@ class AuthorizationCodeGrant(BaseGrant):
         # check_authorization_endpoint
         client_id = self.request.client_id
         client = self.get_and_validate_client(client_id)
-        if not client.check_response_type('code'):
+        if not client.check_response_type(self.RESPONSE_TYPE):
             raise UnauthorizedClientError(
                 'The client is not authorized to request an authorization '
                 'code using this method',

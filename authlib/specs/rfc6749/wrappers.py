@@ -4,6 +4,7 @@ from authlib.common.encoding import to_unicode
 from authlib.common.urls import (
     urlparse, extract_params, url_decode,
 )
+from .errors import InsecureTransportError
 
 
 class OAuth2Token(dict):
@@ -24,6 +25,7 @@ class OAuth2Token(dict):
 
 class OAuth2Request(object):
     def __init__(self, method, uri, body=None, headers=None):
+        InsecureTransportError.check(uri)
         self.method = method
         self.uri = uri
         self.body = body

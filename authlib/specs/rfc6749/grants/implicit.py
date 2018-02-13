@@ -1,12 +1,12 @@
 from authlib.common.urls import add_params_to_uri
-from .base import BaseGrant
+from .base import RedirectAuthGrant
 from ..errors import (
     UnauthorizedClientError,
     AccessDeniedError,
 )
 
 
-class ImplicitGrant(BaseGrant):
+class ImplicitGrant(RedirectAuthGrant):
     """The implicit grant type is used to obtain access tokens (it does not
     support the issuance of refresh tokens) and is optimized for public
     clients known to operate a particular redirection URI.  These clients
@@ -63,11 +63,9 @@ class ImplicitGrant(BaseGrant):
         +---------+
     """
     AUTHORIZATION_ENDPOINT = True
-    GRANT_TYPE = 'implicit'
 
-    @staticmethod
-    def check_authorization_endpoint(request):
-        return request.response_type == 'token'
+    RESPONSE_TYPE = 'token'
+    GRANT_TYPE = 'implicit'
 
     def validate_authorization_request(self):
         """The client constructs the request URI by adding the following
@@ -115,7 +113,7 @@ class ImplicitGrant(BaseGrant):
 
         # The implicit grant type is optimized for public clients
         if not client.check_client_type('public') or \
-                not client.check_response_type('token'):
+                not client.check_response_type(self.RESPONSE_TYPE):
             raise UnauthorizedClientError(
                 'The client is not authorized to request an authorization '
                 'code using this method',

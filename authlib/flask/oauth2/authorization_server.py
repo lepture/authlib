@@ -134,15 +134,11 @@ class AuthorizationServer(_AuthorizationServer):
                         error=error
                     )
         """
-        grant = self.get_authorization_grant(
-            request.method,
-            request.url,
-            request.form.to_dict(flat=True)
-        )
+        grant = self.get_authorization_grant(_create_oauth2_request())
         grant.validate_authorization_request()
         return grant
 
-    def create_authorization_response(self, grant_user):
+    def create_authorization_response(self, grant_user=None):
         """Create the HTTP response for authorization. If resource owner
         granted the authorization, pass the resource owner as the user
         parameter, otherwise None::
@@ -156,9 +152,7 @@ class AuthorizationServer(_AuthorizationServer):
                 return server.create_authorization_response(grant_user)
         """
         status, body, headers = self.create_valid_authorization_response(
-            request.method,
-            request.url,
-            request.form.to_dict(flat=True),
+            _create_oauth2_request(),
             grant_user=grant_user
         )
         if isinstance(body, dict):
@@ -173,12 +167,8 @@ class AuthorizationServer(_AuthorizationServer):
             def issue_token():
                 return server.create_token_response()
         """
-        status, body, headers = self.create_valid_token_response(
-            request.method,
-            request.url,
-            request.form.to_dict(flat=True),
-            request.headers
-        )
+        req = _create_oauth2_request()
+        status, body, headers = self.create_valid_token_response(req)
         return Response(json.dumps(body), status=status, headers=headers)
 
     def create_revocation_response(self):
@@ -190,11 +180,7 @@ class AuthorizationServer(_AuthorizationServer):
             def revoke_token():
                 return server.create_revocation_response()
         """
-        req = OAuth2Request(
-            request.method, request.url,
-            request.form.to_dict(flat=True),
-            request.headers
-        )
+        req = _create_oauth2_request()
         endpoint = self.revoke_token_endpoint(req, self.query_client)
         status, body, headers = endpoint.create_revocation_response()
         return Response(json.dumps(body), status=status, headers=headers)
@@ -209,3 +195,17 @@ def _compatible_query_client(query_client):
         deprecate(message, '0.7')
         query_client = query_client.get_by_client_id
     return query_client
+
+
+def _create_oauth2_request():
+    if request.method == 'POST':
+        body = request.form.to_dict(flat=True)
+    else:
+        body = None
+
+    return OAuth2Request(
+        request.method,
+        request.url,
+        body,
+        request.headers
+    )

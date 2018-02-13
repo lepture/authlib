@@ -1,6 +1,5 @@
 from authlib.common.urls import add_params_to_uri
-from .wrappers import OAuth2Request
-from .errors import InvalidGrantError, InsecureTransportError, OAuth2Error
+from .errors import InvalidGrantError, OAuth2Error
 
 
 class AuthorizationServer(object):
@@ -36,53 +35,41 @@ class AuthorizationServer(object):
         if grant_cls.ACCESS_TOKEN_ENDPOINT:
             self._token_endpoints.add(grant_cls)
 
-    def get_authorization_grant(self, method, uri, body):
+    def get_authorization_grant(self, request):
         """Find the authorization grant for current request.
 
-        :param method: HTTP request method.
-        :param uri: HTTP request URI string.
-        :param body: HTTP request payload body.
+        :param request: OAuth2Request instance.
         :return: grant instance
         """
-        InsecureTransportError.check(uri)
-        request = OAuth2Request(method, uri, body)
         for grant_cls in self._authorization_endpoints:
             if grant_cls.check_authorization_endpoint(request):
                 return grant_cls(
                     request, self.query_client, self.token_generator)
         raise InvalidGrantError()
 
-    def get_token_grant(self, method, uri, body, headers):
+    def get_token_grant(self, request):
         """Find the token grant for current request.
 
-        :param method: HTTP request method.
-        :param uri: HTTP request URI string.
-        :param body: HTTP request payload body.
-        :param headers: HTTP request headers.
+        :param request: OAuth2Request instance.
         :return: grant instance
         """
-        InsecureTransportError.check(uri)
-
-        request = OAuth2Request(method, uri, body, headers)
         for grant_cls in self._token_endpoints:
             if grant_cls.check_token_endpoint(request):
-                if method in grant_cls.ACCESS_TOKEN_METHODS:
+                if request.method in grant_cls.ACCESS_TOKEN_METHODS:
                     return grant_cls(
                         request, self.query_client, self.token_generator)
         raise InvalidGrantError()
 
-    def create_valid_authorization_response(self, method, uri, body, grant_user):
+    def create_valid_authorization_response(self, request, grant_user):
         """Validate authorization request and create authorization response.
 
-        :param method: HTTP request method.
-        :param uri: HTTP request URI string.
-        :param body: HTTP request payload body.
+        :param request: OAuth2Request instance.
         :param grant_user: if granted, it is resource owner. If denied,
             it is None.
         :returns: (status_code, body, headers)
         """
         try:
-            grant = self.get_authorization_grant(method, uri, body)
+            grant = self.get_authorization_grant(request)
         except InvalidGrantError as error:
             body = dict(error.get_body())
             return error.status_code, body, error.get_headers()
@@ -95,17 +82,13 @@ class AuthorizationServer(object):
             headers = [('Location', loc)]
             return 302, '', headers
 
-    def create_valid_token_response(self, method, uri, body, headers):
+    def create_valid_token_response(self, request):
         """Validate token request and create token response.
 
-        :param method: HTTP request method.
-        :param uri: HTTP request URI string.
-        :param body: HTTP request payload body.
-        :param headers: HTTP request headers.
-        :returns: (status_code, body, headers)
+        :param request: OAuth2Request instance
         """
         try:
-            grant = self.get_token_grant(method, uri, body, headers)
+            grant = self.get_token_grant(request)
         except InvalidGrantError as error:
             payload = dict(error.get_body())
             return error.status_code, payload, error.get_headers()

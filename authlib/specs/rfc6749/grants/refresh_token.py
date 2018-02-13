@@ -11,17 +11,16 @@
     :license: LGPLv3, see LICENSE for more details.
 """
 
-from .base import BaseGrant
+from .base import BasicAuthGrant
 from ..util import scope_to_list
 from ..errors import (
     InvalidRequestError,
     InvalidScopeError,
     UnauthorizedClientError,
-    InvalidClientError,
 )
 
 
-class RefreshTokenGrant(BaseGrant):
+class RefreshTokenGrant(BasicAuthGrant):
     """A special grant endpoint for refresh_token grant_type. Refreshing an
     Access Token per `Section 6`_.
 
@@ -29,10 +28,6 @@ class RefreshTokenGrant(BaseGrant):
     """
     ACCESS_TOKEN_ENDPOINT = True
     GRANT_TYPE = 'refresh_token'
-
-    @staticmethod
-    def check_token_endpoint(request):
-        return request.grant_type == RefreshTokenGrant.GRANT_TYPE
 
     def validate_access_token_request(self):
         """If the authorization server issued a refresh token to the client, the
@@ -124,24 +119,6 @@ class RefreshTokenGrant(BaseGrant):
         )
         self.create_access_token(token, client, credential)
         return 200, token, self.TOKEN_RESPONSE_HEADER
-
-    def authenticate_client(self):
-        """Authenticate client with Basic Authorization. Developers who want
-        to use other means for authentication can re-implement it in subclass.
-
-        :return: client
-        """
-        client_id, client_secret = self.request.extract_authorization_header()
-        if not client_id:
-            raise InvalidClientError()
-
-        client = self.get_and_validate_client(client_id)
-
-        # authenticate the client if client authentication is included
-        if not client.check_client_secret(client_secret):
-            raise InvalidClientError()
-
-        return client
 
     def authenticate_refresh_token(self, refresh_token):
         """Get token information with refresh_token string. Developers should
