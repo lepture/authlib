@@ -38,6 +38,14 @@ Resource Owner
 Resource Owner is the user who is using your service. A resource owner can
 log in your website with username/email and password, or other methods.
 
+A resource owner SHOULD implement ``get_user_id()`` method::
+
+    class User(db.Model):
+        id = db.Column(db.Integer, primary_key=True)
+
+        def get_user_id(self):
+            return self.id
+
 Client
 ~~~~~~
 
@@ -218,7 +226,7 @@ Implement this grant by subclass :class:`AuthorizationCodeGrant`::
                 client_id=client.client_id,
                 redirect_uri=request.redirect_uri,
                 scope=request.scope,
-                user_id=grant_user.id,
+                user_id=grant_user.get_user_id(),
             )
             db.session.add(item)
             db.session.commit()
@@ -265,7 +273,7 @@ implement it with a subclass of :class:`ImplicitGrant`::
         def create_access_token(self, token, client, grant_user):
             item = Token(
                 client_id=client.client_id,
-                user_id=grant_user.id,
+                user_id=grant_user.get_user_id(),
                 **token
             )
             db.session.add(item)
@@ -296,7 +304,7 @@ it with a subclass of :class:`ResourceOwnerPasswordCredentialsGrant`::
         def create_access_token(self, token, client, user):
             item = Token(
                 client_id=client.client_id,
-                user_id=user.id,
+                user_id=user.get_user_id(),
                 **token
             )
             db.session.add(item)

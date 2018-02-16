@@ -29,7 +29,7 @@ def create_authorization_code_grant(
                 client_id=client.client_id,
                 redirect_uri=request.redirect_uri,
                 scope=request.scope,
-                user_id=grant_user.id,
+                user_id=grant_user.get_user_id(),
             )
             key = key_tpl.format(code, client.client_id)
             cache.set(key, data, timeout=600)

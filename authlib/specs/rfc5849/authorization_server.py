@@ -299,7 +299,9 @@ class AuthorizationServer(BaseServer):
                 verifier = generate_token(36)
 
                 temporary_credential = request.credential
-                temporary_credential.user_id = request.grant_user.id
+                user_id = request.grant_user.get_user_id()
+
+                temporary_credential.user_id = user_id
                 temporary_credential.oauth_verifier = verifier
                 # if the credential has a save method
                 temporary_credential.save()

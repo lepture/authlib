@@ -212,7 +212,7 @@ class ImplicitGrant(RedirectAuthGrant):
             def create_access_token(self, token, client, grant_user):
                 item = Token(
                     client_id=client.client_id,
-                    user_id=grant_user.id,
+                    user_id=grant_user.get_user_id(),
                     **token
                 )
                 item.save()

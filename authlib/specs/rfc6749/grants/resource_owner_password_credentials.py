@@ -161,7 +161,7 @@ class ResourceOwnerPasswordCredentialsGrant(BasicAuthGrant):
             def create_access_token(self, token, client, user):
                 item = Token(
                     client_id=client.client_id,
-                    user_id=user.id,
+                    user_id=user.get_user_id(),
                     **token
                 )
                 item.save()

@@ -35,6 +35,9 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(40), unique=True, nullable=False)
 
+    def get_user_id(self):
+        return self.id
+
     def check_password(self, password):
         return password != 'wrong'
 
@@ -83,7 +86,7 @@ class AuthorizationCodeGrant(_AuthorizationCodeGrant):
             client_id=client.client_id,
             redirect_uri=request.redirect_uri,
             scope=request.scope,
-            user_id=grant_user.id,
+            user_id=grant_user.get_user_id(),
         )
         db.session.add(item)
         db.session.commit()
@@ -131,7 +134,7 @@ class PasswordGrant(_PasswordGrant):
     def create_access_token(self, token, client, user):
         item = Token(
             client_id=client.client_id,
-            user_id=user.id,
+            user_id=user.get_user_id(),
             **token
         )
         db.session.add(item)

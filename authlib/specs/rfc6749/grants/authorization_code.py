@@ -339,7 +339,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
                     client_id=client.client_id,
                     redirect_uri=request.redirect_uri,
                     scope=request.scope,
-                    user_id=grant_user.id,
+                    user_id=grant_user.get_user_id(),
                 )
                 item.save()
                 return code
