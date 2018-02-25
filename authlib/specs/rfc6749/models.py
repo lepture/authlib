@@ -53,7 +53,7 @@ class ClientMixin(object):
         raise NotImplementedError()
 
     def check_client_secret(self, client_secret):
-        """Validate client_secret matching with the client. For instance, in
+        """Check client_secret matching with the client. For instance, in
         the client table, the column is called ``client_secret``::
 
             def check_client_secret(self, client_secret):
@@ -64,25 +64,20 @@ class ClientMixin(object):
         """
         raise NotImplementedError()
 
-    def check_client_type(self, client_type):
-        """OAuth defines two client types, based on their ability to
-        authenticate securely with the authorization server.
+    def check_token_endpoint_auth_method(self, method):
+        """Check client ``token_endpoint_auth_method`` defined via `RFC7591`_.
+        Values defined by this specification are:
 
-        confidential
-            Clients capable of maintaining the confidentiality of their
-            credentials (e.g., client implemented on a secure server with
-            restricted access to the client credentials), or capable of secure
-            client authentication using other means.
+        *  "none": The client is a public client as defined in OAuth 2.0,
+            and does not have a client secret.
 
-        public
-            Clients incapable of maintaining the confidentiality of their
-            credentials (e.g., clients executing on the device used by the
-            resource owner, such as an installed native application or a web
-            browser-based application), and incapable of secure client
-            authentication via any other means.
+        *  "client_secret_post": The client uses the HTTP POST parameters
+            as defined in OAuth 2.0
 
-        :param client_type: the required client_type, confidential or public
-        :return: bool
+        *  "client_secret_basic": The client uses HTTP Basic as defined in
+            OAuth 2.0
+
+        .. _`RFC7591`: https://tools.ietf.org/html/rfc7591
         """
         raise NotImplementedError()
 

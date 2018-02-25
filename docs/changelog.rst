@@ -6,6 +6,15 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 0.6
+-----------
+
+**Release Date not Decided.**
+
+- Use the ``token_endpoint_auth_method`` concept defined in `RFC7591`_.
+
+.. _`RFC7591`: https://tools.ietf.org/html/rfc7591
+
 
 Version 0.5.1
 -------------

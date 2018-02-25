@@ -21,7 +21,6 @@ class PasswordTest(TestCase):
             default_redirect_uri='http://localhost/authorized',
             allowed_scopes='profile',
             allowed_grant_types=grant_type,
-            is_confidential=True,
         )
         db.session.add(client)
         db.session.commit()

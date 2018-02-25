@@ -112,11 +112,11 @@ class ImplicitGrant(RedirectAuthGrant):
         client = self.get_and_validate_client(client_id)
 
         # The implicit grant type is optimized for public clients
-        if not client.check_client_type('public') or \
-                not client.check_response_type(self.RESPONSE_TYPE):
+        if not client.check_response_type(self.RESPONSE_TYPE) or \
+                not client.check_token_endpoint_auth_method('none') or \
+                client.has_client_secret():
             raise UnauthorizedClientError(
-                'The client is not authorized to request an authorization '
-                'code using this method',
+                'The client is not authorized to use this method',
                 state=self.request.state,
             )
 

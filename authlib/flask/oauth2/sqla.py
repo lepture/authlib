@@ -8,7 +8,6 @@ from authlib.specs.rfc6749 import (
 class OAuth2ClientMixin(ClientMixin):
     client_id = Column(String(48), index=True)
     client_secret = Column(String(120), nullable=False)
-    is_confidential = Column(Boolean, nullable=False, default=False)
     redirect_uris = Column(Text, nullable=False, default='')
     default_redirect_uri = Column(Text, nullable=False, default='')
     allowed_scopes = Column(Text, nullable=False, default='')
@@ -32,12 +31,10 @@ class OAuth2ClientMixin(ClientMixin):
     def check_client_secret(self, client_secret):
         return self.client_secret == client_secret
 
-    def check_client_type(self, client_type):
-        if client_type == 'confidential':
-            return self.is_confidential
-        if client_type == 'public':
-            return not self.is_confidential
-        raise ValueError('Invalid client_type')
+    def check_token_endpoint_auth_method(self, method):
+        if self.has_client_secret():
+            return method == 'client_secret_basic'
+        return method == 'none'
 
     def check_response_type(self, response_type):
         return True

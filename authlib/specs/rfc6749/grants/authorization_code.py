@@ -275,13 +275,12 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         client = self.request.client
         authorization_code = self.request.credential
 
-        is_confidential = client.check_client_type('confidential')
         scope = authorization_code.get_scope()
         token = self.token_generator(
             client,
             self.GRANT_TYPE,
             scope=scope,
-            include_refresh_token=is_confidential,
+            include_refresh_token=client.has_client_secret(),
         )
         self.create_access_token(token, client, authorization_code)
         self.delete_authorization_code(authorization_code)
@@ -320,11 +319,10 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         # authentication requirements)
         client_id = self.request.client_id
         client = self.get_and_validate_client(client_id)
-        if client.check_client_type('confidential') or \
-                client.has_client_secret():
-            raise UnauthorizedClientError()
-
-        return client
+        if client.check_token_endpoint_auth_method('none') and \
+                not client.has_client_secret():
+            return client
+        raise UnauthorizedClientError()
 
     def create_authorization_code(self, client, grant_user, request):
         """Save authorization_code for later use. Developers should implement

@@ -19,13 +19,17 @@ class AuthorizationCodeTest(TestCase):
         user = User(username='foo')
         db.session.add(user)
         db.session.commit()
+
+        if is_confidential:
+            client_secret = 'code-secret'
+        else:
+            client_secret = ''
         client = Client(
             user_id=user.id,
             client_id='code-client',
-            client_secret='code-secret',
+            client_secret=client_secret,
             default_redirect_uri='https://a.b',
             allowed_scopes='profile address',
-            is_confidential=is_confidential,
             allowed_response_types=response_types,
             allowed_grant_types=grant_type,
         )
@@ -111,38 +115,19 @@ class AuthorizationCodeTest(TestCase):
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'invalid_request')
 
-    def test_public_client(self):
-        self.prepare_data(False)
-        rv = self.client.post(self.authorize_url, data={'user_id': '1'})
-        self.assertIn('code=', rv.location)
-
-        params = dict(url_decode(urlparse.urlparse(rv.location).query))
-        code = params['code']
-        rv = self.client.post('/oauth/token', data={
-            'grant_type': 'authorization_code',
-            'code': code,
-            'client_id': 'code-client',
-        })
-        resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'unauthorized_client')
-
     def test_invalid_grant_type(self):
         self.prepare_data(False, grant_type='invalid')
-        headers = self.create_basic_header('code-client', 'code-secret')
         rv = self.client.post('/oauth/token', data={
             'grant_type': 'authorization_code',
+            'client_id': 'code-client',
             'code': 'a',
-        }, headers=headers)
+        })
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'unauthorized_client')
 
     def test_public_authorize_token(self):
         self.app.config.update({'OAUTH2_REFRESH_TOKEN_GENERATOR': True})
         self.prepare_data(False)
-        client = Client.query.filter_by(client_id='code-client').first()
-        client.client_secret = ''
-        db.session.add(client)
-        db.session.commit()
 
         rv = self.client.post(self.authorize_url, data={'user_id': '1'})
         self.assertIn('code=', rv.location)

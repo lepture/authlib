@@ -13,13 +13,16 @@ class ImplicitTest(TestCase):
         user = User(username='foo')
         db.session.add(user)
         db.session.commit()
+        if is_confidential:
+            client_secret = 'implicit-secret'
+        else:
+            client_secret = ''
         client = Client(
             user_id=user.id,
             client_id='implicit-client',
-            client_secret='implicit-secret',
+            client_secret=client_secret,
             default_redirect_uri='http://localhost/authorized',
             allowed_scopes='profile',
-            is_confidential=is_confidential,
         )
         self.authorize_url = (
             '/oauth/authorize?response_type=token'

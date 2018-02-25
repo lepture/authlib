@@ -69,7 +69,7 @@ class RefreshTokenGrant(BasicAuthGrant):
         # authentication requirements)
         client = self.authenticate_client()
 
-        if not client.check_client_type('confidential'):
+        if not client.has_client_secret():
             raise UnauthorizedClientError()
 
         if not client.check_grant_type(self.GRANT_TYPE):

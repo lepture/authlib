@@ -6,7 +6,7 @@ from .oauth2_server import create_authorization_server
 
 
 class RefreshTokenTest(TestCase):
-    def prepare_data(self, is_confidential=True, grant_type='refresh_token'):
+    def prepare_data(self, grant_type='refresh_token'):
         server = create_authorization_server(self.app)
         server.register_grant_endpoint(RefreshTokenGrant)
 
@@ -20,7 +20,6 @@ class RefreshTokenTest(TestCase):
             default_redirect_uri='http://localhost/authorized',
             allowed_scopes='profile',
             allowed_grant_types=grant_type,
-            is_confidential=is_confidential,
         )
         db.session.add(client)
         db.session.commit()
@@ -66,18 +65,6 @@ class RefreshTokenTest(TestCase):
         }, headers=headers)
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'invalid_client')
-
-    def test_public_client(self):
-        self.prepare_data(False)
-        headers = self.create_basic_header(
-            'refresh-client', 'refresh-secret'
-        )
-        rv = self.client.post('/oauth/token', data={
-            'grant_type': 'refresh_token',
-            'refresh_token': 'r1',
-        }, headers=headers)
-        resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'unauthorized_client')
 
     def test_invalid_refresh_token(self):
         self.prepare_data()
