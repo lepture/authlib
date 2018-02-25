@@ -38,7 +38,7 @@ class ResourceTest(TestCase):
             client_id='resource-client',
             client_secret='resource-secret',
             default_redirect_uri='http://localhost/authorized',
-            allowed_scopes='profile',
+            scope='profile',
         )
         db.session.add(client)
         db.session.commit()

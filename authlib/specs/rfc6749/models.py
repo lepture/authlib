@@ -115,10 +115,10 @@ class ClientMixin(object):
 
     def check_requested_scopes(self, scopes):
         """Validate if the request scopes are supported by this client. It can
-        always be ``True``. For instance, there is a ``allowed_scopes`` column::
+        always be ``True``. For instance, there is a ``scope`` column::
 
             def check_requested_scopes(self, scopes):
-                return self.allowed_scopes.issuperset(scopes)
+                return set(self.scope.split()).issuperset(scopes)
 
         :param scopes: the requested scopes set.
         :return: bool

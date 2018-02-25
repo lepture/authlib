@@ -10,7 +10,7 @@ class OAuth2ClientMixin(ClientMixin):
     client_secret = Column(String(120), nullable=False)
     redirect_uris = Column(Text, nullable=False, default='')
     default_redirect_uri = Column(Text, nullable=False, default='')
-    allowed_scopes = Column(Text, nullable=False, default='')
+    scope = Column(Text, nullable=False, default='')
 
     @classmethod
     def get_by_client_id(cls, client_id):
@@ -43,7 +43,7 @@ class OAuth2ClientMixin(ClientMixin):
         return True
 
     def check_requested_scopes(self, scopes):
-        allowed = set(self.allowed_scopes.split())
+        allowed = set(self.scope.split())
         return allowed.issuperset(set(scopes))
 
 

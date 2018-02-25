@@ -22,7 +22,7 @@ class ImplicitTest(TestCase):
             client_id='implicit-client',
             client_secret=client_secret,
             default_redirect_uri='http://localhost/authorized',
-            allowed_scopes='profile',
+            scope='profile',
         )
         self.authorize_url = (
             '/oauth/authorize?response_type=token'

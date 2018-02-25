@@ -36,7 +36,7 @@ class RevokeTokenTest(TestCase):
             client_id='revoke-client',
             client_secret='revoke-secret',
             default_redirect_uri='http://localhost/authorized',
-            allowed_scopes='profile',
+            scope='profile',
         )
         db.session.add(client)
         db.session.commit()

@@ -19,7 +19,7 @@ class PasswordTest(TestCase):
             client_id='password-client',
             client_secret='password-secret',
             default_redirect_uri='http://localhost/authorized',
-            allowed_scopes='profile',
+            scope='profile',
             allowed_grant_types=grant_type,
         )
         db.session.add(client)

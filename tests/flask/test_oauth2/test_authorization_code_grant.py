@@ -29,7 +29,7 @@ class AuthorizationCodeTest(TestCase):
             client_id='code-client',
             client_secret=client_secret,
             default_redirect_uri='https://a.b',
-            allowed_scopes='profile address',
+            scope='profile address',
             allowed_response_types=response_types,
             allowed_grant_types=grant_type,
         )

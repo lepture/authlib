@@ -18,7 +18,7 @@ class RefreshTokenTest(TestCase):
             client_id='refresh-client',
             client_secret='refresh-secret',
             default_redirect_uri='http://localhost/authorized',
-            allowed_scopes='profile',
+            scope='profile',
             allowed_grant_types=grant_type,
         )
         db.session.add(client)
