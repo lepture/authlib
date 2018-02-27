@@ -1,8 +1,8 @@
-from .base import BasicAuthGrant
+from .base import ClientAuthGrant
 from ..errors import UnauthorizedClientError
 
 
-class ClientCredentialsGrant(BasicAuthGrant):
+class ClientCredentialsGrant(ClientAuthGrant):
     """The client can request an access token using only its client
     credentials (or other supported means of authentication) when the
     client is requesting access to the protected resources under its

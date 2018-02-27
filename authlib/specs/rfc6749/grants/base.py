@@ -82,25 +82,31 @@ class RedirectAuthGrant(BaseGrant):
             self.redirect_uri = redirect_uri
 
 
-class BasicAuthGrant(BaseGrant):
+class ClientAuthGrant(BaseGrant):
     @classmethod
     def check_token_endpoint(cls, request):
         return request.grant_type == cls.GRANT_TYPE
 
     def authenticate_client(self):
-        """Authenticate client with Basic Authorization. Developers who want
-        to use other means for authentication can re-implement it in subclass.
+        """Authenticate client with ``client_secret_basic`` or
+        ``client_secret_post``. Developers who want to use other means for
+        authentication can re-implement it in subclass.
 
         :return: client
         """
         client_id, client_secret = self.request.extract_authorization_header()
-        if not client_id:
-            raise InvalidClientError()
+        if client_id:
+            auth_type = 'client_secret_basic'
+        else:
+            auth_type = 'client_secret_post'
+            data = dict(self.request.body_params)
+            client_id = data.get('client_id')
+            client_secret = data.get('client_secret')
 
         client = self.get_and_validate_client(client_id)
 
-        # authenticate the client if client authentication is included
-        if not client.check_client_secret(client_secret):
+        if not client.check_client_secret(client_secret) or \
+                not client.check_token_endpoint_auth_method(auth_type):
             raise InvalidClientError()
 
         return client

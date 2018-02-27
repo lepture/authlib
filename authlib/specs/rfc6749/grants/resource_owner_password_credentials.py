@@ -1,4 +1,4 @@
-from .base import BasicAuthGrant
+from .base import ClientAuthGrant
 from ..errors import (
     UnauthorizedClientError,
     InvalidRequestError,
@@ -6,7 +6,7 @@ from ..errors import (
 )
 
 
-class ResourceOwnerPasswordCredentialsGrant(BasicAuthGrant):
+class ResourceOwnerPasswordCredentialsGrant(ClientAuthGrant):
     """The resource owner password credentials grant type is suitable in
     cases where the resource owner has a trust relationship with the
     client, such as the device operating system or a highly privileged

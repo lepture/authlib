@@ -11,7 +11,7 @@
     :license: LGPLv3, see LICENSE for more details.
 """
 
-from .base import BasicAuthGrant
+from .base import ClientAuthGrant
 from ..util import scope_to_list
 from ..errors import (
     InvalidRequestError,
@@ -20,7 +20,7 @@ from ..errors import (
 )
 
 
-class RefreshTokenGrant(BasicAuthGrant):
+class RefreshTokenGrant(ClientAuthGrant):
     """A special grant endpoint for refresh_token grant_type. Refreshing an
     Access Token per `Section 6`_.
 
