@@ -43,7 +43,7 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
     TOKEN_ENDPOINT = True
     GRANT_TYPE = 'password'
 
-    def validate_access_token_request(self):
+    def validate_token_request(self):
         """The client makes a request to the token endpoint by adding the
         following parameters using the "application/x-www-form-urlencoded"
         format per Appendix B with a character encoding of UTF-8 in the HTTP
@@ -109,7 +109,7 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
         self.request.client = client
         self.request.grant_user = user
 
-    def create_access_token_response(self):
+    def create_token_response(self):
         """If the access token request is valid and authorized, the
         authorization server issues an access token and optional refresh
         token as described in Section 5.1.  If the request failed client

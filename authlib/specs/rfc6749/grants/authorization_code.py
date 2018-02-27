@@ -173,7 +173,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         headers = [('Location', uri)]
         return 302, '', headers
 
-    def validate_access_token_request(self):
+    def validate_token_request(self):
         """The client makes a request to the token endpoint by sending the
         following parameters using the "application/x-www-form-urlencoded"
         format per Appendix B with a character encoding of UTF-8 in the HTTP
@@ -246,11 +246,11 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
                 'Invalid "redirect_uri" in request.',
             )
 
-        # save for create_access_token_response
+        # save for create_token_response
         self.request.client = client
         self.request.credential = authorization_code
 
-    def create_access_token_response(self):
+    def create_token_response(self):
         """If the access token request is valid and authorized, the
         authorization server issues an access token and optional refresh
         token as described in Section 5.1.  If the request client

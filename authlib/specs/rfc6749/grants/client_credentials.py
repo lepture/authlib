@@ -25,7 +25,7 @@ class ClientCredentialsGrant(BaseGrant):
     TOKEN_ENDPOINT = True
     GRANT_TYPE = 'client_credentials'
 
-    def validate_access_token_request(self):
+    def validate_token_request(self):
         """The client makes a request to the token endpoint by adding the
         following parameters using the "application/x-www-form-urlencoded"
         format per Appendix B with a character encoding of UTF-8 in the HTTP
@@ -67,7 +67,7 @@ class ClientCredentialsGrant(BaseGrant):
         self.validate_requested_scope(client)
         self.request.client = client
 
-    def create_access_token_response(self):
+    def create_token_response(self):
         """If the access token request is valid and authorized, the
         authorization server issues an access token as described in
         Section 5.1.  A refresh token SHOULD NOT be included.  If the request

@@ -93,8 +93,8 @@ class AuthorizationServer(object):
             payload = dict(error.get_body())
             return error.status_code, payload, error.get_headers()
         try:
-            grant.validate_access_token_request()
-            return grant.create_access_token_response()
+            grant.validate_token_request()
+            return grant.create_token_response()
         except OAuth2Error as error:
             status = error.status_code
             payload = dict(error.get_body())

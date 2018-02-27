@@ -29,7 +29,7 @@ class RefreshTokenGrant(BaseGrant):
     TOKEN_ENDPOINT = True
     GRANT_TYPE = 'refresh_token'
 
-    def validate_access_token_request(self):
+    def validate_token_request(self):
         """If the authorization server issued a refresh token to the client, the
         client makes a refresh request to the token endpoint by adding the
         following parameters using the "application/x-www-form-urlencoded"
@@ -99,7 +99,7 @@ class RefreshTokenGrant(BaseGrant):
         self.request.client = client
         self.request.credential = token
 
-    def create_access_token_response(self):
+    def create_token_response(self):
         """If valid and authorized, the authorization server issues an access
         token as described in Section 5.1.  If the request failed
         verification or is invalid, the authorization server returns an error
