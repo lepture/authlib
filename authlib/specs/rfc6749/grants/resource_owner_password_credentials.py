@@ -1,4 +1,4 @@
-from .base import ClientAuthGrant
+from .base import BaseGrant
 from ..errors import (
     UnauthorizedClientError,
     InvalidRequestError,
@@ -6,7 +6,7 @@ from ..errors import (
 )
 
 
-class ResourceOwnerPasswordCredentialsGrant(ClientAuthGrant):
+class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
     """The resource owner password credentials grant type is suitable in
     cases where the resource owner has a trust relationship with the
     client, such as the device operating system or a highly privileged
@@ -40,7 +40,7 @@ class ResourceOwnerPasswordCredentialsGrant(ClientAuthGrant):
         |         |    (w/ Optional Refresh Token)   |               |
         +---------+                                  +---------------+
     """
-    ACCESS_TOKEN_ENDPOINT = True
+    TOKEN_ENDPOINT = True
     GRANT_TYPE = 'password'
 
     def validate_access_token_request(self):
@@ -82,7 +82,7 @@ class ResourceOwnerPasswordCredentialsGrant(ClientAuthGrant):
         """
         # ignore validate for grant_type, since it is validated by
         # check_token_endpoint
-        client = self.authenticate_client()
+        client = self.authenticate_token_endpoint_client()
 
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError()

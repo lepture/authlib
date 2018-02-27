@@ -2,8 +2,8 @@ from authlib.common.urls import add_params_to_uri
 from .base import RedirectAuthGrant
 from ..errors import (
     UnauthorizedClientError,
-    InvalidRequestError,
     InvalidClientError,
+    InvalidRequestError,
     AccessDeniedError,
 )
 
@@ -43,14 +43,13 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         +---------+       (w/ Optional Refresh Token)
     """
     AUTHORIZATION_ENDPOINT = True
-    ACCESS_TOKEN_ENDPOINT = True
+    TOKEN_ENDPOINT = True
+    TOKEN_ENDPOINT_AUTH_METHODS = [
+        'client_secret_basic', 'client_secret_post', 'none'
+    ]
 
     RESPONSE_TYPE = 'code'
     GRANT_TYPE = 'authorization_code'
-
-    @classmethod
-    def check_token_endpoint(cls, request):
-        return request.grant_type == cls.GRANT_TYPE
 
     def validate_authorization_request(self):
         """The client constructs the request URI by adding the following
@@ -101,7 +100,15 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         # ignore validate for response_type, since it is validated by
         # check_authorization_endpoint
         client_id = self.request.client_id
-        client = self.get_and_validate_client(client_id)
+        if client_id is None:
+            raise InvalidClientError(
+                state=self.request.state,
+            )
+        client = self.get_client_by_id(client_id)
+        if not client:
+            raise InvalidClientError(
+                state=self.request.state,
+            )
         if not client.check_response_type(self.RESPONSE_TYPE):
             raise UnauthorizedClientError(
                 'The client is not authorized to request an authorization '
@@ -211,8 +218,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         # check_token_endpoint
 
         # authenticate the client if client authentication is included
-        client = self.authenticate_client()
-
+        client = self.authenticate_token_endpoint_client()
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError()
 
@@ -285,37 +291,6 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         self.create_access_token(token, client, authorization_code)
         self.delete_authorization_code(authorization_code)
         return 200, token, self.TOKEN_RESPONSE_HEADER
-
-    def authenticate_client(self):
-        """Parse the authenticated client.
-
-        For example, the client makes the following HTTP request using TLS:
-
-        .. code-block:: http
-
-            POST /token HTTP/1.1
-            Host: server.example.com
-            Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
-            Content-Type: application/x-www-form-urlencoded
-
-            grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA
-            &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb
-
-        To authenticate client with other means, re-implement this method in
-        subclass.
-
-        :return: client
-        """
-        client = self.authenticate_via_client_secret_basic()
-        if client:
-            return client
-        client = self.authenticate_via_client_secret_post()
-        if client:
-            return client
-        client = self.authenticate_via_none()
-        if client:
-            return client
-        raise InvalidClientError()
 
     def create_authorization_code(self, client, grant_user, request):
         """Save authorization_code for later use. Developers should implement

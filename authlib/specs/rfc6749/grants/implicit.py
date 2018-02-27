@@ -2,7 +2,6 @@ from authlib.common.urls import add_params_to_uri
 from .base import RedirectAuthGrant
 from ..errors import (
     UnauthorizedClientError,
-    InvalidClientError,
     AccessDeniedError,
 )
 
@@ -64,6 +63,7 @@ class ImplicitGrant(RedirectAuthGrant):
         +---------+
     """
     AUTHORIZATION_ENDPOINT = True
+    TOKEN_ENDPOINT_AUTH_METHODS = ['none']
 
     RESPONSE_TYPE = 'token'
     GRANT_TYPE = 'implicit'
@@ -111,9 +111,7 @@ class ImplicitGrant(RedirectAuthGrant):
         # check_authorization_endpoint
 
         # The implicit grant type is optimized for public clients
-        client = self.authenticate_via_none()
-        if not client:
-            raise InvalidClientError()
+        client = self.authenticate_token_endpoint_client()
 
         if not client.check_response_type(self.RESPONSE_TYPE):
             raise UnauthorizedClientError(

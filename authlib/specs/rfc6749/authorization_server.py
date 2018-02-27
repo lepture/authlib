@@ -32,7 +32,7 @@ class AuthorizationServer(object):
         """
         if grant_cls.AUTHORIZATION_ENDPOINT:
             self._authorization_endpoints.add(grant_cls)
-        if grant_cls.ACCESS_TOKEN_ENDPOINT:
+        if grant_cls.TOKEN_ENDPOINT:
             self._token_endpoints.add(grant_cls)
 
     def get_authorization_grant(self, request):
@@ -55,7 +55,7 @@ class AuthorizationServer(object):
         """
         for grant_cls in self._token_endpoints:
             if grant_cls.check_token_endpoint(request):
-                if request.method in grant_cls.ACCESS_TOKEN_METHODS:
+                if request.method in grant_cls.TOKEN_HTTP_METHODS:
                     return grant_cls(
                         request, self.query_client, self.token_generator)
         raise InvalidGrantError()

@@ -11,7 +11,7 @@
     :license: LGPLv3, see LICENSE for more details.
 """
 
-from .base import ClientAuthGrant
+from .base import BaseGrant
 from ..util import scope_to_list
 from ..errors import (
     InvalidRequestError,
@@ -20,13 +20,13 @@ from ..errors import (
 )
 
 
-class RefreshTokenGrant(ClientAuthGrant):
+class RefreshTokenGrant(BaseGrant):
     """A special grant endpoint for refresh_token grant_type. Refreshing an
     Access Token per `Section 6`_.
 
     .. _`Section 6`: https://tools.ietf.org/html/rfc6749#section-6
     """
-    ACCESS_TOKEN_ENDPOINT = True
+    TOKEN_ENDPOINT = True
     GRANT_TYPE = 'refresh_token'
 
     def validate_access_token_request(self):
@@ -67,7 +67,7 @@ class RefreshTokenGrant(ClientAuthGrant):
         # require client authentication for confidential clients or for any
         # client that was issued client credentials (or with other
         # authentication requirements)
-        client = self.authenticate_client()
+        client = self.authenticate_token_endpoint_client()
 
         if not client.has_client_secret():
             raise UnauthorizedClientError()

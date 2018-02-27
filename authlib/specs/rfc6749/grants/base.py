@@ -1,15 +1,19 @@
 from ..errors import (
     InvalidRequestError,
     InvalidScopeError,
-    InvalidClientError,
 )
 from ..util import scope_to_list
+from ..authenticate_client import authenticate_client
 
 
 class BaseGrant(object):
     AUTHORIZATION_ENDPOINT = False
-    ACCESS_TOKEN_ENDPOINT = False
-    ACCESS_TOKEN_METHODS = ['POST']
+    TOKEN_ENDPOINT = False
+    TOKEN_HTTP_METHODS = ['POST']
+    TOKEN_ENDPOINT_AUTH_METHODS = [
+        'client_secret_basic',
+        'client_secret_post'
+    ]
     RESPONSE_TYPE = None
     GRANT_TYPE = None
 
@@ -31,6 +35,10 @@ class BaseGrant(object):
         self.token_generator = token_generator
         self._clients = {}
 
+    @classmethod
+    def check_token_endpoint(cls, request):
+        return request.grant_type == cls.GRANT_TYPE
+
     @property
     def client(self):
         return self.get_client_by_id(self.request.client_id)
@@ -42,53 +50,33 @@ class BaseGrant(object):
         self._clients[client_id] = client
         return client
 
-    def get_and_validate_client(self, client_id):
-        if client_id is None:
-            raise InvalidClientError(
-                state=self.request.state,
-            )
+    def authenticate_token_endpoint_client(self):
+        """Authenticate client with the given methods for token endpoint.
 
-        client = self.get_client_by_id(client_id)
-        if not client:
-            raise InvalidClientError(
-                state=self.request.state,
-            )
-        return client
+        For example, the client makes the following HTTP request using TLS:
 
-    def authenticate_via_client_secret_basic(self):
-        """Authenticate client by ``client_secret_basic`` method. The client
-        uses HTTP Basic for authentication.
+        .. code-block:: http
+
+            POST /token HTTP/1.1
+            Host: server.example.com
+            Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
+            Content-Type: application/x-www-form-urlencoded
+
+            grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA
+            &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb
+
+        Default available methods are: "none", "client_secret_basic" and
+        "client_secret_post".
+
+        :param methods: token_endpoint_auth_method for client, default
+            value is ["client_secret_basic", "client_secret_post"].
+        :return: client
         """
-        client_id, client_secret = self.request.extract_authorization_header()
-        if client_id and client_secret:
-            client = self.get_and_validate_client(client_id)
-            if client.check_token_endpoint_auth_method('client_secret_basic') \
-                    and client.check_client_secret(client_secret):
-                return client
-
-    def authenticate_via_client_secret_post(self):
-        """Authenticate client by ``client_secret_post`` method. The client
-        uses POST parameters for authentication.
-        """
-        data = dict(self.request.body_params)
-        client_id = data.get('client_id')
-        client_secret = data.get('client_secret')
-        if client_id and client_secret:
-            client = self.get_and_validate_client(client_id)
-            if client.check_token_endpoint_auth_method('client_secret_post') \
-                    and client.check_client_secret(client_secret):
-                return client
-
-    def authenticate_via_none(self):
-        """Authenticate public client by ``none`` method. The client
-        does not have a client secret.
-        """
-        client_id = self.request.client_id
-        if client_id and 'client_secret' not in self.request.data:
-            client = self.get_and_validate_client(client_id)
-            if client.check_token_endpoint_auth_method('none') \
-                    and not client.has_client_secret():
-                return client
+        return authenticate_client(
+            self.get_client_by_id,
+            request=self.request,
+            methods=self.TOKEN_ENDPOINT_AUTH_METHODS,
+        )
 
     def validate_requested_scope(self, client):
         scopes = self.scopes
@@ -115,24 +103,3 @@ class RedirectAuthGrant(BaseGrant):
                     'Missing "redirect_uri" in request.'
                 )
             self.redirect_uri = redirect_uri
-
-
-class ClientAuthGrant(BaseGrant):
-    @classmethod
-    def check_token_endpoint(cls, request):
-        return request.grant_type == cls.GRANT_TYPE
-
-    def authenticate_client(self):
-        """Authenticate client with ``client_secret_basic`` or
-        ``client_secret_post``. Developers who want to use other means for
-        authentication can re-implement it in subclass.
-
-        :return: client
-        """
-        client = self.authenticate_via_client_secret_basic()
-        if client:
-            return client
-        client = self.authenticate_via_client_secret_post()
-        if client:
-            return client
-        raise InvalidClientError()

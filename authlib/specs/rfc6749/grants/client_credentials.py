@@ -1,8 +1,8 @@
-from .base import ClientAuthGrant
+from .base import BaseGrant
 from ..errors import UnauthorizedClientError
 
 
-class ClientCredentialsGrant(ClientAuthGrant):
+class ClientCredentialsGrant(BaseGrant):
     """The client can request an access token using only its client
     credentials (or other supported means of authentication) when the
     client is requesting access to the protected resources under its
@@ -22,7 +22,7 @@ class ClientCredentialsGrant(ClientAuthGrant):
 
     https://tools.ietf.org/html/rfc6749#section-4.4
     """
-    ACCESS_TOKEN_ENDPOINT = True
+    TOKEN_ENDPOINT = True
     GRANT_TYPE = 'client_credentials'
 
     def validate_access_token_request(self):
@@ -59,7 +59,7 @@ class ClientCredentialsGrant(ClientAuthGrant):
 
         # ignore validate for grant_type, since it is validated by
         # check_token_endpoint
-        client = self.authenticate_client()
+        client = self.authenticate_token_endpoint_client()
 
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError()
