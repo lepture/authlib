@@ -39,7 +39,7 @@ class ImplicitTest(TestCase):
     def test_confidential_client(self):
         self.prepare_data(True)
         rv = self.client.get(self.authorize_url)
-        self.assertEqual(rv.data, b'error')
+        self.assertEqual(rv.data, b'invalid_client')
 
     def test_invalid_authorize(self):
         self.prepare_data()

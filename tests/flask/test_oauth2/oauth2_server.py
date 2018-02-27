@@ -179,8 +179,8 @@ def create_authorization_server(app):
             try:
                 server.validate_authorization_request()
                 return 'ok'
-            except OAuth2Error:
-                return 'error'
+            except OAuth2Error as error:
+                return error.error
         user_id = request.form.get('user_id')
         if user_id:
             grant_user = User.query.get(int(user_id))

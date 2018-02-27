@@ -57,7 +57,7 @@ class AuthorizationCodeTest(TestCase):
     def test_unauthorized_client(self):
         self.prepare_data(True, 'token')
         rv = self.client.get(self.authorize_url)
-        self.assertEqual(rv.data, b'error')
+        self.assertEqual(rv.data, b'unauthorized_client')
 
     def test_invalid_client(self):
         self.prepare_data()

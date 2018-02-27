@@ -13,7 +13,7 @@ class AuthorizationTest(TestCase):
             '&client_id=implicit-client'
         )
         rv = self.client.get(authorize_url)
-        self.assertEqual(rv.data, b'error')
+        self.assertEqual(rv.data, b'invalid_grant')
 
         rv = self.client.post(authorize_url, data={'user_id': '1'})
         self.assertNotEqual(rv.status, 200)
