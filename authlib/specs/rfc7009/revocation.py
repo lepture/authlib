@@ -2,8 +2,8 @@ from .errors import (
     OAuth2Error,
     InvalidRequestError,
     UnsupportedTokenTypeError,
-    InvalidClientError,
 )
+from authlib.specs.rfc6749 import authenticate_client
 
 
 class RevocationEndpoint(object):
@@ -18,6 +18,7 @@ class RevocationEndpoint(object):
     .. _RFC7009: https://tools.ietf.org/html/rfc7009
     """
     SUPPORTED_TOKEN_TYPES = ('access_token', 'refresh_token')
+    REVOCATION_ENDPOINT_AUTH_METHODS = ['client_secret_basic']
 
     def __init__(self, request, query_client):
         self.request = request
@@ -25,22 +26,15 @@ class RevocationEndpoint(object):
         self._token = None
         self._client = None
 
-    def validate_authenticate_client(self):
-        """Validate requested client with Basic Authorization. Developers
-        can re-implement this method for other authenticate means.
+    def authenticate_revocation_endpoint_client(self):
+        """Authentication client for revocation endpoint with
+        ``REVOCATION_ENDPOINT_AUTH_METHODS``.
         """
-        client_id, client_secret = self.request.extract_authorization_header()
-        if not client_id:
-            raise InvalidClientError()
-
-        client = self.query_client(client_id)
-        if not client:
-            raise InvalidClientError()
-
-        if not client.check_client_secret(client_secret):
-            raise InvalidClientError()
-
-        self._client = client
+        self._client = authenticate_client(
+            self.query_client,
+            request=self.request,
+            methods=self.REVOCATION_ENDPOINT_AUTH_METHODS,
+        )
 
     def validate_revocation_request(self):
         """The client constructs the request by including the following
@@ -78,7 +72,7 @@ class RevocationEndpoint(object):
         """
         try:
             # The authorization server first validates the client credentials
-            self.validate_authenticate_client()
+            self.authenticate_revocation_endpoint_client()
             # then verifies whether the token was issued to the client making
             # the revocation request
             self.validate_revocation_request()
