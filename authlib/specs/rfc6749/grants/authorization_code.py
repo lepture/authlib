@@ -306,23 +306,16 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
 
         :return: client
         """
-        client_id, client_secret = self.request.extract_authorization_header()
-        if client_id:
-            # authenticate the client if client authentication is included
-            client = self.get_and_validate_client(client_id)
-            if not client.check_client_secret(client_secret):
-                raise InvalidClientError()
+        client = self.authenticate_via_client_secret_basic()
+        if client:
             return client
-
-        # require client authentication for confidential clients or for any
-        # client that was issued client credentials (or with other
-        # authentication requirements)
-        client_id = self.request.client_id
-        client = self.get_and_validate_client(client_id)
-        if client.check_token_endpoint_auth_method('none') and \
-                not client.has_client_secret():
+        client = self.authenticate_via_client_secret_post()
+        if client:
             return client
-        raise UnauthorizedClientError()
+        client = self.authenticate_via_none()
+        if client:
+            return client
+        raise InvalidClientError()
 
     def create_authorization_code(self, client, grant_user, request):
         """Save authorization_code for later use. Developers should implement

@@ -55,6 +55,41 @@ class BaseGrant(object):
             )
         return client
 
+    def authenticate_via_client_secret_basic(self):
+        """Authenticate client by ``client_secret_basic`` method. The client
+        uses HTTP Basic for authentication.
+        """
+        client_id, client_secret = self.request.extract_authorization_header()
+        if client_id and client_secret:
+            client = self.get_and_validate_client(client_id)
+            if client.check_token_endpoint_auth_method('client_secret_basic') \
+                    and client.check_client_secret(client_secret):
+                return client
+
+    def authenticate_via_client_secret_post(self):
+        """Authenticate client by ``client_secret_post`` method. The client
+        uses POST parameters for authentication.
+        """
+        data = dict(self.request.body_params)
+        client_id = data.get('client_id')
+        client_secret = data.get('client_secret')
+        if client_id and client_secret:
+            client = self.get_and_validate_client(client_id)
+            if client.check_token_endpoint_auth_method('client_secret_post') \
+                    and client.check_client_secret(client_secret):
+                return client
+
+    def authenticate_via_none(self):
+        """Authenticate public client by ``none`` method. The client
+        does not have a client secret.
+        """
+        client_id = self.request.client_id
+        if client_id and 'client_secret' not in self.request.data:
+            client = self.get_and_validate_client(client_id)
+            if client.check_token_endpoint_auth_method('none') \
+                    and not client.has_client_secret():
+                return client
+
     def validate_requested_scope(self, client):
         scopes = self.scopes
         if scopes and not client.check_requested_scopes(set(scopes)):
@@ -94,19 +129,10 @@ class ClientAuthGrant(BaseGrant):
 
         :return: client
         """
-        client_id, client_secret = self.request.extract_authorization_header()
-        if client_id:
-            auth_type = 'client_secret_basic'
-        else:
-            auth_type = 'client_secret_post'
-            data = dict(self.request.body_params)
-            client_id = data.get('client_id')
-            client_secret = data.get('client_secret')
-
-        client = self.get_and_validate_client(client_id)
-
-        if not client.check_client_secret(client_secret) or \
-                not client.check_token_endpoint_auth_method(auth_type):
-            raise InvalidClientError()
-
-        return client
+        client = self.authenticate_via_client_secret_basic()
+        if client:
+            return client
+        client = self.authenticate_via_client_secret_post()
+        if client:
+            return client
+        raise InvalidClientError()

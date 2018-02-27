@@ -2,6 +2,7 @@ from authlib.common.urls import add_params_to_uri
 from .base import RedirectAuthGrant
 from ..errors import (
     UnauthorizedClientError,
+    InvalidClientError,
     AccessDeniedError,
 )
 
@@ -108,15 +109,15 @@ class ImplicitGrant(RedirectAuthGrant):
         """
         # ignore validate for response_type, since it is validated by
         # check_authorization_endpoint
-        client_id = self.request.client_id
-        client = self.get_and_validate_client(client_id)
 
         # The implicit grant type is optimized for public clients
-        if not client.check_response_type(self.RESPONSE_TYPE) or \
-                not client.check_token_endpoint_auth_method('none') or \
-                client.has_client_secret():
+        client = self.authenticate_via_none()
+        if not client:
+            raise InvalidClientError()
+
+        if not client.check_response_type(self.RESPONSE_TYPE):
             raise UnauthorizedClientError(
-                'The client is not authorized to use this method',
+                'The client is not authorized to use implicit grant',
                 state=self.request.state,
             )
 
