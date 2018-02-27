@@ -36,6 +36,8 @@ class OAuth2Session(Session):
     :param redirect_uri: Redirect URI you registered as callback.
     :param token: A dict of token attributes such as ``access_token``,
                   ``token_type`` and ``expires_at``.
+    :param token_placement: The place to put token in HTTP request. Available
+                            values: "header", "body", "uri".
     :param state: State string used to prevent CSRF. This will be given
                   when creating the authorization url and must be
                   supplied when parsing the authorization response.
@@ -45,7 +47,7 @@ class OAuth2Session(Session):
     def __init__(self, client_id=None, client_secret=None,
                  refresh_token_url=None, refresh_token_params=None,
                  scope=None, redirect_uri=None,
-                 token=None, token_placement='headers',
+                 token=None, token_placement='header',
                  state=None, token_updater=None, **kwargs):
         super(OAuth2Session, self).__init__()
 

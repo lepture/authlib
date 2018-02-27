@@ -32,9 +32,9 @@ def add_to_body(token, body=None):
 
 
 def add_bearer_token(token, uri, headers, body, placement='headers'):
-    if placement == 'uri':
+    if placement in ('uri', 'url', 'query'):
         uri = add_to_uri(token, uri)
-    elif placement == 'headers':
+    elif placement in ('header', 'headers'):
         headers = add_to_headers(token, headers)
     elif placement == 'body':
         body = add_to_body(token, body)
