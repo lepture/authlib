@@ -77,7 +77,7 @@ class RevocationEndpoint(object):
             # the revocation request
             self.validate_revocation_request()
             # the authorization server invalidates the token
-            self.invalidate_token(self._token)
+            self.revoke_token(self._token)
             status = 200
             body = {}
             headers = [
@@ -105,11 +105,20 @@ class RevocationEndpoint(object):
         """
         raise NotImplementedError()
 
-    def invalidate_token(self, token):
-        """Delete token from database/storage. Developers should implement this
-        method::
+    def revoke_token(self, token):
+        """Mark token as revoked. Since token MUST be unique, it would be
+        dangerous to delete it. Consider this situation:
 
-            def invalidate_token(self, token):
-                token.delete()
+        1. Jane obtained a token XYZ
+        2. Jane revoked (deleted) token XYZ
+        3. Bob generated a new token XYZ
+        4. Jane can use XYZ to access Bob's resource
+
+        It would be secure to mark a token as revoked::
+
+            def revoke_token(self, token):
+                token.revoked = True
+                session.add(token)
+                session.commit()
         """
         raise NotImplementedError()

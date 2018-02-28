@@ -1,5 +1,5 @@
 import time
-from sqlalchemy import Column, String, Text, Integer
+from sqlalchemy import Column, String, Boolean, Text, Integer
 from authlib.specs.rfc6749 import (
     ClientMixin, AuthorizationCodeMixin, TokenMixin
 )
@@ -74,6 +74,7 @@ class OAuth2TokenMixin(TokenMixin):
     access_token = Column(String(255), unique=True, nullable=False)
     refresh_token = Column(String(255), index=True)
     scope = Column(Text, default='')
+    revoked = Column(Boolean, default=False)
     created_at = Column(
         Integer, nullable=False, default=lambda: int(time.time())
     )
@@ -103,7 +104,8 @@ def create_query_client_func(session, model_class):
 
 
 def create_revocation_endpoint(session, model_class):
-    """Create an revocation endpoint with SQLAlchemy session and model.
+    """Create a revocation endpoint class with SQLAlchemy session
+    and token model.
 
     :param session: SQLAlchemy session
     :param model_class: Token class
@@ -113,7 +115,7 @@ def create_revocation_endpoint(session, model_class):
     class _RevocationEndpoint(RevocationEndpoint):
         def query_token(self, token, token_type_hint, client):
             q = session.query(model_class)
-            q = q.filter_by(client_id=client.client_id)
+            q = q.filter_by(client_id=client.client_id, revoked=False)
             if token_type_hint == 'access_token':
                 return q.filter_by(access_token=token).first()
             elif token_type_hint == 'refresh_token':
@@ -124,8 +126,32 @@ def create_revocation_endpoint(session, model_class):
                 return item
             return q.filter_by(refresh_token=token).first()
 
-        def invalidate_token(self, token):
-            session.delete(token)
+        def revoke_token(self, token):
+            token.revoked = True
+            session.add(token)
             session.commit()
 
     return _RevocationEndpoint
+
+
+def create_bearer_token_validator(session, model_class):
+    """Create an bearer token validator class with SQLAlchemy session
+    and token model.
+
+    :param session: SQLAlchemy session
+    :param model_class: Token class
+    """
+    from authlib.specs.rfc6750 import BearerTokenValidator
+
+    class _BearerTokenValidator(BearerTokenValidator):
+        def authenticate_token(self, token_string):
+            q = session.query(model_class)
+            return q.filter_by(access_token=token_string).first()
+
+        def request_invalid(self, request):
+            return False
+
+        def token_revoked(self, token):
+            return token.revoked
+
+    return _BearerTokenValidator

@@ -389,8 +389,9 @@ endpoint, subclass **RevocationEndpoint** and define the missing methods::
                 return item
             return q.filter_by(refresh_token=token).first()
 
-        def invalidate_token(self, token):
-            db.session.delete(token)
+        def revoke_token(self, token):
+            token.revoked = True
+            db.session.add(token)
             db.session.commit()
 
     # register it to authorization server
@@ -428,10 +429,16 @@ server. Here is the way to protect your users' resources::
             return False
 
         def token_revoked(self, token):
-            return False
+            return token.revoked
 
     # only bearer token is supported currently
     ResourceProtector.register_token_validator('bearer', MyBearerTokenValidator())
+
+    # you can also create BearerTokenValidator with shortcut
+    from authlib.flask.oauth2.sqla import create_bearer_token_validator
+
+    BearerTokenValidator = create_bearer_token_validator(db.session, Token)
+    ResourceProtector.register_token_validator('bearer', BearerTokenValidator())
 
     require_oauth = ResourceProtector()
 
