@@ -409,15 +409,22 @@ server. Here is the way to protect your users' resources::
 
     from flask import jsonify
     from authlib.flask.oauth2 import ResourceProtector, current_token
+    from authlib.specs.rfc6750 import BearerTokenValidator
 
-    def query_token(access_token=access_token):
-        return Token.query.filter_by(access_token=access_token).first()
+    class MyBearerTokenValidator(BearerTokenValidator):
+        def authenticate_token(self, token_string):
+            return Token.query.filter_by(access_token=token_string).first()
 
-    # or with the helper
-    from authlib.flask.oauth2.sqla import create_query_token_func
-    query_token = create_query_token_func(db.session, Token)
+        def request_invalid(self, request):
+            return False
 
-    require_oauth = ResourceProtector(query_token)
+        def token_revoked(self, token):
+            return False
+
+    # only bearer token is supported currently
+    ResourceProtector.register_token_validator('bearer', MyBearerTokenValidator())
+
+    require_oauth = ResourceProtector()
 
     @app.route('/user')
     @require_oauth('profile')
