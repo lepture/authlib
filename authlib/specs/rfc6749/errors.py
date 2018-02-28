@@ -203,21 +203,24 @@ class AccessDeniedError(OAuth2Error):
 # -- below are extended errors -- #
 
 
-class MissingCodeError(OAuth2Error):
+# -- exceptions for clients -- #
+
+
+class MissingCodeException(OAuth2Error):
     error = 'missing_code'
     error_description = 'Missing "code" in response.'
 
 
-class MissingTokenError(OAuth2Error):
+class MissingTokenException(OAuth2Error):
     error = 'missing_token'
     error_description = 'Missing "access_token" in response.'
 
 
-class MissingTokenTypeError(OAuth2Error):
+class MissingTokenTypeException(OAuth2Error):
     error = 'missing_token_type'
     error_description = 'Missing "token_type" in response.'
 
 
-class MismatchingStateError(OAuth2Error):
+class MismatchingStateException(OAuth2Error):
     error = 'mismatching_state'
     error_description = 'CSRF Warning! State not equal in request and response.'

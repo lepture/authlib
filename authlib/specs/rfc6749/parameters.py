@@ -5,10 +5,10 @@ from authlib.common.urls import (
 )
 from authlib.common.encoding import to_unicode
 from .errors import (
-    MissingCodeError,
-    MissingTokenError,
-    MissingTokenTypeError,
-    MismatchingStateError,
+    MissingCodeException,
+    MissingTokenException,
+    MissingTokenTypeException,
+    MismatchingStateException,
 )
 from .util import list_to_scope
 
@@ -98,7 +98,7 @@ def prepare_token_request(grant_type, body='', redirect_uri=None, **kwargs):
         kwargs['scope'] = list_to_scope(kwargs['scope'])
 
     if grant_type == 'authorization_code' and 'code' not in kwargs:
-        raise MissingCodeError()
+        raise MissingCodeException()
 
     for k in kwargs:
         if kwargs[k]:
@@ -149,10 +149,10 @@ def parse_authorization_code_response(uri, state=None):
     params = dict(urlparse.parse_qsl(query))
 
     if 'code' not in params:
-        raise MissingCodeError()
+        raise MissingCodeException()
 
     if state and params.get('state', None) != state:
-        raise MismatchingStateError()
+        raise MismatchingStateException()
 
     return params
 
@@ -202,12 +202,12 @@ def parse_implicit_response(uri, state=None):
     params = dict(urlparse.parse_qsl(fragment, keep_blank_values=True))
 
     if 'access_token' not in params:
-        raise MissingTokenError()
+        raise MissingTokenException()
 
     if 'token_type' not in params:
-        raise MissingTokenTypeError()
+        raise MissingTokenTypeException()
 
     if state and params.get('state', None) != state:
-        raise MismatchingStateError()
+        raise MismatchingStateException()
 
     return params

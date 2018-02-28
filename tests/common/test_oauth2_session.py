@@ -8,7 +8,7 @@ from authlib.common.urls import url_encode
 from authlib.client import OAuth2Session
 from authlib.client.errors import OAuthException
 from authlib.specs.rfc6749 import (
-    MismatchingStateError,
+    MismatchingStateException,
 )
 from ..client_base import mock_json_response
 
@@ -187,7 +187,7 @@ class OAuth2SessionTest(TestCase):
     def test_mis_match_state(self):
         sess = OAuth2Session('foo', state='somestate')
         self.assertRaises(
-            MismatchingStateError,
+            MismatchingStateException,
             sess.fetch_token,
             'https://i.b/token',
             authorization_response='https://i.b/no-state?code=abc'
