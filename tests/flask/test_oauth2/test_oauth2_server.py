@@ -64,13 +64,13 @@ class ResourceTest(TestCase):
         rv = self.client.get('/user')
         self.assertEqual(rv.status_code, 401)
         resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_token')
+        self.assertEqual(resp['error'], 'missing_authorization')
 
         headers = {'Authorization': 'invalid token'}
         rv = self.client.get('/user', headers=headers)
         self.assertEqual(rv.status_code, 401)
         resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_token')
+        self.assertEqual(resp['error'], 'unsupported_token_type')
 
         headers = self.create_bearer_header('invalid')
         rv = self.client.get('/user', headers=headers)

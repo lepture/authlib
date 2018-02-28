@@ -7,27 +7,28 @@
     .. _`Section 7`: https://tools.ietf.org/html/rfc6749#section-7
 """
 
+from .errors import MissingAuthorizationError, UnsupportedTokenTypeError
+
 
 class ResourceProtector(object):
-    def __init__(self, token_validator):
-        self.token_validator = token_validator
+    TOKEN_VALIDATORS = {}
 
-    def authenticate_token(self, token_string, token_type):
-        """
-        :param token_string: A string to represent the access_token.
-        :param token_type: The token_type of the access_token.
-        :return: token
-        """
-        raise NotImplementedError()
+    @classmethod
+    def register_token_validator(cls, token_type, validator):
+        token_type = token_type.lower()
+        if token_type not in cls.TOKEN_VALIDATORS:
+            cls.TOKEN_VALIDATORS[token_type] = validator
 
     def validate_request(self, scope, request):
         auth = request.headers.get('Authorization')
         if not auth:
-            token = None
-        else:
-            # https://tools.ietf.org/html/rfc6749#section-7.1
-            token_type, token_string = auth.split(None, 1)
-            token = self.authenticate_token(token_string, token_type)
+            raise MissingAuthorizationError()
 
-        self.token_validator(token, scope, request)
-        return token
+        # https://tools.ietf.org/html/rfc6749#section-7.1
+        token_type, token_string = auth.split(None, 1)
+
+        validator = self.TOKEN_VALIDATORS.get(token_type.lower())
+        if not validator:
+            raise UnsupportedTokenTypeError()
+
+        return validator(token_string, scope, request)

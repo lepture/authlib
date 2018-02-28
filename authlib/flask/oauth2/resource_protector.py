@@ -4,43 +4,34 @@ from flask import request as _req
 from werkzeug.local import LocalProxy
 from authlib.specs.rfc6749 import OAuth2Error, TokenRequest
 from authlib.specs.rfc6749 import ResourceProtector as _ResourceProtector
-from authlib.specs.rfc6750 import BearerTokenValidator as _BearerValidator
 from .signals import token_authenticated
 
 
-class BearerTokenValidator(_BearerValidator):
-    """A default Bearer token validator. Simple but ready to use."""
-
-    def request_invalid(self, request):
-        """Validate if current HTTP request is valid. It always return ``False``.
-        Developers who want to validate the HTTP request can re-implement it
-        with :class:`authlib.specs.rfc6750.BearerTokenValidator`.
-        """
-        return False
-
-    def token_revoked(self, token):
-        """Validate if current token is revoked. It always return ``False``.
-        Developers who want to validate token revoked can re-implement it
-        with :class:`authlib.specs.rfc6750.BearerTokenValidator`.
-        """
-        return False
-
-
 class ResourceProtector(_ResourceProtector):
-    """A protecting method for resource servers. Initialize a resource
-    protector with the query_token method::
+    """A protecting method for resource servers. Creating a ``require_oauth``
+    decorator easily with ResourceProtector::
 
-        from authlib.flask.oauth2 import ResourceProtector, current_token
-        from your_project.models import Token, User
+        from authlib.flask.oauth2 import ResourceProtector
 
-        def query_token(access_token):
-            return Token.query.filter_by(access_token=access_token).first()
+        require_oauth = ResourceProtector()
 
-        # or with a helper
-        from authlib.flask.oauth2.sqla import create_query_token_func
-        query_token = create_query_token_func(db.session, Token)
+        # add bearer token validator
+        from authlib.specs.rfc6750 import BearerTokenValidator
+        from project.models import Token
 
-        require_oauth= ResourceProtector(query_token)
+        class MyBearerTokenValidator(BearerTokenValidator):
+            def authenticate_token(self, token_string):
+                return Token.query.filter_by(access_token=token_string).first()
+
+            def request_invalid(self, request):
+                return False
+
+            def token_revoked(self, token):
+                return False
+
+        ResourceProtector.register_token_validator('bearer', MyBearerTokenValidator())
+
+        # protect resource with require_oauth
 
         @app.route('/user')
         @require_oauth('profile')
@@ -48,25 +39,7 @@ class ResourceProtector(_ResourceProtector):
             user = User.query.get(current_token.user_id)
             return jsonify(user.to_dict())
 
-    :param query_token: a function to query token model by access_token string.
-    :param realm: a string to represent realm value. Default is ``None``.
-    :param validator_cls: a token validator class. Default is
-        :class:`authlib.flask.oauth2.BearerTokenValidator`.
     """
-    def __init__(self, query_token, realm=None, validator_cls=None):
-        self.query_token = query_token
-        if validator_cls is None:
-            validator_cls = BearerTokenValidator
-        self.token_validator = validator_cls(realm)
-
-    def authenticate_token(self, token_string, token_type):
-        """Authenticate token in Authorization header. Only Bearer Token is
-        supported for now.
-        """
-        if token_type.lower() == 'bearer':
-            # only bearer token (rfc6750) implemented
-            return self.query_token(token_string)
-
     def __call__(self, scope=None):
         def wrapper(f):
             @functools.wraps(f)

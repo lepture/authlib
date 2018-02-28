@@ -203,6 +203,17 @@ class AccessDeniedError(OAuth2Error):
 # -- below are extended errors -- #
 
 
+class MissingAuthorizationError(OAuth2Error):
+    error = 'missing_authorization'
+    status_code = 401
+    error_description = 'Missing "Authorization" in headers.'
+
+
+class UnsupportedTokenTypeError(OAuth2Error):
+    error = 'unsupported_token_type'
+    status_code = 401
+
+
 # -- exceptions for clients -- #
 
 

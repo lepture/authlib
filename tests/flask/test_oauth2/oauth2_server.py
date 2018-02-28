@@ -10,7 +10,6 @@ from authlib.flask.oauth2.sqla import (
     OAuth2ClientMixin,
     OAuth2AuthorizationCodeMixin,
     OAuth2TokenMixin,
-    create_query_token_func,
     create_query_client_func,
 )
 from authlib.flask.oauth2 import (
@@ -25,6 +24,9 @@ from authlib.specs.rfc6749.grants import (
     ResourceOwnerPasswordCredentialsGrant as _PasswordGrant,
     ClientCredentialsGrant as _ClientCredentialsGrant,
     RefreshTokenGrant as _RefreshTokenGrant,
+)
+from authlib.specs.rfc6750 import (
+    BearerTokenValidator as _BearerTokenValidator
 )
 
 os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
@@ -169,6 +171,17 @@ class RefreshTokenGrant(_RefreshTokenGrant):
         db.session.commit()
 
 
+class BearerTokenValidator(_BearerTokenValidator):
+    def authenticate_token(self, token_string):
+        return Token.query.filter_by(access_token=token_string).first()
+
+    def request_invalid(self, request):
+        return False
+
+    def token_revoked(self, token):
+        return False
+
+
 def create_authorization_server(app):
     query_client = create_query_client_func(db.session, Client)
     server = AuthorizationServer(app, query_client)
@@ -200,8 +213,8 @@ def create_authorization_server(app):
 
 
 def create_resource_server(app):
-    query_token = create_query_token_func(db.session, Token)
-    require_oauth = ResourceProtector(query_token)
+    require_oauth = ResourceProtector()
+    require_oauth.register_token_validator('bearer', BearerTokenValidator())
 
     @app.route('/user')
     @require_oauth('profile')

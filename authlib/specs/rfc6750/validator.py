@@ -20,6 +20,13 @@ class BearerTokenValidator(object):
     def __init__(self, realm=None):
         self.realm = realm
 
+    def authenticate_token(self, token_string):
+        """
+        :param token_string: A string to represent the access_token.
+        :return: token
+        """
+        raise NotImplementedError()
+
     def request_invalid(self, request):
         raise NotImplementedError()
 
@@ -37,7 +44,8 @@ class BearerTokenValidator(object):
         resource_scopes = set(scope_to_list(scope))
         return not token_scopes.issuperset(resource_scopes)
 
-    def __call__(self, token, scope, request):
+    def __call__(self, token_string, scope, request):
+        token = self.authenticate_token(token_string)
         if not token:
             raise InvalidTokenError(realm=self.realm)
         if self.request_invalid(request):
@@ -48,3 +56,4 @@ class BearerTokenValidator(object):
             raise InvalidTokenError(realm=self.realm)
         if self.scope_insufficient(token, scope):
             raise InsufficientScopeError()
+        return token

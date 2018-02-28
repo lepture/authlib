@@ -100,16 +100,3 @@ def create_query_client_func(session, model_class):
         q = session.query(model_class)
         return q.filter_by(client_id=client_id).first()
     return query_client
-
-
-def create_query_token_func(session, model_class):
-    """Create an ``query_token`` function that can be used in
-    resource protector.
-
-    :param session: SQLAlchemy session
-    :param model_class: Token class
-    """
-    def query_token(access_token):
-        q = session.query(model_class)
-        return q.filter_by(access_token=access_token).first()
-    return query_token
