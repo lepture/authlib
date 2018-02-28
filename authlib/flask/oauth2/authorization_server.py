@@ -1,5 +1,6 @@
 from werkzeug.utils import import_string
-from flask import request, Response, json
+from flask import Response, json
+from flask import request as _req
 from authlib.specs.rfc6749 import (
     OAuth2Request,
     register_error_uri,
@@ -8,6 +9,7 @@ from authlib.specs.rfc6749 import (
 from authlib.specs.rfc6750 import BearerToken
 from authlib.common.security import generate_token
 from authlib.deprecate import deprecate
+from .signals import client_authenticated
 
 GRANT_TYPES_EXPIRES = {
     'authorization_code': 864000,
@@ -36,6 +38,28 @@ class AuthorizationServer(_AuthorizationServer):
         self.app = app
         if app is not None:
             self.init_app(app)
+
+    def get_authorization_grant(self, request):
+        """Find the authorization grant for current request.
+
+        :param request: OAuth2Request instance.
+        :return: grant instance
+        """
+        grant = super(AuthorizationServer, self).get_authorization_grant(request)
+        grant._after_authenticate_client = \
+            lambda client: client_authenticated.send(self, client=client, grant=grant)
+        return grant
+
+    def get_token_grant(self, request):
+        """Find the token grant for current request.
+
+        :param request: OAuth2Request instance.
+        :return: grant instance
+        """
+        grant = super(AuthorizationServer, self).get_token_grant(request)
+        grant._after_authenticate_client = \
+            lambda client: client_authenticated.send(self, client=client, grant=grant)
+        return grant
 
     def register_revoke_token_endpoint(self, cls):
         """Add revoke token support for authorization server. Revoke token is
@@ -198,14 +222,14 @@ def _compatible_query_client(query_client):
 
 
 def _create_oauth2_request():
-    if request.method == 'POST':
-        body = request.form.to_dict(flat=True)
+    if _req.method == 'POST':
+        body = _req.form.to_dict(flat=True)
     else:
         body = None
 
     return OAuth2Request(
-        request.method,
-        request.url,
+        _req.method,
+        _req.url,
         body,
-        request.headers
+        _req.headers
     )

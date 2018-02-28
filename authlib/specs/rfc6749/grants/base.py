@@ -10,10 +10,7 @@ class BaseGrant(object):
     AUTHORIZATION_ENDPOINT = False
     TOKEN_ENDPOINT = False
     TOKEN_HTTP_METHODS = ['POST']
-    TOKEN_ENDPOINT_AUTH_METHODS = [
-        'client_secret_basic',
-        'client_secret_post'
-    ]
+    TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic']
     RESPONSE_TYPE = None
     GRANT_TYPE = None
 
@@ -34,6 +31,7 @@ class BaseGrant(object):
         self.query_client = query_client
         self.token_generator = token_generator
         self._clients = {}
+        self._after_authenticate_client = None
 
     @classmethod
     def check_token_endpoint(cls, request):
@@ -68,15 +66,16 @@ class BaseGrant(object):
         Default available methods are: "none", "client_secret_basic" and
         "client_secret_post".
 
-        :param methods: token_endpoint_auth_method for client, default
-            value is ["client_secret_basic", "client_secret_post"].
         :return: client
         """
-        return authenticate_client(
+        client = authenticate_client(
             self.get_client_by_id,
             request=self.request,
             methods=self.TOKEN_ENDPOINT_AUTH_METHODS,
         )
+        if self._after_authenticate_client:
+            self._after_authenticate_client(client)
+        return client
 
     def validate_requested_scope(self, client):
         scopes = self.scopes
