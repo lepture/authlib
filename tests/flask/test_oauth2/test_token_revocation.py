@@ -1,26 +1,11 @@
 from flask import json
-from authlib.specs.rfc7009 import RevocationEndpoint as _RevocationEndpoint
+from authlib.flask.oauth2.sqla import create_revocation_endpoint
 from .oauth2_server import db, User, Client, Token
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
 
 
-class RevocationEndpoint(_RevocationEndpoint):
-    def query_token(self, token, token_type_hint, client):
-        q = Token.query.filter_by(client_id=client.client_id)
-        if token_type_hint == 'access_token':
-            return q.filter_by(access_token=token).first()
-        elif token_type_hint == 'refresh_token':
-            return q.filter_by(refresh_token=token).first()
-        # without token_type_hint
-        item = q.filter_by(access_token=token).first()
-        if item:
-            return item
-        return q.filter_by(refresh_token=token).first()
-
-    def invalidate_token(self, token):
-        db.session.delete(token)
-        db.session.commit()
+RevocationEndpoint = create_revocation_endpoint(db.session, Token)
 
 
 class RevokeTokenTest(TestCase):

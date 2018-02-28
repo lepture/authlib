@@ -396,6 +396,15 @@ endpoint, subclass **RevocationEndpoint** and define the missing methods::
     # register it to authorization server
     server.register_revoke_token_endpoint(RevocationEndpoint)
 
+There is also a shortcut method to create revocation endpoint::
+
+    from authlib.flask.oauth2.sqla import create_revocation_endpoint
+
+    RevocationEndpoint = create_revocation_endpoint(db.session, Token)
+
+    # register it to authorization server
+    server.register_revoke_token_endpoint(RevocationEndpoint)
+
 .. _RFC7009: https://tools.ietf.org/html/rfc7009
 
 Protect Resources

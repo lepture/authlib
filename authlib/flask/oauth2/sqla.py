@@ -1,5 +1,5 @@
 import time
-from sqlalchemy import Column, Boolean, String, Text, Integer
+from sqlalchemy import Column, String, Text, Integer
 from authlib.specs.rfc6749 import (
     ClientMixin, AuthorizationCodeMixin, TokenMixin
 )
@@ -100,3 +100,32 @@ def create_query_client_func(session, model_class):
         q = session.query(model_class)
         return q.filter_by(client_id=client_id).first()
     return query_client
+
+
+def create_revocation_endpoint(session, model_class):
+    """Create an revocation endpoint with SQLAlchemy session and model.
+
+    :param session: SQLAlchemy session
+    :param model_class: Token class
+    """
+    from authlib.specs.rfc7009 import RevocationEndpoint
+
+    class _RevocationEndpoint(RevocationEndpoint):
+        def query_token(self, token, token_type_hint, client):
+            q = session.query(model_class)
+            q = q.filter_by(client_id=client.client_id)
+            if token_type_hint == 'access_token':
+                return q.filter_by(access_token=token).first()
+            elif token_type_hint == 'refresh_token':
+                return q.filter_by(refresh_token=token).first()
+            # without token_type_hint
+            item = q.filter_by(access_token=token).first()
+            if item:
+                return item
+            return q.filter_by(refresh_token=token).first()
+
+        def invalidate_token(self, token):
+            session.delete(token)
+            session.commit()
+
+    return _RevocationEndpoint
