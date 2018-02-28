@@ -1,11 +1,12 @@
 from .errors import InvalidClientError
+from .util import extract_basic_authorization
 
 
 def authenticate_client_via_client_secret_basic(query_client, request):
     """Authenticate client by ``client_secret_basic`` method. The client
     uses HTTP Basic for authentication.
     """
-    client_id, client_secret = request.extract_authorization_header()
+    client_id, client_secret = extract_basic_authorization(request.headers)
     if client_id and client_secret:
         client = _validate_client(query_client, client_id, request.state)
         if client.check_token_endpoint_auth_method('client_secret_basic') \
@@ -71,4 +72,3 @@ def _validate_client(query_client, client_id, state=None):
         raise InvalidClientError(state=state)
 
     return client
-

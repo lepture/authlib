@@ -1,3 +1,4 @@
+import base64
 from authlib.common.encoding import to_unicode
 
 
@@ -17,3 +18,21 @@ def scope_to_list(scope):
     elif scope is None:
         return None
     return scope.strip().split()
+
+
+def extract_basic_authorization(headers):
+    auth = headers.get('Authorization')
+    if not auth or ' ' not in auth:
+        return None, None
+
+    auth_type, auth_token = auth.split(None, 1)
+    if auth_type.lower() != 'basic':
+        return None, None
+
+    try:
+        query = to_unicode(base64.b64decode(auth_token))
+    except TypeError:
+        return None, None
+    if ':' in query:
+        return query.split(':', 1)
+    return query, None
