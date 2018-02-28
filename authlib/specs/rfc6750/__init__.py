@@ -13,5 +13,5 @@
 
 from .errors import *
 from .parameters import add_bearer_token
-from .token import BearerToken
+from .wrappers import BearerToken, BearerRequest
 from .validator import BearerTokenValidator

@@ -20,8 +20,8 @@ class ResourceProtector(object):
         """
         raise NotImplementedError()
 
-    def validate_request(self, scope, method, uri, body, headers):
-        auth = headers.get('Authorization')
+    def validate_request(self, scope, request):
+        auth = request.headers.get('Authorization')
         if not auth:
             token = None
         else:
@@ -29,5 +29,5 @@ class ResourceProtector(object):
             token_type, token_string = auth.split(None, 1)
             token = self.authenticate_token(token_string, token_type)
 
-        self.token_validator(token, scope, method, uri, body, headers)
+        self.token_validator(token, scope, request)
         return token

@@ -1,16 +1,18 @@
 import functools
-from flask import g, request, Response, json
+from flask import g, Response, json
+from flask import request as _req
 from werkzeug.local import LocalProxy
 from authlib.specs.rfc6749 import OAuth2Error
 from authlib.specs.rfc6749 import ResourceProtector as _ResourceProtector
 from authlib.specs.rfc6750 import BearerTokenValidator as _BearerValidator
+from authlib.specs.rfc6750 import BearerRequest
 from .signals import token_authenticated
 
 
 class BearerTokenValidator(_BearerValidator):
     """A default Bearer token validator. Simple but ready to use."""
 
-    def request_invalid(self, method, uri, body, headers):
+    def request_invalid(self, request):
         """Validate if current HTTP request is valid. It always return ``False``.
         Developers who want to validate the HTTP request can re-implement it
         with :class:`authlib.specs.rfc6750.BearerTokenValidator`.
@@ -71,10 +73,13 @@ class ResourceProtector(_ResourceProtector):
             @functools.wraps(f)
             def decorated(*args, **kwargs):
                 try:
-                    token = self.validate_request(
-                        scope, request.method, request.full_path,
-                        request.data, request.headers
+                    request = BearerRequest(
+                        _req.method,
+                        _req.full_path,
+                        _req.data,
+                        _req.headers
                     )
+                    token = self.validate_request(scope, request)
                     token_authenticated.send(self, token=token)
                     g._oauth2_token_ = token
                 except OAuth2Error as error:

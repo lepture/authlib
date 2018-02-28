@@ -20,7 +20,7 @@ class BearerTokenValidator(object):
     def __init__(self, realm=None):
         self.realm = realm
 
-    def request_invalid(self, method, uri, body, headers):
+    def request_invalid(self, request):
         raise NotImplementedError()
 
     def token_revoked(self, token):
@@ -37,10 +37,10 @@ class BearerTokenValidator(object):
         resource_scopes = set(scope_to_list(scope))
         return not token_scopes.issuperset(resource_scopes)
 
-    def __call__(self, token, scope, method, uri, body, headers):
+    def __call__(self, token, scope, request):
         if not token:
             raise InvalidTokenError(realm=self.realm)
-        if self.request_invalid(method, uri, body, headers):
+        if self.request_invalid(request):
             raise InvalidRequestError()
         if self.token_expired(token):
             raise InvalidTokenError(realm=self.realm)
