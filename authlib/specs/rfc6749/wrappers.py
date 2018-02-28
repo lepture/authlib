@@ -71,3 +71,11 @@ class OAuth2Request(object):
     @property
     def grant_type(self):
         return self.data.get('grant_type')
+
+
+class TokenRequest(object):
+    def __init__(self, method, uri, body=None, headers=None):
+        self.method = method
+        self.uri = uri
+        self.body = body
+        self.headers = headers or {}

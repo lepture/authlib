@@ -2,10 +2,9 @@ import functools
 from flask import g, Response, json
 from flask import request as _req
 from werkzeug.local import LocalProxy
-from authlib.specs.rfc6749 import OAuth2Error
+from authlib.specs.rfc6749 import OAuth2Error, TokenRequest
 from authlib.specs.rfc6749 import ResourceProtector as _ResourceProtector
 from authlib.specs.rfc6750 import BearerTokenValidator as _BearerValidator
-from authlib.specs.rfc6750 import BearerRequest
 from .signals import token_authenticated
 
 
@@ -73,7 +72,7 @@ class ResourceProtector(_ResourceProtector):
             @functools.wraps(f)
             def decorated(*args, **kwargs):
                 try:
-                    request = BearerRequest(
+                    request = TokenRequest(
                         _req.method,
                         _req.full_path,
                         _req.data,

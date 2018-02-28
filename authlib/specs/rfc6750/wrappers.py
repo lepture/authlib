@@ -82,11 +82,3 @@ class BearerToken(object):
         if scope:
             token['scope'] = scope
         return token
-
-
-class BearerRequest(object):
-    def __init__(self, method, uri, body=None, headers=None):
-        self.method = method
-        self.uri = uri
-        self.body = body
-        self.headers = headers or {}
