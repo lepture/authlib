@@ -79,7 +79,7 @@ class Client(object):
         replace any netloc part of the request argument's uri attribute
         value.
 
-        .. _`section 3.4.1.2`: http://tools.ietf.org/html/rfc5849#section-3.4.1.2
+        .. _`section 3.4.1.2`: https://tools.ietf.org/html/rfc5849#section-3.4.1.2
         """
         sign = self.SIGNATURE_METHODS.get(self.signature_method)
         if not sign:

@@ -55,7 +55,7 @@ class IDToken(object):
         `RFC 3339`_ for details regarding date/times in general and UTC in
         particular.
 
-        .. _`RFC 3339`: http://tools.ietf.org/html/rfc3339
+        .. _`RFC 3339`: https://tools.ietf.org/html/rfc3339
         """
         return self.token['exp']
 
@@ -109,7 +109,7 @@ class IDToken(object):
         may be context-specific. The acr value is a case sensitive string.
 
         .. _`ISO/IEC 29115`: https://www.iso.org/standard/45138.html
-        .. _`RFC 6711`: http://tools.ietf.org/html/rfc6711
+        .. _`RFC 6711`: https://tools.ietf.org/html/rfc6711
         """
         return self.token.get('acr')
 

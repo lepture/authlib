@@ -42,10 +42,10 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
         /authorize?response_type=code&client_id=s6BhdRkqt3&state=xyz
         &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb
 
-    .. _`Section 2.2`: http://tools.ietf.org/html/rfc6749#section-2.2
-    .. _`Section 3.1.2`: http://tools.ietf.org/html/rfc6749#section-3.1.2
-    .. _`Section 3.3`: http://tools.ietf.org/html/rfc6749#section-3.3
-    .. _`section 10.12`: http://tools.ietf.org/html/rfc6749#section-10.12
+    .. _`Section 2.2`: https://tools.ietf.org/html/rfc6749#section-2.2
+    .. _`Section 3.1.2`: https://tools.ietf.org/html/rfc6749#section-3.1.2
+    .. _`Section 3.3`: https://tools.ietf.org/html/rfc6749#section-3.3
+    .. _`section 10.12`: https://tools.ietf.org/html/rfc6749#section-10.12
     """
     params = [
         ('response_type', response_type),
@@ -86,7 +86,7 @@ def prepare_token_request(grant_type, body='', redirect_uri=None, **kwargs):
         grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA
         &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb
 
-    .. _`Section 4.1.1`: http://tools.ietf.org/html/rfc6749#section-4.1.1
+    .. _`Section 4.1.1`: https://tools.ietf.org/html/rfc6749#section-4.1.1
     .. _`Section 4.1.3`: https://tools.ietf.org/html/rfc6749#section-4.1.3
     """
     params = [('grant_type', grant_type)]

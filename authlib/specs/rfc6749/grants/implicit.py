@@ -108,7 +108,7 @@ class ImplicitGrant(RedirectAuthGrant):
                 &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb HTTP/1.1
             Host: server.example.com
 
-        .. _`Section 4.2.1`: http://tools.ietf.org/html/rfc6749#section-4.2.1
+        .. _`Section 4.2.1`: https://tools.ietf.org/html/rfc6749#section-4.2.1
         """
         # ignore validate for response_type, since it is validated by
         # check_authorization_endpoint
@@ -175,7 +175,7 @@ class ImplicitGrant(RedirectAuthGrant):
         example, returning an HTML page that includes a 'continue' button
         with an action linked to the redirection URI.
 
-        .. _`Section 4.2.2`: http://tools.ietf.org/html/rfc6749#section-4.2.2
+        .. _`Section 4.2.2`: https://tools.ietf.org/html/rfc6749#section-4.2.2
 
         :param grant_user: if resource owner granted the request, pass this
             resource owner, otherwise pass None.

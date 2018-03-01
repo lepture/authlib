@@ -98,7 +98,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         an authorization decision (by asking the resource owner or by
         establishing approval via other means).
 
-        .. _`Section 4.1.1`: http://tools.ietf.org/html/rfc6749#section-4.1.1
+        .. _`Section 4.1.1`: https://tools.ietf.org/html/rfc6749#section-4.1.1
         """
         # ignore validate for response_type, since it is validated by
         # check_authorization_endpoint
@@ -156,7 +156,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
             Location: https://client.example.com/cb?code=SplxlOBeZQQYbYS6WxSbIA
                    &state=xyz
 
-        .. _`Section 4.1.2`: http://tools.ietf.org/html/rfc6749#section-4.1.2
+        .. _`Section 4.1.2`: https://tools.ietf.org/html/rfc6749#section-4.1.2
 
         :param grant_user: if resource owner granted the request, pass this
             resource owner, otherwise pass None.
@@ -217,7 +217,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
             grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA
             &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb
 
-        .. _`Section 4.1.3`: http://tools.ietf.org/html/rfc6749#section-4.1.3
+        .. _`Section 4.1.3`: https://tools.ietf.org/html/rfc6749#section-4.1.3
         """
         # ignore validate for grant_type, since it is validated by
         # check_token_endpoint
@@ -284,7 +284,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
 
         :returns: (status_code, body, headers)
 
-        .. _`Section 4.1.4`: http://tools.ietf.org/html/rfc6749#section-4.1.4
+        .. _`Section 4.1.4`: https://tools.ietf.org/html/rfc6749#section-4.1.4
         """
         client = self.request.client
         authorization_code = self.request.credential

@@ -6,7 +6,7 @@
 
     This module contains methods related to `section 3.5`_ of the OAuth 1.0a spec.
 
-    .. _`section 3.5`: http://tools.ietf.org/html/rfc5849#section-3.5
+    .. _`section 3.5`: https://tools.ietf.org/html/rfc5849#section-3.5
 """
 from __future__ import absolute_import, unicode_literals
 
@@ -34,8 +34,8 @@ def prepare_headers(oauth_params, headers=None, realm=None):
             oauth_version="1.0"
 
 
-    .. _`section 3.5.1`: http://tools.ietf.org/html/rfc5849#section-3.5.1
-    .. _`RFC2617`: http://tools.ietf.org/html/rfc2617
+    .. _`section 3.5.1`: https://tools.ietf.org/html/rfc5849#section-3.5.1
+    .. _`RFC2617`: https://tools.ietf.org/html/rfc2617
     """
     headers = headers or {}
 
@@ -48,7 +48,7 @@ def prepare_headers(oauth_params, headers=None, realm=None):
     # 4.  The OPTIONAL "realm" parameter MAY be added and interpreted per
     #     `RFC2617 section 1.2`_.
     #
-    # .. _`RFC2617 section 1.2`: http://tools.ietf.org/html/rfc2617#section-1.2
+    # .. _`RFC2617 section 1.2`: https://tools.ietf.org/html/rfc2617#section-1.2
     if realm:
         # NOTE: realm should *not* be escaped
         header_parameters = 'realm="{}", '.format(realm) + header_parameters
@@ -65,8 +65,8 @@ def _append_params(oauth_params, params):
 
     Per `section 3.5.2`_ and `3.5.3`_ of the spec.
 
-    .. _`section 3.5.2`: http://tools.ietf.org/html/rfc5849#section-3.5.2
-    .. _`3.5.3`: http://tools.ietf.org/html/rfc5849#section-3.5.3
+    .. _`section 3.5.2`: https://tools.ietf.org/html/rfc5849#section-3.5.2
+    .. _`3.5.3`: https://tools.ietf.org/html/rfc5849#section-3.5.3
 
     """
     merged = list(params)
@@ -84,7 +84,7 @@ def prepare_form_encoded_body(oauth_params, body):
 
     Per `section 3.5.2`_ of the spec.
 
-    .. _`section 3.5.2`: http://tools.ietf.org/html/rfc5849#section-3.5.2
+    .. _`section 3.5.2`: https://tools.ietf.org/html/rfc5849#section-3.5.2
 
     """
     # append OAuth params to the existing body
@@ -96,7 +96,7 @@ def prepare_request_uri_query(oauth_params, uri):
 
     Per `section 3.5.3`_ of the spec.
 
-    .. _`section 3.5.3`: http://tools.ietf.org/html/rfc5849#section-3.5.3
+    .. _`section 3.5.3`: https://tools.ietf.org/html/rfc5849#section-3.5.3
 
     """
     # append OAuth params to the existing set of query components
