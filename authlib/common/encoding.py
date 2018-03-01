@@ -1,3 +1,4 @@
+import base64
 from requests.compat import is_py2
 
 if is_py2:
@@ -28,3 +29,16 @@ def to_unicode(x, charset='utf-8', errors='strict', allow_none_charset=False):
     if charset is None and allow_none_charset:
         return x
     return x.decode(charset, errors)
+
+
+def urlsafe_b64decode(s):
+    rem = len(s) % 4
+
+    if rem > 0:
+        s += b'=' * (4 - rem)
+
+    return base64.urlsafe_b64decode(s)
+
+
+def urlsafe_b64encode(input):
+    return base64.urlsafe_b64encode(input).replace(b'=', b'')
