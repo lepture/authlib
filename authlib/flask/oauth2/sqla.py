@@ -12,6 +12,9 @@ class OAuth2ClientMixin(ClientMixin):
     default_redirect_uri = Column(Text, nullable=False, default='')
     scope = Column(Text, nullable=False, default='')
 
+    def __repr__(self):
+        return '<Client: {}>'.format(self.client_id)
+
     @classmethod
     def get_by_client_id(cls, client_id):
         # TODO: remove in version 0.7

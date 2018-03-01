@@ -1,9 +1,12 @@
+import logging
 from authlib.common.urls import add_params_to_uri
 from .base import RedirectAuthGrant
 from ..errors import (
     UnauthorizedClientError,
     AccessDeniedError,
 )
+
+log = logging.getLogger(__name__)
 
 
 class ImplicitGrant(RedirectAuthGrant):
@@ -112,6 +115,7 @@ class ImplicitGrant(RedirectAuthGrant):
 
         # The implicit grant type is optimized for public clients
         client = self.authenticate_token_endpoint_client()
+        log.debug('Validate authorization request of {!r}'.format(client))
 
         if not client.check_response_type(self.RESPONSE_TYPE):
             raise UnauthorizedClientError(
@@ -185,6 +189,7 @@ class ImplicitGrant(RedirectAuthGrant):
                 scope=self.request.scope,
                 include_refresh_token=False
             )
+            log.debug('Grant token {!r} to {!r}'.format(token, client))
             self.create_access_token(token, client, grant_user)
             params = [
                 ('access_token', token['access_token']),

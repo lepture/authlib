@@ -1,9 +1,12 @@
+import logging
 from .base import BaseGrant
 from ..errors import (
     UnauthorizedClientError,
     InvalidRequestError,
     InvalidGrantError,
 )
+
+log = logging.getLogger(__name__)
 
 
 class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
@@ -83,6 +86,7 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
         # ignore validate for grant_type, since it is validated by
         # check_token_endpoint
         client = self.authenticate_token_endpoint_client()
+        log.debug('Validate token request of {!r}'.format(client))
 
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError()
@@ -97,6 +101,7 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
                 'Missing "password" in request.',
             )
 
+        log.debug('Authenticate user of {!r}'.format(params['username']))
         user = self.authenticate_user(
             params['username'],
             params['password']
@@ -141,6 +146,7 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
             client, self.GRANT_TYPE,
             scope=self.request.scope,
         )
+        log.debug('Issue token {!r} to {!r}'.format(token, client))
         self.create_access_token(token, client, user)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 

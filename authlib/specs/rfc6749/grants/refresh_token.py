@@ -10,7 +10,7 @@
     :copyright: (c) 2017 by Hsiaoming Yang.
     :license: LGPLv3, see LICENSE for more details.
 """
-
+import logging
 from .base import BaseGrant
 from ..util import scope_to_list
 from ..errors import (
@@ -18,6 +18,7 @@ from ..errors import (
     InvalidScopeError,
     UnauthorizedClientError,
 )
+log = logging.getLogger(__name__)
 
 
 class RefreshTokenGrant(BaseGrant):
@@ -68,6 +69,7 @@ class RefreshTokenGrant(BaseGrant):
         # client that was issued client credentials (or with other
         # authentication requirements)
         client = self.authenticate_token_endpoint_client()
+        log.debug('Validate token request of {!r}'.format(client))
 
         if not client.has_client_secret():
             raise UnauthorizedClientError()
@@ -117,6 +119,7 @@ class RefreshTokenGrant(BaseGrant):
             expires_in=expires_in,
             scope=scope,
         )
+        log.debug('Issue token {!r} to {!r}'.format(token, client))
         self.create_access_token(token, client, credential)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 

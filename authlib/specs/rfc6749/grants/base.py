@@ -27,7 +27,6 @@ class BaseGrant(object):
     def __init__(self, request, query_client, token_generator):
         self.request = request
         self.redirect_uri = request.redirect_uri
-        self.scopes = scope_to_list(request.scope)
         self.query_client = query_client
         self.token_generator = token_generator
         self._clients = {}
@@ -78,7 +77,7 @@ class BaseGrant(object):
         return client
 
     def validate_requested_scope(self, client):
-        scopes = self.scopes
+        scopes = scope_to_list(self.request.scope)
         if scopes and not client.check_requested_scopes(set(scopes)):
             raise InvalidScopeError(state=self.request.state)
 

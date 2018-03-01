@@ -1,3 +1,4 @@
+import logging
 from authlib.common.urls import add_params_to_uri
 from .base import RedirectAuthGrant
 from ..errors import (
@@ -6,6 +7,8 @@ from ..errors import (
     InvalidRequestError,
     AccessDeniedError,
 )
+
+log = logging.getLogger(__name__)
 
 
 class AuthorizationCodeGrant(RedirectAuthGrant):
@@ -100,6 +103,8 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         # ignore validate for response_type, since it is validated by
         # check_authorization_endpoint
         client_id = self.request.client_id
+        log.debug('Validate authorization request of {!r}'.format(client_id))
+
         if client_id is None:
             raise InvalidClientError(
                 state=self.request.state,
@@ -219,6 +224,8 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
 
         # authenticate the client if client authentication is included
         client = self.authenticate_token_endpoint_client()
+
+        log.debug('Validate token request of {!r}'.format(client))
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError()
 
@@ -238,6 +245,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
             )
 
         # validate redirect_uri parameter
+        log.debug('Validate token redirect_uri of {!r}'.format(client))
         redirect_uri = self.request.redirect_uri
         _redirect_uri = authorization_code.get_redirect_uri()
         original_redirect_uri = _redirect_uri or None
@@ -288,6 +296,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
             scope=scope,
             include_refresh_token=client.has_client_secret(),
         )
+        log.debug('Issue token {!r} to {!r}'.format(token, client))
         self.create_access_token(token, client, authorization_code)
         self.delete_authorization_code(authorization_code)
         return 200, token, self.TOKEN_RESPONSE_HEADER
