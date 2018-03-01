@@ -15,10 +15,7 @@ import hashlib
 import hmac
 from authlib.common.urls import urlparse
 from authlib.common.encoding import to_unicode, to_bytes
-from .util import (
-    escape, unescape,
-    safe_string_equals,
-)
+from .util import escape, unescape
 
 SIGNATURE_HMAC_SHA1 = "HMAC-SHA1"
 SIGNATURE_RSA_SHA1 = "RSA-SHA1"
@@ -376,7 +373,7 @@ def verify_hmac_sha1(request):
     base_string = generate_signature_base_string(request)
     sig = hmac_sha1_signature(
         base_string, request.client_secret, request.token_secret)
-    return safe_string_equals(sig, request.signature)
+    return hmac.compare_digest(sig, request.signature)
 
 
 def verify_rsa_sha1(request):
@@ -390,4 +387,4 @@ def verify_rsa_sha1(request):
 def verify_plaintext(request):
     """Verify a PLAINTEXT signature."""
     sig = plaintext_signature(request.client_secret, request.token_secret)
-    return safe_string_equals(sig, request.signature)
+    return hmac.compare_digest(sig, request.signature)
