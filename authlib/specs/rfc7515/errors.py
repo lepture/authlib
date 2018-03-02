@@ -17,3 +17,7 @@ class DecodeError(JWSError):
 
 class UnsupportedAlgorithmError(JWSError):
     error = 'unsupported_algorithm'
+
+
+class BadSignatureError(JWSError):
+    error = 'bad_signature'

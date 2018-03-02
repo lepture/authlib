@@ -1,4 +1,5 @@
 import base64
+import struct
 from requests.compat import is_py2
 
 if is_py2:
@@ -32,13 +33,42 @@ def to_unicode(x, charset='utf-8', errors='strict', allow_none_charset=False):
 
 
 def urlsafe_b64decode(s):
-    rem = len(s) % 4
-
-    if rem > 0:
-        s += b'=' * (4 - rem)
-
+    s += b'=' * (-len(s) % 4)
     return base64.urlsafe_b64decode(s)
 
 
-def urlsafe_b64encode(input):
-    return base64.urlsafe_b64encode(input).replace(b'=', b'')
+def urlsafe_b64encode(s):
+    return base64.urlsafe_b64encode(s).rstrip(b'=')
+
+
+_int64_struct = struct.Struct('>Q')
+_int_to_bytes = _int64_struct.pack
+_bytes_to_int = _int64_struct.unpack
+
+
+def int_to_bytes(num, length=None):
+    if num == 0:
+        s = b'\x00'
+    else:
+        s = _int_to_bytes(num).lstrip(b'\x00')
+    if length:
+        if length < len(s):
+            raise TypeError('Odd-length string')
+        return b'\x00' * (length - len(s)) + s
+    return s
+
+
+def bytes_to_int(byte_str):
+    return _bytes_to_int(byte_str.rjust(8, b'\x00'))[0]
+
+
+def base64_to_int(s):
+    data = urlsafe_b64decode(to_bytes(s, charset='ascii'))
+    buf = struct.unpack('%sB' % len(data), data)
+    return int(''.join(["%02x" % byte for byte in buf]), 16)
+
+
+def int_to_base64(num):
+    if num < 0:
+        raise ValueError('Must be a positive integer')
+    return urlsafe_b64encode(int_to_bytes(num))

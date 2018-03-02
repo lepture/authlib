@@ -2,7 +2,11 @@ import binascii
 import json
 from collections import Mapping
 from authlib.common.encoding import urlsafe_b64decode
-from .errors import DecodeError, UnsupportedAlgorithmError
+from .errors import (
+    DecodeError,
+    UnsupportedAlgorithmError,
+    BadSignatureError,
+)
 
 
 class JWS(object):
@@ -27,6 +31,12 @@ class JWS(object):
         # Note that the payload can be any content and need not
         # be a representation of a JSON object
         return header, payload, verified
+
+    def decode(self, s, key):
+        header, payload, verified = self.verify(s, key)
+        if verified:
+            return payload
+        raise BadSignatureError()
 
 
 def extract(s):

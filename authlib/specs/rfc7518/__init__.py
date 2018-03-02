@@ -10,3 +10,4 @@
 """
 
 from .jws import JWS_ALGORITHMS
+from .jwk import JWK_ALGORITHMS

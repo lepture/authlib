@@ -8,7 +8,6 @@
     .. _`Section 3`: https://tools.ietf.org/html/rfc7518#section-3
 """
 
-import binascii
 import hmac
 import hashlib
 from cryptography.hazmat.primitives import hashes
@@ -27,7 +26,11 @@ from cryptography.hazmat.primitives.asymmetric.utils import (
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.backends import default_backend
 from cryptography.exceptions import InvalidSignature
-from authlib.common.encoding import to_bytes
+from authlib.common.encoding import (
+    to_bytes,
+    int_to_bytes,
+    bytes_to_int,
+)
 
 
 class BaseAlgorithm(object):
@@ -171,33 +174,18 @@ JWS_ALGORITHMS = {
 }
 
 
-def number_to_bytes(num, num_bytes):
-    padded_hex = '%0*x' % (2 * num_bytes, num)
-    big_endian = binascii.a2b_hex(padded_hex.encode('ascii'))
-    return big_endian
-
-
-def bytes_to_number(string):
-    return int(binascii.b2a_hex(string), 16)
-
-
 def der_to_raw_signature(der_sig, curve):
-    num_bits = curve.key_size
-    num_bytes = (num_bits + 7) // 8
-
+    length = (curve.key_size + 7) // 8
     r, s = decode_dss_signature(der_sig)
-
-    return number_to_bytes(r, num_bytes) + number_to_bytes(s, num_bytes)
+    return int_to_bytes(r, length) + int_to_bytes(s, length)
 
 
 def raw_to_der_signature(raw_sig, curve):
-    num_bits = curve.key_size
-    num_bytes = (num_bits + 7) // 8
+    length = (curve.key_size + 7) // 8
 
-    if len(raw_sig) != 2 * num_bytes:
+    if len(raw_sig) != 2 * length:
         raise ValueError('Invalid signature')
 
-    r = bytes_to_number(raw_sig[:num_bytes])
-    s = bytes_to_number(raw_sig[num_bytes:])
-
+    r = bytes_to_int(raw_sig[:length])
+    s = bytes_to_int(raw_sig[length:])
     return encode_dss_signature(r, s)
