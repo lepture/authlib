@@ -1,7 +1,7 @@
 import binascii
 import json
 from collections import Mapping
-from authlib.common.encoding import urlsafe_b64decode
+from authlib.common.encoding import to_bytes, urlsafe_b64decode
 from .errors import (
     DecodeError,
     UnsupportedAlgorithmError,
@@ -10,9 +10,9 @@ from .errors import (
 
 
 class JWS(object):
-    def __init__(self, algorithms):
+    def __init__(self, algorithms, load_key=None):
         self._algorithms = algorithms
-        self._load_verify_key = None
+        self.load_key = load_key
 
     def verify(self, s, key):
         header, payload, signing_input, signature = extract(s)
@@ -21,8 +21,8 @@ class JWS(object):
         if alg not in self._algorithms:
             raise UnsupportedAlgorithmError()
 
-        if self._load_verify_key:
-            key = self._load_verify_key(key, header)
+        if self.load_key:
+            key = self.load_key(key, header)
 
         algorithm = self._algorithms[alg]
         key = algorithm.prepare_verify_key(key)
@@ -41,6 +41,7 @@ class JWS(object):
 
 def extract(s):
     try:
+        s = to_bytes(s)
         signing_input, signature_segment = s.rsplit(b'.', 1)
         header_segment, payload_segment = signing_input.split(b'.', 1)
     except ValueError:

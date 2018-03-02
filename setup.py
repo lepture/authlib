@@ -5,7 +5,7 @@
 from setuptools import setup, find_packages
 from authlib.consts import version, homepage
 
-crypto_require = ['cryptography', 'pyjwt>=1.0.0']
+crypto_require = ['cryptography']
 
 
 def fread(filename):

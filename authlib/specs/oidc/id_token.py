@@ -309,7 +309,7 @@ def parse_id_token(id_token, key):
                 * a set/list/tuple of JWK
     :return: (token, header)
     """
-    payload, header, valid = jws.parse(id_token, key)
+    header, payload, valid = jws.verify(id_token, key)
     if not valid:
         raise IDTokenError('Invalid signature')
     token = json.loads(payload.decode('utf-8'))
