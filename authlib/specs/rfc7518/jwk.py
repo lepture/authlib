@@ -23,12 +23,10 @@ from authlib.common.encoding import (
 
 
 class OCTAlgorithm(JWKAlgorithm):
-    @staticmethod
-    def loads(obj):
+    def loads(self, obj):
         return urlsafe_b64decode(to_bytes(obj['k']))
 
-    @staticmethod
-    def dumps(s):
+    def dumps(self, s):
         return json.dumps({
             'k': to_unicode(urlsafe_b64encode(to_bytes(s))),
             'kty': 'oct'
@@ -36,15 +34,13 @@ class OCTAlgorithm(JWKAlgorithm):
 
 
 class RSAAlgorithm(JWKAlgorithm):
-    @staticmethod
-    def loads_other_primes_info(obj):
+    def loads_other_primes_info(self, obj):
         raise NotImplementedError()
 
-    @staticmethod
-    def loads_private_key(obj):
+    def loads_private_key(self, obj):
         if 'oth' in obj:
             # https://tools.ietf.org/html/rfc7518#section-6.3.2.7
-            return RSAAlgorithm.loads_other_primes_info(obj)
+            return self.loads_other_primes_info(obj)
 
         props = ['p', 'q', 'dp', 'dq', 'qi']
         props_found = [prop in obj for prop in props]
@@ -85,24 +81,21 @@ class RSAAlgorithm(JWKAlgorithm):
 
         return numbers.private_key(default_backend())
 
-    @staticmethod
-    def loads_public_key(obj):
+    def loads_public_key(self, obj):
         numbers = RSAPublicNumbers(
             base64_to_int(obj['e']), base64_to_int(obj['n'])
         )
         return numbers.public_key(default_backend())
 
-    @staticmethod
-    def loads(obj):
+    def loads(self, obj):
         if 'd' in obj and 'e' in obj and 'n' in obj:
-            return RSAAlgorithm.loads_private_key(obj)
+            return self.loads_private_key(obj)
         elif 'n' in obj and 'e' in obj:
-            return RSAAlgorithm.loads_public_key(obj)
+            return self.loads_public_key(obj)
         else:
             raise ValueError('Not a public or private key')
 
-    @staticmethod
-    def dumps_private_key(key):
+    def dumps_private_key(self, key):
         numbers = key.private_numbers()
         return {
             'kty': 'RSA',
@@ -117,8 +110,7 @@ class RSAAlgorithm(JWKAlgorithm):
             'qi': to_unicode(int_to_base64(numbers.iqmp))
         }
 
-    @staticmethod
-    def dumps_public_key(key):
+    def dumps_public_key(self, key):
         numbers = key.public_numbers()
         return {
             'kty': 'RSA',
@@ -127,28 +119,25 @@ class RSAAlgorithm(JWKAlgorithm):
             'e': to_unicode(int_to_base64(numbers.e))
         }
 
-    @staticmethod
-    def dumps(key):
+    def dumps(self, key):
         if getattr(key, 'private_numbers', None):
-            return RSAAlgorithm.dumps_private_key(key)
+            return self.dumps_private_key(key)
         elif getattr(key, 'verify', None):
-            return RSAAlgorithm.dumps_public_key(key)
+            return self.dumps_public_key(key)
         else:
             raise ValueError('Not a public or private key')
 
 
 class ECAlgorithm(JWKAlgorithm):
-    @staticmethod
-    def loads(obj):
+    def loads(self, obj):
         raise NotImplementedError
 
-    @staticmethod
-    def dumps(s):
+    def dumps(self, s):
         raise NotImplementedError
 
 
 JWK_ALGORITHMS = {
-    'oct': OCTAlgorithm,
-    'RSA': RSAAlgorithm,
-    'EC': ECAlgorithm
+    'oct': OCTAlgorithm(),
+    'RSA': RSAAlgorithm(),
+    'EC': ECAlgorithm(),
 }

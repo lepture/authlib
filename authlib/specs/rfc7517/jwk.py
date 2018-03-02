@@ -1,11 +1,9 @@
 
 class JWKAlgorithm(object):
-    @staticmethod
-    def loads(obj):
+    def loads(self, obj):
         raise NotImplementedError
 
-    @staticmethod
-    def dumps(s):
+    def dumps(self, s):
         raise NotImplementedError
 
 
