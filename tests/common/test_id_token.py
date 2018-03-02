@@ -52,5 +52,11 @@ class OAuthClientTest(unittest.TestCase):
         token = verify_id_token(response, JWK_RSA_PUB_KEY)
         self.assertIsInstance(token, CodeIDToken)
 
+        token = verify_id_token(response, [JWK_RSA_PUB_KEY])
+        self.assertIsInstance(token, CodeIDToken)
+
+        token = verify_id_token(response, {'keys': [JWK_RSA_PUB_KEY]})
+        self.assertIsInstance(token, CodeIDToken)
+
     def test_validate_id_token(self):
         self.assertRaises(ValueError, lambda: validate_id_token({}, 'n'))

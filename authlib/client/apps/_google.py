@@ -45,7 +45,7 @@ def _get_google_jwk_set(client):
     global GOOGLE_JWK_SET
     if not GOOGLE_JWK_SET:
         resp = client.get(GOOGLE_JWK_URL, withhold_token=True)
-        GOOGLE_JWK_SET = resp.json()['keys']
+        GOOGLE_JWK_SET = resp.json()
     return GOOGLE_JWK_SET
 
 
