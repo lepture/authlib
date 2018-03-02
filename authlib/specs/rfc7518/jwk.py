@@ -19,10 +19,19 @@ from authlib.common.encoding import (
     urlsafe_b64encode, urlsafe_b64decode,
     base64_to_int, int_to_base64
 )
-from .errors import InvalidKeyError
 
 
-class OCTAlgorithm(object):
+class BaseAlgorithm(object):
+    @staticmethod
+    def loads(obj):
+        raise NotImplementedError
+
+    @staticmethod
+    def dumps(s):
+        raise NotImplementedError
+
+
+class OCTAlgorithm(BaseAlgorithm):
     @staticmethod
     def loads(obj):
         return urlsafe_b64decode(to_bytes(obj['k']))
@@ -35,7 +44,7 @@ class OCTAlgorithm(object):
         })
 
 
-class RSAAlgorithm(object):
+class RSAAlgorithm(BaseAlgorithm):
     @staticmethod
     def loads_other_primes_info(obj):
         raise NotImplementedError()
@@ -51,7 +60,7 @@ class RSAAlgorithm(object):
         any_props_found = any(props_found)
 
         if any_props_found and not all(props_found):
-            raise InvalidKeyError('RSA key must include all parameters if any are present besides d')
+            raise ValueError('RSA key must include all parameters if any are present besides d')
 
         public_numbers = RSAPublicNumbers(
             base64_to_int(obj['e']), base64_to_int(obj['n'])
@@ -99,7 +108,7 @@ class RSAAlgorithm(object):
         elif 'n' in obj and 'e' in obj:
             return RSAAlgorithm.loads_public_key(obj)
         else:
-            raise InvalidKeyError('Not a public or private key')
+            raise ValueError('Not a public or private key')
 
     @staticmethod
     def dumps_private_key(key):
@@ -134,10 +143,21 @@ class RSAAlgorithm(object):
         elif getattr(key, 'verify', None):
             return RSAAlgorithm.dumps_public_key(key)
         else:
-            raise InvalidKeyError('Not a public or private key')
+            raise ValueError('Not a public or private key')
+
+
+class ECAlgorithm(BaseAlgorithm):
+    @staticmethod
+    def loads(obj):
+        raise NotImplementedError
+
+    @staticmethod
+    def dumps(s):
+        raise NotImplementedError
 
 
 JWK_ALGORITHMS = {
     'oct': OCTAlgorithm,
     'RSA': RSAAlgorithm,
+    'EC': ECAlgorithm
 }
