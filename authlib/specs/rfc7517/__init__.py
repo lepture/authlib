@@ -1,1 +1,1 @@
-from .jwk import JWK
+from .jwk import JWK, JWKAlgorithm

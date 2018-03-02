@@ -11,6 +11,20 @@ from .errors import (
 )
 
 
+class JWSAlgorithm(object):
+    def prepare_sign_key(self, key):
+        raise NotImplementedError
+
+    def prepare_verify_key(self, key):
+        raise NotImplementedError
+
+    def sign(self, msg, key):
+        raise NotImplementedError
+
+    def verify(self, msg, key, sig):
+        raise NotImplementedError
+
+
 class JWS(object):
     def __init__(self, algorithms, load_key=None):
         self._algorithms = algorithms

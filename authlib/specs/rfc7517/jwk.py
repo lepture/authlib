@@ -1,4 +1,14 @@
 
+class JWKAlgorithm(object):
+    @staticmethod
+    def loads(obj):
+        raise NotImplementedError
+
+    @staticmethod
+    def dumps(s):
+        raise NotImplementedError
+
+
 class JWK(object):
     def __init__(self, algorithms):
         self._algorithms = algorithms

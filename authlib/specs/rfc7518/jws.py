@@ -26,6 +26,7 @@ from cryptography.hazmat.primitives.asymmetric.utils import (
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.backends import default_backend
 from cryptography.exceptions import InvalidSignature
+from authlib.specs.rfc7515 import JWSAlgorithm
 from authlib.common.encoding import (
     to_bytes,
     int_to_bytes,
@@ -33,21 +34,7 @@ from authlib.common.encoding import (
 )
 
 
-class BaseAlgorithm(object):
-    def prepare_sign_key(self, key):
-        raise NotImplementedError
-
-    def prepare_verify_key(self, key):
-        raise NotImplementedError
-
-    def sign(self, msg, key):
-        raise NotImplementedError
-
-    def verify(self, msg, key, sig):
-        raise NotImplementedError
-
-
-class HMACAlgorithm(BaseAlgorithm):
+class HMACAlgorithm(JWSAlgorithm):
     def __init__(self, hash_alg):
         self.hash_alg = hash_alg
 
@@ -65,7 +52,7 @@ class HMACAlgorithm(BaseAlgorithm):
         return hmac.compare_digest(sig, self.sign(msg, key))
 
 
-class RSAAlgorithm(BaseAlgorithm):
+class RSAAlgorithm(JWSAlgorithm):
     def __init__(self, hash_alg):
         self.hash_alg = hash_alg
 
@@ -96,7 +83,7 @@ class RSAAlgorithm(BaseAlgorithm):
             return False
 
 
-class ECAlgorithm(BaseAlgorithm):
+class ECAlgorithm(JWSAlgorithm):
     def __init__(self, hash_alg):
         self.hash_alg = hash_alg
 

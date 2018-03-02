@@ -14,6 +14,7 @@ from cryptography.hazmat.primitives.asymmetric.rsa import (
     rsa_recover_prime_factors, rsa_crt_dmp1, rsa_crt_dmq1, rsa_crt_iqmp
 )
 from cryptography.hazmat.backends import default_backend
+from authlib.specs.rfc7517 import JWKAlgorithm
 from authlib.common.encoding import (
     to_bytes, to_unicode,
     urlsafe_b64encode, urlsafe_b64decode,
@@ -21,17 +22,7 @@ from authlib.common.encoding import (
 )
 
 
-class BaseAlgorithm(object):
-    @staticmethod
-    def loads(obj):
-        raise NotImplementedError
-
-    @staticmethod
-    def dumps(s):
-        raise NotImplementedError
-
-
-class OCTAlgorithm(BaseAlgorithm):
+class OCTAlgorithm(JWKAlgorithm):
     @staticmethod
     def loads(obj):
         return urlsafe_b64decode(to_bytes(obj['k']))
@@ -44,7 +35,7 @@ class OCTAlgorithm(BaseAlgorithm):
         })
 
 
-class RSAAlgorithm(BaseAlgorithm):
+class RSAAlgorithm(JWKAlgorithm):
     @staticmethod
     def loads_other_primes_info(obj):
         raise NotImplementedError()
@@ -146,7 +137,7 @@ class RSAAlgorithm(BaseAlgorithm):
             raise ValueError('Not a public or private key')
 
 
-class ECAlgorithm(BaseAlgorithm):
+class ECAlgorithm(JWKAlgorithm):
     @staticmethod
     def loads(obj):
         raise NotImplementedError
