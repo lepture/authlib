@@ -9,4 +9,5 @@
     https://tools.ietf.org/html/rfc7519
 """
 
-from .jwt import JWT, JWTClaim
+from .jwt import JWT
+from .claim import JWTClaim
