@@ -84,18 +84,14 @@ There are hooks for OAuthClient, and flask integration has registered them
 all for you. However, you need to configure cache and database access.
 
 Cache is used for temporary information, such as request token, state and
-callback uri. We use the :class:`~authlib.flask.cache.Cache` as the
-backend. To specify a certain cache type, config with::
+callback uri. A ``cache`` interface MUST have methods:
 
-    OAUTH_CLIENT_CACHE_TYPE = '{{ cache_type }}'
+- ``.get(key)``
+- ``.set(key, value, expires=None)``
 
-Find more configuration on :ref:`flask_cache`. Please note, the
-``config_prefix`` is::
-
-    OAUTH_CLIENT
-
-For database, we need to define two functions: ``fetch_token`` and ``update_token``.
-It would be something like::
+We need to ``fetch_token`` from database for later requests. If OAuth login is
+what you want ONLY, you don't need ``fetch_token`` at all. Here is an example
+on database schema design::
 
     class OAuth1Token(db.Model)
         user_id = Column(Integer, nullable=False)
@@ -104,12 +100,11 @@ It would be something like::
         oauth_token = Column(String(48), nullable=False)
         oauth_token_secret = Column(String(48))
 
-        def to_dict(self):
+        def to_token(self):
             return dict(
                 oauth_token=self.access_token,
                 oauth_token_secret=self.alt_token,
             )
-
 
     class OAuth2Token(db.Model):
         user_id = Column(Integer, nullable=False)
@@ -120,7 +115,7 @@ It would be something like::
         refresh_token = Column(String(48))
         expires_at = Column(Integer, default=0)
 
-        def to_dict(self):
+        def to_token(self):
             return dict(
                 access_token=self.access_token,
                 token_type=self.token_type,
@@ -128,9 +123,98 @@ It would be something like::
                 expires_at=self.expires_at,
             )
 
+To send requests on behalf of the user, you need to save user's access token
+into database after ``authorize_access_token``. And then use the access token
+with ``fetch_token`` from database.
+
+Implement the Server
+~~~~~~~~~~~~~~~~~~~~
+
+Let's take Twitter as an example, we need to define routes for login and
+authorization::
+
+    from flask import url_for, render_template
+
+    @app.route('/login')
+    def login():
+        redirect_uri = url_for('authorize', _external=True)
+        return oauth.twitter.authorize_redirect(redirect_uri)
+
+    @app.route('/authorize')
+    def authorize():
+        token = oauth.twitter.authorize_access_token()
+        # this is a pseudo method, you need to implement it yourself
+        OAuth1Token.save(current_user, token)
+        return redirect(url_for('twitter_profile'))
+
+    @app.route('/profile')
+    def twitter_profile():
+        resp = oauth.twitter.get('account/verify_credentials.json')
+        profile = resp.json()
+        return render_template('profile.html', profile=profile)
+
+There will be an issue with ``/profile`` since you our registry don't know
+current user's Twitter access token. We need to design a ``fetch_token``,
+and grant it to the registry::
+
+    def fetch_twitter_token():
+        item = OAuth1Token.query.filter_by(
+            name='twitter', user_id=current_user.id
+        ).first()
+        return item.to_token()
+
+    # we can registry this ``fetch_token`` with oauth.register
+    oauth.register(
+        'twitter',
+        fetch_token=fetch_twitter_token,  # register fetch_token
+        client_id='Twitter Consumer Key',
+        client_secret='Twitter Consumer Secret',
+        request_token_url='https://api.twitter.com/oauth/request_token',
+        request_token_params=None,
+        access_token_url='https://api.twitter.com/oauth/access_token',
+        access_token_params=None,
+        refresh_token_url=None,
+        authorize_url='https://api.twitter.com/oauth/authenticate',
+        api_base_url='https://api.twitter.com/1.1/',
+        client_kwargs=None,
+    )
+
+Since the OAuth registry can contain many services, it would be good enough
+to share some common methods instead of defining them one by one. Here are
+some hints::
+
+    from flask import url_for, render_template
+
+    @app.route('/login/<name>')
+    def login(name):
+        client = oauth.create_client(name)
+        redirect_uri = url_for('authorize', name=name, _external=True)
+        return client.authorize_redirect(redirect_uri)
+
+    @app.route('/authorize/<name>')
+    def authorize(name):
+        client = oauth.create_client(name)
+        token = client.authorize_access_token()
+        if name in OAUTH1_SERVICES:
+            # this is a pseudo method, you need to implement it yourself
+            OAuth1Token.save(current_user, token)
+        else:
+            # this is a pseudo method, you need to implement it yourself
+            OAuth2Token.save(current_user, token)
+        return redirect(url_for('profile', name=name))
+
+    @app.route('/profile/<name>')
+    def profile(name):
+        client = oauth.create_client(name)
+        resp = oauth.twitter.get(get_profile_url(name))
+        profile = resp.json()
+        return render_template('profile.html', profile=profile)
+
+We can share a ``fetch_token`` method at OAuth registry level when
+initialization. Define a common ``fetch_token``::
 
     def fetch_token(name):
-        if name == 'twitter':
+        if name in OAUTH1_SERVICES:
             item = OAuth1Token.query.filter_by(
                 name=name, user_id=current_user.id
             ).first()
@@ -139,78 +223,60 @@ It would be something like::
                 name=name, user_id=current_user.id
             ).first()
         if item:
-            return item.to_dict()
+            return item.to_token()
 
-    def update_token(name, token):
-        if name == 'twitter':
-            item = OAuth1Token.query.filter_by(
-                name=name, user_id=current_user.id
-            ).first()
-            if not item:
-                item = OAuth1Token(name=name, user_id=current_user.id)
-
-            item.oauth_token = token['oauth_token']
-            item.oauth_token_secret = token['oauth_token_secret']
-        else:
-            item = OAuth2Token.query.filter_by(
-                name=name, user_id=current_user.id
-            ).first()
-            if not item:
-                item = OAuth2Token(name=name, user_id=current_user.id)
-            item.token_type = token.get('token_type', 'bearer')
-            item.access_token = token.get('access_token')
-            item.refresh_token = token.get('refresh_token')
-            item.expires_at = token.get('expires_at')
-        db.session.add(item)
-        db.session.commit()
-        return item
-
-You need to register this **fetch_token** and **update_token** in the registry::
-
-    oauth = OAuth(app, fetch_token=fetch_token, update_token=update_token)
+    # pass ``fetch_token``
+    oauth = OAuth(app, fetch_token=fetch_token)
 
     # or init app later
-    oauth = OAuth(fetch_token=fetch_token, update_token=update_token)
+    oauth = OAuth(fetch_token=fetch_token)
     oauth.init_app(app)
 
     # or init everything later
     oauth = OAuth()
-    oauth.init_app(app, fetch_token=fetch_token, update_token=update_token)
+    oauth.init_app(app, fetch_token=fetch_token)
 
-**update_token** is optional.
-
-Implement the Server
-~~~~~~~~~~~~~~~~~~~~
-
-Now it's time to make everything works. We need routes for log in and
-authorization::
-
-    from flask import Blueprint
-
-    bp = Blueprint(__name__, 'auth')
-
-    @bp.route('/login')
-    def login():
-        redirect_uri = url_for('.authorize', _external=True)
-        return oauth.twitter.authorize_redirect(redirect_uri)
-
-    @bp.route('/authorize')
-    def authorize():
-        token = oauth.twitter.authorize_access_token()
-        # this is a pseudo method, you need to implement it yourself
-        MyTokenModel.save(token)
-        return redirect('/profile')
-
-The only methods you need to call are :meth:`~RemoteApp.authorize_redirect`
-and :meth:`~RemoteApp.authorize_access_token`. When you have obtained access
-token, make requests with your remote app::
-
-    >>> resp = oauth.twitter.get('account/verify_credentials.json')
-    >>> print(resp.json())
+With this common ``fetch_token`` in OAuth, you don't need to design the method
+for each services one by one.
 
 .. note::
    Authlib has a playground example which is implemented in Flask. Check it at
    https://github.com/authlib/playground
+
+Auto Refresh Token
+~~~~~~~~~~~~~~~~~~
+
+In OAuth 2, there is a concept of ``refresh_token``, Authlib can auto refresh
+access token when it is expired. If the services you are using don't issue any
+``refresh_token`` at all, you don't need to do anything.
+
+Just like ``fetch_token``, we can define a ``update_token`` method for each
+remote app or sharing it in OAuth registry::
+
+    def update_token(name, token):
+        item = OAuth2Token.query.filter_by(
+            name=name, user_id=current_user.id
+        ).first()
+        if not item:
+            item = OAuth2Token(name=name, user_id=current_user.id)
+        item.token_type = token.get('token_type', 'bearer')
+        item.access_token = token.get('access_token')
+        item.refresh_token = token.get('refresh_token')
+        item.expires_at = token.get('expires_at')
+        db.session.add(item)
+        db.session.commit()
+        return item
+
+    # pass ``update_token``
+    oauth = OAuth(app, update_token=update_token)
+
+    # or init app later
+    oauth = OAuth(update_token=update_token)
+    oauth.init_app(app)
+
+    # or init everything later
+    oauth = OAuth()
+    oauth.init_app(app, update_token=update_token)
 
 Django
 ------
@@ -294,26 +360,36 @@ Database Design
 Authlib Django client has no built-in database model. You need to design the
 Token model by yourself. This is designed by intention.
 
-Here are some hints on how to design your schema:
+Here are some hints on how to design your schema::
 
-1. in OAuth 1, token is structured as ``oauth_token`` and ``oauth_token_secret``.
-2. in OAuth 2, token is structured as ``access_token``, ``refresh_token`` and
-   ``expires_in``.
-
-To use a single model for OAuth 1 and OAuth 2, you can create::
-
-    class OAuthToken(models.Model):
-        # twitter, github, facebook, etc.
+    class OAuth1Token(models.Model):
         name = models.CharField(max_length=40)
-        # oauth1, bearer, mac, etc.
+        oauth_token = models.CharField(max_length=200)
+        oauth_token_secret = models.CharField(max_length=200)
+        # ...
+
+        def to_token(self):
+            return dict(
+                oauth_token=self.access_token,
+                oauth_token_secret=self.alt_token,
+            )
+
+    class OAuth2Token(models.Model):
+        name = models.CharField(max_length=40)
         token_type = models.CharField(max_length=20)
-        # oauth_token in OAuth 1, or access_token in OAuth 2
-        token = models.CharField(max_length=200)
-        # oauth_token_secret in OAuth 1, or refresh_token in OAuth 2
-        alt_token = models.CharField(max_length=200)
+        access_token = models.CharField(max_length=200)
+        refresh_token = models.CharField(max_length=200)
         # oauth 2 expires time
         expires_at = models.DateTimeField()
         # ...
+
+        def to_token(self):
+            return dict(
+                access_token=self.access_token,
+                token_type=self.token_type,
+                refresh_token=self.refresh_token,
+                expires_at=self.expires_at,
+            )
 
 .. note::
 
