@@ -34,6 +34,20 @@ from authlib.common.encoding import (
 )
 
 
+class NoneAlgorithm(JWSAlgorithm):
+    def prepare_sign_key(self, key):
+        return None
+
+    def prepare_verify_key(self, key):
+        return None
+
+    def sign(self, msg, key):
+        return b''
+
+    def verify(self, msg, key, sig):
+        return False
+
+
 class HMACAlgorithm(JWSAlgorithm):
     def __init__(self, hash_alg):
         self.hash_alg = hash_alg
@@ -65,7 +79,6 @@ class RSAAlgorithm(JWSAlgorithm):
     def prepare_verify_key(self, key):
         if isinstance(key, RSAPublicKey):
             return key
-        # TODO: JWK Set
         key = to_bytes(key)
         if key.startswith(b'ssh-rsa'):
             return load_ssh_public_key(key, backend=default_backend())
@@ -146,6 +159,7 @@ class RSAPSSAlgorithm(RSAAlgorithm):
 
 
 JWS_ALGORITHMS = {
+    'none': NoneAlgorithm(),
     'HS256': HMACAlgorithm(hashlib.sha256),
     'HS384': HMACAlgorithm(hashlib.sha384),
     'HS512': HMACAlgorithm(hashlib.sha512),

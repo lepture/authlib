@@ -67,7 +67,7 @@ class JWS(object):
         key = algorithm.prepare_sign_key(key)
 
         header = json.dumps(header, separators=(',', ':'))
-        if isinstance(payload, dict):
+        if isinstance(payload, Mapping):
             payload = json.dumps(payload, separators=(',', ':'))
 
         segments = [
