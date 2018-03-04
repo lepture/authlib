@@ -10,4 +10,4 @@
 """
 
 from .jwt import JWT
-from .claim import JWTClaim
+from .claims import JWTClaims

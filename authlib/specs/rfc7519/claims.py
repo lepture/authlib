@@ -7,9 +7,9 @@ from .errors import (
 )
 
 
-class JWTClaim(dict):
+class JWTClaims(dict):
     def __init__(self, data, options=None):
-        super(JWTClaim, self).__init__(data)
+        super(JWTClaims, self).__init__(data)
         self.options = options or {}
 
     def validate(self, now=None, leeway=0):

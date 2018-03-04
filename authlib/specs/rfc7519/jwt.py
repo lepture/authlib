@@ -3,11 +3,11 @@ import datetime
 import calendar
 from authlib.specs.rfc7515 import JWS
 from authlib.common.encoding import to_unicode
-from .claim import JWTClaim
+from .claims import JWTClaims
 
 
 class JWT(JWS):
-    claim_cls = JWTClaim
+    claims_cls = JWTClaims
 
     def __init__(self, algorithms, load_key=None, claim_options=None):
         super(JWT, self).__init__(algorithms, load_key)
@@ -27,4 +27,4 @@ class JWT(JWS):
     def decode(self, s, key):
         bytes_payload = super(JWT, self).decode(s, key)
         payload = json.loads(to_unicode(bytes_payload))
-        return self.claim_cls(payload, self._claim_options)
+        return self.claims_cls(payload, self._claim_options)

@@ -3,7 +3,7 @@ class JWKAlgorithm(object):
     def loads(self, obj):
         raise NotImplementedError
 
-    def dumps(self, s):
+    def dumps(self, key):
         raise NotImplementedError
 
 
@@ -34,3 +34,7 @@ class JWK(object):
         for key in keys:
             if key['kid'] == kid:
                 return self._loads(key)
+
+    def dumps(self, key, kty):
+        alg = self._algorithms[kty]
+        return alg.dumps(key)
