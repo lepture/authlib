@@ -13,6 +13,10 @@ from cryptography.hazmat.primitives.asymmetric.rsa import (
     RSAPrivateNumbers, RSAPublicNumbers,
     rsa_recover_prime_factors, rsa_crt_dmp1, rsa_crt_dmq1, rsa_crt_iqmp
 )
+from cryptography.hazmat.primitives.asymmetric.ec import (
+    EllipticCurvePrivateNumbers, EllipticCurvePublicNumbers,
+    SECP256R1, SECP384R1, SECP521R1,
+)
 from cryptography.hazmat.backends import default_backend
 from authlib.specs.rfc7517 import JWKAlgorithm
 from authlib.common.encoding import (
@@ -99,7 +103,6 @@ class RSAAlgorithm(JWKAlgorithm):
         numbers = key.private_numbers()
         return {
             'kty': 'RSA',
-            'key_ops': ['sign'],
             'n': to_unicode(int_to_base64(numbers.public_numbers.n)),
             'e': to_unicode(int_to_base64(numbers.public_numbers.e)),
             'd': to_unicode(int_to_base64(numbers.d)),
@@ -114,7 +117,6 @@ class RSAAlgorithm(JWKAlgorithm):
         numbers = key.public_numbers()
         return {
             'kty': 'RSA',
-            'key_ops': ['verify'],
             'n': to_unicode(int_to_base64(numbers.n)),
             'e': to_unicode(int_to_base64(numbers.e))
         }
@@ -129,11 +131,71 @@ class RSAAlgorithm(JWKAlgorithm):
 
 
 class ECAlgorithm(JWKAlgorithm):
-    def loads(self, obj):
-        raise NotImplementedError
+    # http://tools.ietf.org/html/rfc4492#appendix-A
+    # https://tools.ietf.org/html/rfc7518#section-6.2.1.1
+    DSS_CURVES = {
+        'P-256': SECP256R1,
+        'P-384': SECP384R1,
+        'P-521': SECP521R1,
+    }
+    CURVES_DSS = {
+        SECP256R1.name: 'P-256',
+        SECP384R1.name: 'P-384',
+        SECP521R1.name: 'P-521',
+    }
 
-    def dumps(self, s):
-        raise NotImplementedError
+    @classmethod
+    def register_curve(cls, name, curve):
+        if name not in cls.DSS_CURVES:
+            cls.DSS_CURVES[name] = curve
+            cls.CURVES_DSS[curve.name] = name
+
+    def loads(self, obj):
+        for k in ['crv', 'x', 'y']:
+            if k not in obj:
+                raise ValueError('Not a elliptic curve key')
+
+        curve = self.DSS_CURVES[obj['crv']]()
+        public_numbers = EllipticCurvePublicNumbers(
+            base64_to_int(obj['x']),
+            base64_to_int(obj['y']),
+            curve,
+        )
+        if 'd' in obj:
+            private_numbers = EllipticCurvePrivateNumbers(
+                base64_to_int(obj['d']),
+                public_numbers
+            )
+            return private_numbers.private_key(default_backend())
+        return public_numbers.public_key(default_backend())
+
+    def dumps_private_key(self, key):
+        numbers = key.private_numbers()
+
+        return {
+            'kty': 'EC',
+            'crv': self.CURVES_DSS[numbers.curve.name],
+            'x': to_unicode(int_to_base64(numbers.public_numbers.x)),
+            'y': to_unicode(int_to_base64(numbers.public_numbers.y)),
+            'd': to_unicode(int_to_base64(numbers.d)),
+        }
+
+    def dumps_public_key(self, key):
+        numbers = key.public_numbers()
+        return {
+            'kty': 'EC',
+            'crv': self.CURVES_DSS[numbers.curve.name],
+            'x': to_unicode(int_to_base64(numbers.x)),
+            'y': to_unicode(int_to_base64(numbers.y))
+        }
+
+    def dumps(self, key):
+        if getattr(key, 'private_numbers', None):
+            return self.dumps_private_key(key)
+        elif getattr(key, 'verify', None):
+            return self.dumps_public_key(key)
+        else:
+            raise ValueError('Not a elliptic curve key')
 
 
 JWK_ALGORITHMS = {
