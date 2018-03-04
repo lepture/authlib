@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    authlib.specs.rfc7518.jws
+    authlib.specs.rfc7518.jwk
     ~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Cryptographic Algorithms for Keys per `Section 6`_.
@@ -72,7 +72,6 @@ class RSAAlgorithm(JWKAlgorithm):
             p, q = rsa_recover_prime_factors(
                 public_numbers.n, d, public_numbers.e
             )
-
             numbers = RSAPrivateNumbers(
                 d=d,
                 p=p,
@@ -87,7 +86,8 @@ class RSAAlgorithm(JWKAlgorithm):
 
     def loads_public_key(self, obj):
         numbers = RSAPublicNumbers(
-            base64_to_int(obj['e']), base64_to_int(obj['n'])
+            base64_to_int(obj['e']),
+            base64_to_int(obj['n'])
         )
         return numbers.public_key(default_backend())
 
