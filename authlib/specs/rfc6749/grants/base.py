@@ -9,7 +9,7 @@ from ..authenticate_client import authenticate_client
 class BaseGrant(object):
     AUTHORIZATION_ENDPOINT = False
     TOKEN_ENDPOINT = False
-    TOKEN_HTTP_METHODS = ['POST']
+    TOKEN_ENDPOINT_HTTP_METHODS = ['POST']
     TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic']
     RESPONSE_TYPE = None
     GRANT_TYPE = None

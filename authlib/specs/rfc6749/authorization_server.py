@@ -55,7 +55,7 @@ class AuthorizationServer(object):
         """
         for grant_cls in self._token_endpoints:
             if grant_cls.check_token_endpoint(request):
-                if request.method in grant_cls.TOKEN_HTTP_METHODS:
+                if request.method in grant_cls.TOKEN_ENDPOINT_HTTP_METHODS:
                     return grant_cls(
                         request, self.query_client, self.token_generator)
         raise InvalidGrantError()
