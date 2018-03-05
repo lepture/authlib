@@ -8,8 +8,6 @@
 """
 # flake8: noqa
 
-from .id_token import (
-    IDToken, IDTokenError,
-    CodeIDToken, ImplicitIDToken, HybridIDToken,
-    parse_id_token, validate_id_token, verify_id_token,
-)
+from .legacy import parse_id_token, verify_id_token
+from .claims import IDToken, CodeIDToken, ImplicitIDToken, HybridIDToken
+from .claims import get_claim_cls_by_response_type

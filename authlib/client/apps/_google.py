@@ -1,8 +1,5 @@
-try:
-    from authlib.specs.oidc import verify_id_token
-except ImportError:  # pragma: no cover
-    verify_id_token = None
-
+from authlib.specs.rfc7519 import JWT
+from authlib.specs.oidc import CodeIDToken
 from .base import AppFactory, UserInfo, patch_method, compatible_fetch_user
 
 GOOGLE_API_URL = 'https://www.googleapis.com/'
@@ -16,19 +13,21 @@ GOOGLE_REVOKE_URL = 'https://accounts.google.com/o/oauth2/revoke'
 GOOGLE_JWK_SET = None
 
 # the second one doesn't respect spec
-GOOGLE_ISSUES = ('https://accounts.google.com', 'accounts.google.com')
+GOOGLE_ISSUERS = ('https://accounts.google.com', 'accounts.google.com')
 
 
-def parse_id_token(client, response, nonce=None):
+def parse_openid(client, response, nonce=None):
     jwk_set = _get_google_jwk_set(client)
-
-    id_token = verify_id_token(
-        response, jwk_set,
-        issuers=GOOGLE_ISSUES,
-        client_id=client.client_id,
+    id_token = response['id_token']
+    claims_options = dict(
+        iss=GOOGLE_ISSUERS,
+        aud=client.client_id,
         nonce=nonce,
     )
-    return UserInfo(**id_token.token)
+    jwt = JWT(claims_options)
+    claims = jwt.decode(id_token, key=jwk_set, claims_cls=CodeIDToken)
+    claims.validate(leeway=120)
+    return UserInfo(**claims)
 
 
 def revoke_token(client):
@@ -58,5 +57,5 @@ google = AppFactory('google', {
 
 patch_method(google, revoke_token, 'revoke_token')
 patch_method(google, fetch_profile, 'profile')
-patch_method(google, parse_id_token, 'parse_openid')
+patch_method(google, parse_openid, 'parse_openid')
 compatible_fetch_user(google, fetch_profile)
