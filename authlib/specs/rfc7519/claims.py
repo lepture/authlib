@@ -8,7 +8,7 @@ from .errors import (
 
 
 class JWTClaims(dict):
-    available_claims = ['iss', 'sub', 'aud', 'exp', 'nbf', 'iat', 'jti']
+    REGISTERED_CLAIMS = ['iss', 'sub', 'aud', 'exp', 'nbf', 'iat', 'jti']
 
     def __init__(self, payload, header, options=None):
         super(JWTClaims, self).__init__(payload)
@@ -19,7 +19,7 @@ class JWTClaims(dict):
         try:
             return object.__getattribute__(self, key)
         except AttributeError as error:
-            if key in self.available_claims:
+            if key in self.REGISTERED_CLAIMS:
                 return self.get(key)
             raise error
 

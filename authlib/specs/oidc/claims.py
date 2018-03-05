@@ -12,8 +12,7 @@ BASE_AVAILABLE_CLAIMS = [
 
 
 class IDToken(JWTClaims):
-    required_claims = ['iss', 'sub', 'aud', 'exp', 'iat']
-    available_claims = BASE_AVAILABLE_CLAIMS
+    REQUIRED_CLAIMS = ['iss', 'sub', 'aud', 'exp', 'iat']
 
     def __init__(self, payload, header, options=None):
         if options is None:
@@ -24,7 +23,7 @@ class IDToken(JWTClaims):
         super(IDToken, self).__init__(payload, header, options)
 
     def validate(self, now=None, leeway=0):
-        for k in self.required_claims:
+        for k in self.REQUIRED_CLAIMS:
             if k not in self:
                 raise MissingClaimError(k)
 
@@ -65,8 +64,8 @@ class IDToken(JWTClaims):
 
 
 class CodeIDToken(IDToken):
-    response_types = ('code',)
-    available_claims = BASE_AVAILABLE_CLAIMS + ['at_hash']
+    RESPONSE_TYPES = ('code',)
+    REGISTERED_CLAIMS = BASE_AVAILABLE_CLAIMS + ['at_hash']
 
     def validate(self, now=None, leeway=0):
         super(CodeIDToken, self).validate(now=now, leeway=leeway)
@@ -77,9 +76,9 @@ class CodeIDToken(IDToken):
 
 
 class ImplicitIDToken(IDToken):
-    response_types = ('id_token', 'id_token token')
-    required_claims = ['iss', 'sub', 'aud', 'exp', 'iat', 'nonce']
-    available_claims = BASE_AVAILABLE_CLAIMS + ['at_hash']
+    RESPONSE_TYPES = ('id_token', 'id_token token')
+    REQUIRED_CLAIMS = ['iss', 'sub', 'aud', 'exp', 'iat', 'nonce']
+    REGISTERED_CLAIMS = BASE_AVAILABLE_CLAIMS + ['at_hash']
 
     def validate(self, now=None, leeway=0):
         super(ImplicitIDToken, self).validate(now=now, leeway=leeway)
@@ -90,8 +89,8 @@ class ImplicitIDToken(IDToken):
 
 
 class HybridIDToken(ImplicitIDToken):
-    response_types = ('code id_token', 'code token', 'code id_token token')
-    available_claims = BASE_AVAILABLE_CLAIMS + ['at_hash', 'c_hash']
+    RESPONSE_TYPES = ('code id_token', 'code token', 'code id_token token')
+    REGISTERED_CLAIMS = BASE_AVAILABLE_CLAIMS + ['at_hash', 'c_hash']
 
     def validate(self, now=None, leeway=0):
         super(HybridIDToken, self).validate(now=now, leeway=leeway)
@@ -108,5 +107,5 @@ class HybridIDToken(ImplicitIDToken):
 def get_claim_cls_by_response_type(response_type):
     claims_classes = (CodeIDToken, ImplicitIDToken, HybridIDToken)
     for claims_cls in claims_classes:
-        if response_type in claims_cls.response_types:
+        if response_type in claims_cls.RESPONSE_TYPES:
             return claims_cls
