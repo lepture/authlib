@@ -9,5 +9,5 @@
     https://tools.ietf.org/html/rfc7518
 """
 
-from .jws import JWS_ALGORITHMS
-from .jwk import JWK_ALGORITHMS
+from .jws_algorithms import JWS_ALGORITHMS
+from .jwk_algorithms import JWK_ALGORITHMS
