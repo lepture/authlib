@@ -11,3 +11,4 @@
 
 from .jwt import JWT
 from .claims import JWTClaims
+from .errors import *

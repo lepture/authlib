@@ -8,17 +8,22 @@ from .errors import (
 
 
 class JWTClaims(dict):
-    def __init__(self, data, options=None):
-        super(JWTClaims, self).__init__(data)
+    available_claims = ['iss', 'sub', 'aud', 'exp', 'nbf', 'iat', 'jti']
+
+    def __init__(self, payload, header, options=None):
+        super(JWTClaims, self).__init__(payload)
+        self.header = header
         self.options = options or {}
 
-    def validate(self, now=None, leeway=0):
-        required_claims = self.options.get('required_claims')
-        if required_claims:
-            for k in required_claims:
-                if k not in self:
-                    raise MissingClaimError(k)
+    def __getattr__(self, key):
+        try:
+            return object.__getattribute__(self, key)
+        except AttributeError as error:
+            if key in self.available_claims:
+                return self.get(key)
+            raise error
 
+    def validate(self, now=None, leeway=0):
         if now is None:
             now = int(time.time())
 
@@ -163,10 +168,11 @@ class JWTClaims(dict):
         sensitive string.  Use of this claim is OPTIONAL.
         """
         jti_option = self.options.get('jti')
-        if jti_option and 'jti' not in self:
-            raise MissingClaimError('jti')
+        if jti_option:
+            if 'jti' not in self:
+                raise MissingClaimError('jti')
 
-        if callable(jti_option):
-            # validate jti value
-            if not jti_option(self['jti']):
-                raise InvalidClaimError('jti')
+            if callable(jti_option):
+                # validate jti value
+                if not jti_option(self['jti']):
+                    raise InvalidClaimError('jti')

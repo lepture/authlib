@@ -51,7 +51,7 @@ class JWS(object):
     def decode(self, s, key):
         header, payload, verified = self.verify(s, key)
         if verified:
-            return payload
+            return header, payload
         raise BadSignatureError()
 
     def encode(self, header, payload, key):

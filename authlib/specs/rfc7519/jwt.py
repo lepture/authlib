@@ -25,6 +25,6 @@ class JWT(JWS):
         return super(JWT, self).encode(header, payload, key)
 
     def decode(self, s, key):
-        bytes_payload = super(JWT, self).decode(s, key)
+        header, bytes_payload = super(JWT, self).decode(s, key)
         payload = json.loads(to_unicode(bytes_payload))
-        return self.claims_cls(payload, self._claim_options)
+        return self.claims_cls(payload, header, self._claim_options)
