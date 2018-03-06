@@ -12,21 +12,28 @@ GOOGLE_AUTH_URL = (
 GOOGLE_REVOKE_URL = 'https://accounts.google.com/o/oauth2/revoke'
 GOOGLE_JWK_SET = None
 
-# the second one doesn't respect spec
-GOOGLE_ISSUERS = ('https://accounts.google.com', 'accounts.google.com')
+GOOGLE_CLAIMS_OPTIONS = {
+    "iss": {
+        "values": ['https://accounts.google.com', 'accounts.google.com']
+    }
+}
 
 
 def parse_openid(client, response, nonce=None):
     jwk_set = _get_google_jwk_set(client)
     id_token = response['id_token']
-    claims_options = dict(
-        iss=GOOGLE_ISSUERS,
-        aud=client.client_id,
+    claims_request = dict(
         nonce=nonce,
+        client_id=client.client_id,
         access_token=response['access_token']
     )
-    jwt = JWT(claims_options)
-    claims = jwt.decode(id_token, key=jwk_set, claims_cls=CodeIDToken)
+    jwt = JWT()
+    claims = jwt.decode(
+        id_token, key=jwk_set,
+        claims_cls=CodeIDToken,
+        claims_options=GOOGLE_CLAIMS_OPTIONS,
+        claims_request=claims_request,
+    )
     claims.validate(leeway=120)
     return UserInfo(**claims)
 

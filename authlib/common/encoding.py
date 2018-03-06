@@ -71,4 +71,4 @@ def base64_to_int(s):
 def int_to_base64(num):
     if num < 0:
         raise ValueError('Must be a positive integer')
-    return urlsafe_b64encode(int_to_bytes(num))
+    return to_unicode(urlsafe_b64encode(int_to_bytes(num)))

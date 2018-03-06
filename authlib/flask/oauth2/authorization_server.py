@@ -31,9 +31,9 @@ class AuthorizationServer(_AuthorizationServer):
         server = AuthorizationServer()
         server.init_app(app, query_client)
     """
-    def __init__(self, app=None, query_client=None):
+    def __init__(self, app=None, query_client=None, **config):
         query_client = _compatible_query_client(query_client)
-        super(AuthorizationServer, self).__init__(query_client, None)
+        super(AuthorizationServer, self).__init__(query_client, None, **config)
         self.revoke_token_endpoint = None
         self.app = app
         if app is not None:

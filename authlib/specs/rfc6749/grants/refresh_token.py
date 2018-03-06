@@ -115,7 +115,7 @@ class RefreshTokenGrant(BaseGrant):
 
         client = self.request.client
         expires_in = credential.get_expires_in()
-        token = self.token_generator(
+        token = self.generate_token(
             client, self.GRANT_TYPE,
             expires_in=expires_in,
             scope=scope,

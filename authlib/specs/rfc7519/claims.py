@@ -8,12 +8,30 @@ from .errors import (
 
 
 class JWTClaims(dict):
+    """
+        {
+            "iss": {
+                "essential": True,
+                "values": ["https://example.com", "https://example.org"]
+            },
+            "sub": {
+                "essential": True
+                "value": "248289761001"
+            },
+            "jti": {
+                "validate": validate_jti
+            }
+        }
+
+    http://openid.net/specs/openid-connect-core-1_0.html#IndividualClaimsRequests
+    """
     REGISTERED_CLAIMS = ['iss', 'sub', 'aud', 'exp', 'nbf', 'iat', 'jti']
 
-    def __init__(self, payload, header, options=None):
+    def __init__(self, payload, header, options=None, request=None):
         super(JWTClaims, self).__init__(payload)
         self.header = header
         self.options = options or {}
+        self.request = request or {}
 
     def __getattr__(self, key):
         try:
@@ -24,6 +42,8 @@ class JWTClaims(dict):
             raise error
 
     def validate(self, now=None, leeway=0):
+        self._validate_essential_claims()
+
         if now is None:
             now = int(time.time())
 
@@ -35,25 +55,36 @@ class JWTClaims(dict):
         self.validate_iat(now, leeway)
         self.validate_jti()
 
+    def _validate_essential_claims(self):
+        for k in self.options:
+            if self.options[k].get('essential') and k not in self:
+                raise MissingClaimError(k)
+
+    def _validate_claim_value(self, claim_name):
+        option = self.options.get(claim_name)
+        value = self.get(claim_name)
+        if not option or not value:
+            return
+
+        option_value = option.get('value')
+        if option_value and value != option_value:
+            raise InvalidClaimError(claim_name)
+
+        option_values = option.get('values')
+        if option_values and value not in option_values:
+            raise InvalidClaimError(claim_name)
+
+        validate = option.get('validate')
+        if validate and not validate(value):
+            raise InvalidClaimError(claim_name)
+
     def validate_iss(self):
         """The "iss" (issuer) claim identifies the principal that issued the
         JWT.  The processing of this claim is generally application specific.
         The "iss" value is a case-sensitive string containing a StringOrURI
         value.  Use of this claim is OPTIONAL.
         """
-        iss_option = self.options.get('iss')
-        if not iss_option:
-            return
-        iss = self.get('iss')
-        if not iss:
-            raise MissingClaimError('iss')
-
-        # if has iss
-        if isinstance(iss_option, (list, tuple)):
-            if iss not in iss_option:
-                raise InvalidClaimError('iss')
-        elif iss != iss_option:
-            raise InvalidClaimError('iss')
+        self._validate_claim_value('iss')
 
     def validate_sub(self):
         """The "sub" (subject) claim identifies the principal that is the
@@ -64,9 +95,7 @@ class JWTClaims(dict):
         "sub" value is a case-sensitive string containing a StringOrURI
         value.  Use of this claim is OPTIONAL.
         """
-        sub_option = self.options.get('sub')
-        if sub_option and 'sub' not in self:
-            raise MissingClaimError('sub')
+        self._validate_claim_value('sub')
 
     def validate_aud(self):
         """The "aud" (audience) claim identifies the recipients that the JWT is
@@ -82,18 +111,25 @@ class JWTClaims(dict):
         Use of this claim is OPTIONAL.
         """
         aud_option = self.options.get('aud')
-        if not aud_option:
+        aud = self.get('aud')
+        if not aud_option or not aud:
             return
 
-        if 'aud' not in self:
-            raise MissingClaimError('aud')
+        aud_values = aud_option.get('values')
+        if not aud_values:
+            aud_value = aud_option.get('value')
+            if aud_value:
+                aud_values = [aud_value]
+
+        if not aud_values:
+            return
 
         if isinstance(self['aud'], list):
             aud_list = self['aud']
         else:
             aud_list = [self['aud']]
 
-        if aud_option not in aud_list:
+        if not any([v in aud_list for v in aud_values]):
             raise InvalidClaimError('aud')
 
     def validate_exp(self, now, leeway):
@@ -105,11 +141,7 @@ class JWTClaims(dict):
         a few minutes, to account for clock skew.  Its value MUST be a number
         containing a NumericDate value.  Use of this claim is OPTIONAL.
         """
-        exp_option = self.options.get('exp', {})
         exp = self.get('exp')
-        if exp_option and not exp:
-            raise MissingClaimError('exp')
-
         if exp:
             if not isinstance(exp, int):
                 raise InvalidClaimError('exp')
@@ -125,11 +157,7 @@ class JWTClaims(dict):
         account for clock skew.  Its value MUST be a number containing a
         NumericDate value.  Use of this claim is OPTIONAL.
         """
-        nbf_option = self.options.get('nbf', {})
         nbf = self.get('nbf')
-        if nbf_option and not nbf:
-            raise MissingClaimError('nbf')
-
         if nbf:
             if not isinstance(nbf, int):
                 raise InvalidClaimError('nbf')
@@ -142,11 +170,7 @@ class JWTClaims(dict):
         value MUST be a number containing a NumericDate value.  Use of this
         claim is OPTIONAL.
         """
-        iat_option = self.options.get('iat')
         iat = self.get('iat')
-        if iat_option and not iat:
-            raise MissingClaimError('iat')
-
         if iat and not isinstance(iat, int):
             raise InvalidClaimError('iat')
 
@@ -160,12 +184,4 @@ class JWTClaims(dict):
         to prevent the JWT from being replayed.  The "jti" value is a case-
         sensitive string.  Use of this claim is OPTIONAL.
         """
-        jti_option = self.options.get('jti')
-        if jti_option:
-            if 'jti' not in self:
-                raise MissingClaimError('jti')
-
-            if callable(jti_option):
-                # validate jti value
-                if not jti_option(self['jti']):
-                    raise InvalidClaimError('jti')
+        self._validate_claim_value('jti')

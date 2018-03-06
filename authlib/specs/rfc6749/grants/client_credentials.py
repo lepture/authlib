@@ -97,7 +97,7 @@ class ClientCredentialsGrant(BaseGrant):
         :returns: (status_code, body, headers)
         """
         client = self.request.client
-        token = self.token_generator(
+        token = self.generate_token(
             client, self.GRANT_TYPE,
             scope=self.request.scope,
             include_refresh_token=False,

@@ -184,7 +184,7 @@ class ImplicitGrant(RedirectAuthGrant):
         state = self.request.state
         if grant_user:
             client = self.client
-            token = self.token_generator(
+            token = self.generate_token(
                 client, self.GRANT_TYPE,
                 scope=self.request.scope,
                 include_refresh_token=False

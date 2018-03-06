@@ -17,21 +17,10 @@ _REGISTERED_CLAIMS = [
 
 
 class IDToken(JWTClaims):
-    REQUIRED_CLAIMS = ['iss', 'sub', 'aud', 'exp', 'iat']
-
-    def __init__(self, payload, header, options=None):
-        if options is None:
-            options = {}
-        options.update({
-            'iat': True,
-        })
-        super(IDToken, self).__init__(payload, header, options)
+    ESSENTIAL_CLAIMS = ['iss', 'sub', 'aud', 'exp', 'iat']
 
     def validate(self, now=None, leeway=0):
-        for k in self.REQUIRED_CLAIMS:
-            if k not in self:
-                raise MissingClaimError(k)
-
+        self._validate_essential_claims()
         if now is None:
             now = int(time.time())
 
@@ -48,6 +37,12 @@ class IDToken(JWTClaims):
         self.validate_azp()
         self.validate_at_hash()
 
+    def _validate_essential_claims(self):
+        super(IDToken, self)._validate_essential_claims()
+        for k in self.ESSENTIAL_CLAIMS:
+            if k not in self:
+                raise MissingClaimError(k)
+
     def validate_auth_time(self):
         """Time when the End-User authentication occurred. Its value is a JSON
         number representing the number of seconds from 1970-01-01T0:0:0Z as
@@ -56,22 +51,50 @@ class IDToken(JWTClaims):
         REQUIRED; otherwise, its inclusion is OPTIONAL.
         """
         auth_time = self.get('auth_time')
-        if 'max_age' in self.options and not auth_time:
+        if self.request.get('max_age') and not auth_time:
             raise MissingClaimError('auth_time')
 
         if auth_time and not isinstance(auth_time, int):
             raise InvalidClaimError('auth_time')
 
     def validate_nonce(self):
-        nonce_option = self.options.get('nonce')
-        if nonce_option:
+        """String value used to associate a Client session with an ID Token,
+        and to mitigate replay attacks. The value is passed through unmodified
+        from the Authentication Request to the ID Token. If present in the ID
+        Token, Clients MUST verify that the nonce Claim Value is equal to the
+        value of the nonce parameter sent in the Authentication Request. If
+        present in the Authentication Request, Authorization Servers MUST
+        include a nonce Claim in the ID Token with the Claim Value being the
+        nonce value sent in the Authentication Request. Authorization Servers
+        SHOULD perform no other processing on nonce values used. The nonce
+        value is a case sensitive string.
+        """
+        nonce_value = self.request.get('nonce')
+        if nonce_value:
             if 'nonce' not in self:
                 raise MissingClaimError('nonce')
-            if nonce_option != self['nonce']:
+            if nonce_value != self['nonce']:
                 raise InvalidClaimError('nonce')
 
     def validate_acr(self):
-        pass
+        """OPTIONAL. Authentication Context Class Reference. String specifying
+        an Authentication Context Class Reference value that identifies the
+        Authentication Context Class that the authentication performed
+        satisfied. The value "0" indicates the End-User authentication did not
+        meet the requirements of `ISO/IEC 29115`_ level 1. Authentication
+        using a long-lived browser cookie, for instance, is one example where
+        the use of "level 0" is appropriate. Authentications with level 0
+        SHOULD NOT be used to authorize access to any resource of any monetary
+        value. An absolute URI or an `RFC 6711`_ registered name SHOULD be
+        used as the acr value; registered names MUST NOT be used with a
+        different meaning than that which is registered. Parties using this
+        claim will need to agree upon the meanings of the values used, which
+        may be context-specific. The acr value is a case sensitive string.
+
+        .. _`ISO/IEC 29115`: https://www.iso.org/standard/45138.html
+        .. _`RFC 6711`: https://tools.ietf.org/html/rfc6711
+        """
+        return self._validate_claim_value('acr')
 
     def validate_amr(self):
         """OPTIONAL. Authentication Methods References. JSON array of strings
@@ -83,9 +106,9 @@ class IDToken(JWTClaims):
         meanings of the values used, which may be context-specific. The amr
         value is an array of case sensitive strings.
         """
-        if 'amr' in self:
-            if not isinstance(self['amr'], list):
-                raise InvalidClaimError('amr')
+        amr = self.get('amr')
+        if amr and not isinstance(self['amr'], list):
+            raise InvalidClaimError('amr')
 
     def validate_azp(self):
         """OPTIONAL. Authorized party - the party to which the ID Token was
@@ -96,11 +119,21 @@ class IDToken(JWTClaims):
         as the sole audience. The azp value is a case sensitive string
         containing a StringOrURI value.
         """
+        aud = self.get('aud')
+        client_id = self.request.get('client_id')
+        required = False
+        if aud and client_id:
+            if isinstance(aud, list) and len(aud) == 1:
+                aud = aud[0]
+            if aud != client_id:
+                required = True
+
         azp = self.get('azp')
-        if azp:
-            aud_option = self.options.get('aud')
-            if aud_option and aud_option != azp:
-                raise InvalidClaimError('azp')
+        if required and not azp:
+            raise MissingClaimError('azp')
+
+        if azp and client_id and azp != client_id:
+            raise InvalidClaimError('azp')
 
     def validate_at_hash(self):
         """OPTIONAL. Access Token hash value. Its value is the base64url
@@ -111,7 +144,7 @@ class IDToken(JWTClaims):
         access_token value with SHA-256, then take the left-most 128 bits and
         base64url encode them. The at_hash value is a case sensitive string.
         """
-        access_token = self.options.get('access_token')
+        access_token = self.request.get('access_token')
         at_hash = self.get('at_hash')
         if at_hash and access_token:
             if not _verify_hash(at_hash, access_token, self.header['alg']):
@@ -125,7 +158,7 @@ class CodeIDToken(IDToken):
 
 class ImplicitIDToken(IDToken):
     RESPONSE_TYPES = ('id_token', 'id_token token')
-    REQUIRED_CLAIMS = ['iss', 'sub', 'aud', 'exp', 'iat', 'nonce']
+    ESSENTIAL_CLAIMS = ['iss', 'sub', 'aud', 'exp', 'iat', 'nonce']
     REGISTERED_CLAIMS = _REGISTERED_CLAIMS
 
     def validate_at_hash(self):
@@ -135,7 +168,7 @@ class ImplicitIDToken(IDToken):
         Token is issued, which is the case for the response_type value
         id_token.
         """
-        access_token = self.options.get('access_token')
+        access_token = self.request.get('access_token')
         if access_token and 'at_hash' not in self:
             raise MissingClaimError('at_hash')
         super(ImplicitIDToken, self).validate_at_hash()
@@ -161,7 +194,7 @@ class HybridIDToken(ImplicitIDToken):
         which is the case for the response_type values code id_token and code
         id_token token, this is REQUIRED; otherwise, its inclusion is OPTIONAL.
         """
-        code = self.options.get('code')
+        code = self.request.get('code')
         c_hash = self.get('c_hash')
         if code:
             if not c_hash:

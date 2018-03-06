@@ -290,7 +290,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         authorization_code = self.request.credential
 
         scope = authorization_code.get_scope()
-        token = self.token_generator(
+        token = self.generate_token(
             client,
             self.GRANT_TYPE,
             scope=scope,
@@ -360,8 +360,6 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
                     **token
                 )
                 item.save()
-                # if you want to add extra data into token
-                token['user_id'] = authorization_code.user_id
 
         :param token: A dict contains the token information
         :param client: Current client related to the token

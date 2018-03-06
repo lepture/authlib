@@ -30,7 +30,6 @@ class BaseGrant(object):
 
         self.server = server
         self.query_client = server.query_client
-        self.token_generator = server.token_generator
         self._clients = {}
         self._after_authenticate_client = None
 
@@ -41,6 +40,15 @@ class BaseGrant(object):
     @property
     def client(self):
         return self.get_client_by_id(self.request.client_id)
+
+    def generate_token(self, client, grant_type, expires_in=None,
+                       scope=None, include_refresh_token=True):
+        return self.server.token_generator(
+            client, grant_type,
+            expires_in=expires_in,
+            scope=scope,
+            include_refresh_token=include_refresh_token,
+        )
 
     def get_client_by_id(self, client_id):
         if client_id in self._clients:

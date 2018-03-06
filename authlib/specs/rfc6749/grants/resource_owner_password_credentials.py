@@ -142,7 +142,7 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
         """
         client = self.request.client
         user = self.request.grant_user
-        token = self.token_generator(
+        token = self.generate_token(
             client, self.GRANT_TYPE,
             scope=self.request.scope,
         )

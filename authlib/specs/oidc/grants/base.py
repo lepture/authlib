@@ -7,14 +7,13 @@ class OpenIDMixin(object):
 
     @classmethod
     def check_authorization_endpoint(cls, request):
-        return is_openid_request(request, cls.RESPONSE_TYPES)
-
-    def prepare_authorization_request(self):
-        # http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
-        self.request._data_keys.update({
-            'response_mode', 'nonce', 'display', 'prompt', 'max_age',
-            'ui_locales', 'id_token_hint', 'login_hint', 'acr_values'
-        })
+        if is_openid_request(request, cls.RESPONSE_TYPES):
+            # http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
+            request._data_keys.update({
+                'response_mode', 'nonce', 'display', 'prompt', 'max_age',
+                'ui_locales', 'id_token_hint', 'login_hint', 'acr_values'
+            })
+            return True
 
     def validate_authorization_redirect_uri(self, client):
         if not self.redirect_uri:
@@ -29,12 +28,20 @@ class OpenIDMixin(object):
             )
 
     def validate_nonce(self, required=False):
-        if not self.request.nonce:
+        nonce = self.request.nonce
+        if not nonce:
             if required:
                 raise InvalidRequestError(
                     'Missing "nonce" in request.'
                 )
             return True
+        if not hasattr(self.server, 'exists_nonce'):
+            raise RuntimeError(
+                'The "AuthorizationServer" MUST define '
+                'an "exists_nonce" method.'
+            )
+        if self.server.exists_nonce(nonce, self.request):
+            raise InvalidRequestError('Replay attack')
 
 
 def is_openid_request(request, response_types):

@@ -11,11 +11,12 @@ class AuthorizationServer(object):
         :class:`~authlib.specs.rfc6749.ClientMixin`.
     :param token_generator: A method to generate tokens.
     """
-    def __init__(self, query_client, token_generator):
+    def __init__(self, query_client, token_generator, **config):
         self.query_client = query_client
         self.token_generator = token_generator
-        self._authorization_endpoints = set()
-        self._token_endpoints = set()
+        self.config = config
+        self._authorization_endpoints = []
+        self._token_endpoints = []
 
     def register_grant_endpoint(self, grant_cls):
         """Register a grant class into the endpoint registry. Developers
@@ -31,9 +32,9 @@ class AuthorizationServer(object):
         :param grant_cls: a grant class.
         """
         if grant_cls.AUTHORIZATION_ENDPOINT:
-            self._authorization_endpoints.add(grant_cls)
+            self._authorization_endpoints.append(grant_cls)
         if grant_cls.TOKEN_ENDPOINT:
-            self._token_endpoints.add(grant_cls)
+            self._token_endpoints.append(grant_cls)
 
     def get_authorization_grant(self, request):
         """Find the authorization grant for current request.
