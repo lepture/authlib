@@ -111,9 +111,7 @@ class JWTClaims(dict):
             raise MissingClaimError('exp')
 
         if exp:
-            try:
-                int(exp)
-            except ValueError:
+            if not isinstance(exp, int):
                 raise InvalidClaimError('exp')
             if exp < (now - leeway):
                 raise ExpiredTokenError()
@@ -133,9 +131,7 @@ class JWTClaims(dict):
             raise MissingClaimError('nbf')
 
         if nbf:
-            try:
-                int(nbf)
-            except ValueError:
+            if not isinstance(nbf, int):
                 raise InvalidClaimError('nbf')
             if nbf > (now + leeway):
                 raise InvalidTokenError()
@@ -151,11 +147,8 @@ class JWTClaims(dict):
         if iat_option and not iat:
             raise MissingClaimError('iat')
 
-        if iat:
-            try:
-                int(iat)
-            except ValueError:
-                raise InvalidClaimError('iat')
+        if iat and not isinstance(iat, int):
+            raise InvalidClaimError('iat')
 
     def validate_jti(self):
         """The "jti" (JWT ID) claim provides a unique identifier for the JWT.

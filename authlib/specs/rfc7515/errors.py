@@ -15,6 +15,10 @@ class DecodeError(JWSError):
     error = 'decode_error'
 
 
+class MissingAlgorithmError(JWSError):
+    error = 'missing_algorithm'
+
+
 class UnsupportedAlgorithmError(JWSError):
     error = 'unsupported_algorithm'
 

@@ -6,6 +6,7 @@ from authlib.common.encoding import (
 )
 from .errors import (
     DecodeError,
+    MissingAlgorithmError,
     UnsupportedAlgorithmError,
     BadSignatureError,
 )
@@ -55,6 +56,9 @@ class JWS(object):
         raise BadSignatureError()
 
     def encode(self, header, payload, key):
+        if 'alg' not in header:
+            raise MissingAlgorithmError()
+
         alg = header['alg']
         if alg not in self._algorithms:
             raise UnsupportedAlgorithmError()

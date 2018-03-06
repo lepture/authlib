@@ -23,6 +23,7 @@ def parse_openid(client, response, nonce=None):
         iss=GOOGLE_ISSUERS,
         aud=client.client_id,
         nonce=nonce,
+        access_token=response['access_token']
     )
     jwt = JWT(claims_options)
     claims = jwt.decode(id_token, key=jwk_set, claims_cls=CodeIDToken)
