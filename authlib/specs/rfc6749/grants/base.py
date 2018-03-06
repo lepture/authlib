@@ -24,11 +24,13 @@ class BaseGrant(object):
         ('Pragma', 'no-cache'),
     ]
 
-    def __init__(self, request, query_client, token_generator):
+    def __init__(self, request, server):
         self.request = request
         self.redirect_uri = request.redirect_uri
-        self.query_client = query_client
-        self.token_generator = token_generator
+
+        self.server = server
+        self.query_client = server.query_client
+        self.token_generator = server.token_generator
         self._clients = {}
         self._after_authenticate_client = None
 
