@@ -43,34 +43,18 @@ class OAuth2Request(object):
         self.grant_user = None
         self.credential = None
         self.client = None
+        self._data_keys = {
+            'client_id', 'code', 'redirect_uri', 'scope', 'state',
+            'response_type', 'grant_type'
+        }
 
-    @property
-    def client_id(self):
-        return self.data.get('client_id')
-
-    @property
-    def code(self):
-        return self.data.get('code')
-
-    @property
-    def redirect_uri(self):
-        return self.data.get('redirect_uri')
-
-    @property
-    def scope(self):
-        return self.data.get('scope')
-
-    @property
-    def state(self):
-        return self.data.get('state')
-
-    @property
-    def response_type(self):
-        return self.data.get('response_type')
-
-    @property
-    def grant_type(self):
-        return self.data.get('grant_type')
+    def __getattr__(self, key):
+        try:
+            return object.__getattribute__(self, key)
+        except AttributeError as error:
+            if key in self._data_keys:
+                return self.data.get(key)
+            raise error
 
 
 class TokenRequest(object):

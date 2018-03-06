@@ -114,7 +114,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
             raise InvalidClientError(
                 state=self.request.state,
             )
-        if not client.check_response_type(self.RESPONSE_TYPE):
+        if not client.check_response_type(self.request.response_type):
             raise UnauthorizedClientError(
                 'The client is not authorized to request an authorization '
                 'code using this method',

@@ -1,12 +1,13 @@
 import time
 import hmac
 import hashlib
-from authlib.common.encoding import to_bytes, urlsafe_b64encode
+from authlib.common.encoding import to_bytes
 from authlib.specs.rfc7519 import JWTClaims
 from authlib.specs.rfc7519 import (
     MissingClaimError,
     InvalidClaimError,
 )
+from .util import create_half_hash
 
 _REGISTERED_CLAIMS = [
     'iss', 'sub', 'aud', 'exp', 'nbf', 'iat',
@@ -176,12 +177,10 @@ def get_claim_cls_by_response_type(response_type):
             return claims_cls
 
 
-def _verify_hash(signature, data, alg):
+def _verify_hash(signature, s, alg):
     hash_type = 'sha{}'.format(alg[2:])
     hash_method = getattr(hashlib, hash_type, None)
     if not hash_method:
         return True
-    data_digest = hash_method(to_bytes(data)).digest()
-    slice_index = int(len(data_digest) / 2)
-    hash_value = urlsafe_b64encode(data_digest[:slice_index])
+    hash_value = create_half_hash(s, hash_method)
     return hmac.compare_digest(hash_value, to_bytes(signature))

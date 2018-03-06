@@ -1,0 +1,7 @@
+from authlib.common.encoding import to_bytes, urlsafe_b64encode
+
+
+def create_half_hash(s, hash_alg):
+    data_digest = hash_alg(to_bytes(s)).digest()
+    slice_index = int(len(data_digest) / 2)
+    return urlsafe_b64encode(data_digest[:slice_index])

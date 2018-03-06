@@ -12,6 +12,8 @@ class JWT(JWS):
     def __init__(self, claims_options=None, algorithms=None, load_key=None):
         if algorithms is None:
             algorithms = JWS_ALGORITHMS
+        elif isinstance(algorithms, (tuple, list)):
+            algorithms = {k: JWS_ALGORITHMS[k] for k in algorithms}
         if load_key is None:
             load_key = _load_jwk
         super(JWT, self).__init__(algorithms, load_key)
