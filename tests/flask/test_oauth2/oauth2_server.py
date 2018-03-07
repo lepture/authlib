@@ -12,6 +12,7 @@ from authlib.flask.oauth2.sqla import (
     OAuth2TokenMixin,
     create_bearer_token_validator,
     create_query_client_func,
+    create_save_token_func,
 )
 from authlib.flask.oauth2 import (
     AuthorizationServer,
@@ -21,9 +22,7 @@ from authlib.flask.oauth2 import (
 from authlib.specs.rfc6749 import OAuth2Error
 from authlib.specs.rfc6749.grants import (
     AuthorizationCodeGrant as _AuthorizationCodeGrant,
-    ImplicitGrant as _ImplicitGrant,
     ResourceOwnerPasswordCredentialsGrant as _PasswordGrant,
-    ClientCredentialsGrant as _ClientCredentialsGrant,
     RefreshTokenGrant as _RefreshTokenGrant,
 )
 
@@ -52,7 +51,9 @@ class Client(db.Model, OAuth2ClientMixin):
     allowed_grant_types = db.Column(db.Text, default='')
 
     def check_response_type(self, response_type):
-        return response_type in self.allowed_response_types.split()
+        response_types = response_type.split()
+        allowed_types = self.allowed_response_types.split()
+        return all([t in allowed_types for t in response_types])
 
     def check_grant_type(self, grant_type):
         return grant_type in self.allowed_grant_types.split()
@@ -102,27 +103,8 @@ class AuthorizationCodeGrant(_AuthorizationCodeGrant):
         db.session.delete(authorization_code)
         db.session.commit()
 
-    def create_access_token(self, token, client, authorization_code):
-        item = Token(
-            client_id=client.client_id,
-            user_id=authorization_code.user_id,
-            **token
-        )
-        db.session.add(item)
-        db.session.commit()
-        # we can add more data into token
-        token['user_id'] = authorization_code.user_id
-
-
-class ImplicitGrant(_ImplicitGrant):
-    def create_access_token(self, token, client, grant_user):
-        item = Token(
-            client_id=client.client_id,
-            user_id=grant_user.get_user_id(),
-            **token
-        )
-        db.session.add(item)
-        db.session.commit()
+    def authenticate_authorization_code_user(self, authorization_code):
+        return User.query.get(authorization_code.user_id)
 
 
 class PasswordGrant(_PasswordGrant):
@@ -131,26 +113,6 @@ class PasswordGrant(_PasswordGrant):
         if user.check_password(password):
             return user
 
-    def create_access_token(self, token, client, user):
-        item = Token(
-            client_id=client.client_id,
-            user_id=user.get_user_id(),
-            **token
-        )
-        db.session.add(item)
-        db.session.commit()
-
-
-class ClientCredentialsGrant(_ClientCredentialsGrant):
-    def create_access_token(self, token, client):
-        item = Token(
-            client_id=client.client_id,
-            user_id=client.user_id,
-            **token
-        )
-        db.session.add(item)
-        db.session.commit()
-
 
 class RefreshTokenGrant(_RefreshTokenGrant):
     def authenticate_refresh_token(self, refresh_token):
@@ -158,20 +120,16 @@ class RefreshTokenGrant(_RefreshTokenGrant):
         if item and not item.is_refresh_token_expired():
             return item
 
-    def create_access_token(self, token, client, authenticated_token):
-        item = Token(
-            client_id=client.client_id,
-            user_id=authenticated_token.user_id,
-            **token
-        )
-        db.session.add(item)
-        db.session.delete(authenticated_token)
-        db.session.commit()
+    def authenticate_credential_user(self, credential):
+        return User.query.get(credential.user_id)
 
 
 def create_authorization_server(app):
     query_client = create_query_client_func(db.session, Client)
-    server = AuthorizationServer(app, query_client)
+    save_token = create_save_token_func(db.session, Token)
+    server = AuthorizationServer(
+        app, query_client=query_client, save_token=save_token
+    )
 
     @app.route('/oauth/authorize', methods=['GET', 'POST'])
     def authorize():

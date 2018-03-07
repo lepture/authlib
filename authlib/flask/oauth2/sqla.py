@@ -106,6 +106,28 @@ def create_query_client_func(session, model_class):
     return query_client
 
 
+def create_save_token_func(session, model_class):
+    """Create an ``save_token`` function that can be used in authorization
+    server.
+
+    :param session: SQLAlchemy session
+    :param model_class: Token class
+    """
+    def save_token(token, client, user):
+        if user:
+            user_id = user.get_user_id()
+        else:
+            user_id = 0
+        item = model_class(
+            client_id=client.client_id,
+            user_id=user_id,
+            **token
+        )
+        session.add(item)
+        session.commit()
+    return save_token
+
+
 def create_revocation_endpoint(session, model_class):
     """Create a revocation endpoint class with SQLAlchemy session
     and token model.

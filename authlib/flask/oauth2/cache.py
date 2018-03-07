@@ -18,7 +18,7 @@ class AuthorizationCode(dict):
 
 
 def create_authorization_code_grant(
-        cache, create_access_token, key_prefix='oauth2_code:'):
+        cache, authenticate_user, key_prefix='oauth2_code:'):
     key_tpl = key_prefix + '{}_{}'
 
     class CodeGrant(AuthorizationCodeGrant):
@@ -48,22 +48,22 @@ def create_authorization_code_grant(
             )
             cache.delete(key)
 
-        def create_access_token(self, token, client, authorization_code):
-            create_access_token(token, client, authorization_code)
+        def authenticate_authorization_code_user(self, authorization_code):
+            return authenticate_user(authorization_code)
 
     return CodeGrant
 
 
 def register_cache_authorization_code(
-        cache, authorization_server, create_access_token):
+        cache, authorization_server, authenticate_user):
     """Use cache for authorization code grant endpoint.
 
     :param cache: Cache instance.
     :param authorization_server: AuthorizationServer instance.
-    :param create_access_token: A function to create access_token.
+    :param authenticate_user: A function to authenticate user.
     """
     if isinstance(cache, Flask):
         cache = Cache(cache, config_prefix='OAUTH2_CODE')
     authorization_server.register_grant_endpoint(
-        create_authorization_code_grant(cache, create_access_token)
+        create_authorization_code_grant(cache, authenticate_user)
     )

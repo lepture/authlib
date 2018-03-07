@@ -1,6 +1,7 @@
+from authlib.specs.rfc6749.grants import ImplicitGrant
 from .oauth2_server import db, User, Client
 from .oauth2_server import TestCase
-from .oauth2_server import AuthorizationCodeGrant, ImplicitGrant
+from .oauth2_server import AuthorizationCodeGrant
 from .oauth2_server import create_authorization_server
 
 

@@ -1,10 +1,11 @@
 from flask import json
 from authlib.common.urls import urlparse, url_decode
 from authlib.flask.oauth2 import register_cache_authorization_code
-from .oauth2_server import db, User, Client, Token
+from .oauth2_server import db, User, Client
 from .oauth2_server import TestCase
 from .oauth2_server import AuthorizationCodeGrant
 from .oauth2_server import create_authorization_server
+from ..cache import SimpleCache
 
 
 class AuthorizationCodeTest(TestCase):
@@ -167,19 +168,9 @@ class AuthorizationCodeTest(TestCase):
 
 class CacheAuthorizationCodeTest(AuthorizationCodeTest):
     def register_grant_endpoint(self, server):
-        self.app.config.update({'OAUTH2_CODE_CACHE_TYPE': 'simple'})
 
-        def create_access_token(token, client, authorization_code):
-            item = Token(
-                client_id=client.client_id,
-                user_id=authorization_code.user_id,
-                **token
-            )
-            db.session.add(item)
-            db.session.commit()
-            # we can add more data into token
-            token['user_id'] = authorization_code.user_id
+        def authenticate_user(authorization_code):
+            return User.query.get(authorization_code.user_id)
 
-        register_cache_authorization_code(
-            self.app, server, create_access_token
-        )
+        cache = SimpleCache()
+        register_cache_authorization_code(cache, server, authenticate_user)
