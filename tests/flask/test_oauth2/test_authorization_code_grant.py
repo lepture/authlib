@@ -3,7 +3,7 @@ from authlib.common.urls import urlparse, url_decode
 from authlib.flask.oauth2 import register_cache_authorization_code
 from .oauth2_server import db, User, Client
 from .oauth2_server import TestCase
-from .oauth2_server import AuthorizationCodeGrant
+from .oauth2_server import AuthorizationCodeGrant, OpenIDCodeGrant
 from .oauth2_server import create_authorization_server
 from ..cache import SimpleCache
 
@@ -174,3 +174,8 @@ class CacheAuthorizationCodeTest(AuthorizationCodeTest):
 
         cache = SimpleCache()
         register_cache_authorization_code(cache, server, authenticate_user)
+
+
+class OpenIDCodeTest(TestCase):
+    def register_grant_endpoint(self, server):
+        server.register_grant_endpoint(OpenIDCodeGrant)

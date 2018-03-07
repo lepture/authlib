@@ -9,9 +9,10 @@
 """
 
 import logging
+from authlib.specs.rfc6749 import InvalidRequestError
 from authlib.specs.rfc6749.grants import AuthorizationCodeGrant
 from authlib.specs.rfc6749.util import scope_to_list
-from .base import OpenIDMixin, generate_id_token
+from .base import OpenIDMixin, generate_id_token, wrap_openid_request
 
 log = logging.getLogger(__name__)
 
@@ -28,11 +29,24 @@ class OpenIDCodeGrant(AuthorizationCodeGrant, OpenIDMixin):
         # OpenIDCodeGrant will act as AuthorizationCodeGrant
         return request.response_type == cls.RESPONSE_TYPE
 
+    def validate_authorization_redirect_uri(self, client):
+        if not self.redirect_uri:
+            raise InvalidRequestError(
+                'Missing "redirect_uri" in request.',
+            )
+
+        if not client.check_redirect_uri(self.redirect_uri):
+            raise InvalidRequestError(
+                'Invalid "redirect_uri" in request.',
+                state=self.request.state,
+            )
+
     def validate_authorization_request(self):
         super(OpenIDCodeGrant, self).validate_authorization_request()
-        scopes = scope_to_list(self.request.scope)
+        scopes = scope_to_list(self.request.scope) or []
         if 'openid' not in scopes:
             return
+        wrap_openid_request(self.request)
         # validate openid request
         self.validate_nonce(required=False)
 
@@ -42,7 +56,7 @@ class OpenIDCodeGrant(AuthorizationCodeGrant, OpenIDMixin):
 
     def process_token(self, token, client, user):
         scope = token.get('scope')
-        scopes = scope_to_list(scope)
+        scopes = scope_to_list(scope) or []
         if 'openid' not in scopes:
             # standard authorization code flow
             return token

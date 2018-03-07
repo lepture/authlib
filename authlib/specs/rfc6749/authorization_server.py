@@ -77,10 +77,12 @@ class AuthorizationServer(object):
             grant.validate_authorization_request()
             return grant.create_authorization_response(grant_user)
         except OAuth2Error as error:
-            params = error.get_body()
-            loc = add_params_to_uri(grant.redirect_uri, params)
-            headers = [('Location', loc)]
-            return 302, '', headers
+            if grant.redirect_uri:
+                params = error.get_body()
+                loc = add_params_to_uri(grant.redirect_uri, params)
+                headers = [('Location', loc)]
+                return 302, '', headers
+            return 400, dict(error.get_body()), error.get_headers()
 
     def create_valid_token_response(self, request):
         """Validate token request and create token response.

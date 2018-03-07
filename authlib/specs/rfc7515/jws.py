@@ -79,7 +79,7 @@ class JWS(object):
             urlsafe_b64encode(to_bytes(payload)),
         ]
         signing_input = b'.'.join(segments)
-        signature = algorithm.sign(signing_input, key)
+        signature = urlsafe_b64encode(algorithm.sign(signing_input, key))
         return b'.'.join([signing_input, signature])
 
 

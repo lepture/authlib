@@ -25,6 +25,9 @@ from authlib.specs.rfc6749.grants import (
     ResourceOwnerPasswordCredentialsGrant as _PasswordGrant,
     RefreshTokenGrant as _RefreshTokenGrant,
 )
+from authlib.specs.oidc.grants import (
+    OpenIDCodeGrant as _OpenIDCodeGrant
+)
 
 os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
 db = SQLAlchemy()
@@ -39,6 +42,11 @@ class User(db.Model):
 
     def check_password(self, password):
         return password != 'wrong'
+
+    def generate_openid_claims(self, claims):
+        profile = {'sub': str(self.id)}
+        # TODO
+        return profile
 
 
 class Client(db.Model, OAuth2ClientMixin):
@@ -79,7 +87,7 @@ class Token(db.Model, OAuth2TokenMixin):
         return expired_at < time.time()
 
 
-class AuthorizationCodeGrant(_AuthorizationCodeGrant):
+class CodeGrantMixin(object):
     def create_authorization_code(self, client, grant_user, request):
         code = generate_token(48)
         item = AuthorizationCode(
@@ -105,6 +113,14 @@ class AuthorizationCodeGrant(_AuthorizationCodeGrant):
 
     def authenticate_authorization_code_user(self, authorization_code):
         return User.query.get(authorization_code.user_id)
+
+
+class AuthorizationCodeGrant(CodeGrantMixin, _AuthorizationCodeGrant):
+    pass
+
+
+class OpenIDCodeGrant(CodeGrantMixin, _OpenIDCodeGrant):
+    pass
 
 
 class PasswordGrant(_PasswordGrant):

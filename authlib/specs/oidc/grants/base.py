@@ -13,23 +13,8 @@ class OpenIDMixin(object):
     def check_authorization_endpoint(cls, request):
         if is_openid_request(request, cls.RESPONSE_TYPES):
             # http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
-            request._data_keys.update({
-                'response_mode', 'nonce', 'display', 'prompt', 'max_age',
-                'ui_locales', 'id_token_hint', 'login_hint', 'acr_values'
-            })
+            wrap_openid_request(request)
             return True
-
-    def validate_authorization_redirect_uri(self, client):
-        if not self.redirect_uri:
-            raise InvalidRequestError(
-                'Missing "redirect_uri" in request.',
-            )
-
-        if not client.check_redirect_uri(self.redirect_uri):
-            raise InvalidRequestError(
-                'Invalid "redirect_uri" in request.',
-                state=self.request.state,
-            )
 
     def validate_nonce(self, required=False):
         nonce = self.request.nonce
@@ -53,9 +38,9 @@ class OpenIDMixin(object):
             claims = {}
         # OpenID Connect authorization code flow
         # TODO: define how to create user claims
-        profile = user.to_openid_claims(claims)
+        profile = user.generate_openid_claims(claims)
         if 'sub' not in profile:
-            profile['sub'] = user.get_user_id()
+            profile['sub'] = str(user.get_user_id())
         return profile
 
 
@@ -63,6 +48,13 @@ def is_openid_request(request, response_types):
     if request.response_type not in response_types:
         return False
     return 'openid' in scope_to_list(request.scope)
+
+
+def wrap_openid_request(request):
+    request._data_keys.update({
+        'response_mode', 'nonce', 'display', 'prompt', 'max_age',
+        'ui_locales', 'id_token_hint', 'login_hint', 'acr_values'
+    })
 
 
 SESSION_KEY_FORMAT = '_openid_{}'
@@ -90,15 +82,16 @@ def generate_id_token(token, profile, config, session, aud=None, code=None):
 
     # calculate at_hash
     alg = config.get('jwt_alg', 'HS256')
-    at_hash = create_half_hash(token['access_token'], alg)
+    at_hash = to_unicode(create_half_hash(token['access_token'], alg))
     payload['at_hash'] = at_hash
 
     # calculate c_hash
     if code:
-        payload['c_hash'] = create_half_hash(code, alg)
+        payload['c_hash'] = to_unicode(create_half_hash(code, alg))
 
     payload.update(profile)
     jwt = JWT(algorithms=[alg])
     header = {'alg': alg}
     key = config['jwt_key']
-    return to_unicode(jwt.encode(header, payload, key))
+    id_token = jwt.encode(header, payload, key)
+    return to_unicode(id_token)

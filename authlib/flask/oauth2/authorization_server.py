@@ -88,6 +88,14 @@ class AuthorizationServer(_AuthorizationServer):
 
         self.app = app
         self.generate_token = self.create_bearer_token_generator(app)
+        if app.config.get('OAUTH2_OPENID_ENABLED'):
+            self.init_openid_config(app)
+
+    def init_openid_config(self, app):
+        jwt_iss = app.config.get('OAUTH2_JWT_ISS', 'Authlib')
+        jwt_key = 'TODO'
+        self.config.setdefault('jwt_iss', jwt_iss)
+        self.config.setdefault('jwt_key', jwt_key)
 
     def create_expires_generator(self, app):
         """Create a generator function for generating ``expires_in`` value.
@@ -209,6 +217,10 @@ class AuthorizationServer(_AuthorizationServer):
         endpoint = self.revoke_token_endpoint(req, self.query_client)
         status, body, headers = endpoint.create_revocation_response()
         return Response(json.dumps(body), status=status, headers=headers)
+
+    def exists_nonce(self, nonce, request):
+        # TODO: for OpenID
+        raise NotImplementedError()
 
 
 def _compatible_query_client(query_client):
