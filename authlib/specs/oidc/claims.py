@@ -211,9 +211,7 @@ def get_claim_cls_by_response_type(response_type):
 
 
 def _verify_hash(signature, s, alg):
-    hash_type = 'sha{}'.format(alg[2:])
-    hash_method = getattr(hashlib, hash_type, None)
-    if not hash_method:
+    hash_value = create_half_hash(s, alg)
+    if not hash_value:
         return True
-    hash_value = create_half_hash(s, hash_method)
     return hmac.compare_digest(hash_value, to_bytes(signature))

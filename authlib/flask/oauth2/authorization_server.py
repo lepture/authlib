@@ -31,9 +31,10 @@ class AuthorizationServer(_AuthorizationServer):
         server = AuthorizationServer()
         server.init_app(app, query_client)
     """
-    def __init__(self, app=None, query_client=None, **config):
+    def __init__(self, app=None, query_client=None, save_token=None, **config):
         query_client = _compatible_query_client(query_client)
-        super(AuthorizationServer, self).__init__(query_client, None, **config)
+        super(AuthorizationServer, self).__init__(
+            query_client, None, save_token, **config)
         self.revoke_token_endpoint = None
         self.app = app
         if app is not None:
@@ -86,7 +87,7 @@ class AuthorizationServer(_AuthorizationServer):
                 register_error_uri(k, v)
 
         self.app = app
-        self.token_generator = self.create_bearer_token_generator(app)
+        self.generate_token = self.create_bearer_token_generator(app)
 
     def create_expires_generator(self, app):
         """Create a generator function for generating ``expires_in`` value.

@@ -43,7 +43,7 @@ class BaseGrant(object):
 
     def generate_token(self, client, grant_type, expires_in=None,
                        scope=None, include_refresh_token=True):
-        return self.server.token_generator(
+        return self.server.generate_token(
             client, grant_type,
             expires_in=expires_in,
             scope=scope,
@@ -90,6 +90,9 @@ class BaseGrant(object):
         scopes = scope_to_list(self.request.scope)
         if scopes and not client.check_requested_scopes(set(scopes)):
             raise InvalidScopeError(state=self.request.state)
+
+    def process_token(self, token, client, user):
+        return token
 
 
 class RedirectAuthGrant(BaseGrant):

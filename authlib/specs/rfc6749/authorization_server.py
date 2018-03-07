@@ -11,9 +11,10 @@ class AuthorizationServer(object):
         :class:`~authlib.specs.rfc6749.ClientMixin`.
     :param token_generator: A method to generate tokens.
     """
-    def __init__(self, query_client, token_generator, **config):
+    def __init__(self, query_client, generate_token, save_token, **config):
         self.query_client = query_client
-        self.token_generator = token_generator
+        self.generate_token = generate_token
+        self.save_token = save_token
         self.config = config
         self._authorization_endpoints = []
         self._token_endpoints = []

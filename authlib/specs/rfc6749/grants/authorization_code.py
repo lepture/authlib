@@ -297,7 +297,14 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
             include_refresh_token=client.has_client_secret(),
         )
         log.debug('Issue token {!r} to {!r}'.format(token, client))
-        self.create_access_token(token, client, authorization_code)
+
+        if self.server.save_token:
+            user = self.authenticate_authorization_code_user(authorization_code)
+            self.server.save_token(token, client, user)
+            token = self.process_token(token, client, user)
+        else:
+            # TODO: deprecate
+            self.create_access_token(token, client, authorization_code)
         self.delete_authorization_code(authorization_code)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
@@ -347,6 +354,9 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
 
         :param authorization_code: the instance of authorization_code
         """
+        raise NotImplementedError()
+
+    def authenticate_authorization_code_user(self, authorization_code):
         raise NotImplementedError()
 
     def create_access_token(self, token, client, authorization_code):

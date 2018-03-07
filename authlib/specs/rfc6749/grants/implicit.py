@@ -190,15 +190,15 @@ class ImplicitGrant(RedirectAuthGrant):
                 include_refresh_token=False
             )
             log.debug('Grant token {!r} to {!r}'.format(token, client))
-            self.create_access_token(token, client, grant_user)
-            params = [
-                ('access_token', token['access_token']),
-                ('token_type', token['token_type']),
-            ]
-            if 'expires_in' in token:
-                params.append(('expires_in', token['expires_in']))
-            if 'scope' in token:
-                params.append(('scope', token['scope']))
+
+            if self.server.save_token:
+                self.server.save_token(token, client, grant_user)
+                token = self.process_token(token, client, grant_user)
+            else:
+                # TODO: deprecate
+                self.create_access_token(token, client, grant_user)
+
+            params = [(k, token[k]) for k in token]
             if state:
                 params.append(('state', state))
         else:

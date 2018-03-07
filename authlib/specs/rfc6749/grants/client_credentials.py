@@ -103,7 +103,12 @@ class ClientCredentialsGrant(BaseGrant):
             include_refresh_token=False,
         )
         log.debug('Issue token {!r} to {!r}'.format(token, client))
-        self.create_access_token(token, client)
+        if self.server.save_token:
+            self.server.save_token(token, client, None)
+            token = self.process_token(token, client, None)
+        else:
+            # TODO: deprecate
+            self.create_access_token(token, client)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def create_access_token(self, token, client):

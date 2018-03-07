@@ -147,7 +147,12 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
             scope=self.request.scope,
         )
         log.debug('Issue token {!r} to {!r}'.format(token, client))
-        self.create_access_token(token, client, user)
+        if self.server.save_token:
+            self.server.save_token(token, client, user)
+            token = self.process_token(token, client, user)
+        else:
+            # TODO: deprecate
+            self.create_access_token(token, client, user)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_user(self, username, password):

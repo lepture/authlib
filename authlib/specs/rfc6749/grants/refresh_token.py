@@ -121,7 +121,13 @@ class RefreshTokenGrant(BaseGrant):
             scope=scope,
         )
         log.debug('Issue token {!r} to {!r}'.format(token, client))
-        self.create_access_token(token, client, credential)
+        if self.server.save_token:
+            user = self.authenticate_credential_user(credential)
+            self.server.save_token(token, client, user)
+            token = self.process_token(token, client, user)
+        else:
+            # TODO: deprecate
+            self.create_access_token(token, client, credential)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_refresh_token(self, refresh_token):
@@ -136,6 +142,9 @@ class RefreshTokenGrant(BaseGrant):
         :param refresh_token: The refresh token issued to the client
         :return: token
         """
+        raise NotImplementedError()
+
+    def authenticate_credential_user(self, credential):
         raise NotImplementedError()
 
     def create_access_token(self, token, client, authenticated_token):
