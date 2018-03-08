@@ -44,6 +44,50 @@ class OpenIDMixin(object):
             profile['sub'] = str(user.get_user_id())
         return profile
 
+    def generate_id_token(self, token, request, nonce=None,
+                          auth_time=None, code=None):
+
+        scopes = scope_to_list(token['scope'])
+        if not scopes or 'openid' not in scopes:
+            return None
+
+        # TODO: merge scopes and claims
+        profile = self.generate_user_claims(request.user, scopes)
+
+        now = int(time.time())
+        if auth_time is None:
+            auth_time = now
+
+        config = self.server.config
+        payload = {
+            'iss': config['jwt_iss'],
+            'aud': [request.client.client_id],
+            'iat': now,
+            'exp': now + token['expires_in'],
+            'auth_time': auth_time,
+        }
+        if nonce:
+            payload['nonce'] = nonce
+
+        # calculate at_hash
+        alg = config.get('jwt_alg', 'HS256')
+
+        access_token = token.get('access_token')
+        if access_token:
+            at_hash = to_unicode(create_half_hash(access_token, alg))
+            payload['at_hash'] = at_hash
+
+        # calculate c_hash
+        if code:
+            payload['c_hash'] = to_unicode(create_half_hash(code, alg))
+
+        payload.update(profile)
+        jwt = JWT(algorithms=alg)
+        header = {'alg': alg}
+        key = config['jwt_key']
+        id_token = jwt.encode(header, payload, key)
+        return to_unicode(id_token)
+
 
 def is_openid_request(request, response_types):
     if request.response_type not in response_types:
@@ -56,41 +100,3 @@ def wrap_openid_request(request):
         'response_mode', 'nonce', 'display', 'prompt', 'max_age',
         'ui_locales', 'id_token_hint', 'login_hint', 'acr_values'
     })
-
-
-def generate_id_token(
-        token, profile, config, aud=None,
-        nonce=None, auth_time=None, code=None):
-    now = int(time.time())
-    payload = {
-        'iss': config['jwt_iss'],
-        'iat': now,
-        'exp': now + token['expires_in'],
-    }
-    if aud:
-        payload['aud'] = aud
-
-    if nonce:
-        payload['nonce'] = nonce
-
-    if auth_time:
-        payload['auth_time'] = auth_time
-
-    # calculate at_hash
-    alg = config.get('jwt_alg', 'HS256')
-
-    access_token = token.get('access_token')
-    if access_token:
-        at_hash = to_unicode(create_half_hash(access_token, alg))
-        payload['at_hash'] = at_hash
-
-    # calculate c_hash
-    if code:
-        payload['c_hash'] = to_unicode(create_half_hash(code, alg))
-
-    payload.update(profile)
-    jwt = JWT(algorithms=alg)
-    header = {'alg': alg}
-    key = config['jwt_key']
-    id_token = jwt.encode(header, payload, key)
-    return to_unicode(id_token)

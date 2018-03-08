@@ -1,10 +1,9 @@
 import time
 import logging
 from authlib.specs.rfc6749.grants import ImplicitGrant
-from authlib.specs.rfc6749.util import scope_to_list
 from authlib.specs.rfc6749 import AccessDeniedError
 from authlib.common.urls import add_params_to_uri
-from .base import is_openid_request, generate_id_token, wrap_openid_request
+from .base import is_openid_request, wrap_openid_request
 from .base import OpenIDMixin
 
 log = logging.getLogger(__name__)
@@ -35,7 +34,10 @@ class OpenIDImplicitGrant(OpenIDMixin, ImplicitGrant):
                 include_refresh_token=False
             )
             if self.request.response_type == 'id_token':
-                token = {'expires_in': token['expires_in']}
+                token = {
+                    'expires_in': token['expires_in'],
+                    'scope': token['scope'],
+                }
                 token = self.process_token(token, self.request)
             else:
                 log.debug('Grant token {!r} to {!r}'.format(token, client))
@@ -54,16 +56,6 @@ class OpenIDImplicitGrant(OpenIDMixin, ImplicitGrant):
 
     def process_token(self, token, request):
         # OpenID Connect authorization code flow
-        scopes = scope_to_list(self.request.scope)
-        # TODO: merge scopes and claims
-        profile = self.generate_user_claims(request.user, scopes)
-
-        id_token = generate_id_token(
-            token, profile,
-            config=self.server.config,
-            aud=[request.client_id],
-            nonce=request.nonce,
-            auth_time=int(time.time())
-        )
+        id_token = self.generate_id_token(token, request, nonce=request.nonce)
         token['id_token'] = id_token
         return token

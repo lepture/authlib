@@ -11,12 +11,13 @@
 import logging
 from authlib.specs.rfc6749.grants import AuthorizationCodeGrant
 from authlib.specs.rfc6749.util import scope_to_list
-from .base import OpenIDMixin, generate_id_token, wrap_openid_request
+from .base import OpenIDMixin, wrap_openid_request
 
 log = logging.getLogger(__name__)
 
 
 class OpenIDCodeGrant(OpenIDMixin, AuthorizationCodeGrant):
+    TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic']
     RESPONSE_TYPES = ['code']
 
     @classmethod
@@ -39,21 +40,16 @@ class OpenIDCodeGrant(OpenIDMixin, AuthorizationCodeGrant):
 
     def process_token(self, token, request):
         scope = token.get('scope')
-        scopes = scope_to_list(scope) or []
-        if 'openid' not in scopes:
+        if not scope or 'openid' not in scope:
             # standard authorization code flow
             return token
 
-        # OpenID Connect authorization code flow
-        profile = self.generate_user_claims(request.user, scopes)
         credential = request.credential
-
-        id_token = generate_id_token(
-            token, profile,
-            config=self.server.config,
-            aud=[request.client.client_id],
+        id_token = self.generate_id_token(
+            token, request,
             nonce=credential.get_nonce(),
             auth_time=credential.get_auth_time(),
         )
-        token['id_token'] = id_token
+        if id_token:
+            token['id_token'] = id_token
         return token

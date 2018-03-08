@@ -124,6 +124,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
 
         self.validate_authorization_redirect_uri(client)
         self.validate_requested_scope(client)
+        self.request.client = client
 
     def create_authorization_response(self, grant_user):
         """If the resource owner grants the access request, the authorization
@@ -166,8 +167,9 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         state = self.request.state
         if grant_user:
             self.request.user = grant_user
+            client = self.request.client
             code = self.create_authorization_code(
-                self.client, grant_user, self.request)
+                client, grant_user, self.request)
             params = [('code', code)]
             if state:
                 params.append(('state', state))

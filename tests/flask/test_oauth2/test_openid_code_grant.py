@@ -1,5 +1,4 @@
 from flask import json
-from werkzeug.urls import url_encode
 from authlib.common.urls import urlparse, url_decode
 from .oauth2_server import db, User, Client
 from .oauth2_server import TestCase
@@ -31,31 +30,32 @@ class OpenIDCodeTest(TestCase):
             allowed_response_types='code',
             allowed_grant_types='authorization_code',
         )
-        self.authorize_url = (
-            '/oauth/authorize?response_type=code'
-            '&client_id=code-client'
-        )
         db.session.add(client)
         db.session.commit()
 
     def test_missing_redirect_uri(self):
         self.prepare_data()
-        uri = self.authorize_url + '&scope=openid'
-        rv = self.client.post(uri, data={'user_id': '1'})
+        rv = self.client.post('/oauth/authorize', data={
+            'response_type': 'code',
+            'client_id': 'code-client',
+            'state': 'bar',
+            'scope': 'openid profile',
+            'user_id': '1'
+        })
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'invalid_request')
 
     def test_authorize_token(self):
         # generate refresh token
         self.prepare_data()
-
-        query = url_encode({
+        rv = self.client.post('/oauth/authorize', data={
+            'response_type': 'code',
+            'client_id': 'code-client',
             'state': 'bar',
             'scope': 'openid profile',
-            'redirect_uri': 'https://a.b'
+            'redirect_uri': 'https://a.b',
+            'user_id': '1'
         })
-        url = self.authorize_url + '&' + query
-        rv = self.client.post(url, data={'user_id': '1'})
         self.assertIn('code=', rv.location)
 
         params = dict(url_decode(urlparse.urlparse(rv.location).query))
@@ -74,16 +74,17 @@ class OpenIDCodeTest(TestCase):
 
     def test_nonce_replay(self):
         self.prepare_data()
-
-        query = url_encode({
+        data = {
+            'response_type': 'code',
+            'client_id': 'code-client',
+            'user_id': '1',
             'state': 'bar',
             'nonce': 'abc',
             'scope': 'openid profile',
             'redirect_uri': 'https://a.b'
-        })
-        url = self.authorize_url + '&' + query
-        rv = self.client.post(url, data={'user_id': '1'})
+        }
+        rv = self.client.post('/oauth/authorize', data=data)
         self.assertIn('code=', rv.location)
 
-        rv = self.client.post(url, data={'user_id': '1'})
+        rv = self.client.post('/oauth/authorize', data=data)
         self.assertIn('error=', rv.location)

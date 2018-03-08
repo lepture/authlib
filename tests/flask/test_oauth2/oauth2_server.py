@@ -26,7 +26,8 @@ from authlib.specs.rfc6749.grants import (
     RefreshTokenGrant as _RefreshTokenGrant,
 )
 from authlib.specs.oidc.grants import (
-    OpenIDCodeGrant as _OpenIDCodeGrant
+    OpenIDCodeGrant as _OpenIDCodeGrant,
+    OpenIDHybridGrant as _OpenIDHybridGrant,
 )
 
 os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
@@ -122,6 +123,10 @@ class AuthorizationCodeGrant(CodeGrantMixin, _AuthorizationCodeGrant):
 
 
 class OpenIDCodeGrant(CodeGrantMixin, _OpenIDCodeGrant):
+    pass
+
+
+class OpenIDHybridGrant(CodeGrantMixin, _OpenIDHybridGrant):
     pass
 
 
