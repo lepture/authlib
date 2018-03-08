@@ -78,8 +78,11 @@ def generate_id_token(
 
     # calculate at_hash
     alg = config.get('jwt_alg', 'HS256')
-    at_hash = to_unicode(create_half_hash(token['access_token'], alg))
-    payload['at_hash'] = at_hash
+
+    access_token = token.get('access_token')
+    if access_token:
+        at_hash = to_unicode(create_half_hash(access_token, alg))
+        payload['at_hash'] = at_hash
 
     # calculate c_hash
     if code:

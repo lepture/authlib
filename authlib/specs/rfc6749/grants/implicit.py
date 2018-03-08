@@ -118,9 +118,10 @@ class ImplicitGrant(RedirectAuthGrant):
         client = self.authenticate_token_endpoint_client()
         log.debug('Validate authorization request of {!r}'.format(client))
 
-        if not client.check_response_type(self.request.response_type):
+        response_type = self.request.response_type
+        if not client.check_response_type(response_type):
             raise UnauthorizedClientError(
-                'The client is not authorized to use implicit grant',
+                'The client is not authorized to use "{}"'.format(response_type),
                 state=self.request.state,
             )
 
