@@ -83,18 +83,20 @@ class Token(db.Model, OAuth2TokenMixin):
     user = db.relationship('User')
 
     def is_refresh_token_expired(self):
-        expired_at = self.created_at + self.expires_in * 2
+        expired_at = self.issued_at + self.expires_in * 2
         return expired_at < time.time()
 
 
 class CodeGrantMixin(object):
     def create_authorization_code(self, client, grant_user, request):
         code = generate_token(48)
+        nonce = request.data.get('nonce')
         item = AuthorizationCode(
             code=code,
             client_id=client.client_id,
             redirect_uri=request.redirect_uri,
             scope=request.scope,
+            nonce=nonce,
             user_id=grant_user.get_user_id(),
         )
         db.session.add(item)
@@ -111,7 +113,7 @@ class CodeGrantMixin(object):
         db.session.delete(authorization_code)
         db.session.commit()
 
-    def authenticate_authorization_code_user(self, authorization_code):
+    def authenticate_user(self, authorization_code):
         return User.query.get(authorization_code.user_id)
 
 
@@ -136,16 +138,26 @@ class RefreshTokenGrant(_RefreshTokenGrant):
         if item and not item.is_refresh_token_expired():
             return item
 
-    def authenticate_credential_user(self, credential):
+    def authenticate_user(self, credential):
         return User.query.get(credential.user_id)
 
 
 def create_authorization_server(app):
     query_client = create_query_client_func(db.session, Client)
     save_token = create_save_token_func(db.session, Token)
+
+    def exists_nonce(nonce, req):
+        exists = AuthorizationCode.query.filter_by(
+            client_id=req.client_id, nonce=nonce
+        ).first()
+        return bool(exists)
+
     server = AuthorizationServer(
-        app, query_client=query_client, save_token=save_token
+        app,
+        query_client=query_client,
+        save_token=save_token,
     )
+    server.register_hook('exists_nonce', exists_nonce)
 
     @app.route('/oauth/authorize', methods=['GET', 'POST'])
     def authorize():
@@ -160,7 +172,7 @@ def create_authorization_server(app):
             grant_user = User.query.get(int(user_id))
         else:
             grant_user = None
-        return server.create_authorization_response(grant_user)
+        return server.create_authorization_response(grant_user=grant_user)
 
     @app.route('/oauth/token', methods=['GET', 'POST'])
     def issue_token():
@@ -168,7 +180,7 @@ def create_authorization_server(app):
 
     @app.route('/oauth/revoke', methods=['POST'])
     def revoke_token():
-        return server.create_revocation_response()
+        return server.create_endpoint_response('revocation')
 
     return server
 

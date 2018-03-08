@@ -9,7 +9,6 @@
 """
 
 import logging
-from authlib.specs.rfc6749 import InvalidRequestError
 from authlib.specs.rfc6749.grants import AuthorizationCodeGrant
 from authlib.specs.rfc6749.util import scope_to_list
 from .base import OpenIDMixin, generate_id_token, wrap_openid_request
@@ -17,29 +16,13 @@ from .base import OpenIDMixin, generate_id_token, wrap_openid_request
 log = logging.getLogger(__name__)
 
 
-class OpenIDCodeGrant(AuthorizationCodeGrant, OpenIDMixin):
+class OpenIDCodeGrant(OpenIDMixin, AuthorizationCodeGrant):
     RESPONSE_TYPES = ['code']
-
-    def __init__(self, request, server):
-        super(OpenIDCodeGrant, self).__init__(request, server)
-        self.session = None
 
     @classmethod
     def check_authorization_endpoint(cls, request):
         # OpenIDCodeGrant will act as AuthorizationCodeGrant
         return request.response_type == cls.RESPONSE_TYPE
-
-    def validate_authorization_redirect_uri(self, client):
-        if not self.redirect_uri:
-            raise InvalidRequestError(
-                'Missing "redirect_uri" in request.',
-            )
-
-        if not client.check_redirect_uri(self.redirect_uri):
-            raise InvalidRequestError(
-                'Invalid "redirect_uri" in request.',
-                state=self.request.state,
-            )
 
     def validate_authorization_request(self):
         super(OpenIDCodeGrant, self).validate_authorization_request()
@@ -54,7 +37,7 @@ class OpenIDCodeGrant(AuthorizationCodeGrant, OpenIDMixin):
         # TODO
         pass
 
-    def process_token(self, token, client, user):
+    def process_token(self, token, request):
         scope = token.get('scope')
         scopes = scope_to_list(scope) or []
         if 'openid' not in scopes:
@@ -62,13 +45,15 @@ class OpenIDCodeGrant(AuthorizationCodeGrant, OpenIDMixin):
             return token
 
         # OpenID Connect authorization code flow
-        profile = self.generate_user_claims(user, scopes)
+        profile = self.generate_user_claims(request.user, scopes)
+        credential = request.credential
 
         id_token = generate_id_token(
             token, profile,
             config=self.server.config,
-            session=self.session,
-            aud=[client.client_id],
+            aud=[request.client.client_id],
+            nonce=credential.get_nonce(),
+            auth_time=credential.get_auth_time(),
         )
         token['id_token'] = id_token
         return token

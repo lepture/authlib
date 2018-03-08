@@ -1,5 +1,6 @@
 import logging
 from authlib.common.urls import add_params_to_uri
+from authlib.deprecate import deprecate
 from .base import RedirectAuthGrant
 from ..errors import (
     UnauthorizedClientError,
@@ -125,6 +126,7 @@ class ImplicitGrant(RedirectAuthGrant):
 
         self.validate_authorization_redirect_uri(client)
         self.validate_requested_scope(client)
+        self.request.client = client
 
     def create_authorization_response(self, grant_user):
         """If the resource owner grants the access request, the authorization
@@ -183,7 +185,8 @@ class ImplicitGrant(RedirectAuthGrant):
         """
         state = self.request.state
         if grant_user:
-            client = self.client
+            self.request.user = grant_user
+            client = self.request.client
             token = self.generate_token(
                 client, self.GRANT_TYPE,
                 scope=self.request.scope,
@@ -192,10 +195,13 @@ class ImplicitGrant(RedirectAuthGrant):
             log.debug('Grant token {!r} to {!r}'.format(token, client))
 
             if self.server.save_token:
-                self.server.save_token(token, client, grant_user)
-                token = self.process_token(token, client, grant_user)
+                self.server.save_token(token, self.request)
+                token = self.process_token(token, self.request)
             else:
-                # TODO: deprecate
+                deprecate(
+                    '"create_access_token" is deprecated.'
+                    'Read <https://github.com/lepture/authlib/releases/tag/v0.6>',
+                    '0.8')
                 self.create_access_token(token, client, grant_user)
 
             params = [(k, token[k]) for k in token]
@@ -210,19 +216,4 @@ class ImplicitGrant(RedirectAuthGrant):
         return 302, '', headers
 
     def create_access_token(self, token, client, grant_user):
-        """Save access_token into database. Developers should implement it in
-        subclass::
-
-            def create_access_token(self, token, client, grant_user):
-                item = Token(
-                    client_id=client.client_id,
-                    user_id=grant_user.get_user_id(),
-                    **token
-                )
-                item.save()
-
-        :param token: A dict contains the token information.
-        :param client: Current client related to the token.
-        :param grant_user: resource owner (user).
-        """
-        raise NotImplementedError()
+        raise DeprecationWarning()

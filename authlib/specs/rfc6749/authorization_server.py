@@ -1,4 +1,5 @@
 from authlib.common.urls import add_params_to_uri
+from authlib.deprecate import deprecate
 from .errors import InvalidGrantError, OAuth2Error
 
 
@@ -16,26 +17,46 @@ class AuthorizationServer(object):
         self.generate_token = generate_token
         self.save_token = save_token
         self.config = config
-        self._authorization_endpoints = []
-        self._token_endpoints = []
+        self._authorization_grants = []
+        self._token_grants = []
+        self._hooks = {}
+        self._endpoints = {}
 
     def register_grant_endpoint(self, grant_cls):
+        deprecate('Use "server.register_grant" instead.', '0.8')
+        self.register_grant(grant_cls)
+
+    def register_grant(self, grant_cls):
         """Register a grant class into the endpoint registry. Developers
         can implement the grants in ``authlib.specs.rfc6749.grants`` and
         register with this method::
 
-            class MyImplicitGrant(ImplicitGrant):
-                def create_access_token(self, token, client, grant_user):
+            class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
+                def authenticate_user(self, credential):
                     # ...
 
-            authorization_server.register_grant_endpoint(MyImplicitGrant)
+            authorization_server.register_grant(AuthorizationCodeGrant)
 
         :param grant_cls: a grant class.
         """
         if grant_cls.AUTHORIZATION_ENDPOINT:
-            self._authorization_endpoints.append(grant_cls)
+            self._authorization_grants.append(grant_cls)
         if grant_cls.TOKEN_ENDPOINT:
-            self._token_endpoints.append(grant_cls)
+            self._token_grants.append(grant_cls)
+
+    def register_endpoint(self, endpoint_cls):
+        self._endpoints[endpoint_cls.ENDPOINT_NAME] = endpoint_cls
+
+    def register_hook(self, name, func):
+        if name in self._hooks:
+            raise ValueError('"{}" is already in hooks'.format(name))
+        self._hooks[name] = func
+
+    def execute_hook(self, name, *args, **kwargs):
+        if name not in self._hooks:
+            raise RuntimeError('"{}" hook is not registered.'.format(name))
+        func = self._hooks[name]
+        return func(*args, **kwargs)
 
     def get_authorization_grant(self, request):
         """Find the authorization grant for current request.
@@ -43,7 +64,7 @@ class AuthorizationServer(object):
         :param request: OAuth2Request instance.
         :return: grant instance
         """
-        for grant_cls in self._authorization_endpoints:
+        for grant_cls in self._authorization_grants:
             if grant_cls.check_authorization_endpoint(request):
                 return grant_cls(request, self)
         raise InvalidGrantError()
@@ -54,11 +75,18 @@ class AuthorizationServer(object):
         :param request: OAuth2Request instance.
         :return: grant instance
         """
-        for grant_cls in self._token_endpoints:
+        for grant_cls in self._token_grants:
             if grant_cls.check_token_endpoint(request):
                 if request.method in grant_cls.TOKEN_ENDPOINT_HTTP_METHODS:
                     return grant_cls(request, self)
         raise InvalidGrantError()
+
+    def create_endpoint_response(self, name, request):
+        if name not in self._endpoints:
+            raise RuntimeError('There is no "{}" endpoint.'.format(name))
+        endpoint_cls = self._endpoints[name]
+        endpoint = endpoint_cls(request, self)
+        return endpoint()
 
     def create_valid_authorization_response(self, request, grant_user):
         """Validate authorization request and create authorization response.
@@ -68,6 +96,7 @@ class AuthorizationServer(object):
             it is None.
         :returns: (status_code, body, headers)
         """
+        # TODO: rename it to `create_authorization_response` in v0.8
         try:
             grant = self.get_authorization_grant(request)
         except InvalidGrantError as error:
@@ -84,7 +113,7 @@ class AuthorizationServer(object):
                 return 302, '', headers
             return 400, dict(error.get_body()), error.get_headers()
 
-    def create_valid_token_response(self, request):
+    def create_token_response(self, request):
         """Validate token request and create token response.
 
         :param request: OAuth2Request instance

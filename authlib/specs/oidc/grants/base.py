@@ -9,12 +9,17 @@ from ..util import create_half_hash
 class OpenIDMixin(object):
     RESPONSE_TYPES = []
 
-    @classmethod
-    def check_authorization_endpoint(cls, request):
-        if is_openid_request(request, cls.RESPONSE_TYPES):
-            # http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
-            wrap_openid_request(request)
-            return True
+    def validate_authorization_redirect_uri(self, client):
+        if not self.redirect_uri:
+            raise InvalidRequestError(
+                'Missing "redirect_uri" in request.',
+            )
+
+        if not client.check_redirect_uri(self.redirect_uri):
+            raise InvalidRequestError(
+                'Invalid "redirect_uri" in request.',
+                state=self.request.state,
+            )
 
     def validate_nonce(self, required=False):
         nonce = self.request.nonce
@@ -24,12 +29,8 @@ class OpenIDMixin(object):
                     'Missing "nonce" in request.'
                 )
             return True
-        if not hasattr(self.server, 'exists_nonce'):
-            raise RuntimeError(
-                'The "AuthorizationServer" MUST define '
-                'an "exists_nonce" method.'
-            )
-        if self.server.exists_nonce(nonce, self.request):
+
+        if self.server.execute_hook('exists_nonce', nonce, self.request):
             raise InvalidRequestError('Replay attack')
 
     def generate_user_claims(self, user, claims):
@@ -57,10 +58,9 @@ def wrap_openid_request(request):
     })
 
 
-SESSION_KEY_FORMAT = '_openid_{}'
-
-
-def generate_id_token(token, profile, config, session, aud=None, code=None):
+def generate_id_token(
+        token, profile, config, aud=None,
+        nonce=None, auth_time=None, code=None):
     now = int(time.time())
     payload = {
         'iss': config['jwt_iss'],
@@ -70,15 +70,11 @@ def generate_id_token(token, profile, config, session, aud=None, code=None):
     if aud:
         payload['aud'] = aud
 
-    if session:
-        nonce_key = SESSION_KEY_FORMAT.format('nonce')
-        nonce = session.pop(nonce_key, None)
-        if nonce:
-            payload['nonce'] = nonce
-        auth_time_key = SESSION_KEY_FORMAT.format('auth_time')
-        auth_time = session.pop(auth_time_key, None)
-        if auth_time:
-            payload['auth_time'] = auth_time
+    if nonce:
+        payload['nonce'] = nonce
+
+    if auth_time:
+        payload['auth_time'] = auth_time
 
     # calculate at_hash
     alg = config.get('jwt_alg', 'HS256')
@@ -90,7 +86,7 @@ def generate_id_token(token, profile, config, session, aud=None, code=None):
         payload['c_hash'] = to_unicode(create_half_hash(code, alg))
 
     payload.update(profile)
-    jwt = JWT(algorithms=[alg])
+    jwt = JWT(algorithms=alg)
     header = {'alg': alg}
     key = config['jwt_key']
     id_token = jwt.encode(header, payload, key)

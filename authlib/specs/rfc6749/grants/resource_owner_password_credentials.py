@@ -1,4 +1,5 @@
 import logging
+from authlib.deprecate import deprecate
 from .base import BaseGrant
 from ..errors import (
     UnauthorizedClientError,
@@ -112,7 +113,7 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
             )
         self.validate_requested_scope(client)
         self.request.client = client
-        self.request.grant_user = user
+        self.request.user = user
 
     def create_token_response(self):
         """If the access token request is valid and authorized, the
@@ -141,17 +142,20 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
         :returns: (status_code, body, headers)
         """
         client = self.request.client
-        user = self.request.grant_user
+        user = self.request.user
         token = self.generate_token(
             client, self.GRANT_TYPE,
             scope=self.request.scope,
         )
         log.debug('Issue token {!r} to {!r}'.format(token, client))
         if self.server.save_token:
-            self.server.save_token(token, client, user)
-            token = self.process_token(token, client, user)
+            self.server.save_token(token, self.request)
+            token = self.process_token(token, self.request)
         else:
-            # TODO: deprecate
+            deprecate(
+                '"create_access_token" is deprecated.'
+                'Read <https://github.com/lepture/authlib/releases/tag/v0.6>',
+                '0.8')
             self.create_access_token(token, client, user)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
@@ -159,26 +163,12 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
         """validate the resource owner password credentials using its
         existing password validation algorithm::
 
-            user = get_user_by_username(username)
-            if user.check_password(password):
-               return user
+            def authenticate_user(self, username, password):
+                user = get_user_by_username(username)
+                if user.check_password(password):
+                   return user
         """
         raise NotImplementedError()
 
     def create_access_token(self, token, client, user):
-        """Save access_token into database. Developers should implement it in
-        subclass::
-
-            def create_access_token(self, token, client, user):
-                item = Token(
-                    client_id=client.client_id,
-                    user_id=user.get_user_id(),
-                    **token
-                )
-                item.save()
-
-        :param token: A dict contains the token information.
-        :param client: Current client related to the token.
-        :param user: resource owner.
-        """
-        raise NotImplementedError()
+        raise DeprecationWarning()

@@ -9,9 +9,14 @@ from .oauth2_server import create_authorization_server
 
 class OpenIDCodeTest(TestCase):
     def prepare_data(self):
-        self.app.config.update({'OAUTH2_OPENID_ENABLED': True})
+        self.app.config.update({
+            'OAUTH2_JWT_ENABLED': True,
+            'OAUTH2_JWT_ISS': 'Authlib',
+            'OAUTH2_JWT_KEY': 'secret',
+            'OAUTH2_JWT_ALG': 'HS256',
+        })
         server = create_authorization_server(self.app)
-        server.register_grant_endpoint(OpenIDCodeGrant)
+        server.register_grant(OpenIDCodeGrant)
 
         user = User(username='foo')
         db.session.add(user)
@@ -66,3 +71,19 @@ class OpenIDCodeTest(TestCase):
         resp = json.loads(rv.data)
         self.assertIn('access_token', resp)
         self.assertIn('id_token', resp)
+
+    def test_nonce_replay(self):
+        self.prepare_data()
+
+        query = url_encode({
+            'state': 'bar',
+            'nonce': 'abc',
+            'scope': 'openid profile',
+            'redirect_uri': 'https://a.b'
+        })
+        url = self.authorize_url + '&' + query
+        rv = self.client.post(url, data={'user_id': '1'})
+        self.assertIn('code=', rv.location)
+
+        rv = self.client.post(url, data={'user_id': '1'})
+        self.assertIn('error=', rv.location)

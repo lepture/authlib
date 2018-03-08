@@ -135,7 +135,7 @@ class AuthorizationServer(_AuthorizationServer):
         func = self._hooks['create_authorization_verifier']
         if callable(func):
             verifier = generate_token(36)
-            func(request.credential, request.grant_user, verifier)
+            func(request.credential, request.user, verifier)
             return verifier
 
         raise RuntimeError(

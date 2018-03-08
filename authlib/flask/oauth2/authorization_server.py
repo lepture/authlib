@@ -8,6 +8,7 @@ from authlib.specs.rfc6749 import (
 )
 from authlib.specs.rfc6750 import BearerToken
 from authlib.common.security import generate_token
+from authlib.common.encoding import to_unicode
 from authlib.deprecate import deprecate
 from .signals import client_authenticated
 
@@ -35,41 +36,14 @@ class AuthorizationServer(_AuthorizationServer):
         query_client = _compatible_query_client(query_client)
         super(AuthorizationServer, self).__init__(
             query_client, None, save_token, **config)
-        self.revoke_token_endpoint = None
+
         self.app = app
         if app is not None:
             self.init_app(app)
 
-    def get_authorization_grant(self, request):
-        """Find the authorization grant for current request.
-
-        :param request: OAuth2Request instance.
-        :return: grant instance
-        """
-        grant = super(AuthorizationServer, self).get_authorization_grant(request)
-        grant._after_authenticate_client = \
-            lambda client: client_authenticated.send(self, client=client, grant=grant)
-        return grant
-
-    def get_token_grant(self, request):
-        """Find the token grant for current request.
-
-        :param request: OAuth2Request instance.
-        :return: grant instance
-        """
-        grant = super(AuthorizationServer, self).get_token_grant(request)
-        grant._after_authenticate_client = \
-            lambda client: client_authenticated.send(self, client=client, grant=grant)
-        return grant
-
     def register_revoke_token_endpoint(self, cls):
-        """Add revoke token support for authorization server. Revoke token is
-        defined by RFC7009_, implemented with
-        :class:`authlib.specs.rfc7009.RevocationEndpoint`.
-
-        .. _RFC7009: https://tools.ietf.org/html/rfc7009
-        """
-        self.revoke_token_endpoint = cls
+        deprecate('Use "server.register_endpoint(cls)" instead.', '0.8')
+        self.register_endpoint(cls)
 
     def init_app(self, app, query_client=None):
         """Initialize later with Flask app instance."""
@@ -86,16 +60,40 @@ class AuthorizationServer(_AuthorizationServer):
             for k, v in error_uris:
                 register_error_uri(k, v)
 
+        # register after_authenticate_client hooks
+
+        def after_authenticate_client(client, grant):
+            client_authenticated.send(self, client=client, grant=grant)
+
+        self.register_hook(
+            'after_authenticate_client',
+            after_authenticate_client
+        )
+
         self.app = app
         self.generate_token = self.create_bearer_token_generator(app)
-        if app.config.get('OAUTH2_OPENID_ENABLED'):
-            self.init_openid_config(app)
+        if app.config.get('OAUTH2_JWT_ENABLED'):
+            self.init_jwt_config(app)
 
-    def init_openid_config(self, app):
-        jwt_iss = app.config.get('OAUTH2_JWT_ISS', 'Authlib')
-        jwt_key = 'TODO'
+    def init_jwt_config(self, app):
+        """Initialize JWT related configuration."""
+        jwt_iss = app.config.get('OAUTH2_JWT_ISS')
+        if not jwt_iss:
+            raise RuntimeError('Missing "OAUTH2_JWT_ISS" configuration.')
+        jwt_key_path = app.config.get('OAUTH2_JWT_KEY_PATH')
+        if jwt_key_path:
+            with open(jwt_key_path, 'r') as f:
+                jwt_key = to_unicode(f.read())
+        else:
+            jwt_key = app.config.get('OAUTH2_JWT_KEY')
+
+        if not jwt_key:
+            raise RuntimeError('Missing "OAUTH2_JWT_KEY" configuration.')
+
+        jwt_alg = app.config.get('OAUTH2_JWT_ALG')
         self.config.setdefault('jwt_iss', jwt_iss)
         self.config.setdefault('jwt_key', jwt_key)
+        self.config.setdefault('jwt_alg', jwt_alg)
 
     def create_expires_generator(self, app):
         """Create a generator function for generating ``expires_in`` value.
@@ -119,8 +117,7 @@ class AuthorizationServer(_AuthorizationServer):
         ``OAUTH2_REFRESH_TOKEN_GENERATOR=True``.
         """
         access_token_generator = app.config.get(
-            'OAUTH2_ACCESS_TOKEN_GENERATOR',
-            True
+            'OAUTH2_ACCESS_TOKEN_GENERATOR', True
         )
 
         if isinstance(access_token_generator, str):
@@ -130,8 +127,7 @@ class AuthorizationServer(_AuthorizationServer):
                 return generate_token(42)
 
         refresh_token_generator = app.config.get(
-            'OAUTH2_REFRESH_TOKEN_GENERATOR',
-            False
+            'OAUTH2_REFRESH_TOKEN_GENERATOR', False
         )
         if isinstance(refresh_token_generator, str):
             refresh_token_generator = import_string(refresh_token_generator)
@@ -171,7 +167,7 @@ class AuthorizationServer(_AuthorizationServer):
         grant.validate_authorization_request()
         return grant
 
-    def create_authorization_response(self, grant_user=None):
+    def create_authorization_response(self, request=None, grant_user=None):
         """Create the HTTP response for authorization. If resource owner
         granted the authorization, pass the resource owner as the user
         parameter, otherwise None::
@@ -182,8 +178,14 @@ class AuthorizationServer(_AuthorizationServer):
                     grant_user = current_user
                 else:
                     grant_user = None
-                return server.create_authorization_response(grant_user)
+                return server.create_authorization_response(grant_user=grant_user)
         """
+        if request and not grant_user:
+            grant_user = request
+            # prepare for next upgrade
+            deprecate(
+                'Use `create_authorization_response(grant_user=grant_user)`',
+                '0.8')
         status, body, headers = self.create_valid_authorization_response(
             _create_oauth2_request(),
             grant_user=grant_user
@@ -192,7 +194,7 @@ class AuthorizationServer(_AuthorizationServer):
             body = json.dumps(body)
         return Response(body, status=status, headers=headers)
 
-    def create_token_response(self):
+    def create_token_response(self, request=None):
         """Create the HTTP response for token endpoint. It is ready to use, as
         simple as::
 
@@ -200,27 +202,22 @@ class AuthorizationServer(_AuthorizationServer):
             def issue_token():
                 return server.create_token_response()
         """
-        req = _create_oauth2_request()
-        status, body, headers = self.create_valid_token_response(req)
+        if request is None:
+            request = _create_oauth2_request()
+        status, body, headers = super(
+            AuthorizationServer, self).create_token_response(request)
+        return Response(json.dumps(body), status=status, headers=headers)
+
+    def create_endpoint_response(self, name, request=None):
+        if request is None:
+            request = _create_oauth2_request()
+        status, body, headers = super(
+            AuthorizationServer, self).create_endpoint_response(name, request)
         return Response(json.dumps(body), status=status, headers=headers)
 
     def create_revocation_response(self):
-        """Create HTTP response for revocation endpoint.
-        :meth:`register_revoke_token_endpoint` is required before using this
-        method. It is ready to use, as simple as::
-
-            @app.route('/token/revoke', methods=['POST'])
-            def revoke_token():
-                return server.create_revocation_response()
-        """
-        req = _create_oauth2_request()
-        endpoint = self.revoke_token_endpoint(req, self.query_client)
-        status, body, headers = endpoint.create_revocation_response()
-        return Response(json.dumps(body), status=status, headers=headers)
-
-    def exists_nonce(self, nonce, request):
-        # TODO: for OpenID
-        raise NotImplementedError()
+        deprecate('Use `create_endpoint_response("revocation")` instead.', '0.8')
+        return self.create_endpoint_response('revocation')
 
 
 def _compatible_query_client(query_client):

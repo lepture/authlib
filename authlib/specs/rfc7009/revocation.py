@@ -11,27 +11,31 @@ class RevocationEndpoint(object):
     `RFC7009`_.
 
     :param request: OAuth2Request instance
-    :param query_client: A function to get client by client_id. The client
-        model class MUST implement the methods described by
-        :class:`~authlib.specs.rfc6749.ClientMixin`.
+    :param server: Authorization Server instance
 
     .. _RFC7009: https://tools.ietf.org/html/rfc7009
     """
+    ENDPOINT_NAME = 'revocation'
     SUPPORTED_TOKEN_TYPES = ('access_token', 'refresh_token')
     REVOCATION_ENDPOINT_AUTH_METHODS = ['client_secret_basic']
 
-    def __init__(self, request, query_client):
+    def __init__(self, request, server):
         self.request = request
-        self.query_client = query_client
+        self.server = server
         self._token = None
         self._client = None
+
+    def __call__(self):
+        # make it callable for authorization server
+        # ``create_endpoint_response``
+        return self.create_revocation_response()
 
     def authenticate_revocation_endpoint_client(self):
         """Authentication client for revocation endpoint with
         ``REVOCATION_ENDPOINT_AUTH_METHODS``.
         """
         self._client = authenticate_client(
-            self.query_client,
+            self.server.query_client,
             request=self.request,
             methods=self.REVOCATION_ENDPOINT_AUTH_METHODS,
         )
@@ -67,6 +71,15 @@ class RevocationEndpoint(object):
 
     def create_revocation_response(self):
         """Validate revocation request and create the response for revocation.
+        For example, a client may request the revocation of a refresh token
+        with the following request::
+
+            POST /revoke HTTP/1.1
+            Host: server.example.com
+            Content-Type: application/x-www-form-urlencoded
+            Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
+
+            token=45ghiukldjahdnhzdauz&token_type_hint=refresh_token
 
         :returns: (status_code, body, headers)
         """

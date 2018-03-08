@@ -9,13 +9,13 @@ from ..cache import SimpleCache
 
 
 class AuthorizationCodeTest(TestCase):
-    def register_grant_endpoint(self, server):
-        server.register_grant_endpoint(AuthorizationCodeGrant)
+    def register_grant(self, server):
+        server.register_grant(AuthorizationCodeGrant)
 
     def prepare_data(self, is_confidential=True,
                      response_types='code', grant_type='authorization_code'):
         server = create_authorization_server(self.app)
-        self.register_grant_endpoint(server)
+        self.register_grant(server)
 
         user = User(username='foo')
         db.session.add(user)
@@ -167,7 +167,7 @@ class AuthorizationCodeTest(TestCase):
 
 
 class CacheAuthorizationCodeTest(AuthorizationCodeTest):
-    def register_grant_endpoint(self, server):
+    def register_grant(self, server):
 
         def authenticate_user(authorization_code):
             return User.query.get(authorization_code.user_id)
@@ -177,5 +177,5 @@ class CacheAuthorizationCodeTest(AuthorizationCodeTest):
 
 
 class OpenIDCodeTest(TestCase):
-    def register_grant_endpoint(self, server):
-        server.register_grant_endpoint(OpenIDCodeGrant)
+    def register_grant(self, server):
+        server.register_grant(OpenIDCodeGrant)

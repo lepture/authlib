@@ -1,4 +1,5 @@
 import logging
+from authlib.deprecate import deprecate
 from .base import BaseGrant
 from ..errors import UnauthorizedClientError
 
@@ -104,26 +105,15 @@ class ClientCredentialsGrant(BaseGrant):
         )
         log.debug('Issue token {!r} to {!r}'.format(token, client))
         if self.server.save_token:
-            self.server.save_token(token, client, None)
-            token = self.process_token(token, client, None)
+            self.server.save_token(token, self.request)
+            token = self.process_token(token, self.request)
         else:
-            # TODO: deprecate
+            deprecate(
+                '"create_access_token" is deprecated.'
+                'Read <https://github.com/lepture/authlib/releases/tag/v0.6>',
+                '0.8')
             self.create_access_token(token, client)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def create_access_token(self, token, client):
-        """Save access_token into database. Developers should implement it in
-        subclass::
-
-            def create_access_token(self, token, client):
-                item = Token(
-                    client_id=client.client_id,
-                    user_id=client.user_id,
-                    **token
-                )
-                item.save()
-
-        :param token: A dict contains the token information.
-        :param client: Current client related to the token.
-        """
-        raise NotImplementedError()
+        raise DeprecationWarning()

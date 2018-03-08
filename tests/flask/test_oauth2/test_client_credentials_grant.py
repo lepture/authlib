@@ -8,7 +8,7 @@ from .oauth2_server import create_authorization_server
 class ClientCredentialsTest(TestCase):
     def prepare_data(self, grant_type='client_credentials'):
         server = create_authorization_server(self.app)
-        server.register_grant_endpoint(ClientCredentialsGrant)
+        server.register_grant(ClientCredentialsGrant)
 
         user = User(username='foo')
         db.session.add(user)

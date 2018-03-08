@@ -48,7 +48,7 @@ def create_authorization_code_grant(
             )
             cache.delete(key)
 
-        def authenticate_authorization_code_user(self, authorization_code):
+        def authenticate_user(self, authorization_code):
             return authenticate_user(authorization_code)
 
     return CodeGrant
@@ -64,6 +64,5 @@ def register_cache_authorization_code(
     """
     if isinstance(cache, Flask):
         cache = Cache(cache, config_prefix='OAUTH2_CODE')
-    authorization_server.register_grant_endpoint(
-        create_authorization_code_grant(cache, authenticate_user)
-    )
+    grant_cls = create_authorization_code_grant(cache, authenticate_user)
+    authorization_server.register_grant(grant_cls)

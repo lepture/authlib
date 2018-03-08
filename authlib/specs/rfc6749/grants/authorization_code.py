@@ -1,5 +1,6 @@
 import logging
 from authlib.common.urls import add_params_to_uri
+from authlib.deprecate import deprecate
 from .base import RedirectAuthGrant
 from ..errors import (
     UnauthorizedClientError,
@@ -164,7 +165,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         """
         state = self.request.state
         if grant_user:
-            self.request.grant_user = grant_user
+            self.request.user = grant_user
             code = self.create_authorization_code(
                 self.client, grant_user, self.request)
             params = [('code', code)]
@@ -299,11 +300,17 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         log.debug('Issue token {!r} to {!r}'.format(token, client))
 
         if self.server.save_token:
-            user = self.authenticate_authorization_code_user(authorization_code)
-            self.server.save_token(token, client, user)
-            token = self.process_token(token, client, user)
+            user = self.authenticate_user(authorization_code)
+            if not user:
+                raise InvalidRequestError('There is no "user" for this code.')
+            self.request.user = user
+            self.server.save_token(token, self.request)
+            token = self.process_token(token, self.request)
         else:
-            # TODO: deprecate
+            deprecate(
+                '"create_access_token" is deprecated.'
+                'Read <https://github.com/lepture/authlib/releases/tag/v0.6>',
+                '0.8')
             self.create_access_token(token, client, authorization_code)
         self.delete_authorization_code(authorization_code)
         return 200, token, self.TOKEN_RESPONSE_HEADER
@@ -356,23 +363,17 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         """
         raise NotImplementedError()
 
-    def authenticate_authorization_code_user(self, authorization_code):
+    def authenticate_user(self, authorization_code):
+        """Authenticate the user related to this authorization_code. Developers
+        should implement this method in subclass::
+
+            def authenticate_user(self, authorization_code):
+                return User.query.get(authorization_code.user_id)
+
+        :param authorization_code: AuthorizationCode object
+        :return: user
+        """
         raise NotImplementedError()
 
     def create_access_token(self, token, client, authorization_code):
-        """Save access_token into database. Developers should implement it in
-        subclass::
-
-            def create_access_token(self, token, client, authorization_code):
-                item = Token(
-                    client_id=client.client_id,
-                    user_id=authorization_code.user_id,
-                    **token
-                )
-                item.save()
-
-        :param token: A dict contains the token information
-        :param client: Current client related to the token
-        :param authorization_code: previously saved authorization_code
-        """
-        raise NotImplementedError()
+        raise DeprecationWarning()

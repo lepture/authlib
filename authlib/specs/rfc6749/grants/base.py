@@ -27,11 +27,8 @@ class BaseGrant(object):
     def __init__(self, request, server):
         self.request = request
         self.redirect_uri = request.redirect_uri
-
         self.server = server
-        self.query_client = server.query_client
         self._clients = {}
-        self._after_authenticate_client = None
 
     @classmethod
     def check_token_endpoint(cls, request):
@@ -53,7 +50,7 @@ class BaseGrant(object):
     def get_client_by_id(self, client_id):
         if client_id in self._clients:
             return self._clients[client_id]
-        client = self.query_client(client_id)
+        client = self.server.query_client(client_id)
         self._clients[client_id] = client
         return client
 
@@ -82,8 +79,10 @@ class BaseGrant(object):
             request=self.request,
             methods=self.TOKEN_ENDPOINT_AUTH_METHODS,
         )
-        if self._after_authenticate_client:
-            self._after_authenticate_client(client)
+        try:
+            self.server.execute_hook('after_authenticate_client', client, self)
+        except RuntimeError:
+            pass
         return client
 
     def validate_requested_scope(self, client):
@@ -91,7 +90,7 @@ class BaseGrant(object):
         if scopes and not client.check_requested_scopes(set(scopes)):
             raise InvalidScopeError(state=self.request.state)
 
-    def process_token(self, token, client, user):
+    def process_token(self, token, request):
         return token
 
 

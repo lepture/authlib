@@ -8,8 +8,8 @@ from .oauth2_server import create_authorization_server
 class ImplicitTest(TestCase):
     def prepare_data(self, is_confidential=False):
         server = create_authorization_server(self.app)
-        server.register_grant_endpoint(AuthorizationCodeGrant)
-        server.register_grant_endpoint(ImplicitGrant)
+        server.register_grant(AuthorizationCodeGrant)
+        server.register_grant(ImplicitGrant)
 
         user = User(username='foo')
         db.session.add(user)

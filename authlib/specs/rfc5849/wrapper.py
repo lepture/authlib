@@ -25,7 +25,7 @@ class OAuth1Request(object):
         # states namespaces
         self.client = None
         self.credential = None
-        self.grant_user = None
+        self.user = None
 
         self.query = urlparse.urlparse(uri).query
         self.query_params = url_decode(self.query)
@@ -64,6 +64,14 @@ class OAuth1Request(object):
         params.extend(self.body_params)
         params.extend(self.auth_params)
         self.params = params
+
+    @property
+    def grant_user(self):
+        raise DeprecationWarning('Use "request.user" instead.')
+
+    @grant_user.setter
+    def grant_user(self, user):
+        raise DeprecationWarning('Use "request.user" instead.')
 
     @property
     def client_id(self):

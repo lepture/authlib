@@ -40,13 +40,21 @@ class OAuth2Request(object):
             params.update(dict(self.body_params))
         self.data = params
 
-        self.grant_user = None
+        self.user = None
         self.credential = None
         self.client = None
         self._data_keys = {
             'client_id', 'code', 'redirect_uri', 'scope', 'state',
             'response_type', 'grant_type'
         }
+
+    @property
+    def grant_user(self):
+        raise DeprecationWarning('Use "request.user" instead.')
+
+    @grant_user.setter
+    def grant_user(self, user):
+        raise DeprecationWarning('Use "request.user" instead.')
 
     def __getattr__(self, key):
         try:

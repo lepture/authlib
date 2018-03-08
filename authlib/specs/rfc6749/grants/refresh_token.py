@@ -12,6 +12,7 @@
 """
 
 import logging
+from authlib.deprecate import deprecate
 from .base import BaseGrant
 from ..util import scope_to_list
 from ..errors import (
@@ -122,11 +123,17 @@ class RefreshTokenGrant(BaseGrant):
         )
         log.debug('Issue token {!r} to {!r}'.format(token, client))
         if self.server.save_token:
-            user = self.authenticate_credential_user(credential)
-            self.server.save_token(token, client, user)
-            token = self.process_token(token, client, user)
+            user = self.authenticate_user(credential)
+            if not user:
+                raise InvalidRequestError('There is no "user" for this token.')
+            self.request.user = user
+            self.server.save_token(token, self.request)
+            token = self.process_token(token, self.request)
         else:
-            # TODO: deprecate
+            deprecate(
+                '"create_access_token" is deprecated.'
+                'Read <https://github.com/lepture/authlib/releases/tag/v0.6>',
+                '0.8')
             self.create_access_token(token, client, credential)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
@@ -144,24 +151,17 @@ class RefreshTokenGrant(BaseGrant):
         """
         raise NotImplementedError()
 
-    def authenticate_credential_user(self, credential):
+    def authenticate_user(self, credential):
+        """Authenticate the user related to this credential. Developers should
+        implement this method in subclass::
+
+            def authenticate_user(self, credential):
+                return User.query.get(credential.user_id)
+
+        :param credential: Token object
+        :return: user
+        """
         raise NotImplementedError()
 
     def create_access_token(self, token, client, authenticated_token):
-        """Save access_token into database. Developers should implement it in
-        subclass::
-
-            def create_access_token(self, token, client, authenticated_token):
-                item = Token(
-                    client_id=client.client_id,
-                    user_id=authenticated_token.user_id,
-                    **token
-                )
-                item.save()
-
-        :param token: A new generated token to replace the original token.
-        :param client: Current client related to the token.
-        :param authenticated_token: The original token granted by resource
-            owner.
-        """
-        raise NotImplementedError()
+        raise DeprecationWarning()
