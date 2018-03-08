@@ -4,10 +4,21 @@ from authlib.specs.rfc6749.util import scope_to_list
 from authlib.specs.rfc7519 import JWT
 from authlib.common.encoding import to_unicode
 from ..util import create_half_hash
+from ..errors import ActionError, LoginRequiredError
 
 
 class OpenIDMixin(object):
     RESPONSE_TYPES = []
+
+    def validate_consent_request(self, end_user):
+        prompt = self.request.prompt
+        if prompt:
+            if prompt == 'login':
+                raise ActionError('login')
+            if prompt == 'none' and not end_user:
+                raise LoginRequiredError()
+        elif not end_user:
+            raise ActionError('login')
 
     def validate_authorization_redirect_uri(self, client):
         if not self.redirect_uri:
@@ -48,7 +59,7 @@ class OpenIDMixin(object):
                           auth_time=None, code=None):
 
         scopes = scope_to_list(token['scope'])
-        if not scopes or 'openid' not in scopes:
+        if not scopes or scopes[0] != 'openid':
             return None
 
         # TODO: merge scopes and claims
@@ -89,10 +100,10 @@ class OpenIDMixin(object):
         return to_unicode(id_token)
 
 
-def is_openid_request(request, response_types):
-    if request.response_type not in response_types:
-        return False
-    return 'openid' in scope_to_list(request.scope)
+def is_openid_request(request):
+    scopes = scope_to_list(request.scope)
+    # openid should be the first scope
+    return scopes and scopes[0] == 'openid'
 
 
 def wrap_openid_request(request):

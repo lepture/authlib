@@ -1,6 +1,5 @@
 import time
 import hmac
-import hashlib
 from authlib.common.encoding import to_bytes
 from authlib.specs.rfc7519 import JWTClaims
 from authlib.specs.rfc7519 import (

@@ -14,9 +14,7 @@
 from ..rfc6749.errors import OAuth2Error, InvalidRequestError
 
 __all__ = [
-    'InvalidRequestError',
-    'InvalidTokenError',
-    'InsufficientScopeError'
+    'InvalidRequestError', 'InvalidTokenError', 'InsufficientScopeError'
 ]
 
 

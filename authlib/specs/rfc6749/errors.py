@@ -28,8 +28,16 @@
 
     https://tools.ietf.org/html/rfc6749#section-5.2
 """
-
 from authlib.common.security import is_secure_transport
+
+__all__ = [
+    'register_error_uri', 'OAuth2Error',
+    'InsecureTransportError', 'InvalidRequestError',
+    'InvalidClientError', 'InvalidGrantError',
+    'UnauthorizedClientError', 'UnsupportedGrantTypeError',
+    'InvalidScopeError', 'AccessDeniedError',
+    'MissingAuthorizationError', 'UnsupportedTokenTypeError',
+]
 
 
 _error_uris = {}

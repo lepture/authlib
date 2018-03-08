@@ -10,8 +10,7 @@
 
 import logging
 from authlib.specs.rfc6749.grants import AuthorizationCodeGrant
-from authlib.specs.rfc6749.util import scope_to_list
-from .base import OpenIDMixin, wrap_openid_request
+from .base import OpenIDMixin, wrap_openid_request, is_openid_request
 
 log = logging.getLogger(__name__)
 
@@ -27,20 +26,19 @@ class OpenIDCodeGrant(OpenIDMixin, AuthorizationCodeGrant):
 
     def validate_authorization_request(self):
         super(OpenIDCodeGrant, self).validate_authorization_request()
-        scopes = scope_to_list(self.request.scope) or []
-        if 'openid' not in scopes:
+        if not is_openid_request(self.request):
             return
         wrap_openid_request(self.request)
         # validate openid request
         self.validate_nonce(required=False)
 
     def validate_consent_request(self, end_user):
-        # TODO
-        pass
+        if is_openid_request(self.request):
+            super(OpenIDCodeGrant, self).validate_consent_request(end_user)
 
     def process_token(self, token, request):
         scope = token.get('scope')
-        if not scope or 'openid' not in scope:
+        if not scope or not scope.startswith('openid'):
             # standard authorization code flow
             return token
 

@@ -12,5 +12,4 @@
 # flake8: noqa
 
 from .parameters import prepare_revoke_token_request
-from .errors import UnsupportedTokenTypeError
 from .revocation import RevocationEndpoint

@@ -1,9 +1,7 @@
-from .errors import (
-    OAuth2Error,
-    InvalidRequestError,
-    UnsupportedTokenTypeError,
-)
 from authlib.specs.rfc6749 import authenticate_client
+from authlib.specs.rfc6749 import (
+    OAuth2Error, InvalidRequestError, UnsupportedTokenTypeError
+)
 
 
 class RevocationEndpoint(object):

@@ -1,7 +1,6 @@
-import time
 import logging
 from authlib.specs.rfc6749.grants import ImplicitGrant
-from authlib.specs.rfc6749 import AccessDeniedError
+from authlib.specs.rfc6749 import InvalidScopeError, AccessDeniedError
 from authlib.common.urls import add_params_to_uri
 from .base import is_openid_request, wrap_openid_request
 from .base import OpenIDMixin
@@ -14,12 +13,13 @@ class OpenIDImplicitGrant(OpenIDMixin, ImplicitGrant):
 
     @classmethod
     def check_authorization_endpoint(cls, request):
-        if is_openid_request(request, cls.RESPONSE_TYPES):
-            # http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
+        if request.response_type in cls.RESPONSE_TYPES:
             wrap_openid_request(request)
             return True
 
     def validate_authorization_request(self):
+        if not is_openid_request(self.request):
+            raise InvalidScopeError('Missing "openid" scope')
         super(OpenIDImplicitGrant, self).validate_authorization_request()
         self.validate_nonce(required=True)
 

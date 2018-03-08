@@ -177,6 +177,15 @@ class AuthorizationServer(_AuthorizationServer):
         grant.validate_authorization_request()
         return grant
 
+    def validate_consent_request(self, request=None, end_user=None):
+        if request is None:
+            request = _create_oauth2_request()
+        grant = self.get_authorization_grant(request)
+        grant.validate_authorization_request()
+        if hasattr(grant, 'validate_consent_request'):
+            grant.validate_consent_request(end_user=end_user)
+        return grant
+
     def create_authorization_response(self, request=None, grant_user=None):
         """Create the HTTP response for authorization. If resource owner
         granted the authorization, pass the resource owner as the user
