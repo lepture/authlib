@@ -1,6 +1,5 @@
 import types
 from collections import namedtuple
-from authlib.deprecate import deprecate
 
 User = namedtuple('User', ['id', 'name', 'email', 'data'])
 
@@ -98,14 +97,3 @@ def patch_method(instance, func, name=None):
 
 def _patch(instance, func, name):
     setattr(instance, name, types.MethodType(func, instance))
-
-
-def compatible_fetch_user(instance, profile_func):
-
-    def fetch_user(client):
-        deprecate('Use "profile()" instead of "fetch_user()"', '0.6')
-        info = profile_func(client)
-        data = dict(info)
-        return User(info.sub, name=info.name, email=info.email, data=data)
-
-    patch_method(instance, fetch_user, 'fetch_user')

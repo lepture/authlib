@@ -22,15 +22,25 @@ GRANT_TYPES_EXPIRES = {
 
 class AuthorizationServer(_AuthorizationServer):
     """Flask implementation of :class:`authlib.rfc6749.AuthorizationServer`.
-    Initialize it with a client model class and Flask app instance::
+    Initialize it with ``query_client``, ``save_token`` methods and Flask
+    app instance::
 
         def query_client(client_id):
             return Client.query.filter_by(client_id=client_id).first()
 
-        server = AuthorizationServer(app, query_client)
+        def save_token(token, client, user):
+            tok = Token(
+                client_id=client.client_id,
+                user_id=user.get_user_id(),
+                **token
+            )
+            db.session.add(tok)
+            db.session.commit()
+
+        server = AuthorizationServer(app, query_client, save_token)
         # or initialize lazily
         server = AuthorizationServer()
-        server.init_app(app, query_client)
+        server.init_app(app, query_client, save_token)
     """
     def __init__(self, app=None, query_client=None, save_token=None, **config):
         query_client = _compatible_query_client(query_client)
@@ -42,7 +52,7 @@ class AuthorizationServer(_AuthorizationServer):
             self.init_app(app)
 
     def register_revoke_token_endpoint(self, cls):
-        deprecate('Use "server.register_endpoint(cls)" instead.', '0.8')
+        deprecate('Use "register_endpoint" instead.', '0.8', 'vAAUK', 're')
         self.register_endpoint(cls)
 
     def init_app(self, app, query_client=None):
@@ -184,8 +194,9 @@ class AuthorizationServer(_AuthorizationServer):
             grant_user = request
             # prepare for next upgrade
             deprecate(
-                'Use `create_authorization_response(grant_user=grant_user)`',
-                '0.8')
+                'Use "create_authorization_response(grant_user=grant_user)" instead',
+                '0.8', 'vAAUK', 'car'
+            )
         status, body, headers = self.create_valid_authorization_response(
             _create_oauth2_request(),
             grant_user=grant_user
@@ -216,7 +227,10 @@ class AuthorizationServer(_AuthorizationServer):
         return Response(json.dumps(body), status=status, headers=headers)
 
     def create_revocation_response(self):
-        deprecate('Use `create_endpoint_response("revocation")` instead.', '0.8')
+        deprecate(
+            'Use `create_endpoint_response("revocation")` instead',
+            '0.8', 'vAAUK', 're'
+        )
         return self.create_endpoint_response('revocation')
 
 

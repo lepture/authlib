@@ -1,4 +1,4 @@
-from .base import AppFactory, UserInfo, patch_method, compatible_fetch_user
+from .base import AppFactory, UserInfo, patch_method
 
 
 def fetch_profile(client):
@@ -27,4 +27,3 @@ github = AppFactory('github', {
 
 
 patch_method(github, fetch_profile, 'profile')
-compatible_fetch_user(github, fetch_profile)

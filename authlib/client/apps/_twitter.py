@@ -1,4 +1,4 @@
-from .base import AppFactory, UserInfo, patch_method, compatible_fetch_user
+from .base import AppFactory, UserInfo, patch_method
 
 
 def fetch_profile(client):
@@ -32,4 +32,3 @@ twitter = AppFactory('twitter', {
 
 
 patch_method(twitter, fetch_profile, 'profile')
-compatible_fetch_user(twitter, fetch_profile)

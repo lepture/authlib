@@ -23,7 +23,7 @@ class AuthorizationServer(object):
         self._endpoints = {}
 
     def register_grant_endpoint(self, grant_cls):
-        deprecate('Use "server.register_grant" instead.', '0.8')
+        deprecate('Use `register_grant` instead.', '0.8', 'vAAUK', 'rg')
         self.register_grant(grant_cls)
 
     def register_grant(self, grant_cls):

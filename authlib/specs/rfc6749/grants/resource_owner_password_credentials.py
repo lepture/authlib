@@ -152,10 +152,7 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
             self.server.save_token(token, self.request)
             token = self.process_token(token, self.request)
         else:
-            deprecate(
-                '"create_access_token" is deprecated.'
-                'Read <https://github.com/lepture/authlib/releases/tag/v0.6>',
-                '0.8')
+            deprecate('"create_access_token" deprecated', '0.8', 'vAAUK', 'gt')
             self.create_access_token(token, client, user)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 

@@ -1,4 +1,4 @@
-from .base import AppFactory, UserInfo, patch_method, compatible_fetch_user
+from .base import AppFactory, UserInfo, patch_method
 
 
 def fetch_profile(client):
@@ -31,4 +31,3 @@ facebook = AppFactory('facebook', {
 }, "The OAuth app for Facebook API.")
 
 patch_method(facebook, fetch_profile, 'profile')
-compatible_fetch_user(facebook, fetch_profile)

@@ -1,6 +1,6 @@
 from authlib.specs.rfc7519 import JWT
 from authlib.specs.oidc import CodeIDToken
-from .base import AppFactory, UserInfo, patch_method, compatible_fetch_user
+from .base import AppFactory, UserInfo, patch_method
 
 GOOGLE_API_URL = 'https://www.googleapis.com/'
 GOOGLE_TOKEN_URL = GOOGLE_API_URL + 'oauth2/v4/token'
@@ -66,4 +66,3 @@ google = AppFactory('google', {
 patch_method(google, revoke_token, 'revoke_token')
 patch_method(google, fetch_profile, 'profile')
 patch_method(google, parse_openid, 'parse_openid')
-compatible_fetch_user(google, fetch_profile)

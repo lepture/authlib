@@ -1,4 +1,4 @@
-from .base import AppFactory, UserInfo, patch_method, compatible_fetch_user
+from .base import AppFactory, UserInfo, patch_method
 
 
 def fetch_profile(client):
@@ -26,4 +26,3 @@ dropbox = AppFactory('dropbox', {
 }, "The OAuth app for Dropbox API.")
 
 patch_method(dropbox, fetch_profile, 'profile')
-compatible_fetch_user(dropbox, fetch_profile)
