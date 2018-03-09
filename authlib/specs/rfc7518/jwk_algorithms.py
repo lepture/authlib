@@ -145,12 +145,6 @@ class ECAlgorithm(JWKAlgorithm):
         SECP521R1.name: 'P-521',
     }
 
-    @classmethod
-    def register_curve(cls, name, curve):
-        if name not in cls.DSS_CURVES:
-            cls.DSS_CURVES[name] = curve
-            cls.CURVES_DSS[curve.name] = name
-
     def loads(self, obj):
         for k in ['crv', 'x', 'y']:
             if k not in obj:

@@ -37,6 +37,8 @@ __all__ = [
     'UnauthorizedClientError', 'UnsupportedGrantTypeError',
     'InvalidScopeError', 'AccessDeniedError',
     'MissingAuthorizationError', 'UnsupportedTokenTypeError',
+    'MissingCodeException', 'MissingTokenException',
+    'MissingTokenTypeException', 'MismatchingStateException',
 ]
 
 
