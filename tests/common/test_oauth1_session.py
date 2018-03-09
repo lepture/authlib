@@ -123,7 +123,7 @@ class OAuth1SessionTest(TestCase):
         auth.send = self.verify_signature(signature)
         auth.post('https://i.b?cjk=%E5%95%A6%E5%95%A6')
 
-    def test_callback_uri(self):
+    def test_redirect_uri(self):
         sess = OAuth1Session('foo')
         self.assertIsNone(sess.redirect_uri)
         url = 'https://i.b'
@@ -149,10 +149,10 @@ class OAuth1SessionTest(TestCase):
         token = 'asluif023sf'
         auth_url = auth.authorization_url(url, request_token=token)
         self.assertEqual(auth_url, url + '?oauth_token=' + token)
-        callback_uri = 'https://c.b'
-        auth = OAuth1Session('foo', callback_uri=callback_uri)
+        redirect_uri = 'https://c.b'
+        auth = OAuth1Session('foo', redirect_uri=redirect_uri)
         auth_url = auth.authorization_url(url, request_token=token)
-        self.assertIn(escape(callback_uri), auth_url)
+        self.assertIn(escape(redirect_uri), auth_url)
 
     def test_parse_response_url(self):
         url = 'https://i.b/callback?oauth_token=foo&oauth_verifier=bar'

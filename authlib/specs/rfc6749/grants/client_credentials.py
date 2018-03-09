@@ -109,7 +109,7 @@ class ClientCredentialsGrant(BaseGrant):
             token = self.process_token(token, self.request)
         else:
             deprecate('"create_access_token" deprecated', '0.8', 'vAAUK', 'gt')
-            self.create_access_token(token, client)
+            self.create_access_token(token, client)  # pragma: no cover
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def create_access_token(self, token, client):

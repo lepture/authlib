@@ -67,12 +67,12 @@ class OAuth1Request(object):
         self.params = params
 
     @property
-    def grant_user(self):
+    def grant_user(self):  # pragma: no cover
         deprecate('Use "request.user" instead.', '0.8')
         return self.user
 
     @grant_user.setter
-    def grant_user(self, user):
+    def grant_user(self, user):  # pragma: no cover
         deprecate('Use "request.user" instead.', '0.8')
         self.user = user
 

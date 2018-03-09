@@ -70,17 +70,17 @@ class OAuth1Session(Session):
                  force_include_body=False, **kwargs):
         super(OAuth1Session, self).__init__()
 
-        if 'resource_owner_key' in kwargs:
+        if 'resource_owner_key' in kwargs:  # pragma: no cover
             deprecate('Use "token" instead of "resource_owner_key"', '0.7')
             if token is None:
                 token = kwargs.pop('resource_owner_key', None)
 
-        if 'resource_owner_secret' in kwargs:
+        if 'resource_owner_secret' in kwargs:  # pragma: no cover
             deprecate('Use "token_secret" instead of "resource_owner_secret"', '0.7')
             if token_secret is None:
                 token_secret = kwargs.pop('resource_owner_secret', None)
 
-        if 'callback_uri' in kwargs:
+        if 'callback_uri' in kwargs:  # pragma: no cover
             deprecate('Use "redirect_uri" instead of "callback_uri"', '0.7')
             if redirect_uri is None:
                 redirect_uri = kwargs.pop('callback_uri', None)

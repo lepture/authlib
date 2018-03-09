@@ -22,7 +22,7 @@ class AuthorizationServer(object):
         self._hooks = {}
         self._endpoints = {}
 
-    def register_grant_endpoint(self, grant_cls):
+    def register_grant_endpoint(self, grant_cls):  # pragma: no cover
         deprecate('Use `register_grant` instead.', '0.8', 'vAAUK', 'rg')
         self.register_grant(grant_cls)
 

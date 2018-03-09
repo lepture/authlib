@@ -200,7 +200,7 @@ class ImplicitGrant(RedirectAuthGrant):
                 token = self.process_token(token, self.request)
             else:
                 deprecate('"create_access_token" deprecated', '0.8', 'vAAUK', 'gt')
-                self.create_access_token(token, client, grant_user)
+                self.create_access_token(token, client, grant_user)  # pragma: no cover
 
             params = [(k, token[k]) for k in token]
             if state:

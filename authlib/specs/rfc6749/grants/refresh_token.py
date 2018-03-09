@@ -131,7 +131,7 @@ class RefreshTokenGrant(BaseGrant):
             token = self.process_token(token, self.request)
         else:
             deprecate('"create_access_token" deprecated', '0.8', 'vAAUK', 'gt')
-            self.create_access_token(token, client, credential)
+            self.create_access_token(token, client, credential)  # pragma: no cover
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_refresh_token(self, refresh_token):

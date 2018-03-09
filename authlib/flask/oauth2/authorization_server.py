@@ -51,7 +51,7 @@ class AuthorizationServer(_AuthorizationServer):
         if app is not None:
             self.init_app(app)
 
-    def register_revoke_token_endpoint(self, cls):
+    def register_revoke_token_endpoint(self, cls):  # pragma: no cover
         deprecate('Use "register_endpoint" instead.', '0.8', 'vAAUK', 're')
         self.register_endpoint(cls)
 
@@ -202,7 +202,7 @@ class AuthorizationServer(_AuthorizationServer):
                     grant_user = None
                 return server.create_authorization_response(grant_user=grant_user)
         """
-        if request and not grant_user:
+        if request and not grant_user:  # pragma: no cover
             grant_user = request
             # prepare for next upgrade
             deprecate(

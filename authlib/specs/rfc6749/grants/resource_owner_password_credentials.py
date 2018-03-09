@@ -153,7 +153,7 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
             token = self.process_token(token, self.request)
         else:
             deprecate('"create_access_token" deprecated', '0.8', 'vAAUK', 'gt')
-            self.create_access_token(token, client, user)
+            self.create_access_token(token, client, user)  # pragma: no cover
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_user(self, username, password):
