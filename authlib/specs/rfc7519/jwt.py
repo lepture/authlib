@@ -4,7 +4,7 @@ import calendar
 from authlib.specs.rfc7515 import JWS
 from authlib.specs.rfc7517 import JWK
 from authlib.specs.rfc7518 import JWS_ALGORITHMS, JWK_ALGORITHMS
-from authlib.common.encoding import unicode_type, to_unicode
+from authlib.common.encoding import text_types, to_unicode
 from .claims import JWTClaims
 
 
@@ -14,7 +14,7 @@ class JWT(JWS):
             algorithms = JWS_ALGORITHMS
         elif isinstance(algorithms, (tuple, list)):
             algorithms = {k: JWS_ALGORITHMS[k] for k in algorithms}
-        elif isinstance(algorithms, unicode_type):
+        elif isinstance(algorithms, text_types):
             algorithms = {algorithms: JWS_ALGORITHMS[algorithms]}
         if load_key is None:
             load_key = _load_jwk
@@ -51,6 +51,6 @@ def _load_jwk(key, header):
         key = header['jwk']
     if isinstance(key, (tuple, list, dict)):
         return jwk.loads(key, header.get('kid'))
-    if isinstance(key, unicode_type) and key.startswith('{'):
+    if isinstance(key, text_types) and key.startswith('{'):
         return jwk.loads(json.loads(key), header.get('kid'))
     return key

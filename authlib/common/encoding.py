@@ -5,9 +5,11 @@ from requests.compat import is_py2
 if is_py2:
     unicode_type = unicode
     byte_type = str
+    text_types = (unicode, str)
 else:
     unicode_type = str
     byte_type = bytes
+    text_types = (str, )
 
 
 def to_bytes(x, charset='utf-8', errors='strict'):
