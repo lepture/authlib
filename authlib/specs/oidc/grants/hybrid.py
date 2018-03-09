@@ -22,7 +22,7 @@ class OpenIDHybridGrant(OpenIDMixin, AuthorizationCodeGrant):
         if not is_openid_request(self.request):
             raise InvalidScopeError('Missing "openid" scope')
         super(OpenIDHybridGrant, self).validate_authorization_request()
-        self.validate_nonce(required=False)
+        self.validate_nonce(required=True)
 
     def create_authorization_response(self, grant_user):
         state = self.request.state
@@ -62,7 +62,7 @@ class OpenIDHybridGrant(OpenIDMixin, AuthorizationCodeGrant):
             error = AccessDeniedError(state=state)
             params = error.get_body()
 
-        uri = add_params_to_uri(self.redirect_uri, params)
+        uri = add_params_to_uri(self.redirect_uri, params, fragment=True)
         headers = [('Location', uri)]
         return 302, '', headers
 

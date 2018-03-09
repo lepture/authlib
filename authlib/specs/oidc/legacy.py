@@ -32,7 +32,7 @@ def verify_id_token(response, key, response_type='code', issuers=None,
     claims = jwt.decode(
         response['id_token'], key, claims_cls,
         claims_options=claims_options,
-        claims_request=claims_request,
+        claims_params=claims_request,
     )
     claims.validate(now=now)
     return claims

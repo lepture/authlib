@@ -1,5 +1,7 @@
 from flask import json
 from authlib.common.urls import urlparse, url_decode
+from authlib.specs.rfc7519 import JWT
+from authlib.specs.oidc import HybridIDToken
 from .oauth2_server import db, User, Client
 from .oauth2_server import TestCase
 from .oauth2_server import OpenIDHybridGrant
@@ -33,6 +35,15 @@ class OpenIDCodeTest(TestCase):
         db.session.add(client)
         db.session.commit()
 
+    def validate_claims(self, id_token, params):
+        jwt = JWT()
+        claims = jwt.decode(
+            id_token, 'secret',
+            claims_cls=HybridIDToken,
+            claims_params=params
+        )
+        claims.validate()
+
     def test_code_access_token(self):
         # generate refresh token
         self.prepare_data()
@@ -40,6 +51,7 @@ class OpenIDCodeTest(TestCase):
             'client_id': 'hybrid-client',
             'response_type': 'code token',
             'state': 'bar',
+            'nonce': 'abc',
             'scope': 'openid profile',
             'redirect_uri': 'https://a.b',
             'user_id': '1',
@@ -48,7 +60,7 @@ class OpenIDCodeTest(TestCase):
         self.assertIn('access_token=', rv.location)
         self.assertNotIn('id_token=', rv.location)
 
-        params = dict(url_decode(urlparse.urlparse(rv.location).query))
+        params = dict(url_decode(urlparse.urlparse(rv.location).fragment))
         self.assertEqual(params['state'], 'bar')
 
         code = params['code']
@@ -68,6 +80,7 @@ class OpenIDCodeTest(TestCase):
             'client_id': 'hybrid-client',
             'response_type': 'code id_token',
             'state': 'bar',
+            'nonce': 'abc',
             'scope': 'openid profile',
             'redirect_uri': 'https://a.b',
             'user_id': '1',
@@ -76,8 +89,12 @@ class OpenIDCodeTest(TestCase):
         self.assertIn('id_token=', rv.location)
         self.assertNotIn('access_token=', rv.location)
 
-        params = dict(url_decode(urlparse.urlparse(rv.location).query))
+        params = dict(url_decode(urlparse.urlparse(rv.location).fragment))
         self.assertEqual(params['state'], 'bar')
+
+        params['nonce'] = 'abc'
+        params['client_id'] = 'hybrid-client'
+        self.validate_claims(params['id_token'], params)
 
         code = params['code']
         headers = self.create_basic_header('hybrid-client', 'hybrid-secret')
@@ -96,6 +113,7 @@ class OpenIDCodeTest(TestCase):
             'client_id': 'hybrid-client',
             'response_type': 'code id_token token',
             'state': 'bar',
+            'nonce': 'abc',
             'scope': 'openid profile',
             'redirect_uri': 'https://a.b',
             'user_id': '1',
@@ -104,8 +122,9 @@ class OpenIDCodeTest(TestCase):
         self.assertIn('id_token=', rv.location)
         self.assertIn('access_token=', rv.location)
 
-        params = dict(url_decode(urlparse.urlparse(rv.location).query))
+        params = dict(url_decode(urlparse.urlparse(rv.location).fragment))
         self.assertEqual(params['state'], 'bar')
+        self.validate_claims(params['id_token'], params)
 
         code = params['code']
         headers = self.create_basic_header('hybrid-client', 'hybrid-secret')

@@ -64,6 +64,11 @@ class Client(db.Model, OAuth2ClientMixin):
     def check_grant_type(self, grant_type):
         return grant_type in self.allowed_grant_types.split()
 
+    def check_token_endpoint_auth_method(self, method):
+        if self.has_client_secret():
+            return method in ['client_secret_basic', 'client_secret_post']
+        return method == 'none'
+
 
 class AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):
     id = db.Column(db.Integer, primary_key=True)

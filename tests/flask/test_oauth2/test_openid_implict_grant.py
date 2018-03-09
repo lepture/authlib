@@ -1,4 +1,7 @@
+from authlib.specs.rfc7519 import JWT
+from authlib.specs.oidc import ImplicitIDToken
 from authlib.specs.oidc.grants import OpenIDImplicitGrant
+from authlib.common.urls import urlparse, url_decode
 from .oauth2_server import db, User, Client
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
@@ -33,6 +36,15 @@ class ImplicitTest(TestCase):
         )
         db.session.add(client)
         db.session.commit()
+
+    def validate_claims(self, id_token, params):
+        jwt = JWT(['HS256'])
+        claims = jwt.decode(
+            id_token, 'secret',
+            claims_cls=ImplicitIDToken,
+            claims_params=params
+        )
+        claims.validate()
 
     def test_require_nonce(self):
         self.prepare_data()
@@ -73,6 +85,8 @@ class ImplicitTest(TestCase):
         self.assertIn('access_token=', rv.location)
         self.assertIn('id_token=', rv.location)
         self.assertIn('state=bar', rv.location)
+        params = dict(url_decode(urlparse.urlparse(rv.location).fragment))
+        self.validate_claims(params['id_token'], params)
 
     def test_authorize_id_token(self):
         self.prepare_data()
@@ -87,3 +101,5 @@ class ImplicitTest(TestCase):
         })
         self.assertIn('id_token=', rv.location)
         self.assertIn('state=bar', rv.location)
+        params = dict(url_decode(urlparse.urlparse(rv.location).fragment))
+        self.validate_claims(params['id_token'], params)

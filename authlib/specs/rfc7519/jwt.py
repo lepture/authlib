@@ -31,7 +31,7 @@ class JWT(JWS):
 
         return super(JWT, self).encode(header, payload, key)
 
-    def decode(self, s, key, claims_cls=None, claims_options=None, claims_request=None):
+    def decode(self, s, key, claims_cls=None, claims_options=None, claims_params=None):
         if claims_cls is None:
             claims_cls = JWTClaims
         header, bytes_payload = super(JWT, self).decode(s, key)
@@ -39,7 +39,7 @@ class JWT(JWS):
         return claims_cls(
             payload, header,
             options=claims_options,
-            request=claims_request,
+            params=claims_params,
         )
 
 

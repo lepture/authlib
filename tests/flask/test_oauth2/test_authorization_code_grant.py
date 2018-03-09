@@ -165,6 +165,27 @@ class AuthorizationCodeTest(TestCase):
         self.assertIn('access_token', resp)
         self.assertIn('refresh_token', resp)
 
+    def test_client_secret_post(self):
+        self.app.config.update({'OAUTH2_REFRESH_TOKEN_GENERATOR': True})
+        self.prepare_data()
+        url = self.authorize_url + '&state=bar'
+        rv = self.client.post(url, data={'user_id': '1'})
+        self.assertIn('code=', rv.location)
+
+        params = dict(url_decode(urlparse.urlparse(rv.location).query))
+        self.assertEqual(params['state'], 'bar')
+
+        code = params['code']
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': 'authorization_code',
+            'client_id': 'code-client',
+            'client_secret': 'code-secret',
+            'code': code,
+        })
+        resp = json.loads(rv.data)
+        self.assertIn('access_token', resp)
+        self.assertIn('refresh_token', resp)
+
 
 class CacheAuthorizationCodeTest(AuthorizationCodeTest):
     def register_grant(self, server):

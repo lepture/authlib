@@ -55,7 +55,7 @@ class IDToken(JWTClaims):
         REQUIRED; otherwise, its inclusion is OPTIONAL.
         """
         auth_time = self.get('auth_time')
-        if self.request.get('max_age') and not auth_time:
+        if self.params.get('max_age') and not auth_time:
             raise MissingClaimError('auth_time')
 
         if auth_time and not isinstance(auth_time, int):
@@ -73,7 +73,7 @@ class IDToken(JWTClaims):
         SHOULD perform no other processing on nonce values used. The nonce
         value is a case sensitive string.
         """
-        nonce_value = self.request.get('nonce')
+        nonce_value = self.params.get('nonce')
         if nonce_value:
             if 'nonce' not in self:
                 raise MissingClaimError('nonce')
@@ -124,7 +124,7 @@ class IDToken(JWTClaims):
         containing a StringOrURI value.
         """
         aud = self.get('aud')
-        client_id = self.request.get('client_id')
+        client_id = self.params.get('client_id')
         required = False
         if aud and client_id:
             if isinstance(aud, list) and len(aud) == 1:
@@ -148,7 +148,7 @@ class IDToken(JWTClaims):
         access_token value with SHA-256, then take the left-most 128 bits and
         base64url encode them. The at_hash value is a case sensitive string.
         """
-        access_token = self.request.get('access_token')
+        access_token = self.params.get('access_token')
         at_hash = self.get('at_hash')
         if at_hash and access_token:
             if not _verify_hash(at_hash, access_token, self.header['alg']):
@@ -172,7 +172,7 @@ class ImplicitIDToken(IDToken):
         Token is issued, which is the case for the response_type value
         id_token.
         """
-        access_token = self.request.get('access_token')
+        access_token = self.params.get('access_token')
         if access_token and 'at_hash' not in self:
             raise MissingClaimError('at_hash')
         super(ImplicitIDToken, self).validate_at_hash()
@@ -198,7 +198,7 @@ class HybridIDToken(ImplicitIDToken):
         which is the case for the response_type values code id_token and code
         id_token token, this is REQUIRED; otherwise, its inclusion is OPTIONAL.
         """
-        code = self.request.get('code')
+        code = self.params.get('code')
         c_hash = self.get('c_hash')
         if code:
             if not c_hash:

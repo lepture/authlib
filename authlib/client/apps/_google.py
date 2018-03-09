@@ -22,7 +22,7 @@ GOOGLE_CLAIMS_OPTIONS = {
 def parse_openid(client, response, nonce=None):
     jwk_set = _get_google_jwk_set(client)
     id_token = response['id_token']
-    claims_request = dict(
+    claims_params = dict(
         nonce=nonce,
         client_id=client.client_id,
         access_token=response['access_token']
@@ -32,7 +32,7 @@ def parse_openid(client, response, nonce=None):
         id_token, key=jwk_set,
         claims_cls=CodeIDToken,
         claims_options=GOOGLE_CLAIMS_OPTIONS,
-        claims_request=claims_request,
+        claims_params=claims_params,
     )
     claims.validate(leeway=120)
     return UserInfo(claims)

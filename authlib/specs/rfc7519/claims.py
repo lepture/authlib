@@ -27,11 +27,11 @@ class JWTClaims(dict):
     """
     REGISTERED_CLAIMS = ['iss', 'sub', 'aud', 'exp', 'nbf', 'iat', 'jti']
 
-    def __init__(self, payload, header, options=None, request=None):
+    def __init__(self, payload, header, options=None, params=None):
         super(JWTClaims, self).__init__(payload)
         self.header = header
         self.options = options or {}
-        self.request = request or {}
+        self.params = params or {}
 
     def __getattr__(self, key):
         try:
