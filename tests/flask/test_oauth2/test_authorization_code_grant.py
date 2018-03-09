@@ -1,20 +1,21 @@
 from flask import json
 from authlib.common.urls import urlparse, url_decode
 from authlib.flask.oauth2 import register_cache_authorization_code
-from .oauth2_server import db, User, Client, Token
+from .oauth2_server import db, User, Client
 from .oauth2_server import TestCase
-from .oauth2_server import AuthorizationCodeGrant
+from .oauth2_server import AuthorizationCodeGrant, OpenIDCodeGrant
 from .oauth2_server import create_authorization_server
+from ..cache import SimpleCache
 
 
 class AuthorizationCodeTest(TestCase):
-    def register_grant_endpoint(self, server):
-        server.register_grant_endpoint(AuthorizationCodeGrant)
+    def register_grant(self, server):
+        server.register_grant(AuthorizationCodeGrant)
 
     def prepare_data(self, is_confidential=True,
                      response_types='code', grant_type='authorization_code'):
         server = create_authorization_server(self.app)
-        self.register_grant_endpoint(server)
+        self.register_grant(server)
 
         user = User(username='foo')
         db.session.add(user)
@@ -164,22 +165,38 @@ class AuthorizationCodeTest(TestCase):
         self.assertIn('access_token', resp)
         self.assertIn('refresh_token', resp)
 
+    def test_client_secret_post(self):
+        self.app.config.update({'OAUTH2_REFRESH_TOKEN_GENERATOR': True})
+        self.prepare_data()
+        url = self.authorize_url + '&state=bar'
+        rv = self.client.post(url, data={'user_id': '1'})
+        self.assertIn('code=', rv.location)
+
+        params = dict(url_decode(urlparse.urlparse(rv.location).query))
+        self.assertEqual(params['state'], 'bar')
+
+        code = params['code']
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': 'authorization_code',
+            'client_id': 'code-client',
+            'client_secret': 'code-secret',
+            'code': code,
+        })
+        resp = json.loads(rv.data)
+        self.assertIn('access_token', resp)
+        self.assertIn('refresh_token', resp)
+
 
 class CacheAuthorizationCodeTest(AuthorizationCodeTest):
-    def register_grant_endpoint(self, server):
-        self.app.config.update({'OAUTH2_CODE_CACHE_TYPE': 'simple'})
+    def register_grant(self, server):
 
-        def create_access_token(token, client, authorization_code):
-            item = Token(
-                client_id=client.client_id,
-                user_id=authorization_code.user_id,
-                **token
-            )
-            db.session.add(item)
-            db.session.commit()
-            # we can add more data into token
-            token['user_id'] = authorization_code.user_id
+        def authenticate_user(authorization_code):
+            return User.query.get(authorization_code.user_id)
 
-        register_cache_authorization_code(
-            self.app, server, create_access_token
-        )
+        cache = SimpleCache()
+        register_cache_authorization_code(cache, server, authenticate_user)
+
+
+class OpenIDCodeTest(TestCase):
+    def register_grant(self, server):
+        server.register_grant(OpenIDCodeGrant)

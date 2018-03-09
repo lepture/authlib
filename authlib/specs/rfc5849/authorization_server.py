@@ -153,7 +153,7 @@ class AuthorizationServer(BaseServer):
             location = add_params_to_uri(redirect_uri, error.get_body())
             return 302, '', [('Location', location)]
 
-        request.grant_user = grant_user
+        request.user = grant_user
         verifier = self.create_authorization_verifier(request)
 
         params = [
@@ -299,7 +299,7 @@ class AuthorizationServer(BaseServer):
                 verifier = generate_token(36)
 
                 temporary_credential = request.credential
-                user_id = request.grant_user.get_user_id()
+                user_id = request.user.get_user_id()
 
                 temporary_credential.user_id = user_id
                 temporary_credential.oauth_verifier = verifier

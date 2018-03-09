@@ -19,8 +19,16 @@ Lovely features that Authlib has built-in:
 - [x] RFC6749: The OAuth 2.0 Authorization Framework
 - [x] RFC6750: The OAuth 2.0 Authorization Framework: Bearer Token Usage
 - [x] RFC7009: OAuth 2.0 Token Revocation
+- [x] RFC7515: JSON Web Signature (JWS)
+- [x] RFC7517: JSON Web Key (JWK)
+- [x] RFC7518: JSON Web Algorithms (JWA)
+- [x] RFC7519: JSON Web Token (JWT)
+- [ ] RFC7521: Assertion Framework for OAuth 2.0 Client Authentication and Authorization Grants
+- [ ] RFC7591: OAuth 2.0 Dynamic Client Registration Protocol
+- [ ] RFC7592: OAuth 2.0 Dynamic Client Registration Management Protocol
 - [ ] RFC7662: OAuth 2.0 Token Introspection
-- [ ] OpenID Connect 1.0 (Client is supported)
+- [x] OpenID Connect 1.0
+- [ ] OpenID Discovery
 
 And more will be added.
 
@@ -34,14 +42,23 @@ Framework integrations with current specification implementations:
 - [x] Django OAuth 1/2 Client
 - [x] Flask OAuth 1 Server
 - [x] Flask OAuth 2 Server
+- [x] Flask OpenID Connect Server
 - [ ] Django OAuth 1 Server
 - [ ] Django OAuth 2 Server
+- [ ] Django OpenID Connect Server
 
 
 ## Security Reporting
 
 If you found security bugs which can not be public, please send me
-email at <me@lepture.com>. Attachment with patch is welcome.
+email at <me@lepture.com>. Attachment with patch is welcome. My PGP
+Key fingerprint is:
+
+```
+72F8 E895 A70C EBDF 4F2A DFE0 7E55 E3E0 118B 2B4C
+```
+
+You can also find it at <https://keybase.io/lepture>.
 
 ## Useful Links
 

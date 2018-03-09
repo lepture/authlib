@@ -5,8 +5,6 @@
 from setuptools import setup, find_packages
 from authlib.consts import version, homepage
 
-crypto_require = ['cryptography', 'pyjwt>=1.0.0']
-
 
 def fread(filename):
     with open(filename) as f:
@@ -29,10 +27,7 @@ setup(
     platforms='any',
     long_description=fread('README.rst'),
     license='LGPLv3',
-    install_requires=['requests'],
-    extras_require={
-        'crypto': crypto_require,
-    },
+    install_requires=['requests', 'cryptography'],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Console',

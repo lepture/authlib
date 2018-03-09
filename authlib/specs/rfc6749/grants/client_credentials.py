@@ -1,4 +1,5 @@
 import logging
+from authlib.deprecate import deprecate
 from .base import BaseGrant
 from ..errors import UnauthorizedClientError
 
@@ -97,28 +98,19 @@ class ClientCredentialsGrant(BaseGrant):
         :returns: (status_code, body, headers)
         """
         client = self.request.client
-        token = self.token_generator(
+        token = self.generate_token(
             client, self.GRANT_TYPE,
             scope=self.request.scope,
             include_refresh_token=False,
         )
         log.debug('Issue token {!r} to {!r}'.format(token, client))
-        self.create_access_token(token, client)
+        if self.server.save_token:
+            self.server.save_token(token, self.request)
+            token = self.process_token(token, self.request)
+        else:
+            deprecate('"create_access_token" deprecated', '0.8', 'vAAUK', 'gt')
+            self.create_access_token(token, client)  # pragma: no cover
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def create_access_token(self, token, client):
-        """Save access_token into database. Developers should implement it in
-        subclass::
-
-            def create_access_token(self, token, client):
-                item = Token(
-                    client_id=client.client_id,
-                    user_id=client.user_id,
-                    **token
-                )
-                item.save()
-
-        :param token: A dict contains the token information.
-        :param client: Current client related to the token.
-        """
-        raise NotImplementedError()
+        raise DeprecationWarning()

@@ -1,5 +1,6 @@
 import logging
 from authlib.common.urls import add_params_to_uri
+from authlib.deprecate import deprecate
 from .base import RedirectAuthGrant
 from ..errors import (
     UnauthorizedClientError,
@@ -117,14 +118,16 @@ class ImplicitGrant(RedirectAuthGrant):
         client = self.authenticate_token_endpoint_client()
         log.debug('Validate authorization request of {!r}'.format(client))
 
-        if not client.check_response_type(self.RESPONSE_TYPE):
+        response_type = self.request.response_type
+        if not client.check_response_type(response_type):
             raise UnauthorizedClientError(
-                'The client is not authorized to use implicit grant',
+                'The client is not authorized to use "{}"'.format(response_type),
                 state=self.request.state,
             )
 
         self.validate_authorization_redirect_uri(client)
         self.validate_requested_scope(client)
+        self.request.client = client
 
     def create_authorization_response(self, grant_user):
         """If the resource owner grants the access request, the authorization
@@ -183,22 +186,23 @@ class ImplicitGrant(RedirectAuthGrant):
         """
         state = self.request.state
         if grant_user:
-            client = self.client
-            token = self.token_generator(
+            self.request.user = grant_user
+            client = self.request.client
+            token = self.generate_token(
                 client, self.GRANT_TYPE,
                 scope=self.request.scope,
                 include_refresh_token=False
             )
             log.debug('Grant token {!r} to {!r}'.format(token, client))
-            self.create_access_token(token, client, grant_user)
-            params = [
-                ('access_token', token['access_token']),
-                ('token_type', token['token_type']),
-            ]
-            if 'expires_in' in token:
-                params.append(('expires_in', token['expires_in']))
-            if 'scope' in token:
-                params.append(('scope', token['scope']))
+
+            if self.server.save_token:
+                self.server.save_token(token, self.request)
+                token = self.process_token(token, self.request)
+            else:
+                deprecate('"create_access_token" deprecated', '0.8', 'vAAUK', 'gt')
+                self.create_access_token(token, client, grant_user)  # pragma: no cover
+
+            params = [(k, token[k]) for k in token]
             if state:
                 params.append(('state', state))
         else:
@@ -210,19 +214,4 @@ class ImplicitGrant(RedirectAuthGrant):
         return 302, '', headers
 
     def create_access_token(self, token, client, grant_user):
-        """Save access_token into database. Developers should implement it in
-        subclass::
-
-            def create_access_token(self, token, client, grant_user):
-                item = Token(
-                    client_id=client.client_id,
-                    user_id=grant_user.get_user_id(),
-                    **token
-                )
-                item.save()
-
-        :param token: A dict contains the token information.
-        :param client: Current client related to the token.
-        :param grant_user: resource owner (user).
-        """
-        raise NotImplementedError()
+        raise DeprecationWarning()

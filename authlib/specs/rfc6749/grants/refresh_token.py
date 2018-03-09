@@ -12,6 +12,7 @@
 """
 
 import logging
+from authlib.deprecate import deprecate
 from .base import BaseGrant
 from ..util import scope_to_list
 from ..errors import (
@@ -115,13 +116,22 @@ class RefreshTokenGrant(BaseGrant):
 
         client = self.request.client
         expires_in = credential.get_expires_in()
-        token = self.token_generator(
+        token = self.generate_token(
             client, self.GRANT_TYPE,
             expires_in=expires_in,
             scope=scope,
         )
         log.debug('Issue token {!r} to {!r}'.format(token, client))
-        self.create_access_token(token, client, credential)
+        if self.server.save_token:
+            user = self.authenticate_user(credential)
+            if not user:
+                raise InvalidRequestError('There is no "user" for this token.')
+            self.request.user = user
+            self.server.save_token(token, self.request)
+            token = self.process_token(token, self.request)
+        else:
+            deprecate('"create_access_token" deprecated', '0.8', 'vAAUK', 'gt')
+            self.create_access_token(token, client, credential)  # pragma: no cover
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_refresh_token(self, refresh_token):
@@ -138,21 +148,17 @@ class RefreshTokenGrant(BaseGrant):
         """
         raise NotImplementedError()
 
-    def create_access_token(self, token, client, authenticated_token):
-        """Save access_token into database. Developers should implement it in
-        subclass::
+    def authenticate_user(self, credential):
+        """Authenticate the user related to this credential. Developers should
+        implement this method in subclass::
 
-            def create_access_token(self, token, client, authenticated_token):
-                item = Token(
-                    client_id=client.client_id,
-                    user_id=authenticated_token.user_id,
-                    **token
-                )
-                item.save()
+            def authenticate_user(self, credential):
+                return User.query.get(credential.user_id)
 
-        :param token: A new generated token to replace the original token.
-        :param client: Current client related to the token.
-        :param authenticated_token: The original token granted by resource
-            owner.
+        :param credential: Token object
+        :return: user
         """
         raise NotImplementedError()
+
+    def create_access_token(self, token, client, authenticated_token):
+        raise DeprecationWarning()

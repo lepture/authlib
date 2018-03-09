@@ -1,8 +1,7 @@
 import time
 from sqlalchemy import Column, String, Boolean, Text, Integer
-from authlib.specs.rfc6749 import (
-    ClientMixin, AuthorizationCodeMixin, TokenMixin
-)
+from authlib.specs.rfc6749 import ClientMixin, TokenMixin
+from authlib.specs.oidc import AuthorizationCodeMixin
 
 
 class OAuth2ClientMixin(ClientMixin):
@@ -55,20 +54,26 @@ class OAuth2AuthorizationCodeMixin(AuthorizationCodeMixin):
     client_id = Column(String(48))
     redirect_uri = Column(Text, default='')
     scope = Column(Text, default='')
-    # expires in 5 minutes by default
-    expires_at = Column(
+    nonce = Column(Text)
+    auth_time = Column(
         Integer, nullable=False,
-        default=lambda: int(time.time()) + 300
+        default=lambda: int(time.time())
     )
 
     def is_expired(self):
-        return self.expires_at < time.time()
+        return self.auth_time + 300 < time.time()
 
     def get_redirect_uri(self):
         return self.redirect_uri
 
     def get_scope(self):
         return self.scope
+
+    def get_nonce(self):
+        return self.nonce
+
+    def get_auth_time(self):
+        return self.auth_time
 
 
 class OAuth2TokenMixin(TokenMixin):
@@ -78,7 +83,7 @@ class OAuth2TokenMixin(TokenMixin):
     refresh_token = Column(String(255), index=True)
     scope = Column(Text, default='')
     revoked = Column(Boolean, default=False)
-    created_at = Column(
+    issued_at = Column(
         Integer, nullable=False, default=lambda: int(time.time())
     )
     expires_in = Column(Integer, nullable=False, default=0)
@@ -90,7 +95,7 @@ class OAuth2TokenMixin(TokenMixin):
         return self.expires_in
 
     def get_expires_at(self):
-        return self.created_at + self.expires_in
+        return self.issued_at + self.expires_in
 
 
 def create_query_client_func(session, model_class):
@@ -104,6 +109,29 @@ def create_query_client_func(session, model_class):
         q = session.query(model_class)
         return q.filter_by(client_id=client_id).first()
     return query_client
+
+
+def create_save_token_func(session, model_class):
+    """Create an ``save_token`` function that can be used in authorization
+    server.
+
+    :param session: SQLAlchemy session
+    :param model_class: Token class
+    """
+    def save_token(token, request):
+        if request.user:
+            user_id = request.user.get_user_id()
+        else:
+            user_id = None
+        client = request.client
+        item = model_class(
+            client_id=client.client_id,
+            user_id=user_id,
+            **token
+        )
+        session.add(item)
+        session.commit()
+    return save_token
 
 
 def create_revocation_endpoint(session, model_class):

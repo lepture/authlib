@@ -1,5 +1,6 @@
 import logging
 from authlib.common.urls import add_params_to_uri
+from authlib.deprecate import deprecate
 from .base import RedirectAuthGrant
 from ..errors import (
     UnauthorizedClientError,
@@ -114,7 +115,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
             raise InvalidClientError(
                 state=self.request.state,
             )
-        if not client.check_response_type(self.RESPONSE_TYPE):
+        if not client.check_response_type(self.request.response_type):
             raise UnauthorizedClientError(
                 'The client is not authorized to request an authorization '
                 'code using this method',
@@ -123,6 +124,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
 
         self.validate_authorization_redirect_uri(client)
         self.validate_requested_scope(client)
+        self.request.client = client
 
     def create_authorization_response(self, grant_user):
         """If the resource owner grants the access request, the authorization
@@ -164,9 +166,10 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         """
         state = self.request.state
         if grant_user:
-            self.request.grant_user = grant_user
+            self.request.user = grant_user
+            client = self.request.client
             code = self.create_authorization_code(
-                self.client, grant_user, self.request)
+                client, grant_user, self.request)
             params = [('code', code)]
             if state:
                 params.append(('state', state))
@@ -290,14 +293,24 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         authorization_code = self.request.credential
 
         scope = authorization_code.get_scope()
-        token = self.token_generator(
+        token = self.generate_token(
             client,
             self.GRANT_TYPE,
             scope=scope,
             include_refresh_token=client.has_client_secret(),
         )
         log.debug('Issue token {!r} to {!r}'.format(token, client))
-        self.create_access_token(token, client, authorization_code)
+
+        if self.server.save_token:
+            user = self.authenticate_user(authorization_code)
+            if not user:
+                raise InvalidRequestError('There is no "user" for this code.')
+            self.request.user = user
+            self.server.save_token(token, self.request)
+            token = self.process_token(token, self.request)
+        else:
+            deprecate('"create_access_token" deprecated', '0.8', 'vAAUK', 'gt')
+            self.create_access_token(token, client, authorization_code)  # pragma: no cover
         self.delete_authorization_code(authorization_code)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
@@ -349,22 +362,17 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         """
         raise NotImplementedError()
 
-    def create_access_token(self, token, client, authorization_code):
-        """Save access_token into database. Developers should implement it in
-        subclass::
+    def authenticate_user(self, authorization_code):
+        """Authenticate the user related to this authorization_code. Developers
+        should implement this method in subclass::
 
-            def create_access_token(self, token, client, authorization_code):
-                item = Token(
-                    client_id=client.client_id,
-                    user_id=authorization_code.user_id,
-                    **token
-                )
-                item.save()
-                # if you want to add extra data into token
-                token['user_id'] = authorization_code.user_id
+            def authenticate_user(self, authorization_code):
+                return User.query.get(authorization_code.user_id)
 
-        :param token: A dict contains the token information
-        :param client: Current client related to the token
-        :param authorization_code: previously saved authorization_code
+        :param authorization_code: AuthorizationCode object
+        :return: user
         """
         raise NotImplementedError()
+
+    def create_access_token(self, token, client, authorization_code):
+        raise DeprecationWarning()

@@ -1,3 +1,4 @@
+from authlib.deprecate import deprecate
 from authlib.common.urls import (
     urlparse, extract_params, url_decode,
     parse_http_list, parse_keqv_list,
@@ -25,7 +26,7 @@ class OAuth1Request(object):
         # states namespaces
         self.client = None
         self.credential = None
-        self.grant_user = None
+        self.user = None
 
         self.query = urlparse.urlparse(uri).query
         self.query_params = url_decode(self.query)
@@ -64,6 +65,16 @@ class OAuth1Request(object):
         params.extend(self.body_params)
         params.extend(self.auth_params)
         self.params = params
+
+    @property
+    def grant_user(self):  # pragma: no cover
+        deprecate('Use "request.user" instead.', '0.8')
+        return self.user
+
+    @grant_user.setter
+    def grant_user(self, user):  # pragma: no cover
+        deprecate('Use "request.user" instead.', '0.8')
+        self.user = user
 
     @property
     def client_id(self):

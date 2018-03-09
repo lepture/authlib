@@ -108,16 +108,38 @@ which has built-in tools to handle requests and responses::
     def query_client(client_id):
         return Client.query.filter_by(client_id=client_id).first()
 
-    # or with the helper
-    from authlib.flask.oauth2.sqla import create_query_client_func
-    query_client = create_query_client_func(db.session, Client)
+    def save_token(token, request):
+        if request.user:
+            user_id = request.user.get_user_id()
+        else:
+            # client_credential
+            user_id = request.client.user_id
+            # or, depending on how you treat client_credential
+            user_id = None
+        item = Token(
+            client_id=request.client.client_id,
+            user_id=user_id,
+            **token
+        )
+        db.session.add(item)
+        db.session.commit()
 
-    server = AuthorizationServer(app, query_client=query_client)
+    # or with the helper
+    from authlib.flask.oauth2.sqla import (
+        create_query_client_func,
+        create_save_token_func
+    )
+    query_client = create_query_client_func(db.session, Client)
+    save_token = create_save_token_func(db.session, Token)
+
+    server = AuthorizationServer(
+        app, query_client=query_client, save_token=save_token
+    )
 
 It can also be initialized lazily with init_app::
 
     server = AuthorizationServer()
-    server.init_app(app, query_client=query_client)
+    server.init_app(app, query_client=query_client, save_token=save_token)
 
 It works well without configuration. However, it can be configured with these
 settings:
@@ -212,12 +234,10 @@ kept in a database or a cache like redis. Here is a SQLAlchemy mixin for
 
 Implement this grant by subclass :class:`AuthorizationCodeGrant`::
 
-    from authlib.specs.rfc6749.grants import (
-        AuthorizationCodeGrant as _AuthorizationCodeGrant
-    )
+    from authlib.specs.rfc6749 import grants
     from authlib.common.security import generate_token
 
-    class AuthorizationCodeGrant(_AuthorizationCodeGrant):
+    class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
         def create_authorization_code(self, client, grant_user, request):
             # you can use other method to generate this code
             code = generate_token(48)
@@ -242,16 +262,8 @@ Implement this grant by subclass :class:`AuthorizationCodeGrant`::
             db.session.delete(authorization_code)
             db.session.commit()
 
-        def create_access_token(self, token, client, authorization_code):
-            item = Token(
-                client_id=client.client_id,
-                user_id=authorization_code.user_id,
-                **token
-            )
-            db.session.add(item)
-            db.session.commit()
-            # we can add more data into token
-            token['user_id'] = authorization_code.user_id
+        def authenticate_user(self, authorization_code):
+            return User.query.get(authorization_code.user_id)
 
     # register it to grant endpoint
     server.register_grant_endpoint(AuthorizationCodeGrant)
@@ -263,24 +275,13 @@ Implicit Grant
 
 The implicit grant type is usually used in a browser, when resource
 owner granted the access, access token is issued in the redirect URI,
-implement it with a subclass of :class:`ImplicitGrant`::
+there is no missing implementation, which means it can be easily registered
+with::
 
-    from authlib.specs.rfc6749.grants import (
-        ImplicitGrant as _ImplicitGrant
-    )
-
-    class ImplicitGrant(_ImplicitGrant):
-        def create_access_token(self, token, client, grant_user):
-            item = Token(
-                client_id=client.client_id,
-                user_id=grant_user.get_user_id(),
-                **token
-            )
-            db.session.add(item)
-            db.session.commit()
+    from authlib.specs.rfc6749 import grants
 
     # register it to grant endpoint
-    server.register_grant_endpoint(ImplicitGrant)
+    server.register_grant_endpoint(grants.ImplicitGrant)
 
 Implicit Grant is used by **public** client which has no **client_secret**.
 
@@ -291,24 +292,13 @@ Resource owner uses his username and password to exchange an access token,
 this grant type should be used only when the client is trustworthy, implement
 it with a subclass of :class:`ResourceOwnerPasswordCredentialsGrant`::
 
-    from authlib.specs.rfc6749.grants import (
-        ResourceOwnerPasswordCredentialsGrant as _PasswordGrant
-    )
+    from authlib.specs.rfc6749 import grants
 
-    class PasswordGrant(_PasswordGrant):
+    class PasswordGrant(grants.ResourceOwnerPasswordCredentialsGrant):
         def authenticate_user(self, username, password):
             user = User.query.filter_by(username=username).first()
             if user.check_password(password):
                 return user
-
-        def create_access_token(self, token, client, user):
-            item = Token(
-                client_id=client.client_id,
-                user_id=user.get_user_id(),
-                **token
-            )
-            db.session.add(item)
-            db.session.commit()
 
     # register it to grant endpoint
     server.register_grant_endpoint(PasswordGrant)
@@ -316,26 +306,14 @@ it with a subclass of :class:`ResourceOwnerPasswordCredentialsGrant`::
 Client Credentials Grant
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-Client credentials grant type can access public resources and the client's
-creator's resources, implement it with a subclass of
-:class:`ClientCredentialsGrant`::
+Client credentials grant type can access public resources and MAYBE the
+client's creator's resources, depending on how you issue tokens to this
+grant type. It can be easily registered with::
 
-    from authlib.specs.rfc6749.grants import (
-        ClientCredentialsGrant as _ClientCredentialsGrant
-    )
-
-    class ClientCredentialsGrant(_ClientCredentialsGrant):
-        def create_access_token(self, token, client):
-            item = Token(
-                client_id=client.client_id,
-                user_id=client.user_id,
-                **token
-            )
-            db.session.add(item)
-            db.session.commit()
+    from authlib.specs.rfc6749 import grants
 
     # register it to grant endpoint
-    server.register_grant_endpoint(ClientCredentialsGrant)
+    server.register_grant_endpoint(grants.ClientCredentialsGrant)
 
 Refresh Token
 -------------
@@ -344,28 +322,20 @@ Many OAuth 2 providers haven't implemented refresh token endpoint. Authlib
 provides it as a grant type, implement it with a subclass of
 :class:`RefreshTokenGrant`::
 
-    from authlib.specs.rfc6749.grants import (
-        RefreshTokenGrant as _RefreshTokenGrant
-    )
+    from authlib.specs.rfc6749 import grants
 
-    class RefreshTokenGrant(_RefreshTokenGrant):
-        def authenticate_token(self, refresh_token):
+    class RefreshTokenGrant(grants.RefreshTokenGrant):
+        def authenticate_refresh_token(self, refresh_token):
             item = Token.query.filter_by(refresh_token=refresh_token).first()
             # define is_refresh_token_expired by yourself
             if item and not item.is_refresh_token_expired():
                 return item
 
-        def create_access_token(self, token, authenticated_token):
-            # issue a new token to replace the old one, you can also update
-            # the ``authenticated_token`` instead of issuing a new one
-            item = Token(
-                client_id=authenticated_token.client_id,
-                user_id=authenticated_token.user_id,
-                **token
-            )
-            db.session.add(item)
-            db.session.delete(authenticated_token)
-            db.session.commit()
+        def authenticate_user(self, credential):
+            return User.query.get(credential.user_id)
+
+    # register it to grant endpoint
+    server.register_grant_endpoint(RefreshTokenGrant)
 
 
 Token Revocation

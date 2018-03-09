@@ -81,17 +81,6 @@ class OAuth(object):
                 v = self.app.config.get(conf_key, None)
                 kwargs[k] = v
 
-        if not kwargs['client_id']:
-            conf_key = '{}_client_key'.format(name).upper()
-            kwargs['client_id'] = self.app.config.get(conf_key, None)
-            deprecate(
-                'Use "{}" instead of "{}".'.format(
-                    conf_key.replace('CLIENT_KEY', 'CLIENT_ID'),
-                    conf_key
-                ),
-                '0.6'
-            )
-
         fetch_token = kwargs.pop('fetch_token', None)
         if fetch_token is None and self.fetch_token:
             fetch_token = functools.partial(self.fetch_token, name=name)

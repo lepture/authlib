@@ -1,4 +1,5 @@
 from authlib.common.urls import add_params_to_uri
+from authlib.deprecate import deprecate
 from .errors import InvalidGrantError, OAuth2Error
 
 
@@ -11,29 +12,51 @@ class AuthorizationServer(object):
         :class:`~authlib.specs.rfc6749.ClientMixin`.
     :param token_generator: A method to generate tokens.
     """
-    def __init__(self, query_client, token_generator):
+    def __init__(self, query_client, generate_token, save_token, **config):
         self.query_client = query_client
-        self.token_generator = token_generator
-        self._authorization_endpoints = set()
-        self._token_endpoints = set()
+        self.generate_token = generate_token
+        self.save_token = save_token
+        self.config = config
+        self._authorization_grants = []
+        self._token_grants = []
+        self._hooks = {}
+        self._endpoints = {}
 
-    def register_grant_endpoint(self, grant_cls):
+    def register_grant_endpoint(self, grant_cls):  # pragma: no cover
+        deprecate('Use `register_grant` instead.', '0.8', 'vAAUK', 'rg')
+        self.register_grant(grant_cls)
+
+    def register_grant(self, grant_cls):
         """Register a grant class into the endpoint registry. Developers
         can implement the grants in ``authlib.specs.rfc6749.grants`` and
         register with this method::
 
-            class MyImplicitGrant(ImplicitGrant):
-                def create_access_token(self, token, client, grant_user):
+            class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
+                def authenticate_user(self, credential):
                     # ...
 
-            authorization_server.register_grant_endpoint(MyImplicitGrant)
+            authorization_server.register_grant(AuthorizationCodeGrant)
 
         :param grant_cls: a grant class.
         """
         if grant_cls.AUTHORIZATION_ENDPOINT:
-            self._authorization_endpoints.add(grant_cls)
+            self._authorization_grants.append(grant_cls)
         if grant_cls.TOKEN_ENDPOINT:
-            self._token_endpoints.add(grant_cls)
+            self._token_grants.append(grant_cls)
+
+    def register_endpoint(self, endpoint_cls):
+        self._endpoints[endpoint_cls.ENDPOINT_NAME] = endpoint_cls
+
+    def register_hook(self, name, func):
+        if name in self._hooks:
+            raise ValueError('"{}" is already in hooks'.format(name))
+        self._hooks[name] = func
+
+    def execute_hook(self, name, *args, **kwargs):
+        if name not in self._hooks:
+            raise RuntimeError('"{}" hook is not registered.'.format(name))
+        func = self._hooks[name]
+        return func(*args, **kwargs)
 
     def get_authorization_grant(self, request):
         """Find the authorization grant for current request.
@@ -41,10 +64,9 @@ class AuthorizationServer(object):
         :param request: OAuth2Request instance.
         :return: grant instance
         """
-        for grant_cls in self._authorization_endpoints:
+        for grant_cls in self._authorization_grants:
             if grant_cls.check_authorization_endpoint(request):
-                return grant_cls(
-                    request, self.query_client, self.token_generator)
+                return grant_cls(request, self)
         raise InvalidGrantError()
 
     def get_token_grant(self, request):
@@ -53,12 +75,18 @@ class AuthorizationServer(object):
         :param request: OAuth2Request instance.
         :return: grant instance
         """
-        for grant_cls in self._token_endpoints:
+        for grant_cls in self._token_grants:
             if grant_cls.check_token_endpoint(request):
-                if request.method in grant_cls.TOKEN_HTTP_METHODS:
-                    return grant_cls(
-                        request, self.query_client, self.token_generator)
+                if request.method in grant_cls.TOKEN_ENDPOINT_HTTP_METHODS:
+                    return grant_cls(request, self)
         raise InvalidGrantError()
+
+    def create_endpoint_response(self, name, request):
+        if name not in self._endpoints:
+            raise RuntimeError('There is no "{}" endpoint.'.format(name))
+        endpoint_cls = self._endpoints[name]
+        endpoint = endpoint_cls(request, self)
+        return endpoint()
 
     def create_valid_authorization_response(self, request, grant_user):
         """Validate authorization request and create authorization response.
@@ -68,6 +96,7 @@ class AuthorizationServer(object):
             it is None.
         :returns: (status_code, body, headers)
         """
+        # TODO: rename it to `create_authorization_response` in v0.8
         try:
             grant = self.get_authorization_grant(request)
         except InvalidGrantError as error:
@@ -77,12 +106,14 @@ class AuthorizationServer(object):
             grant.validate_authorization_request()
             return grant.create_authorization_response(grant_user)
         except OAuth2Error as error:
-            params = error.get_body()
-            loc = add_params_to_uri(grant.redirect_uri, params)
-            headers = [('Location', loc)]
-            return 302, '', headers
+            if grant.redirect_uri:
+                params = error.get_body()
+                loc = add_params_to_uri(grant.redirect_uri, params)
+                headers = [('Location', loc)]
+                return 302, '', headers
+            return 400, dict(error.get_body()), error.get_headers()
 
-    def create_valid_token_response(self, request):
+    def create_token_response(self, request):
         """Validate token request and create token response.
 
         :param request: OAuth2Request instance

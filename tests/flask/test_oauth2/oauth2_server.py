@@ -12,6 +12,7 @@ from authlib.flask.oauth2.sqla import (
     OAuth2TokenMixin,
     create_bearer_token_validator,
     create_query_client_func,
+    create_save_token_func,
 )
 from authlib.flask.oauth2 import (
     AuthorizationServer,
@@ -21,11 +22,11 @@ from authlib.flask.oauth2 import (
 from authlib.specs.rfc6749 import OAuth2Error
 from authlib.specs.rfc6749.grants import (
     AuthorizationCodeGrant as _AuthorizationCodeGrant,
-    ImplicitGrant as _ImplicitGrant,
     ResourceOwnerPasswordCredentialsGrant as _PasswordGrant,
-    ClientCredentialsGrant as _ClientCredentialsGrant,
     RefreshTokenGrant as _RefreshTokenGrant,
 )
+from authlib.specs.oidc import grants
+from authlib.specs.oidc import UserInfo
 
 os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
 db = SQLAlchemy()
@@ -41,6 +42,10 @@ class User(db.Model):
     def check_password(self, password):
         return password != 'wrong'
 
+    def generate_user_info(self, scopes):
+        profile = {'sub': str(self.id), 'name': self.username}
+        return UserInfo(profile)
+
 
 class Client(db.Model, OAuth2ClientMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -52,10 +57,17 @@ class Client(db.Model, OAuth2ClientMixin):
     allowed_grant_types = db.Column(db.Text, default='')
 
     def check_response_type(self, response_type):
-        return response_type in self.allowed_response_types.split()
+        response_types = response_type.split()
+        allowed_types = self.allowed_response_types.split()
+        return all([t in allowed_types for t in response_types])
 
     def check_grant_type(self, grant_type):
         return grant_type in self.allowed_grant_types.split()
+
+    def check_token_endpoint_auth_method(self, method):
+        if self.has_client_secret():
+            return method in ['client_secret_basic', 'client_secret_post']
+        return method == 'none'
 
 
 class AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):
@@ -74,18 +86,20 @@ class Token(db.Model, OAuth2TokenMixin):
     user = db.relationship('User')
 
     def is_refresh_token_expired(self):
-        expired_at = self.created_at + self.expires_in * 2
+        expired_at = self.issued_at + self.expires_in * 2
         return expired_at < time.time()
 
 
-class AuthorizationCodeGrant(_AuthorizationCodeGrant):
+class CodeGrantMixin(object):
     def create_authorization_code(self, client, grant_user, request):
         code = generate_token(48)
+        nonce = request.data.get('nonce')
         item = AuthorizationCode(
             code=code,
             client_id=client.client_id,
             redirect_uri=request.redirect_uri,
             scope=request.scope,
+            nonce=nonce,
             user_id=grant_user.get_user_id(),
         )
         db.session.add(item)
@@ -102,27 +116,20 @@ class AuthorizationCodeGrant(_AuthorizationCodeGrant):
         db.session.delete(authorization_code)
         db.session.commit()
 
-    def create_access_token(self, token, client, authorization_code):
-        item = Token(
-            client_id=client.client_id,
-            user_id=authorization_code.user_id,
-            **token
-        )
-        db.session.add(item)
-        db.session.commit()
-        # we can add more data into token
-        token['user_id'] = authorization_code.user_id
+    def authenticate_user(self, authorization_code):
+        return User.query.get(authorization_code.user_id)
 
 
-class ImplicitGrant(_ImplicitGrant):
-    def create_access_token(self, token, client, grant_user):
-        item = Token(
-            client_id=client.client_id,
-            user_id=grant_user.get_user_id(),
-            **token
-        )
-        db.session.add(item)
-        db.session.commit()
+class AuthorizationCodeGrant(CodeGrantMixin, _AuthorizationCodeGrant):
+    pass
+
+
+class OpenIDCodeGrant(CodeGrantMixin, grants.OpenIDCodeGrant):
+    pass
+
+
+class OpenIDHybridGrant(CodeGrantMixin, grants.OpenIDHybridGrant):
+    pass
 
 
 class PasswordGrant(_PasswordGrant):
@@ -131,26 +138,6 @@ class PasswordGrant(_PasswordGrant):
         if user.check_password(password):
             return user
 
-    def create_access_token(self, token, client, user):
-        item = Token(
-            client_id=client.client_id,
-            user_id=user.get_user_id(),
-            **token
-        )
-        db.session.add(item)
-        db.session.commit()
-
-
-class ClientCredentialsGrant(_ClientCredentialsGrant):
-    def create_access_token(self, token, client):
-        item = Token(
-            client_id=client.client_id,
-            user_id=client.user_id,
-            **token
-        )
-        db.session.add(item)
-        db.session.commit()
-
 
 class RefreshTokenGrant(_RefreshTokenGrant):
     def authenticate_refresh_token(self, refresh_token):
@@ -158,27 +145,38 @@ class RefreshTokenGrant(_RefreshTokenGrant):
         if item and not item.is_refresh_token_expired():
             return item
 
-    def create_access_token(self, token, client, authenticated_token):
-        item = Token(
-            client_id=client.client_id,
-            user_id=authenticated_token.user_id,
-            **token
-        )
-        db.session.add(item)
-        db.session.delete(authenticated_token)
-        db.session.commit()
+    def authenticate_user(self, credential):
+        return User.query.get(credential.user_id)
 
 
 def create_authorization_server(app):
     query_client = create_query_client_func(db.session, Client)
-    server = AuthorizationServer(app, query_client)
+    save_token = create_save_token_func(db.session, Token)
+
+    def exists_nonce(nonce, req):
+        exists = AuthorizationCode.query.filter_by(
+            client_id=req.client_id, nonce=nonce
+        ).first()
+        return bool(exists)
+
+    server = AuthorizationServer(
+        app,
+        query_client=query_client,
+        save_token=save_token,
+    )
+    server.register_hook('exists_nonce', exists_nonce)
 
     @app.route('/oauth/authorize', methods=['GET', 'POST'])
     def authorize():
         if request.method == 'GET':
+            user_id = request.args.get('user_id')
+            if user_id:
+                end_user = User.query.get(int(user_id))
+            else:
+                end_user = None
             try:
-                server.validate_authorization_request()
-                return 'ok'
+                grant = server.validate_consent_request(end_user=end_user)
+                return grant.prompt or 'ok'
             except OAuth2Error as error:
                 return error.error
         user_id = request.form.get('user_id')
@@ -186,7 +184,7 @@ def create_authorization_server(app):
             grant_user = User.query.get(int(user_id))
         else:
             grant_user = None
-        return server.create_authorization_response(grant_user)
+        return server.create_authorization_response(grant_user=grant_user)
 
     @app.route('/oauth/token', methods=['GET', 'POST'])
     def issue_token():
@@ -194,7 +192,7 @@ def create_authorization_server(app):
 
     @app.route('/oauth/revoke', methods=['POST'])
     def revoke_token():
-        return server.create_revocation_response()
+        return server.create_endpoint_response('revocation')
 
     return server
 

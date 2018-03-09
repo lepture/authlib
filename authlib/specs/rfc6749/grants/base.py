@@ -9,7 +9,7 @@ from ..authenticate_client import authenticate_client
 class BaseGrant(object):
     AUTHORIZATION_ENDPOINT = False
     TOKEN_ENDPOINT = False
-    TOKEN_HTTP_METHODS = ['POST']
+    TOKEN_ENDPOINT_HTTP_METHODS = ['POST']
     TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic']
     RESPONSE_TYPE = None
     GRANT_TYPE = None
@@ -24,13 +24,11 @@ class BaseGrant(object):
         ('Pragma', 'no-cache'),
     ]
 
-    def __init__(self, request, query_client, token_generator):
+    def __init__(self, request, server):
         self.request = request
         self.redirect_uri = request.redirect_uri
-        self.query_client = query_client
-        self.token_generator = token_generator
+        self.server = server
         self._clients = {}
-        self._after_authenticate_client = None
 
     @classmethod
     def check_token_endpoint(cls, request):
@@ -40,10 +38,19 @@ class BaseGrant(object):
     def client(self):
         return self.get_client_by_id(self.request.client_id)
 
+    def generate_token(self, client, grant_type, expires_in=None,
+                       scope=None, include_refresh_token=True):
+        return self.server.generate_token(
+            client, grant_type,
+            expires_in=expires_in,
+            scope=scope,
+            include_refresh_token=include_refresh_token,
+        )
+
     def get_client_by_id(self, client_id):
         if client_id in self._clients:
             return self._clients[client_id]
-        client = self.query_client(client_id)
+        client = self.server.query_client(client_id)
         self._clients[client_id] = client
         return client
 
@@ -72,14 +79,19 @@ class BaseGrant(object):
             request=self.request,
             methods=self.TOKEN_ENDPOINT_AUTH_METHODS,
         )
-        if self._after_authenticate_client:
-            self._after_authenticate_client(client)
+        try:
+            self.server.execute_hook('after_authenticate_client', client, self)
+        except RuntimeError:
+            pass
         return client
 
     def validate_requested_scope(self, client):
         scopes = scope_to_list(self.request.scope)
         if scopes and not client.check_requested_scopes(set(scopes)):
             raise InvalidScopeError(state=self.request.state)
+
+    def process_token(self, token, request):
+        return token
 
 
 class RedirectAuthGrant(BaseGrant):

@@ -69,10 +69,6 @@ class RemoteApp(OAuthClient):
                 if k not in kwargs:
                     kwargs[k] = config.get(k, None)
 
-            if not kwargs['client_id']:
-                deprecate('"client_key" has been renamed to "client_id".', '0.6')
-                kwargs['client_id'] = config.get('client_key', None)
-
         super(RemoteApp, self).__init__(*args, **kwargs)
 
         self.compliance_fix = compliance_fix

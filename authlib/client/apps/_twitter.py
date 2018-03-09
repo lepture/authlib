@@ -1,4 +1,5 @@
-from .base import AppFactory, UserInfo, patch_method, compatible_fetch_user
+from authlib.specs.oidc import UserInfo
+from .base import AppFactory, patch_method
 
 
 def fetch_profile(client):
@@ -20,7 +21,7 @@ def fetch_profile(client):
     username = params['preferred_username']
     if username:
         params['profile'] = 'https://twitter.com/{}'.format(username)
-    return UserInfo(**params)
+    return UserInfo(params)
 
 
 twitter = AppFactory('twitter', {
@@ -32,4 +33,3 @@ twitter = AppFactory('twitter', {
 
 
 patch_method(twitter, fetch_profile, 'profile')
-compatible_fetch_user(twitter, fetch_profile)

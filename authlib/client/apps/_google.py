@@ -1,9 +1,6 @@
-try:
-    from authlib.specs.oidc import verify_id_token
-except ImportError:  # pragma: no cover
-    verify_id_token = None
-
-from .base import AppFactory, UserInfo, patch_method, compatible_fetch_user
+from authlib.specs.rfc7519 import JWT
+from authlib.specs.oidc import CodeIDToken, UserInfo
+from .base import AppFactory, patch_method
 
 GOOGLE_API_URL = 'https://www.googleapis.com/'
 GOOGLE_TOKEN_URL = GOOGLE_API_URL + 'oauth2/v4/token'
@@ -15,20 +12,30 @@ GOOGLE_AUTH_URL = (
 GOOGLE_REVOKE_URL = 'https://accounts.google.com/o/oauth2/revoke'
 GOOGLE_JWK_SET = None
 
-# the second one doesn't respect spec
-GOOGLE_ISSUES = ('https://accounts.google.com', 'accounts.google.com')
+GOOGLE_CLAIMS_OPTIONS = {
+    "iss": {
+        "values": ['https://accounts.google.com', 'accounts.google.com']
+    }
+}
 
 
-def parse_id_token(client, response, nonce=None):
+def parse_openid(client, response, nonce=None):
     jwk_set = _get_google_jwk_set(client)
-
-    id_token = verify_id_token(
-        response, jwk_set,
-        issuers=GOOGLE_ISSUES,
-        client_id=client.client_id,
+    id_token = response['id_token']
+    claims_params = dict(
         nonce=nonce,
+        client_id=client.client_id,
+        access_token=response['access_token']
     )
-    return UserInfo(**id_token.token)
+    jwt = JWT()
+    claims = jwt.decode(
+        id_token, key=jwk_set,
+        claims_cls=CodeIDToken,
+        claims_options=GOOGLE_CLAIMS_OPTIONS,
+        claims_params=claims_params,
+    )
+    claims.validate(leeway=120)
+    return UserInfo(claims)
 
 
 def revoke_token(client):
@@ -45,7 +52,7 @@ def _get_google_jwk_set(client):
     global GOOGLE_JWK_SET
     if not GOOGLE_JWK_SET:
         resp = client.get(GOOGLE_JWK_URL, withhold_token=True)
-        GOOGLE_JWK_SET = resp.json()['keys']
+        GOOGLE_JWK_SET = resp.json()
     return GOOGLE_JWK_SET
 
 
@@ -58,5 +65,4 @@ google = AppFactory('google', {
 
 patch_method(google, revoke_token, 'revoke_token')
 patch_method(google, fetch_profile, 'profile')
-patch_method(google, parse_id_token, 'parse_openid')
-compatible_fetch_user(google, fetch_profile)
+patch_method(google, parse_openid, 'parse_openid')

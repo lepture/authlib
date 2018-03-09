@@ -11,7 +11,7 @@ RevocationEndpoint = create_revocation_endpoint(db.session, Token)
 class RevokeTokenTest(TestCase):
     def prepare_data(self):
         server = create_authorization_server(self.app)
-        server.register_revoke_token_endpoint(RevocationEndpoint)
+        server.register_endpoint(RevocationEndpoint)
 
         user = User(username='foo')
         db.session.add(user)

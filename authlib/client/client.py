@@ -4,7 +4,6 @@ from .oauth2 import OAuth2Session
 from .errors import OAuthException
 from ..specs.rfc6749 import OAuth2Token
 from ..common.urls import urlparse
-from authlib.deprecate import deprecate
 from ..consts import default_user_agent
 
 __all__ = ['OAuthClient']
@@ -55,9 +54,6 @@ class OAuthClient(object):
                  refresh_token_url=None, refresh_token_params=None,
                  authorize_url=None, api_base_url=None,
                  client_kwargs=None, compliance_fix=None, **kwargs):
-        if not client_id and 'client_key' in kwargs:
-            client_id = kwargs.get('client_key')
-            deprecate('"client_key" has been renamed to "client_id".', '0.6')
         self.client_id = client_id
         self.client_secret = client_secret
         self.request_token_url = request_token_url

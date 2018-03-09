@@ -1,8 +1,7 @@
 from __future__ import unicode_literals, print_function
 import unittest
 from authlib.specs.oidc import (
-    parse_id_token, validate_id_token, verify_id_token,
-    IDTokenError, CodeIDToken,
+    parse_id_token, verify_id_token, CodeIDToken,
 )
 
 
@@ -49,8 +48,11 @@ class OAuthClientTest(unittest.TestCase):
     def test_verify_id_token(self):
         self.assertRaises(ValueError, lambda: verify_id_token({}, ''))
         response = {'id_token': ID_TOKEN}
-        token = verify_id_token(response, JWK_RSA_PUB_KEY)
+        token = verify_id_token(response, JWK_RSA_PUB_KEY, now=0)
         self.assertIsInstance(token, CodeIDToken)
 
-    def test_validate_id_token(self):
-        self.assertRaises(ValueError, lambda: validate_id_token({}, 'n'))
+        token = verify_id_token(response, [JWK_RSA_PUB_KEY], now=0)
+        self.assertIsInstance(token, CodeIDToken)
+
+        token = verify_id_token(response, {'keys': [JWK_RSA_PUB_KEY]}, now=0)
+        self.assertIsInstance(token, CodeIDToken)

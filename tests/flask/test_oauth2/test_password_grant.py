@@ -8,8 +8,8 @@ from .oauth2_server import create_authorization_server
 class PasswordTest(TestCase):
     def prepare_data(self, grant_type='password'):
         server = create_authorization_server(self.app)
-        server.register_grant_endpoint(AuthorizationCodeGrant)
-        server.register_grant_endpoint(PasswordGrant)
+        server.register_grant(AuthorizationCodeGrant)
+        server.register_grant(PasswordGrant)
 
         user = User(username='foo')
         db.session.add(user)
