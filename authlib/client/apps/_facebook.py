@@ -1,4 +1,5 @@
-from .base import AppFactory, UserInfo, patch_method
+from authlib.specs.oidc import UserInfo
+from .base import AppFactory, patch_method
 
 
 def fetch_profile(client):
@@ -19,7 +20,7 @@ def fetch_profile(client):
         'gender': data.get('gender'),
         'locale': data.get('locale')
     }
-    return UserInfo(**params)
+    return UserInfo(params)
 
 
 facebook = AppFactory('facebook', {

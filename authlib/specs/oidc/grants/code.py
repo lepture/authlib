@@ -32,9 +32,9 @@ class OpenIDCodeGrant(OpenIDMixin, AuthorizationCodeGrant):
         # validate openid request
         self.validate_nonce(required=False)
 
-    def validate_consent_request(self, end_user):
+    def validate_prompt(self, end_user):
         if is_openid_request(self.request):
-            super(OpenIDCodeGrant, self).validate_consent_request(end_user)
+            super(OpenIDCodeGrant, self).validate_prompt(end_user)
 
     def process_token(self, token, request):
         scope = token.get('scope')

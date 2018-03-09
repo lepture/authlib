@@ -1,4 +1,5 @@
-from .base import AppFactory, UserInfo, patch_method
+from authlib.specs.oidc import UserInfo
+from .base import AppFactory, patch_method
 
 
 def fetch_profile(client):
@@ -15,7 +16,7 @@ def fetch_profile(client):
     }
     # updated_at = data.get('updated_at')
     # TODO: params['updated_at'] = updated_at
-    return UserInfo(**params)
+    return UserInfo(params)
 
 
 github = AppFactory('github', {

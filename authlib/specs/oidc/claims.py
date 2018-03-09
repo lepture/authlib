@@ -8,6 +8,11 @@ from authlib.specs.rfc7519 import (
 )
 from .util import create_half_hash
 
+__all__ = [
+    'IDToken', 'CodeIDToken', 'ImplicitIDToken', 'HybridIDToken',
+    'UserInfo', 'get_claim_cls_by_response_type'
+]
+
 _REGISTERED_CLAIMS = [
     'iss', 'sub', 'aud', 'exp', 'nbf', 'iat',
     'auth_time', 'nonce', 'acr', 'amr', 'azp',
@@ -200,6 +205,23 @@ class HybridIDToken(ImplicitIDToken):
                 raise MissingClaimError('c_hash')
             if not _verify_hash(c_hash, code, self.header['alg']):
                 raise InvalidClaimError('c_hash')
+
+
+class UserInfo(dict):
+    REGISTERED_CLAIMS = [
+        'sub', 'name', 'given_name', 'family_name', 'middle_name', 'nickname',
+        'preferred_username', 'profile', 'picture', 'website', 'email',
+        'email_verified', 'gender', 'birthdate', 'zoneinfo', 'locale',
+        'phone_number', 'phone_number_verified', 'address', 'updated_at',
+    ]
+
+    def __getattr__(self, key):
+        try:
+            return object.__getattribute__(self, key)
+        except AttributeError as error:
+            if key in self.REGISTERED_CLAIMS:
+                return self.get(key)
+            raise error
 
 
 def get_claim_cls_by_response_type(response_type):

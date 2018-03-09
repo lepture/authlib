@@ -1,4 +1,5 @@
-from .base import AppFactory, UserInfo, patch_method
+from authlib.specs.oidc import UserInfo
+from .base import AppFactory, patch_method
 
 
 def fetch_profile(client):
@@ -16,7 +17,7 @@ def fetch_profile(client):
         'locale': data.get('locale'),
         'picture': data.get('profile_photo_url'),
     }
-    return UserInfo(**params)
+    return UserInfo(params)
 
 
 dropbox = AppFactory('dropbox', {

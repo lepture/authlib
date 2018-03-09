@@ -1,6 +1,6 @@
 from authlib.specs.rfc7519 import JWT
-from authlib.specs.oidc import CodeIDToken
-from .base import AppFactory, UserInfo, patch_method
+from authlib.specs.oidc import CodeIDToken, UserInfo
+from .base import AppFactory, patch_method
 
 GOOGLE_API_URL = 'https://www.googleapis.com/'
 GOOGLE_TOKEN_URL = GOOGLE_API_URL + 'oauth2/v4/token'
@@ -35,7 +35,7 @@ def parse_openid(client, response, nonce=None):
         claims_request=claims_request,
     )
     claims.validate(leeway=120)
-    return UserInfo(**claims)
+    return UserInfo(claims)
 
 
 def revoke_token(client):

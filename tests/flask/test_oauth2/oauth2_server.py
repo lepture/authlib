@@ -25,10 +25,8 @@ from authlib.specs.rfc6749.grants import (
     ResourceOwnerPasswordCredentialsGrant as _PasswordGrant,
     RefreshTokenGrant as _RefreshTokenGrant,
 )
-from authlib.specs.oidc.grants import (
-    OpenIDCodeGrant as _OpenIDCodeGrant,
-    OpenIDHybridGrant as _OpenIDHybridGrant,
-)
+from authlib.specs.oidc import grants
+from authlib.specs.oidc import UserInfo
 
 os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
 db = SQLAlchemy()
@@ -44,10 +42,9 @@ class User(db.Model):
     def check_password(self, password):
         return password != 'wrong'
 
-    def generate_openid_claims(self, claims):
-        profile = {'sub': str(self.id)}
-        # TODO
-        return profile
+    def generate_user_info(self, scopes):
+        profile = {'sub': str(self.id), 'name': self.username}
+        return UserInfo(profile)
 
 
 class Client(db.Model, OAuth2ClientMixin):
@@ -122,11 +119,11 @@ class AuthorizationCodeGrant(CodeGrantMixin, _AuthorizationCodeGrant):
     pass
 
 
-class OpenIDCodeGrant(CodeGrantMixin, _OpenIDCodeGrant):
+class OpenIDCodeGrant(CodeGrantMixin, grants.OpenIDCodeGrant):
     pass
 
 
-class OpenIDHybridGrant(CodeGrantMixin, _OpenIDHybridGrant):
+class OpenIDHybridGrant(CodeGrantMixin, grants.OpenIDHybridGrant):
     pass
 
 
@@ -167,9 +164,14 @@ def create_authorization_server(app):
     @app.route('/oauth/authorize', methods=['GET', 'POST'])
     def authorize():
         if request.method == 'GET':
+            user_id = request.args.get('user_id')
+            if user_id:
+                end_user = User.query.get(int(user_id))
+            else:
+                end_user = None
             try:
-                server.validate_authorization_request()
-                return 'ok'
+                grant = server.validate_consent_request(end_user=end_user)
+                return grant.prompt or 'ok'
             except OAuth2Error as error:
                 return error.error
         user_id = request.form.get('user_id')

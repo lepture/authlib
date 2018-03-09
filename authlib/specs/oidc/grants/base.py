@@ -3,22 +3,51 @@ from authlib.specs.rfc6749 import InvalidRequestError
 from authlib.specs.rfc6749.util import scope_to_list
 from authlib.specs.rfc7519 import JWT
 from authlib.common.encoding import to_unicode
+from ..claims import UserInfo
 from ..util import create_half_hash
-from ..errors import ActionError, LoginRequiredError
+from ..errors import (
+    LoginRequiredError,
+    AccountSelectionRequiredError,
+    ConsentRequiredError,
+)
 
 
 class OpenIDMixin(object):
     RESPONSE_TYPES = []
 
-    def validate_consent_request(self, end_user):
+    def validate_prompt(self, end_user):
         prompt = self.request.prompt
-        if prompt:
-            if prompt == 'login':
-                raise ActionError('login')
-            if prompt == 'none' and not end_user:
-                raise LoginRequiredError()
-        elif not end_user:
-            raise ActionError('login')
+        if not prompt:
+            if not end_user:
+                self.prompt = 'login'
+            return self
+
+        if prompt == 'none' and not end_user:
+            raise LoginRequiredError()
+
+        prompts = prompt.split()
+        if 'none' in prompts and len(prompts) > 1:
+            # If this parameter contains none with any other value,
+            # an error is returned
+            raise InvalidRequestError('Invalid "prompt" parameter.')
+
+        if 'consent' in prompts:
+            if end_user:
+                self.prompt = 'consent'
+            elif 'login' in prompts:
+                self.prompt = 'login'
+            else:
+                raise ConsentRequiredError()
+        elif 'select_account' in prompts:
+            if end_user:
+                self.prompt = 'select_account'
+            elif 'login' in prompts:
+                self.prompt = 'login'
+            else:
+                raise AccountSelectionRequiredError()
+        elif 'login' in prompts:
+            self.prompt = 'login'
+        return self
 
     def validate_authorization_redirect_uri(self, client):
         if not self.redirect_uri:
@@ -44,16 +73,16 @@ class OpenIDMixin(object):
         if self.server.execute_hook('exists_nonce', nonce, self.request):
             raise InvalidRequestError('Replay attack')
 
-    def generate_user_claims(self, user, claims):
-        if isinstance(claims, list):
-            # TODO: scopes to claims
-            claims = {}
+    def generate_user_info(self, user, scopes):
         # OpenID Connect authorization code flow
-        # TODO: define how to create user claims
-        profile = user.generate_openid_claims(claims)
-        if 'sub' not in profile:
-            profile['sub'] = str(user.get_user_id())
-        return profile
+        user_info = user.generate_user_info(scopes)
+        if not isinstance(user_info, UserInfo):
+            raise RuntimeError(
+                'generate_user_info should return UserInfo instance.')
+
+        if 'sub' not in user_info:
+            user_info['sub'] = str(user.get_user_id())
+        return user_info
 
     def generate_id_token(self, token, request, nonce=None,
                           auth_time=None, code=None):
@@ -63,7 +92,7 @@ class OpenIDMixin(object):
             return None
 
         # TODO: merge scopes and claims
-        profile = self.generate_user_claims(request.user, scopes)
+        user_info = self.generate_user_info(request.user, scopes)
 
         now = int(time.time())
         if auth_time is None:
@@ -92,7 +121,7 @@ class OpenIDMixin(object):
         if code:
             payload['c_hash'] = to_unicode(create_half_hash(code, alg))
 
-        payload.update(profile)
+        payload.update(user_info)
         jwt = JWT(algorithms=alg)
         header = {'alg': alg}
         key = config['jwt_key']

@@ -155,13 +155,19 @@ class AuthorizationServer(_AuthorizationServer):
         )
 
     def validate_authorization_request(self):
+        # TODO: deprecate
+        grant = self.get_authorization_grant(_create_oauth2_request())
+        grant.validate_authorization_request()
+        return grant
+
+    def validate_consent_request(self, request=None, end_user=None):
         """Validate current HTTP request for authorization page. This page
         is designed for resource owner to grant or deny the authorization::
 
             @app.route('/authorize', methods=['GET'])
             def authorize():
                 try:
-                    grant = server.validate_authorization_request()
+                    grant = server.validate_consent_request(end_user=current_user)
                     return render_template(
                         'authorize.html',
                         grant=grant,
@@ -173,17 +179,14 @@ class AuthorizationServer(_AuthorizationServer):
                         error=error
                     )
         """
-        grant = self.get_authorization_grant(_create_oauth2_request())
-        grant.validate_authorization_request()
-        return grant
-
-    def validate_consent_request(self, request=None, end_user=None):
         if request is None:
             request = _create_oauth2_request()
         grant = self.get_authorization_grant(request)
         grant.validate_authorization_request()
-        if hasattr(grant, 'validate_consent_request'):
-            grant.validate_consent_request(end_user=end_user)
+        if hasattr(grant, 'validate_prompt'):
+            grant.validate_prompt(end_user=end_user)
+        if not hasattr(grant, 'prompt'):
+            grant.prompt = None
         return grant
 
     def create_authorization_response(self, request=None, grant_user=None):

@@ -1,11 +1,6 @@
 from authlib.specs.rfc6749 import OAuth2Error
 
 
-class ActionError(Exception):
-    def __init__(self, action):
-        self.action = action
-
-
 class InteractionRequiredError(OAuth2Error):
     """The Authorization Server requires End-User interaction of some form
     to proceed. This error MAY be returned when the prompt parameter value
