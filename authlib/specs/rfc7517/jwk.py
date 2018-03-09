@@ -1,3 +1,13 @@
+from cryptography.hazmat.primitives.asymmetric.ec import (
+    EllipticCurvePrivateKey, EllipticCurvePublicKey
+)
+from cryptography.hazmat.primitives.asymmetric.rsa import (
+    RSAPrivateKey, RSAPublicKey
+)
+
+EC_TYPES = (EllipticCurvePrivateKey, EllipticCurvePublicKey)
+RSA_TYPES = (RSAPrivateKey, RSAPublicKey)
+
 
 class JWKAlgorithm(object):
     def loads(self, obj):
@@ -35,6 +45,13 @@ class JWK(object):
             if key['kid'] == kid:
                 return self._loads(key)
 
-    def dumps(self, key, kty):
+    def dumps(self, key, kty=None):
+        if kty is None:
+            if isinstance(key, EC_TYPES):
+                kty = 'EC'
+            elif isinstance(key, RSA_TYPES):
+                kty = 'RSA'
+            else:
+                kty = 'oct'
         alg = self._algorithms[kty]
         return alg.dumps(key)

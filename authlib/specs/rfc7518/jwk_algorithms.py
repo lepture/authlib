@@ -8,7 +8,6 @@
     .. _`Section 6`: https://tools.ietf.org/html/rfc7518#section-6
 """
 
-import json
 from cryptography.hazmat.primitives.asymmetric.rsa import (
     RSAPrivateNumbers, RSAPublicNumbers,
     rsa_recover_prime_factors, rsa_crt_dmp1, rsa_crt_dmq1, rsa_crt_iqmp
@@ -31,10 +30,10 @@ class OCTAlgorithm(JWKAlgorithm):
         return urlsafe_b64decode(to_bytes(obj['k']))
 
     def dumps(self, s):
-        return json.dumps({
+        return {
             'k': to_unicode(urlsafe_b64encode(to_bytes(s))),
             'kty': 'oct'
-        })
+        }
 
 
 class RSAAlgorithm(JWKAlgorithm):
@@ -173,14 +172,13 @@ class ECAlgorithm(JWKAlgorithm):
 
     def dumps_private_key(self, key):
         numbers = key.private_numbers()
-
         return {
             'kty': 'EC',
             'key_ops': ['sign'],
-            'crv': self.CURVES_DSS[numbers.curve.name],
+            'crv': self.CURVES_DSS[key.curve.name],
             'x': int_to_base64(numbers.public_numbers.x),
             'y': int_to_base64(numbers.public_numbers.y),
-            'd': int_to_base64(numbers.d),
+            'd': int_to_base64(numbers.private_value),
         }
 
     def dumps_public_key(self, key):
