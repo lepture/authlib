@@ -12,4 +12,5 @@
 # flake8: noqa
 
 from .introspection import IntrospectionEndpoint
-from .parameters import prepare_token_introspection_request
+
+__all__ = ['IntrospectionEndpoint']
