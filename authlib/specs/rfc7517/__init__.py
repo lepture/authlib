@@ -8,3 +8,5 @@
     https://tools.ietf.org/html/rfc7517
 """
 from .jwk import JWK, JWKAlgorithm
+
+__all__ = ['JWK', 'JWKAlgorithm']

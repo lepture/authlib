@@ -1,0 +1,25 @@
+.. _specs/rfc7519:
+
+JSON Web Token
+==============
+
+.. meta::
+   :description: API references on RFC7519 JSON Web Token (JWT) Authlib implementation.
+
+This section contains the generic implementation of RFC7519_.
+
+.. _RFC7519: https://tools.ietf.org/html/rfc7519
+
+.. module:: authlib.specs.rfc7519
+
+
+Guide on JWT
+------------
+
+
+API Reference
+-------------
+
+.. autoclass:: JWT
+   :member-order: bysource
+   :members:

@@ -7,6 +7,7 @@ from ..authenticate_client import authenticate_client
 
 
 class BaseGrant(object):
+    SPECIFICATION = 'rfc6749'
     AUTHORIZATION_ENDPOINT = False
     TOKEN_ENDPOINT = False
     TOKEN_ENDPOINT_HTTP_METHODS = ['POST']

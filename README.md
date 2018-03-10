@@ -20,12 +20,16 @@ Lovely features that Authlib has built-in:
 - [x] RFC6750: The OAuth 2.0 Authorization Framework: Bearer Token Usage
 - [x] RFC7009: OAuth 2.0 Token Revocation
 - [x] RFC7515: JSON Web Signature (JWS)
+- [ ] RFC7516: JSON Web Encryption (JWE)
 - [x] RFC7517: JSON Web Key (JWK)
 - [x] RFC7518: JSON Web Algorithms (JWA)
 - [x] RFC7519: JSON Web Token (JWT)
 - [ ] RFC7521: Assertion Framework for OAuth 2.0 Client Authentication and Authorization Grants
+- [ ] RFC7522: Security Assertion Markup Language (SAML) 2.0 Profile for OAuth 2.0 Client Authentication and Authorization Grants
+- [ ] RFC7523: JSON Web Token (JWT) Profile for OAuth 2.0 Client Authentication and Authorization Grants
 - [ ] RFC7591: OAuth 2.0 Dynamic Client Registration Protocol
 - [ ] RFC7592: OAuth 2.0 Dynamic Client Registration Management Protocol
+- [ ] RFC7636: Proof Key for Code Exchange by OAuth Public Clients
 - [ ] RFC7662: OAuth 2.0 Token Introspection
 - [x] OpenID Connect 1.0
 - [ ] OpenID Discovery

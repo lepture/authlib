@@ -21,8 +21,12 @@ Generic specification implementations that Authlib has built-in:
 - RFC6749: The OAuth 2.0 Authorization Framework
 - RFC6750: The OAuth 2.0 Authorization Framework: Bearer Token Usage
 - RFC7009: OAuth 2.0 Token Revocation
-- **TODO** RFC7662: OAuth 2.0 Token Introspection
-- OpenID Connect 1.0 (Client is supported)
+- RFC7515: JSON Web Signature (JWS)
+- RFC7517: JSON Web Key (JWK)
+- RFC7518: JSON Web Algorithms (JWA)
+- RFC7519: JSON Web Token (JWT)
+- RFC7662: OAuth 2.0 Token Introspection
+- OpenID Connect 1.0
 
 Framework integrations with current specification implementations:
 
@@ -32,6 +36,7 @@ Framework integrations with current specification implementations:
 - Django OAuth 1/2 Client
 - Flask OAuth 1 Server
 - Flask OAuth 2 Server
+- Flask OpenID Connect Server
 - **TODO** Django OAuth 1 Server
 - **TODO** Django OAuth 2 Server
 
@@ -44,15 +49,15 @@ This part of the documentation begins with some background information
 about Authlib, and information on the client parts.
 
 .. toctree::
-   :maxdepth: 2
+    :maxdepth: 2
 
-   intro
-   install
-   client/oauth1
-   client/oauth2
-   client/mixed
-   client/frameworks
-   client/apps
+    intro
+    install
+    client/oauth1
+    client/oauth2
+    client/mixed
+    client/frameworks
+    client/apps
 
 Server Guide
 ------------
@@ -60,12 +65,13 @@ Server Guide
 This part of the documentation contains information on the server parts.
 
 .. toctree::
-   :maxdepth: 2
+    :maxdepth: 2
 
-   flask/oauth1
-   flask/oauth2
+    flask/oauth1
+    flask/oauth2
+    flask/oidc
 
-.. note:: Django support will be added in Version 0.6.
+.. note:: Django support will be added in Version 0.8.
 
 Specifications
 --------------
@@ -77,14 +83,18 @@ works.
 (Under Construction)
 
 .. toctree::
-   :maxdepth: 2
+    :maxdepth: 2
 
-   spec/rfc5849
-   spec/rfc6749
-   spec/rfc6750
-   spec/rfc7009
-   spec/rfc7662
-   spec/oidc
+    spec/rfc5849
+    spec/rfc6749
+    spec/rfc6750
+    spec/rfc7009
+    spec/rfc7515
+    spec/rfc7517
+    spec/rfc7518
+    spec/rfc7519
+    spec/rfc7662
+    spec/oidc
 
 Community & Contribution
 ------------------------
@@ -93,14 +103,14 @@ This section aims to make Authlib sustainable, on governance, code commits,
 issues and finance.
 
 .. toctree::
-   :maxdepth: 2
+    :maxdepth: 2
 
-   community/support
-   community/security
-   community/contribute
-   community/awesome
-   community/sustainable
-   community/authors
+    community/support
+    community/security
+    community/contribute
+    community/awesome
+    community/sustainable
+    community/authors
 
 API Reference
 -------------
@@ -109,11 +119,11 @@ If you are looking for information on a specific function, class or method,
 this part of the documentation is for you.
 
 .. toctree::
-   :maxdepth: 2
+    :maxdepth: 2
 
-   api/client
-   api/server
-   api/misc
+    api/client
+    api/server
+    api/misc
 
 Get Updates
 -----------
@@ -121,9 +131,9 @@ Get Updates
 Stay tuned with Authlib, here is a history of Authlib changes.
 
 .. toctree::
-   :maxdepth: 2
+    :maxdepth: 2
 
-   changelog
+    changelog
 
 - Subscribe the Newsletter: https://tinyletter.com/authlib
 - Follow Authlib on Twitter: https://twitter.com/authlib

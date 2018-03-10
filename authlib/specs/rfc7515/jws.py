@@ -13,16 +13,23 @@ from .errors import (
 
 
 class JWSAlgorithm(object):
+    """Interface for JWS algorithm. JWA specification (RFC7518) SHOULD
+    implement the algorithms for JWS with this base implementation.
+    """
     def prepare_sign_key(self, key):
+        """Prepare key for sign signature."""
         raise NotImplementedError
 
     def prepare_verify_key(self, key):
+        """Prepare key for verify signature."""
         raise NotImplementedError
 
     def sign(self, msg, key):
+        """Sign the text msg with a private/sign key."""
         raise NotImplementedError
 
     def verify(self, msg, key, sig):
+        """Verify the signature of text msg with a public/verify key."""
         raise NotImplementedError
 
 
@@ -32,7 +39,13 @@ class JWS(object):
         self.load_key = load_key
 
     def verify(self, s, key):
-        header, payload, signing_input, signature = extract(s)
+        """Extract and verify the JSON web signature.
+
+        :param s: text of JWS
+        :param key: key used to verify the signature
+        :returns: (header, payload, verified)
+        """
+        header, payload, signing_input, signature = _extract(s)
 
         alg = header['alg']
         if alg not in self._algorithms:
@@ -50,12 +63,28 @@ class JWS(object):
         return header, payload, verified
 
     def decode(self, s, key):
+        """Decode the JWS with the given key. This is similar with
+        :meth:`verify`, except that it will raise BadSignatureError when
+        signature doesn't match.
+
+        :param s: text of JWS
+        :param key: key used to verify the signature
+        :return: (header, payload)
+        :raise: BadSignatureError
+        """
         header, payload, verified = self.verify(s, key)
         if verified:
             return header, payload
         raise BadSignatureError()
 
     def encode(self, header, payload, key):
+        """Encode a JWS with the given header, payload and key.
+
+        :param header: A dict of JWS header
+        :param payload: text/dict to be encoded
+        :param key: key used to sign the signature
+        :return: JWS text
+        """
         if 'alg' not in header:
             raise MissingAlgorithmError()
 
@@ -83,7 +112,7 @@ class JWS(object):
         return b'.'.join([signing_input, signature])
 
 
-def extract(s):
+def _extract(s):
     try:
         s = to_bytes(s)
         signing_input, signature_segment = s.rsplit(b'.', 1)

@@ -8,20 +8,8 @@ This part of the documentation covers the specification of OpenID Connect.
 .. module:: authlib.specs.oidc
 
 
-Shortcut Functions
-------------------
-
-Some easy to use functions for parsing and validating id_token JWS text.
-
-.. autofunction:: parse_id_token
-
-.. autofunction:: validate_id_token
-
-.. autofunction:: verify_id_token
-
-
-ID Token
---------
+API References
+--------------
 
 .. autoclass:: IDToken
    :members:

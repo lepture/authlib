@@ -13,6 +13,7 @@ from ..errors import (
 
 
 class OpenIDMixin(object):
+    SPECIFICATION = 'oidc'
     RESPONSE_TYPES = []
 
     def validate_prompt(self, end_user):

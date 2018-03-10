@@ -12,3 +12,10 @@
 from .jwt import JWT
 from .claims import JWTClaims
 from .errors import *
+
+
+__all__ = [
+    'JWT', 'JWTClaims', 'JWTError',
+    'InvalidClaimError', 'MissingClaimError',
+    'ExpiredTokenError', 'InvalidTokenError',
+]

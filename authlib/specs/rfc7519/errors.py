@@ -1,3 +1,8 @@
+__all__ = [
+    'JWTError', 'InvalidClaimError', 'MissingClaimError',
+    'ExpiredTokenError', 'InvalidTokenError',
+]
+
 
 class JWTError(Exception):
     error = None

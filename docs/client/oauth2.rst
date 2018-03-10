@@ -208,21 +208,18 @@ a ``id_token``::
     >>> resp = session.fetch_access_token(...)
     >>> print(resp['id_token'])
 
-This ``id_token`` is a JWS text, it can not be used unless it is parsed.
+This ``id_token`` is a JWT text, it can not be used unless it is parsed.
 Authlib has provided tools for parsing and validating OpenID Connect id_token::
 
-    >>> from authlib.specs.oidc import parse_id_token, validate_id_token
+    >>> from authlib.specs.oidc import CodeIDToken
+    >>> from authlib.specs.rfc7519 import JWT
     >>> # GET keys from https://www.googleapis.com/oauth2/v3/certs
-    >>> token, header = parse_id_token(resp['id_token'], keys)
-    >>> validate_id_token(token, header=header, response_type='code', ...)
+    >>> jwt = JWT()
+    >>> claims = jwt.decode(resp['id_token'], keys, claims_cls=CodeIDToken)
+    >>> claims.validate()
 
-It can also be completed by one step with :meth:`~authlib.specs.oidc.verify_id_token`.
-
-.. note::
-
-   To use OpenID Connect, you need to install Authlib with RSA::
-
-       $ pip install Authlib[crypto]
+Get deep inside with :class:`~authlib.specs.rfc7519.JWT` and
+:class:`authlib.specs.oidc.CodeIDToken`.
 
 There is a built-in Google app which supports OpenID Connect, checkout the
 source code in **authlib.clients.apps.google**.

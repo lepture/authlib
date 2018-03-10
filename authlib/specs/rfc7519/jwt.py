@@ -21,6 +21,13 @@ class JWT(JWS):
         super(JWT, self).__init__(algorithms, load_key)
 
     def encode(self, header, payload, key):
+        """Encode a JWT with the given header, payload and key.
+
+        :param header: A dict of JWS header
+        :param payload: text/dict to be encoded
+        :param key: key used to sign the signature
+        :return: JWT
+        """
         header['typ'] = 'JWT'
 
         for k in ['exp', 'iat', 'nbf']:
@@ -31,7 +38,20 @@ class JWT(JWS):
 
         return super(JWT, self).encode(header, payload, key)
 
-    def decode(self, s, key, claims_cls=None, claims_options=None, claims_params=None):
+    def decode(self, s, key, claims_cls=None,
+               claims_options=None, claims_params=None):
+        """Decode the JWS with the given key. This is similar with
+        :meth:`verify`, except that it will raise BadSignatureError when
+        signature doesn't match.
+
+        :param s: text of JWT
+        :param key: key used to verify the signature
+        :param claims_cls: class to be used for JWT claims
+        :param claims_options: `options` parameters for claims_cls
+        :param claims_params: `params` parameters for claims_cls
+        :return: claims_cls instance
+        :raise: BadSignatureError
+        """
         if claims_cls is None:
             claims_cls = JWTClaims
         header, bytes_payload = super(JWT, self).decode(s, key)
@@ -51,6 +71,7 @@ def _load_jwk(key, header):
         key = header['jwk']
     if isinstance(key, (tuple, list, dict)):
         return jwk.loads(key, header.get('kid'))
-    if isinstance(key, text_types) and key.startswith('{'):
+    if isinstance(key, text_types) and \
+            key.startswith('{') and key.endswith('}'):
         return jwk.loads(json.loads(key), header.get('kid'))
     return key

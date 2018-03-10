@@ -9,3 +9,5 @@
 """
 
 from .jws import JWS, JWSAlgorithm
+
+__all__ = ['JWS', 'JWSAlgorithm']
