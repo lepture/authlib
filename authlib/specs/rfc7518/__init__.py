@@ -11,3 +11,5 @@
 
 from .jws_algorithms import JWS_ALGORITHMS
 from .jwk_algorithms import JWK_ALGORITHMS
+
+__all__ = ['JWS_ALGORITHMS', 'JWK_ALGORITHMS']

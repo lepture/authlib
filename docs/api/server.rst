@@ -73,11 +73,6 @@ Flask OAuth 2 Server
     :member-order: bysource
     :members:
 
-
-.. autoclass:: BearerTokenValidator
-    :member-order: bysource
-    :members:
-
 .. data:: current_token
 
     Routes protected by :class:`ResourceProtector` can access current token
@@ -97,5 +92,3 @@ SQLAlchemy Helper Functions
 .. module:: authlib.flask.oauth2.sqla
 
 .. autofunction:: create_query_client_func
-
-.. autofunction:: create_query_token_func

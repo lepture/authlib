@@ -102,7 +102,6 @@ class RSAAlgorithm(JWKAlgorithm):
         numbers = key.private_numbers()
         return {
             'kty': 'RSA',
-            'key_ops': ['sign'],
             'n': int_to_base64(numbers.public_numbers.n),
             'e': int_to_base64(numbers.public_numbers.e),
             'd': int_to_base64(numbers.d),
@@ -117,7 +116,6 @@ class RSAAlgorithm(JWKAlgorithm):
         numbers = key.public_numbers()
         return {
             'kty': 'RSA',
-            'key_ops': ['verify'],
             'n': int_to_base64(numbers.n),
             'e': int_to_base64(numbers.e)
         }
@@ -168,7 +166,6 @@ class ECAlgorithm(JWKAlgorithm):
         numbers = key.private_numbers()
         return {
             'kty': 'EC',
-            'key_ops': ['sign'],
             'crv': self.CURVES_DSS[key.curve.name],
             'x': int_to_base64(numbers.public_numbers.x),
             'y': int_to_base64(numbers.public_numbers.y),
@@ -179,7 +176,6 @@ class ECAlgorithm(JWKAlgorithm):
         numbers = key.public_numbers()
         return {
             'kty': 'EC',
-            'key_ops': ['verify'],
             'crv': self.CURVES_DSS[numbers.curve.name],
             'x': int_to_base64(numbers.x),
             'y': int_to_base64(numbers.y)

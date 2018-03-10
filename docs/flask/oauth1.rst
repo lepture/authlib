@@ -334,11 +334,6 @@ can be enabled with the configuration::
 
     OAUTH1_SUPPORTED_SIGNATURE_METHODS = ['HMAC-SHA1', 'PLAINTEXT', 'RSA-SHA1']
 
-To support ``RSA-SHA1`` signature method, you need to install Authlib with extra
-dependencies::
-
-    $ pip install Authlib[crypto]
-
 It is also possible to extend the signature methods. For example, you want to
 create a **HMAC-SHA256** signature method::
 

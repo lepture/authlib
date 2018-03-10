@@ -1,0 +1,30 @@
+.. _specs/rfc7515:
+
+JSON Web Signature
+==================
+
+.. meta::
+   :description: API references on RFC7515 JSON Web Signature (JWS) Authlib implementation.
+
+This section contains the generic implementation of RFC7515_.
+
+.. _RFC7515: https://tools.ietf.org/html/rfc7515
+
+.. module:: authlib.specs.rfc7515
+
+
+Guide on JWS
+------------
+
+
+API Reference
+-------------
+
+.. autoclass:: JWS
+   :member-order: bysource
+   :members:
+
+
+.. autoclass:: JWSAlgorithm
+   :member-order: bysource
+   :members:

@@ -93,7 +93,10 @@ class AuthorizationServer(_AuthorizationServer):
         jwt_key_path = app.config.get('OAUTH2_JWT_KEY_PATH')
         if jwt_key_path:
             with open(jwt_key_path, 'r') as f:
-                jwt_key = to_unicode(f.read())
+                if jwt_key_path.endswith('.json'):
+                    jwt_key = json.load(f)
+                else:
+                    jwt_key = to_unicode(f.read())
         else:
             jwt_key = app.config.get('OAUTH2_JWT_KEY')
 
@@ -184,6 +187,7 @@ class AuthorizationServer(_AuthorizationServer):
         grant = self.get_authorization_grant(request)
         grant.validate_authorization_request()
         if hasattr(grant, 'validate_prompt'):
+            # prompt is designed for OpenID Connect
             grant.validate_prompt(end_user=end_user)
         if not hasattr(grant, 'prompt'):
             grant.prompt = None

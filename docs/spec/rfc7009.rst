@@ -4,7 +4,7 @@ OAuth 2.0 Token Revocation
 ==========================
 
 .. meta::
-   :description: API references on RFC7009 Authlib implementation.
+   :description: API references on RFC7009 OAuth 2.0 Token Revocation Authlib implementation.
 
 This section contains the generic implementation of RFC7009_.
 
