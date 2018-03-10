@@ -23,8 +23,6 @@ class OAuth2ClientMixin(ClientMixin):
     scope = Column(Text, nullable=False, default='')
 
     client_name = Column(String(100))
-    # https://tools.ietf.org/html/rfc7591#section-2.2
-    i18n_client_names = Column(Text)
     client_uri = Column(Text)
     logo_uri = Column(Text)
     contact = Column(Text)
@@ -32,6 +30,7 @@ class OAuth2ClientMixin(ClientMixin):
     policy_uri = Column(Text)
     jwks_uri = Column(Text)
     jwks_text = Column(Text)
+    i18n_metadata = Column(Text)
 
     software_id = Column(String(36))
     software_version = Column(String(48))
@@ -107,20 +106,20 @@ class OAuth2ClientMixin(ClientMixin):
             'scope', 'contacts', 'tos_uri', 'policy_uri', 'jwks_uri', 'jwks',
         ]
         metadata = {k: getattr(self, k) for k in keys}
-        if self.i18n_client_names:
-            metadata.update(json.loads(self.i18n_client_names))
+        if self.i18n_metadata:
+            metadata.update(json.loads(self.i18n_metadata))
         return metadata
 
     @client_metadata.setter
     def client_metadata(self, value):
-        i18n_client_names = {}
+        i18n_metadata = {}
         for k in value:
             if hasattr(self, k):
                 setattr(self, k, value[k])
-            elif k.startswith('client_name#'):
-                i18n_client_names[k] = value[k]
+            elif '#' in k:
+                i18n_metadata[k] = value[k]
 
-        self.i18n_client_names = json.dumps(i18n_client_names)
+        self.i18n_metadata = json.dumps(i18n_metadata)
 
     @property
     def client_info(self):
