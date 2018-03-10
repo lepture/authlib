@@ -194,6 +194,9 @@ def create_authorization_server(app):
     def revoke_token():
         return server.create_endpoint_response('revocation')
 
+    @app.route('/oauth/introspect', methods=['POST'])
+    def introspect_token():
+        return server.create_endpoint_response('introspection')
     return server
 
 

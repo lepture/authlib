@@ -1,20 +1,15 @@
 from authlib.common.urls import add_params_to_qs
 
 
-__all__ = [
-    'prepare_token_introspection_request',
-]
-
-
-def prepare_token_introspection_request(token, optional=None,
-                                        body=None, headers=None):
+def prepare_token_introspection_request(
+        token, optional=None, body=None, headers=None):
     """Construct request body and headers for revocation endpoint.
 
     :param token: access_token or refresh_token string.
     :param optional: Optional, token query parameters.
     :param body: current request body.
     :param headers: current request headers.
-    :return: tuple of (body, headers)
+    :returns: (body, headers)
 
     https://tools.ietf.org/html/rfc7662#section-2.1
     """
@@ -31,5 +26,4 @@ def prepare_token_introspection_request(token, optional=None,
     if headers is None:
         headers = {}
     headers['Content-Type'] = 'application/x-www-form-urlencoded'
-
     return body, headers

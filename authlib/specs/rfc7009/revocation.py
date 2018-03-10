@@ -61,8 +61,7 @@ class RevocationEndpoint(object):
         if token_type and token_type not in self.SUPPORTED_TOKEN_TYPES:
             raise UnsupportedTokenTypeError()
         token = self.query_token(
-            params['token'], token_type, self._client
-        )
+            params['token'], token_type, self._client)
         if not token:
             raise InvalidRequestError()
         self._token = token

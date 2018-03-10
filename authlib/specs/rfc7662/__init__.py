@@ -11,5 +11,5 @@
 
 # flake8: noqa
 
-from .introspection import *
-from .parameters import *
+from .introspection import IntrospectionEndpoint
+from .parameters import prepare_token_introspection_request

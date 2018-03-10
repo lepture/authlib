@@ -1,14 +1,9 @@
-from ..rfc7009.errors import (
+from authlib.specs.rfc6749 import (
     OAuth2Error,
     InvalidRequestError,
     UnsupportedTokenTypeError,
 )
-from ..rfc6749 import authenticate_client
-
-
-__all__ = [
-    'IntrospectionEndpoint',
-]
+from authlib.specs.rfc6749 import authenticate_client
 
 
 class IntrospectionEndpoint(object):
@@ -16,28 +11,30 @@ class IntrospectionEndpoint(object):
     `RFC7662`_.
 
     :param request: OAuth2Request instance
-    :param query_client: A function to get client by client_id. The client
-        model class MUST implement the methods described by
-        :class:`~authlib.specs.rfc6749.ClientMixin`.
+    :param server: Authorization Server instance
 
     .. _RFC7662: https://tools.ietf.org/html/rfc7662
     """
+    ENDPOINT_NAME = 'introspection'
     SUPPORTED_TOKEN_TYPES = ('access_token', 'refresh_token')
     INTROSPECTION_ENDPOINT_AUTH_METHODS = ['client_secret_basic']
 
-    def __init__(self, request, query_client):
+    def __init__(self, request, server):
         self.request = request
-        self.query_client = query_client
+        self.server = server
 
         self._client = None
         self._token = None
+
+    def __call__(self):
+        return self.create_introspection_response()
 
     def authenticate_introspection_endpoint_client(self):
         """Authentication client for introspection endpoint with
         ``INTROSPECTION_ENDPOINT_AUTH_METHODS``.
         """
         self._client = authenticate_client(
-            self.query_client,
+            self.server.query_client,
             request=self.request,
             methods=self.INTROSPECTION_ENDPOINT_AUTH_METHODS,
         )
@@ -73,13 +70,11 @@ class IntrospectionEndpoint(object):
         if token_type and token_type not in self.SUPPORTED_TOKEN_TYPES:
             raise UnsupportedTokenTypeError()
 
-        self._token = self.query_token(
-            params['token'],
-            self._client,
-            optional={k: v for k, v in params.items() if k != 'token'}
-        )
-        if not self._token:
+        token = self.query_token(
+            params['token'], token_type, self._client)
+        if not token:
             raise InvalidRequestError()
+        self._token = token
 
     def create_introspection_response(self):
         """Validate introspection request and create the response.
@@ -107,20 +102,15 @@ class IntrospectionEndpoint(object):
 
         return status, body, headers
 
-    def query_token(self, token, client, optional=None):
+    def query_token(self, token, token_type_hint, client):
         """Get the token from database/storage by the given token string.
         Developers should implement this method::
 
-            def query_token(self, token, client, optional=None):
-                if optional is None:
-                    optional = {}
-
-                token_type_hint = optional.get('token_type_hint')
+            def query_token(self, token, token_type_hint, client):
                 if token_type_hint == 'access_token':
                     return Token.query_by_access_token(token, client.client_id)
                 if token_type_hint == 'refresh_token':
                     return Token.query_by_refresh_token(token, client.client_id)
-
                 return Token.query_by_access_token(token, client.client_id) or \
                     Token.query_by_refresh_token(token, client.client_id)
         """
@@ -128,6 +118,22 @@ class IntrospectionEndpoint(object):
 
     def introspect_token(self, token):
         """Read given token and return its introspection metadata as a
-        dictionary following RFC7662 keys.
+        dictionary following `Section 2.2`_::
+
+            def introspect_token(self, token):
+                user = User.query.get(token.user_id)
+                return {
+                    "active": not token.revoked,
+                    "client_id": token.client_id,
+                    "username": user.username,
+                    "scope": token.scope,
+                    "sub": user.sub,
+                    "aud": token.client_id,
+                    "iss": "https://server.example.com/",
+                    "exp": token.expires_at,
+                    "iat": token.issued_at,
+                }
+
+        .. _`Section 2.2`: https://tools.ietf.org/html/rfc7662#section-2.2
         """
         raise NotImplementedError()
