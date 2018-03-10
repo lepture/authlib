@@ -88,6 +88,11 @@ class RevocationEndpoint(object):
             self.validate_revocation_request()
             # the authorization server invalidates the token
             self.revoke_token(self._token)
+            try:
+                self.server.execute_hook(
+                    'after_revoke_token', self._token, self._client)
+            except RuntimeError:
+                pass
             status = 200
             body = {}
             headers = [

@@ -10,7 +10,7 @@ from authlib.specs.rfc6750 import BearerToken
 from authlib.common.security import generate_token
 from authlib.common.encoding import to_unicode
 from authlib.deprecate import deprecate
-from .signals import client_authenticated
+from .signals import client_authenticated, token_revoked
 
 GRANT_TYPES_EXPIRES = {
     'authorization_code': 864000,
@@ -47,6 +47,19 @@ class AuthorizationServer(_AuthorizationServer):
         super(AuthorizationServer, self).__init__(
             query_client, None, save_token, **config)
 
+        # register hooks
+        def after_authenticate_client(client, grant):
+            client_authenticated.send(self, client=client, grant=grant)
+
+        def after_revoke_token(token, client):
+            token_revoked.send(self, token=token, client=client)
+
+        self.register_hook(
+            'after_authenticate_client',
+            after_authenticate_client
+        )
+        self.register_hook('after_revoke_token', after_revoke_token)
+
         self.app = app
         if app is not None:
             self.init_app(app)
@@ -69,16 +82,6 @@ class AuthorizationServer(_AuthorizationServer):
         if error_uris:
             for k, v in error_uris:
                 register_error_uri(k, v)
-
-        # register after_authenticate_client hooks
-
-        def after_authenticate_client(client, grant):
-            client_authenticated.send(self, client=client, grant=grant)
-
-        self.register_hook(
-            'after_authenticate_client',
-            after_authenticate_client
-        )
 
         self.app = app
         self.generate_token = self.create_bearer_token_generator(app)
