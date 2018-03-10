@@ -40,7 +40,7 @@ class IntrospectTokenTest(TestCase):
             user_id=user.id,
             client_id='introspect-client',
             client_secret='introspect-secret',
-            default_redirect_uri='http://a.b/c',
+            redirect_uri='http://a.b/c',
             scope='profile',
         )
         db.session.add(client)

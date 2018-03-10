@@ -26,9 +26,10 @@ class ImplicitTest(TestCase):
             user_id=user.id,
             client_id='implicit-client',
             client_secret='',
-            redirect_uris='https://a.b/c',
+            redirect_uri='https://a.b/c',
             scope='openid profile',
-            allowed_response_types='token id_token',
+            token_endpoint_auth_method='none',
+            response_type='id_token|id_token token',
         )
         self.authorize_url = (
             '/oauth/authorize?response_type=token'

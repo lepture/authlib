@@ -25,10 +25,10 @@ class OpenIDCodeTest(TestCase):
             user_id=user.id,
             client_id='code-client',
             client_secret='code-secret',
-            redirect_uris='https://a.b',
+            redirect_uri='https://a.b',
             scope='openid profile address',
-            allowed_response_types='code',
-            allowed_grant_types='authorization_code',
+            response_type='code',
+            grant_type='authorization_code',
         )
         db.session.add(client)
         db.session.commit()

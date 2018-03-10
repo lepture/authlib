@@ -1,14 +1,12 @@
 from authlib.specs.rfc6749.grants import ImplicitGrant
 from .oauth2_server import db, User, Client
 from .oauth2_server import TestCase
-from .oauth2_server import AuthorizationCodeGrant
 from .oauth2_server import create_authorization_server
 
 
 class ImplicitTest(TestCase):
     def prepare_data(self, is_confidential=False):
         server = create_authorization_server(self.app)
-        server.register_grant(AuthorizationCodeGrant)
         server.register_grant(ImplicitGrant)
 
         user = User(username='foo')
@@ -16,14 +14,20 @@ class ImplicitTest(TestCase):
         db.session.commit()
         if is_confidential:
             client_secret = 'implicit-secret'
+            token_endpoint_auth_method = 'client_secret_basic'
         else:
             client_secret = ''
+            token_endpoint_auth_method = 'none'
+
         client = Client(
             user_id=user.id,
             client_id='implicit-client',
             client_secret=client_secret,
-            default_redirect_uri='http://localhost/authorized',
+            redirect_uri='http://localhost/authorized',
+            response_type='token',
+            grant_type='implicit',
             scope='profile',
+            token_endpoint_auth_method=token_endpoint_auth_method,
         )
         self.authorize_url = (
             '/oauth/authorize?response_type=token'

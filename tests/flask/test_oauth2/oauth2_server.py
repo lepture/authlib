@@ -53,21 +53,6 @@ class Client(db.Model, OAuth2ClientMixin):
         db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')
     )
     user = db.relationship('User')
-    allowed_response_types = db.Column(db.Text, default='code token')
-    allowed_grant_types = db.Column(db.Text, default='')
-
-    def check_response_type(self, response_type):
-        response_types = response_type.split()
-        allowed_types = self.allowed_response_types.split()
-        return all([t in allowed_types for t in response_types])
-
-    def check_grant_type(self, grant_type):
-        return grant_type in self.allowed_grant_types.split()
-
-    def check_token_endpoint_auth_method(self, method):
-        if self.has_client_secret():
-            return method in ['client_secret_basic', 'client_secret_post']
-        return method == 'none'
 
 
 class AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):

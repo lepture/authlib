@@ -17,9 +17,9 @@ class ClientCredentialsTest(TestCase):
             user_id=user.id,
             client_id='credential-client',
             client_secret='credential-secret',
-            default_redirect_uri='http://localhost/authorized',
+            redirect_uri='http://localhost/authorized',
             scope='profile',
-            allowed_grant_types=grant_type,
+            grant_type=grant_type,
         )
         db.session.add(client)
         db.session.commit()

@@ -1,5 +1,7 @@
 import time
+import json
 from sqlalchemy import Column, String, Boolean, Text, Integer
+from sqlalchemy.ext.hybrid import hybrid_property
 from authlib.specs.rfc6749 import ClientMixin, TokenMixin
 from authlib.specs.oidc import AuthorizationCodeMixin
 
@@ -7,9 +9,32 @@ from authlib.specs.oidc import AuthorizationCodeMixin
 class OAuth2ClientMixin(ClientMixin):
     client_id = Column(String(48), index=True)
     client_secret = Column(String(120), nullable=False)
-    redirect_uris = Column(Text, nullable=False, default='')
-    default_redirect_uri = Column(Text, nullable=False, default='')
+    issued_at = Column(
+        Integer, nullable=False,
+        default=lambda: int(time.time())
+    )
+    expires_at = Column(Integer, nullable=False, default=0)
+
+    redirect_uri = Column(Text, nullable=False, default='')
+    token_endpoint_auth_method = Column(
+        String(48), default='client_secret_basic')
+    grant_type = Column(Text, nullable=False, default='')
+    response_type = Column(Text, nullable=False, default='')
     scope = Column(Text, nullable=False, default='')
+
+    client_name = Column(String(100))
+    # https://tools.ietf.org/html/rfc7591#section-2.2
+    i18n_client_names = Column(Text)
+    client_uri = Column(Text)
+    logo_uri = Column(Text)
+    contact = Column(Text)
+    tos_uri = Column(Text)
+    policy_uri = Column(Text)
+    jwks_uri = Column(Text)
+    jwks_text = Column(Text)
+
+    software_id = Column(String(36))
+    software_version = Column(String(48))
 
     def __repr__(self):
         return '<Client: {}>'.format(self.client_id)
@@ -19,13 +44,104 @@ class OAuth2ClientMixin(ClientMixin):
         # TODO: remove in version 0.7
         return cls.query.filter_by(client_id=client_id).first()
 
+    @hybrid_property
+    def redirect_uris(self):
+        if self.redirect_uri:
+            return self.redirect_uri.split()
+        return []
+
+    @redirect_uris.setter
+    def redirect_uris(self, value):
+        self.redirect_uri = ' '.join(value)
+
+    @hybrid_property
+    def grant_types(self):
+        if self.grant_type:
+            return self.grant_type.split('|')
+        return []
+
+    @grant_types.setter
+    def grant_types(self, value):
+        self.grant_type = '|'.join(value)
+
+    @hybrid_property
+    def response_types(self):
+        if self.response_type:
+            return self.response_type.split('|')
+        return []
+
+    @response_types.setter
+    def response_types(self, value):
+        self.response_type = '|'.join(value)
+
+    @hybrid_property
+    def contacts(self):
+        if self.contact:
+            return json.loads(self.contact)
+        return []
+
+    @contacts.setter
+    def contacts(self, value):
+        self.contact = json.dumps(value)
+
+    @hybrid_property
+    def jwks(self):
+        if self.jwks_text:
+            return json.loads(self.jwks_text)
+        return None
+
+    @jwks.setter
+    def jwks(self, value):
+        self.jwks_text = json.dumps(value)
+
+    @hybrid_property
+    def client_metadata(self):
+        """Implementation for Client Metadata in OAuth 2.0 Dynamic Client
+        Registration Protocol via `Section 2`_.
+
+        .. _`Section 2`: https://tools.ietf.org/html/rfc7591#section-2
+        """
+        keys = [
+            'redirect_uris', 'token_endpoint_auth_method', 'grant_types',
+            'response_types', 'client_name', 'client_uri', 'logo_uri',
+            'scope', 'contacts', 'tos_uri', 'policy_uri', 'jwks_uri', 'jwks',
+        ]
+        metadata = {k: getattr(self, k) for k in keys}
+        if self.i18n_client_names:
+            metadata.update(json.loads(self.i18n_client_names))
+        return metadata
+
+    @client_metadata.setter
+    def client_metadata(self, value):
+        i18n_client_names = {}
+        for k in value:
+            if hasattr(self, k):
+                setattr(self, k, value[k])
+            elif k.startswith('client_name#'):
+                i18n_client_names[k] = value[k]
+
+        self.i18n_client_names = json.dumps(i18n_client_names)
+
+    @property
+    def client_info(self):
+        """Implementation for Client Info in OAuth 2.0 Dynamic Client
+        Registration Protocol via `Section 3.2.1`_.
+
+        .. _`Section 3.2.1`: https://tools.ietf.org/html/rfc7591#section-3.2.1
+        """
+        return dict(
+            client_id=self.client_id,
+            client_secret=self.client_secret,
+            client_id_issued_at=self.issued_at,
+            client_secret_expires_at=self.expires_at,
+        )
+
     def get_default_redirect_uri(self):
-        return self.default_redirect_uri
+        if self.redirect_uris:
+            return self.redirect_uris[0]
 
     def check_redirect_uri(self, redirect_uri):
-        if redirect_uri == self.default_redirect_uri:
-            return True
-        return redirect_uri in self.redirect_uris.split()
+        return redirect_uri in self.redirect_uris
 
     def has_client_secret(self):
         return bool(self.client_secret)
@@ -34,15 +150,17 @@ class OAuth2ClientMixin(ClientMixin):
         return self.client_secret == client_secret
 
     def check_token_endpoint_auth_method(self, method):
-        if self.has_client_secret():
-            return method == 'client_secret_basic'
-        return method == 'none'
+        return self.token_endpoint_auth_method == method
 
     def check_response_type(self, response_type):
-        return True
+        if self.response_type:
+            return response_type in self.response_type.split('|')
+        return False
 
     def check_grant_type(self, grant_type):
-        return True
+        if self.grant_type:
+            return grant_type in self.grant_type.split('|')
+        return False
 
     def check_requested_scopes(self, scopes):
         allowed = set(self.scope.split())

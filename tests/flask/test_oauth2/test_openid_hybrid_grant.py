@@ -27,10 +27,10 @@ class OpenIDCodeTest(TestCase):
             user_id=user.id,
             client_id='hybrid-client',
             client_secret='hybrid-secret',
-            redirect_uris='https://a.b',
+            redirect_uri='https://a.b',
             scope='openid profile address',
-            allowed_response_types='code id_token token',
-            allowed_grant_types='authorization_code',
+            response_type='code id_token|code token|code id_token token',
+            grant_type='authorization_code',
         )
         db.session.add(client)
         db.session.commit()

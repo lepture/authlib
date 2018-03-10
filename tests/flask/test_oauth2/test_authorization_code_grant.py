@@ -12,8 +12,10 @@ class AuthorizationCodeTest(TestCase):
     def register_grant(self, server):
         server.register_grant(AuthorizationCodeGrant)
 
-    def prepare_data(self, is_confidential=True,
-                     response_types='code', grant_type='authorization_code'):
+    def prepare_data(
+            self, is_confidential=True,
+            response_type='code', grant_type='authorization_code',
+            token_endpoint_auth_method='client_secret_basic'):
         server = create_authorization_server(self.app)
         self.register_grant(server)
 
@@ -29,10 +31,11 @@ class AuthorizationCodeTest(TestCase):
             user_id=user.id,
             client_id='code-client',
             client_secret=client_secret,
-            default_redirect_uri='https://a.b',
+            redirect_uri='https://a.b',
             scope='profile address',
-            allowed_response_types=response_types,
-            allowed_grant_types=grant_type,
+            token_endpoint_auth_method=token_endpoint_auth_method,
+            response_type=response_type,
+            grant_type=grant_type,
         )
         self.authorize_url = (
             '/oauth/authorize?response_type=code'
@@ -117,7 +120,10 @@ class AuthorizationCodeTest(TestCase):
         self.assertEqual(resp['error'], 'invalid_request')
 
     def test_invalid_grant_type(self):
-        self.prepare_data(False, grant_type='invalid')
+        self.prepare_data(
+            False, token_endpoint_auth_method='none',
+            grant_type='invalid'
+        )
         rv = self.client.post('/oauth/token', data={
             'grant_type': 'authorization_code',
             'client_id': 'code-client',
@@ -128,7 +134,7 @@ class AuthorizationCodeTest(TestCase):
 
     def test_public_authorize_token(self):
         self.app.config.update({'OAUTH2_REFRESH_TOKEN_GENERATOR': True})
-        self.prepare_data(False)
+        self.prepare_data(False, token_endpoint_auth_method='none')
 
         rv = self.client.post(self.authorize_url, data={'user_id': '1'})
         self.assertIn('code=', rv.location)
@@ -167,7 +173,7 @@ class AuthorizationCodeTest(TestCase):
 
     def test_client_secret_post(self):
         self.app.config.update({'OAUTH2_REFRESH_TOKEN_GENERATOR': True})
-        self.prepare_data()
+        self.prepare_data(token_endpoint_auth_method='client_secret_post')
         url = self.authorize_url + '&state=bar'
         rv = self.client.post(url, data={'user_id': '1'})
         self.assertIn('code=', rv.location)
