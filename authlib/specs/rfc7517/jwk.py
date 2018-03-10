@@ -55,6 +55,7 @@ class JWK(object):
         for key in keys:
             if key['kid'] == kid:
                 return self._loads(key)
+        raise ValueError('Invalid JWK format')
 
     def dumps(self, key, kty=None, **params):
         """Generate JWK format for the given public/private key.

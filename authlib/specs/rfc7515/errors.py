@@ -1,5 +1,5 @@
 
-class JWSError(Exception):
+class JWSError(ValueError):
     error = None
     error_description = ''
 

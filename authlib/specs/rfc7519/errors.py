@@ -4,7 +4,7 @@ __all__ = [
 ]
 
 
-class JWTError(Exception):
+class JWTError(ValueError):
     error = None
     error_description = ''
 

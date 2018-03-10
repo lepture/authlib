@@ -104,6 +104,10 @@ class JWKTest(unittest.TestCase):
         self.assertBase64IntEqual(new_obj['y'], obj['y'])
         self.assertBase64IntEqual(new_obj['d'], obj['d'])
 
+    def test_invalid_ec(self):
+        self.assertRaises(ValueError, jwk.loads, {'kty': 'EC'})
+        self.assertRaises(ValueError, jwk.dumps, '', 'EC')
+
     def test_rsa_public_key(self):
         # https://tools.ietf.org/html/rfc7520#section-3.3
         obj = {
@@ -155,6 +159,20 @@ class JWKTest(unittest.TestCase):
         self.assertBase64IntEqual(new_obj['dq'], RSA_PRIVATE_KEY['dq'])
         self.assertBase64IntEqual(new_obj['qi'], RSA_PRIVATE_KEY['qi'])
 
+    def test_invalid_rsa(self):
+        obj = {
+            "kty": "RSA",
+            "kid": "bilbo.baggins@hobbiton.example",
+            "use": "sig",
+            "n": RSA_PRIVATE_KEY['n'],
+            'd': RSA_PRIVATE_KEY['d'],
+            'p': RSA_PRIVATE_KEY['p'],
+            "e": "AQAB"
+        }
+        self.assertRaises(ValueError, jwk.loads, obj)
+        self.assertRaises(ValueError, jwk.loads, {'kty': 'RSA'})
+        self.assertRaises(ValueError, jwk.dumps, '', 'RSA')
+
     def test_mac_computation(self):
         # https://tools.ietf.org/html/rfc7520#section-3.5
         obj = {
@@ -167,3 +185,21 @@ class JWKTest(unittest.TestCase):
         key = jwk.loads(obj)
         new_obj = jwk.dumps(key)
         self.assertEqual(obj['k'], new_obj['k'])
+        self.assertNotIn('use', new_obj)
+
+        new_obj = jwk.dumps(key, use='sig')
+        self.assertEqual(new_obj['use'], 'sig')
+
+    def test_jwk_loads(self):
+        self.assertRaises(ValueError, jwk.loads, {})
+        self.assertRaises(ValueError, jwk.loads, {}, 'k')
+
+        obj = {
+            "kty": "oct",
+            "kid": "018c0ae5-4d9b-471b-bfd6-eef314bc7037",
+            "use": "sig",
+            "alg": "HS256",
+            "k": "hJtXIZ2uSN5kbQfbtTNWbpdmhkV8FJG-Onbc6mxCcYg"
+        }
+        self.assertRaises(ValueError, jwk.loads, obj, 'invalid-kid')
+        self.assertRaises(ValueError, jwk.loads, [obj], 'invalid-kid')
