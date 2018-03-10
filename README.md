@@ -11,28 +11,147 @@ clients, servers and more.
 
 Authlib is compatible with Python2.7+ and Python3.5+.
 
+## Useful Links
+
+1. Take a look at [Authlib Homepage](https://authlib.org/)
+2. Get more information with [Authlib Documentation](https://docs.authlib.org/)
+3. Have a taste with [Authlib Playground](https://play.authlib.org/)
+4. Stay tuned with [Authlib Newsletter](https://tinyletter.com/authlib)
+5. Get latest news via [Authlib on Twitter](https://twitter.com/authlib)
+6. Ask questions on StackOverflow with [Authlib Tag](https://stackoverflow.com/questions/tagged/authlib)
+
 ## Spec Implementations
 
 Lovely features that Authlib has built-in:
 
-- [x] RFC5849: The OAuth 1.0 Protocol
-- [x] RFC6749: The OAuth 2.0 Authorization Framework
-- [x] RFC6750: The OAuth 2.0 Authorization Framework: Bearer Token Usage
-- [x] RFC7009: OAuth 2.0 Token Revocation
-- [x] RFC7515: JSON Web Signature (JWS)
-- [ ] RFC7516: JSON Web Encryption (JWE)
-- [x] RFC7517: JSON Web Key (JWK)
-- [x] RFC7518: JSON Web Algorithms (JWA)
-- [x] RFC7519: JSON Web Token (JWT)
-- [ ] RFC7521: Assertion Framework for OAuth 2.0 Client Authentication and Authorization Grants
-- [ ] RFC7522: Security Assertion Markup Language (SAML) 2.0 Profile for OAuth 2.0 Client Authentication and Authorization Grants
-- [ ] RFC7523: JSON Web Token (JWT) Profile for OAuth 2.0 Client Authentication and Authorization Grants
-- [ ] RFC7591: OAuth 2.0 Dynamic Client Registration Protocol
-- [ ] RFC7592: OAuth 2.0 Dynamic Client Registration Management Protocol
-- [ ] RFC7636: Proof Key for Code Exchange by OAuth Public Clients
-- [ ] RFC7662: OAuth 2.0 Token Introspection
-- [x] OpenID Connect 1.0
-- [ ] OpenID Discovery
+<details>
+<summary>🎉 RFC5849: The OAuth 1.0 Protocol</summary>
+
+- [x] OAuth1Session for Requests
+- [x] OAuth 1.0 Client for Flask
+- [x] OAuth 1.0 Client for Django
+- [x] OAuth 1.0 Server for Flask
+- [ ] OAuth 1.0 Server for Django
+</details>
+
+<details>
+<summary>🎉 RFC6749: The OAuth 2.0 Authorization Framework</summary>
+
+- [x] OAuth2Session for Requests
+- [x] OAuth 2.0 Client for Flask
+- [x] OAuth 2.0 Client for Django
+- [x] OAuth 2.0 Server for Flask
+- [ ] OAuth 2.0 Server for Django
+</details>
+
+<details>
+<summary>🎉 RFC6750: The OAuth 2.0 Authorization Framework: Bearer Token Usage</summary>
+
+- [x] Bearer Token for OAuth2Session
+- [x] Bearer Token for Flask OAuth 2.0 Server
+- [ ] Bearer Token for Django OAuth 2.0 Server
+</details>
+
+<details>
+<summary>🎉 RFC7009: OAuth 2.0 Token Revocation</summary>
+
+- [x] Token Revocation for Flask OAuth 2.0 Server
+- [ ] Token Revocation for Django OAuth 2.0 Server
+</details>
+
+<details>
+<summary>🎉 JSON Web Signature (JWS)</summary>
+
+- [x] "none" algorithm via RFC7518
+- [x] "HS256" algorithm via RFC7518
+- [x] "HS384" algorithm via RFC7518
+- [x] "HS512" algorithm via RFC7518
+- [x] "RS256" algorithm via RFC7518
+- [x] "RS384" algorithm via RFC7518
+- [x] "RS512" algorithm via RFC7518
+- [x] "ES256" algorithm via RFC7518
+- [x] "ES384" algorithm via RFC7518
+- [x] "ES512" algorithm via RFC7518
+- [x] "PS256" algorithm via RFC7518
+- [x] "PS384" algorithm via RFC7518
+- [x] "PS512" algorithm via RFC7518
+</details>
+
+<details>
+  <summary>⏳ RFC7516: JSON Web Encryption (JWE)</summary>
+  <p>JWE implementation is in plan now.</p>
+</details>
+
+<details>
+<summary>🎉 RFC7517: JSON Web Key (JWK)</summary>
+
+- [x] "oct" algorithm via RFC7518
+- [x] "RSA" algorithm via RFC7518
+- [x] "EC" algorithm via RFC7518
+</details>
+
+<details>
+<summary>🎉 JSON Web Algorithms (JWA)</summary>
+
+- [x] Algorithms for JWS
+- [ ] Algorithms for JWE
+- [x] Algorithms for JWK
+</details>
+
+<details>
+  <summary>🎉 RFC7519: JSON Web Token (JWT)</summary>
+  <p>JWT shares the same interface with JWS. Besides that, JWT has payload claims validation.</p>
+</details>
+
+<details>
+  <summary>⏳ RFC7521: Assertion Framework for OAuth 2.0 Client Authentication and Authorization Grants</summary>
+  <p>RFC7521 implementation is in plan.</p>
+</details>
+
+<details>
+  <summary>⏳ RFC7522: Security Assertion Markup Language (SAML) 2.0 Profile for OAuth 2.0 Client Authentication and Authorization Grants</summary>
+  <p>RFC7522 implementation is in plan.</p>
+</details>
+
+<details>
+  <summary>⏳ RFC7523: JSON Web Token (JWT) Profile for OAuth 2.0 Client Authentication and Authorization Grants</summary>
+  <p>RFC7523 implementation is in plan.</p>
+</details>
+
+<details>
+  <summary>🎁 RFC7591: OAuth 2.0 Dynamic Client Registration Protocol</summary>
+  <p>RFC7591 implementation is in plan. However, Flask SQLAlchemy ClientMixin is designed based on it.</p>
+</details>
+
+<details>
+  <summary>⏳ RFC7592: OAuth 2.0 Dynamic Client Registration Management Protocol</summary>
+  <p>RFC7592 implementation is in plan.</p>
+</details>
+
+<details>
+  <summary>⏳ RFC7636: Proof Key for Code Exchange by OAuth Public Clients</summary>
+  <p>RFC7636 implementation is in plan.</p>
+</details>
+
+<details>
+<summary>🎉 RFC7662: OAuth 2.0 Token Introspection</summary>
+
+- [x] Token Introspection for Flask OAuth 2.0 Server
+- [ ] Token Introspection for Django OAuth 2.0 Server
+</details>
+
+<details>
+<summary>🎉 OpenID Connect 1.0</summary>
+
+- [x] OpenID Claims validation
+- [x] OpenID Connect for Flask OAuth 2.0 Server
+- [ ] OpenID Connect for Django OAuth 2.0 Server
+</details>
+
+<details>
+  <summary>⏳ OpenID Connect Discovery 1.0</summary>
+  <p>Developers can create a JSON file himself.</p>
+</details>
 
 And more will be added.
 
@@ -64,14 +183,6 @@ Key fingerprint is:
 
 You can also find it at <https://keybase.io/lepture>.
 
-## Useful Links
-
-1. Take a look at [Authlib Homepage](https://authlib.org/)
-2. Get more information with [Authlib Documentation](https://docs.authlib.org/)
-3. Have a taste with [Authlib Playground](https://play.authlib.org/)
-4. Stay tuned with [Authlib Newsletter](https://tinyletter.com/authlib)
-5. Get latest news via [Authlib on Twitter](https://twitter.com/authlib)
-6. Ask questions on StackOverflow with [Authlib Tag](https://stackoverflow.com/questions/tagged/authlib)
 
 ## License
 
