@@ -3,8 +3,18 @@
 OAuth 2.0 Token Introspection
 =============================
 
+.. meta::
+   :description: API references on RFC7009 Authlib implementation.
+
 This section contains the generic implementation of RFC7662_.
 
 .. _RFC7662: https://tools.ietf.org/html/rfc7662
 
-.. note:: This documentation will be finished in the future.
+.. module:: authlib.specs.rfc7662
+
+Introspection Endpoint
+----------------------
+
+.. autoclass:: IntrospectionEndpoint
+   :member-order: bysource
+   :members:
