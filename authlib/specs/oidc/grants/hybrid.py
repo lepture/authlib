@@ -76,6 +76,10 @@ class OpenIDHybridGrant(OpenIDMixin, AuthorizationCodeGrant):
         return token
 
     def process_token(self, token, request):
+        scope = token.get('scope')
+        if not scope or not scope.startswith('openid'):
+            # standard authorization code flow
+            return token
         credential = request.credential
         id_token = self.generate_id_token(
             token, request,

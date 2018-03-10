@@ -171,6 +171,7 @@ class OAuth2AuthorizationCodeMixin(AuthorizationCodeMixin):
     code = Column(String(120), unique=True, nullable=False)
     client_id = Column(String(48))
     redirect_uri = Column(Text, default='')
+    response_type = Column(Text, default='')
     scope = Column(Text, default='')
     nonce = Column(Text)
     auth_time = Column(

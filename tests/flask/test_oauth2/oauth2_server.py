@@ -83,6 +83,7 @@ class CodeGrantMixin(object):
             code=code,
             client_id=client.client_id,
             redirect_uri=request.redirect_uri,
+            response_type=request.response_type,
             scope=request.scope,
             nonce=nonce,
             user_id=grant_user.get_user_id(),
