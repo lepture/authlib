@@ -87,10 +87,12 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
 
         For example, the client directs the user-agent to make the following
         HTTP request using TLS (with extra line breaks for display purposes
-        only)::
+        only):
+
+        .. code-block:: http
 
             GET /authorize?response_type=code&client_id=s6BhdRkqt3&state=xyz
-                &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb HTTP/1.1
+            &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb HTTP/1.1
             Host: server.example.com
 
         The authorization server validates the request to ensure that all

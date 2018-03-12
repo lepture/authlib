@@ -112,7 +112,7 @@ which has built-in tools to handle requests and responses::
         if request.user:
             user_id = request.user.get_user_id()
         else:
-            # client_credential
+            # client_credentials grant_type
             user_id = request.client.user_id
             # or, depending on how you treat client_credential
             user_id = None
@@ -173,7 +173,7 @@ Now define an endpoint for authorization. This endpoint is used by
         # It can be done with a redirection to the login page, or a login
         # form on this authorization page.
         if request.method == 'GET':
-            grant = server.validate_authorization_request()
+            grant = server.validate_consent_request(end_user=current_user)
             return render_template(
                 'authorize.html',
                 grant=grant,
@@ -199,7 +199,7 @@ The revocation endpoint is optional, if revocation feature is wanted::
 
     @app.route('/oauth/revoke', methods=['POST'])
     def revoke_token():
-        return server.create_revocation_response()
+        return server.create_endpoint_response('revocation')
 
 However, the routes will not work properly. We need to register supported
 grants for them.
@@ -213,6 +213,8 @@ Register Grants
 
 There are four grant types defined by RFC6749, you can also create your own
 extended grant. Register the supported grant types to the authorization server.
+
+.. _flask_oauth2_code_grant:
 
 Authorization Code Grant
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -266,7 +268,7 @@ Implement this grant by subclass :class:`AuthorizationCodeGrant`::
             return User.query.get(authorization_code.user_id)
 
     # register it to grant endpoint
-    server.register_grant_endpoint(AuthorizationCodeGrant)
+    server.register_grant(AuthorizationCodeGrant)
 
 .. note:: AuthorizationCodeGrant is the most complex grant.
 
@@ -281,7 +283,7 @@ with::
     from authlib.specs.rfc6749 import grants
 
     # register it to grant endpoint
-    server.register_grant_endpoint(grants.ImplicitGrant)
+    server.register_grant(grants.ImplicitGrant)
 
 Implicit Grant is used by **public** client which has no **client_secret**.
 
@@ -301,7 +303,7 @@ it with a subclass of :class:`ResourceOwnerPasswordCredentialsGrant`::
                 return user
 
     # register it to grant endpoint
-    server.register_grant_endpoint(PasswordGrant)
+    server.register_grant(PasswordGrant)
 
 Client Credentials Grant
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -313,7 +315,7 @@ grant type. It can be easily registered with::
     from authlib.specs.rfc6749 import grants
 
     # register it to grant endpoint
-    server.register_grant_endpoint(grants.ClientCredentialsGrant)
+    server.register_grant(grants.ClientCredentialsGrant)
 
 Refresh Token
 -------------
@@ -335,7 +337,7 @@ provides it as a grant type, implement it with a subclass of
             return User.query.get(credential.user_id)
 
     # register it to grant endpoint
-    server.register_grant_endpoint(RefreshTokenGrant)
+    server.register_grant(RefreshTokenGrant)
 
 
 Token Revocation
@@ -365,7 +367,7 @@ endpoint, subclass **RevocationEndpoint** and define the missing methods::
             db.session.commit()
 
     # register it to authorization server
-    server.register_revoke_token_endpoint(RevocationEndpoint)
+    server.register_endpoint(RevocationEndpoint)
 
 There is also a shortcut method to create revocation endpoint::
 
@@ -374,7 +376,7 @@ There is also a shortcut method to create revocation endpoint::
     RevocationEndpoint = create_revocation_endpoint(db.session, Token)
 
     # register it to authorization server
-    server.register_revoke_token_endpoint(RevocationEndpoint)
+    server.register_endpoint(RevocationEndpoint)
 
 .. _RFC7009: https://tools.ietf.org/html/rfc7009
 
@@ -477,9 +479,47 @@ configuration::
    ]
 
 
-Create Custom Grant Types
--------------------------
+.. _flask_oauth2_custom_grant_types:
 
-It is possible to create your own grant types.
+Custom Grant Types
+------------------
 
-(TODO)
+It is also possible to create your own grant types. In Authlib, a **Grant**
+supports two endpoints:
+
+1. Authorization Endpoint: which can handle requests with ``response_type``.
+2. Token Endpoint: which is the endpoint to issue tokens.
+
+Creating a custom grant type with **BaseGrant**::
+
+    from authlib.specs.rfc6749 import grants
+
+
+    class MyCustomGrant(grants.BaseGrant):
+        AUTHORIZATION_ENDPOINT = True  # if you want to support it
+        TOKEN_ENDPOINT = True  # if you want to support it
+
+        @classmethod
+        def check_authorization_endpoint(cls, request):
+            # can MyCustomGrant handle this request for TOKEN_ENDPOINT
+            return True or False
+
+        @classmethod
+        def check_token_endpoint(cls, request):
+            # can MyCustomGrant handle this request for TOKEN_ENDPOINT
+            return True or False
+
+        def validate_authorization_request(self):
+            # only needed if AUTHORIZATION_ENDPOINT = True
+
+        def create_authorization_response(self, grant_user):
+            # only needed if AUTHORIZATION_ENDPOINT = True
+
+        def validate_token_request(self):
+            # only needed if TOKEN_ENDPOINT = True
+
+        def create_token_response(self):
+            # only needed if TOKEN_ENDPOINT = True
+
+For a better understanding, you can read the source code of the built-in
+grant types.

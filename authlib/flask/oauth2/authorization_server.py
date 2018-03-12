@@ -160,8 +160,10 @@ class AuthorizationServer(_AuthorizationServer):
             expires_generator
         )
 
-    def validate_authorization_request(self):
-        # TODO: deprecate
+    def validate_authorization_request(self):  # pragma: no cover
+        deprecate(
+            'use `server.validate_consent_request(end_user=current_user)` instead',
+            '0.8', link_uid='vAAUK', link_file='VAR')
         grant = self.get_authorization_grant(_create_oauth2_request())
         grant.validate_authorization_request()
         return grant

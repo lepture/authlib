@@ -9,11 +9,43 @@ Here you can see the full list of changes between each Authlib release.
 Version 0.6
 -----------
 
-**Release Date not Decided.**
+**Release Date not Decided. Going Beta!**
 
+From alpha to beta. This is a huge release with lots of deprecating changes
+and some breaking changes. And finally, OpenID Connect server is supported
+by now, because Authlib has added this specifications:
+
+- RFC7515_: JSON Web Signature (JWS)
+- RFC7517_: JSON Web Key (JWK)
+- RFC7518_: JSON Web Algorithms (JWA)
+- RFC7519_: JSON Web Token (JWT)
+
+The specifications are not completed yet, but they are ready to use. The
+missing RFC7516 (JWE) is going to be implemented in next version. Open ID
+Connect 1.0 is added with:
+
+- Authentication using the Authorization Code Flow
+- Authentication using the Implicit Flow
+- Authentication using the Hybrid Flow
+- ID Token Validation
+
+Besides that, there are more changes:
+
+- Implementation of RFC7662: OAuth 2.0 Token Introspection via `PR#36`_.
 - Use the ``token_endpoint_auth_method`` concept defined in `RFC7591`_.
+- Signal feature for Flask integration of OAuth 2.0 server.
+- Bug fixes for OAuth client parts.
 
+**Breaking Changes**: the columns in ``authlib.flask.oauth2.sqla`` has been
+changed a lot. You need to upgrade your database.
+**Deprecate Changes**: find how to solve the deprecate issues via https://git.io/vAAUK
+
+.. _`RFC7515`: https://tools.ietf.org/html/rfc7515
+.. _`RFC7517`: https://tools.ietf.org/html/rfc7517
+.. _`RFC7518`: https://tools.ietf.org/html/rfc7518
+.. _`RFC7519`: https://tools.ietf.org/html/rfc7519
 .. _`RFC7591`: https://tools.ietf.org/html/rfc7591
+.. _`PR#36`: https://github.com/lepture/authlib/pull/36
 
 
 Version 0.5.1
@@ -132,24 +164,6 @@ contributors.
 .. _`PR#14`: https://github.com/lepture/authlib/pull/14
 .. _`issue#16`: https://github.com/lepture/authlib/issues/16
 .. _`issue#17`: https://github.com/lepture/authlib/issues/17
-
-.. admonition:: Breaking Changes
-
-    For OAuth 2 server, it is suggested that you pass the user ID instead of user
-    object to ``create_authorization_response``::
-
-        @app.route('/authorize', methods=['POST'])
-        def confirm_authorize():
-            if request.form['confirm'] == 'ok':
-                # pass ID instead of current_user object
-                grant_user = current_user.id
-            else:
-                grant_user = None
-            return server.create_authorization_response(grant_user)
-
-    It will make things simple with an int/string value instead of an object. In
-    the meantime, the implementation of ``AuthorizationCodeGrant`` and
-    ``ImplicitGrant`` should be changed too. Read the documentation on :ref:`flask_oauth2_server`.
 
 .. admonition:: Deprecated Changes
 

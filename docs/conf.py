@@ -50,7 +50,7 @@ html_theme_options = {
         {'url': 'https://play.authlib.org/', 'title': 'Playground'},
         {'url': 'https://github.com/lepture/authlib', 'title': 'GitHub'},
     ],
-    'description': 'A ready to use authentication library.',
+    'description': 'An ambitious authentication library for OAuth 1, OAuth 2, OpenID clients and servers.',
     'github_user': 'lepture',
     'github_repo': 'authlib',
     'twitter': 'authlib',
@@ -84,24 +84,6 @@ htmlhelp_basename = 'Authlibdoc'
 
 
 # -- Options for LaTeX output ---------------------------------------------
-
-latex_elements = {
-    # The paper size ('letterpaper' or 'a4paper').
-    #
-    # 'papersize': 'letterpaper',
-
-    # The font size ('10pt', '11pt' or '12pt').
-    #
-    # 'pointsize': '10pt',
-
-    # Additional stuff for the LaTeX preamble.
-    #
-    # 'preamble': '',
-
-    # Latex figure (float) alignment
-    #
-    # 'figure_align': 'htbp',
-}
 
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title,

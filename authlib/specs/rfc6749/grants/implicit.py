@@ -103,10 +103,12 @@ class ImplicitGrant(RedirectAuthGrant):
         user-agent.
 
         For example, the client directs the user-agent to make the following
-        HTTP request using TLS::
+        HTTP request using TLS:
+
+        .. code-block:: http
 
             GET /authorize?response_type=token&client_id=s6BhdRkqt3&state=xyz
-                &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb HTTP/1.1
+            &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb HTTP/1.1
             Host: server.example.com
 
         .. _`Section 4.2.1`: https://tools.ietf.org/html/rfc6749#section-4.2.1

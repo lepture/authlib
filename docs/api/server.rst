@@ -60,14 +60,14 @@ Flask OAuth 2 Server
 
 .. autoclass:: AuthorizationServer
     :members:
-        register_grant_endpoint,
-        register_revoke_token_endpoint,
+        register_grant,
+        register_endpoint,
         create_expires_generator,
         create_bearer_token_generator,
-        validate_authorization_request,
+        validate_consent_request,
         create_authorization_response,
         create_token_response,
-        create_revocation_response
+        create_endpoint_response
 
 .. autoclass:: ResourceProtector
     :member-order: bysource

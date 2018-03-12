@@ -123,7 +123,6 @@ this part of the documentation is for you.
 
     api/client
     api/server
-    api/misc
 
 Get Updates
 -----------

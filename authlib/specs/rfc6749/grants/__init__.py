@@ -33,7 +33,7 @@ from .client_credentials import ClientCredentialsGrant
 from .refresh_token import RefreshTokenGrant
 
 __all__ = [
-    'AuthorizationCodeGrant', 'ImplicitGrant',
+    'BaseGrant', 'AuthorizationCodeGrant', 'ImplicitGrant',
     'ResourceOwnerPasswordCredentialsGrant',
     'ClientCredentialsGrant', 'RefreshTokenGrant',
 ]

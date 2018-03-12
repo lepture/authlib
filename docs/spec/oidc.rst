@@ -5,23 +5,44 @@ This part of the documentation covers the specification of OpenID Connect.
 
 1. http://openid.net/specs/openid-connect-core-1_0.html
 
+
+OpenID Grants
+-------------
+
+.. module:: authlib.specs.oidc.grants
+
+.. autoclass:: OpenIDCodeGrant
+    :show-inheritance:
+    :members:
+
+.. autoclass:: OpenIDImplicitGrant
+    :show-inheritance:
+    :members:
+
+.. autoclass:: OpenIDHybridGrant
+    :show-inheritance:
+    :members:
+
+OpenID Claims
+-------------
+
 .. module:: authlib.specs.oidc
 
-
-API References
---------------
-
 .. autoclass:: IDToken
-   :members:
+    :show-inheritance:
+    :members:
 
 
 .. autoclass:: CodeIDToken
-   :members:
+    :show-inheritance:
+    :members:
 
 
 .. autoclass:: ImplicitIDToken
-   :members:
+    :show-inheritance:
+    :members:
 
 
 .. autoclass:: HybridIDToken
-   :members:
+    :show-inheritance:
+    :members:

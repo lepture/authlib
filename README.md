@@ -1,15 +1,31 @@
-<a href="https://authlib.org/"><img src="https://authlib.org/logo.png" align="right" width="140" /></a>
+<a href="https://authlib.org/"><img src="https://authlib.org/logo.svg" align="right" width="140" /></a>
 
 # Authlib
 
 <a href="https://travis-ci.org/lepture/authlib"><img src="https://api.travis-ci.org/lepture/authlib.svg?branch=master" alt="Build Status"></a>
 <a href="https://codecov.io/gh/lepture/authlib?branch=master"><img src="https://codecov.io/gh/lepture/authlib/branch/master/graph/badge.svg" alt="Coverage Status"></a>
-<a href="https://pypi.python.org/pypi/authlib/"><img src="https://img.shields.io/pypi/wheel/authlib.svg?style=flat" alt="Wheel Status"></a>
+<a href="https://pypi.python.org/pypi/authlib/"><img src="https://img.shields.io/pypi/wheel/authlib.svg" alt="Wheel Status"></a>
+<a href="https://pypi.python.org/pypi/authlib/"><img src="https://img.shields.io/pypi/v/authlib.svg" alt="PyPI Version"></a>
+<a href="https://pypi.python.org/pypi/authlib/"><img src="https://img.shields.io/pypi/status/authlib.svg" alt="Release Stage"></a>
+<a href="https://twitter.com/intent/follow?screen_name=authlib"><img src="https://img.shields.io/twitter/follow/authlib.svg?style=social&logo=twitter&label=Follow" alt="Follow Twitter"></a>
 
 Authlib is an ambitious authentication library for OAuth 1, OAuth 2, OpenID
 clients, servers and more.
 
 Authlib is compatible with Python2.7+ and Python3.5+.
+
+```python
+authorization_server.register_grant(AuthorizationCodeGrant)
+authorization_server.register_grant(ImplicitGrant)
+authorization_server.register_grant(ResourceOwnerPasswordGrant)
+authorization_server.register_grant(ClientCredentialsGrant)
+authorization_server.register_grant(RefreshTokenGrant)
+authorization_server.register_grant(OpenIDCodeGrant)
+authorization_server.register_grant(OpenIDImplicitGrant)
+authorization_server.register_grant(OpenIDHybridGrant)
+authorization_server.register_endpoint(RevocationEndpoint)
+authorization_server.register_endpoint(IntrospectionEndpoint)
+```
 
 ## Useful Links
 
@@ -62,7 +78,6 @@ Lovely features that Authlib has built-in:
 <details>
 <summary>🎉 JSON Web Signature (JWS)</summary>
 
-- [x] "none" algorithm via RFC7518
 - [x] "HS256" algorithm via RFC7518
 - [x] "HS384" algorithm via RFC7518
 - [x] "HS512" algorithm via RFC7518
