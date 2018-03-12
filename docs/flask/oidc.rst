@@ -12,6 +12,8 @@ OpenID Connect 1.0 is supported from version 0.6. The integration is built as
 
 .. module:: authlib.specs.rfc6749.grants
 
+.. _flask_odic_code:
+
 Code Flow
 ---------
 
@@ -77,6 +79,8 @@ use use them together.
     If the server can handle OpenID requests, use :class:`OpenIDCodeGrant`.
     DON'T ``register_grant(AuthorizationCodeGrant)``.
 
+.. _flask_odic_implicit:
+
 Implicit Flow
 -------------
 
@@ -85,6 +89,8 @@ we can simply import it and register it::
 
     from authlib.specs.oidc import grants
     server.register_grant(grants.OpenIDImplicitGrant)
+
+.. _flask_odic_hybrid:
 
 Hybrid Flow
 ------------

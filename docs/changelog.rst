@@ -13,7 +13,7 @@ Version 0.6
 
 From alpha to beta. This is a huge release with lots of deprecating changes
 and some breaking changes. And finally, OpenID Connect server is supported
-by now, because Authlib has added this specifications:
+by now, because Authlib has added these specifications:
 
 - RFC7515_: JSON Web Signature (JWS)
 - RFC7517_: JSON Web Key (JWK)
@@ -24,9 +24,9 @@ The specifications are not completed yet, but they are ready to use. The
 missing RFC7516 (JWE) is going to be implemented in next version. Open ID
 Connect 1.0 is added with:
 
-- Authentication using the Authorization Code Flow
-- Authentication using the Implicit Flow
-- Authentication using the Hybrid Flow
+- Authentication using the :ref:`flask_odic_code`
+- Authentication using the :ref:`flask_odic_implicit`
+- Authentication using the :ref:`flask_odic_hybrid`
 - ID Token Validation
 
 Besides that, there are more changes:
@@ -38,6 +38,7 @@ Besides that, there are more changes:
 
 **Breaking Changes**: the columns in ``authlib.flask.oauth2.sqla`` has been
 changed a lot. You need to upgrade your database.
+
 **Deprecate Changes**: find how to solve the deprecate issues via https://git.io/vAAUK
 
 .. _`RFC7515`: https://tools.ietf.org/html/rfc7515

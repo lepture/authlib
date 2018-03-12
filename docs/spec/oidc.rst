@@ -1,5 +1,7 @@
-OpenID Connect
-==============
+.. _specs/oidc:
+
+OpenID Connect 1.0
+==================
 
 This part of the documentation covers the specification of OpenID Connect.
 

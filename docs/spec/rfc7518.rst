@@ -1,5 +1,7 @@
-JSON Web Algorithms (JWA)
-=========================
+.. _specs/rfc7518:
+
+JSON Web Algorithms
+===================
 
 .. meta::
    :description: API references on RFC7518 JSON Web Algorithms (JWA) Authlib implementation.
