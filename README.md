@@ -78,7 +78,7 @@ Lovely features that Authlib has built-in:
 </details>
 
 <details>
-<summary>🎉 JSON Web Signature (JWS)</summary>
+<summary>🎉 RFC7515: JSON Web Signature (JWS)</summary>
 
 - [x] "HS256" algorithm via RFC7518
 - [x] "HS384" algorithm via RFC7518
@@ -108,7 +108,7 @@ Lovely features that Authlib has built-in:
 </details>
 
 <details>
-<summary>🎉 JSON Web Algorithms (JWA)</summary>
+<summary>🎉 RFC7518: JSON Web Algorithms (JWA)</summary>
 
 - [x] Algorithms for JWS
 - [ ] Algorithms for JWE
