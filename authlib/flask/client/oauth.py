@@ -96,10 +96,11 @@ class OAuth(object):
 
         self._clients[name] = client
 
-        @self.app.before_request
-        def reset_client_token():
+        @self.app.teardown_appcontext
+        def reset_client_token(response_or_exc):
             if client.session.token:
                 client.session.token = None
+            return response_or_exc
 
         return client
 

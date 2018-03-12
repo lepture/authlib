@@ -139,3 +139,6 @@ class FlaskOAuthTest(TestCase):
             session['_dev_state_'] = state
             token = client.authorize_access_token()
             self.assertEqual(token['access_token'], 'a')
+
+        with app.test_request_context():
+            self.assertEqual(client.session.token, None)
