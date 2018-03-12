@@ -125,15 +125,15 @@ class OAuth1Session(Session):
             self._client.token = None
             self._client.token_secret = None
             self._client.verifier = None
-        if 'oauth_token' in token:
+        elif 'oauth_token' in token:
             self._client.token = token['oauth_token']
+            if 'oauth_token_secret' in token:
+                self._client.token_secret = token['oauth_token_secret']
+            if 'oauth_verifier' in token:
+                self._client.verifier = token['oauth_verifier']
         else:
             msg = 'oauth_token is missing: {resp}'.format(resp=token)
             raise OAuthException(msg, 'token_missing', token)
-        if 'oauth_token_secret' in token:
-            self._client.token_secret = token['oauth_token_secret']
-        if 'oauth_verifier' in token:
-            self._client.verifier = token['oauth_verifier']
 
     def authorization_url(self, url, request_token=None, **kwargs):
         """Create an authorization URL by appending request_token and optional

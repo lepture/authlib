@@ -4,7 +4,6 @@ from flask import request, redirect, session
 from werkzeug.local import LocalProxy
 from authlib.client.errors import OAuthException
 from authlib.client.client import OAuthClient
-from authlib.deprecate import deprecate
 from ..cache import Cache
 
 __all__ = ['OAuth', 'RemoteApp']
@@ -96,6 +95,12 @@ class OAuth(object):
             client.compliance_fix = compliance_fix
 
         self._clients[name] = client
+
+        @self.app.before_request
+        def reset_client_token():
+            if client.session.token:
+                client.session.token = None
+
         return client
 
     def register(self, name, **kwargs):
