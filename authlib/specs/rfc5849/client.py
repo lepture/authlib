@@ -1,7 +1,7 @@
 import time
 import base64
 import hashlib
-from authlib.common.encoding import to_unicode, to_bytes
+from authlib.common.encoding import to_native, to_bytes
 from authlib.common.security import generate_token
 from authlib.common.urls import extract_params
 from .wrapper import OAuth1Request
@@ -108,7 +108,7 @@ class Client(object):
         not_form = not content_type.startswith(CONTENT_TYPE_FORM_URLENCODED)
         if body and content_type and not_form:
             sig = base64.b64encode(hashlib.sha1(to_bytes(body)).digest())
-            oauth_params.append(('oauth_body_hash', to_unicode(sig)))
+            oauth_params.append(('oauth_body_hash', to_native(sig)))
 
         return oauth_params
 

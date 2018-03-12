@@ -7,7 +7,7 @@ from requests.auth import AuthBase
 from requests.utils import to_native_string
 from .errors import OAuthException
 from ..deprecate import deprecate
-from ..common.encoding import to_unicode
+from ..common.encoding import to_native
 from ..common.urls import (
     url_decode,
     extract_params,
@@ -241,8 +241,7 @@ class OAuth1Session(Session):
         return token
 
     def rebuild_auth(self, prepared_request, response):
-        """
-        When being redirected we should always strip Authorization
+        """When being redirected we should always strip Authorization
         header, since nonce may not be reused as per OAuth spec.
         """
         if 'Authorization' in prepared_request.headers:
@@ -267,7 +266,7 @@ class OAuth1(AuthBase, Client):
         # Overwriting url is safe here as request will not modify it past
         # this point.
 
-        content_type = to_unicode(req.headers.get('Content-Type', ''))
+        content_type = to_native(req.headers.get('Content-Type', ''))
         if self.signature_method == SIGNATURE_TYPE_BODY:
             content_type = CONTENT_TYPE_FORM_URLENCODED
         elif not content_type and extract_params(req.body):

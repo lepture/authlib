@@ -4,7 +4,7 @@ from requests.auth import HTTPBasicAuth
 from .errors import OAuthException
 from ..deprecate import deprecate
 from ..common.security import generate_token
-from ..common.urls import url_decode
+from ..common.urls import url_decode, add_params_to_qs
 from ..specs.rfc6749.parameters import (
     prepare_grant_uri,
     prepare_token_request,
@@ -52,15 +52,15 @@ class OAuth2Session(Session):
         super(OAuth2Session, self).__init__()
 
         self.client_id = client_id
-        self.client_secret = client_secret
+        self._client_auth = OAuth2ClientAuth(client_id, client_secret)
 
-        if refresh_token_url is None and 'auto_refresh_url' in kwargs:
+        if refresh_token_url is None and 'auto_refresh_url' in kwargs:  # pragma: no cover
             # compatible with requests-oauthlib
             refresh_token_url = kwargs.pop('auto_refresh_url')
             deprecate('Use "refresh_token_url" instead of "auto_refresh_url"', '0.7')
         self.refresh_token_url = refresh_token_url
 
-        if refresh_token_params is None and 'auto_refresh_kwargs' in kwargs:
+        if refresh_token_params is None and 'auto_refresh_kwargs' in kwargs:  # pragma: no cover
             # compatible with requests-oauthlib
             refresh_token_params = kwargs.pop('auto_refresh_kwargs')
             deprecate('Use "refresh_token_params" instead of "auto_refresh_kwargs"', '0.7')
@@ -171,10 +171,7 @@ class OAuth2Session(Session):
             )
 
         if auth is None:
-            client_secret = self.client_secret
-            if client_secret is None:
-                client_secret = ''
-            auth = HTTPBasicAuth(self.client_id, client_secret)
+            auth = self._client_auth
 
         if headers is None:
             headers = DEFAULT_HEADERS
@@ -281,10 +278,7 @@ class OAuth2Session(Session):
             url, headers, data = hook(url, headers, data)
 
         if auth is None:
-            client_secret = self.client_secret
-            if client_secret is None:
-                client_secret = ''
-            auth = HTTPBasicAuth(self.client_id, client_secret)
+            auth = self._client_auth
 
         return self.post(
             url, data=dict(url_decode(body)), timeout=timeout,
@@ -300,8 +294,8 @@ class OAuth2Session(Session):
                 if not self.refresh_token_url:
                     raise OAuthException('Token is expired.')
 
-                if auth is None and self.client_id and self.client_secret:
-                    auth = HTTPBasicAuth(self.client_id, self.client_secret)
+                if auth is None:
+                    auth = self._client_auth
 
                 self.refresh_token(
                     self.refresh_token_url, auth=auth, **kwargs
@@ -358,3 +352,21 @@ class OAuth2Session(Session):
             code=code, state=state,
             **kwargs
         )
+
+
+class OAuth2ClientAuth(HTTPBasicAuth):
+    def __init__(self, client_id, client_secret,
+                 auth_method='client_secret_basic'):
+        super(OAuth2ClientAuth, self).__init__(client_id, client_secret)
+        self.auth_method = auth_method
+
+    def __call__(self, req):
+        if self.auth_method == 'client_secret_basic':
+            return super(OAuth2ClientAuth, self).__call__(req)
+        if self.auth_method == 'client_secret_post':
+            req.body = add_params_to_qs(req.body or '', [
+                ('client_id', self.username),
+                ('client_secret', self.password or '')
+            ])
+            return req
+        return req

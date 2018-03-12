@@ -2,7 +2,7 @@ import time
 from authlib.specs.rfc6749 import InvalidRequestError
 from authlib.specs.rfc6749.util import scope_to_list
 from authlib.specs.rfc7519 import JWT
-from authlib.common.encoding import to_unicode
+from authlib.common.encoding import to_native
 from ..claims import UserInfo
 from ..util import create_half_hash
 from ..errors import (
@@ -115,19 +115,19 @@ class OpenIDMixin(object):
 
         access_token = token.get('access_token')
         if access_token:
-            at_hash = to_unicode(create_half_hash(access_token, alg))
+            at_hash = to_native(create_half_hash(access_token, alg))
             payload['at_hash'] = at_hash
 
         # calculate c_hash
         if code:
-            payload['c_hash'] = to_unicode(create_half_hash(code, alg))
+            payload['c_hash'] = to_native(create_half_hash(code, alg))
 
         payload.update(user_info)
         jwt = JWT(algorithms=alg)
         header = {'alg': alg}
         key = config['jwt_key']
         id_token = jwt.encode(header, payload, key)
-        return to_unicode(id_token)
+        return to_native(id_token)
 
 
 def is_openid_request(request):

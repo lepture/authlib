@@ -24,14 +24,20 @@ def to_bytes(x, charset='utf-8', errors='strict'):
     return byte_type(x)
 
 
-def to_unicode(x, charset='utf-8', errors='strict', allow_none_charset=False):
-    if x is None:
-        return None
-    if not isinstance(x, byte_type):
-        return unicode_type(x)
-    if charset is None and allow_none_charset:
+def to_unicode(x, charset='utf-8', errors='strict'):
+    if x is None or isinstance(x, unicode_type):
         return x
-    return x.decode(charset, errors)
+    if isinstance(x, byte_type):
+        return x.decode(charset, errors)
+    return unicode_type(x)
+
+
+def to_native(x, encoding='ascii'):
+    if isinstance(x, str):
+        return x
+    if is_py2:
+        return x.encode(encoding)
+    return x.decode(encoding)
 
 
 def urlsafe_b64decode(s):
