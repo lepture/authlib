@@ -153,7 +153,19 @@ class InvalidClientError(OAuth2Error):
     https://tools.ietf.org/html/rfc6749#section-5.2
     """
     error = 'invalid_client'
-    status_code = 401
+    status_code = 400
+
+    def get_headers(self):
+        headers = super(InvalidClientError, self).get_headers()
+        if self.status_code == 401:
+            extras = [
+                'error="{}"'.format(self.error),
+                'error_description="{}"'.format(self.error_description)
+            ]
+            headers.append(
+                ('WWW-Authenticate', 'Basic ' + ', '.join(extras))
+            )
+        return headers
 
 
 class InvalidGrantError(OAuth2Error):
@@ -215,13 +227,11 @@ class AccessDeniedError(OAuth2Error):
 
 class MissingAuthorizationError(OAuth2Error):
     error = 'missing_authorization'
-    status_code = 401
     error_description = 'Missing "Authorization" in headers.'
 
 
 class UnsupportedTokenTypeError(OAuth2Error):
     error = 'unsupported_token_type'
-    status_code = 401
 
 
 # -- exceptions for clients -- #

@@ -33,7 +33,7 @@ def authenticate_client_via_client_secret_basic(query_client, request):
     """
     client_id, client_secret = extract_basic_authorization(request.headers)
     if client_id and client_secret:
-        client = _validate_client(query_client, client_id, request.state)
+        client = _validate_client(query_client, client_id, request.state, 401)
         if client.check_token_endpoint_auth_method('client_secret_basic') \
                 and client.check_client_secret(client_secret):
             log.debug(
@@ -109,15 +109,17 @@ def authenticate_client(query_client, request, methods):
         client = func(query_client, request)
         if client:
             return client
+    if 'client_secret_basic' in methods:
+        raise InvalidClientError(state=request.state, status_code=401)
     raise InvalidClientError(state=request.state)
 
 
-def _validate_client(query_client, client_id, state=None):
+def _validate_client(query_client, client_id, state=None, status_code=400):
     if client_id is None:
-        raise InvalidClientError(state=state)
+        raise InvalidClientError(state=state, status_code=status_code)
 
     client = query_client(client_id)
     if not client:
-        raise InvalidClientError(state=state)
+        raise InvalidClientError(state=state, status_code=status_code)
 
     return client
