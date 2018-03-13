@@ -1,7 +1,7 @@
 .. _flask_oauth2_server:
 
-Flask OAuth 2 Server
-====================
+Flask OAuth 2.0 Server
+======================
 
 .. meta::
     :description: How to create an OAuth 2 server in Flask with Authlib.
@@ -195,12 +195,6 @@ The token endpoint is much easier::
     def issue_token():
         return server.create_token_response()
 
-The revocation endpoint is optional, if revocation feature is wanted::
-
-    @app.route('/oauth/revoke', methods=['POST'])
-    def revoke_token():
-        return server.create_endpoint_response('revocation')
-
 However, the routes will not work properly. We need to register supported
 grants for them.
 
@@ -340,45 +334,15 @@ provides it as a grant type, implement it with a subclass of
     server.register_grant(RefreshTokenGrant)
 
 
-Token Revocation
-----------------
+Other Token Endpoints
+---------------------
 
-RFC7009_ defined a way to revoke a token. To implement the token revocation
-endpoint, subclass **RevocationEndpoint** and define the missing methods::
+Flask OAuth 2.0 authorization server has a method to register other token
+endpoints: ``authorization_server.register_endpoint``. Find the available
+endpoints:
 
-    from authlib.specs.rfc7009 import RevocationEndpoint as _RevocationEndpoint
-
-    class RevocationEndpoint(_RevocationEndpoint):
-        def query_token(self, token, token_type_hint, client):
-            q = Token.query.filter_by(client_id=client.client_id)
-            if token_type_hint == 'access_token':
-                return q.filter_by(access_token=token).first()
-            elif token_type_hint == 'refresh_token':
-                return q.filter_by(refresh_token=token).first()
-            # without token_type_hint
-            item = q.filter_by(access_token=token).first()
-            if item:
-                return item
-            return q.filter_by(refresh_token=token).first()
-
-        def revoke_token(self, token):
-            token.revoked = True
-            db.session.add(token)
-            db.session.commit()
-
-    # register it to authorization server
-    server.register_endpoint(RevocationEndpoint)
-
-There is also a shortcut method to create revocation endpoint::
-
-    from authlib.flask.oauth2.sqla import create_revocation_endpoint
-
-    RevocationEndpoint = create_revocation_endpoint(db.session, Token)
-
-    # register it to authorization server
-    server.register_endpoint(RevocationEndpoint)
-
-.. _RFC7009: https://tools.ietf.org/html/rfc7009
+- :ref:`register_revocation_endpoint`
+- :ref:`register_introspection_endpoint`
 
 Protect Resources
 -----------------

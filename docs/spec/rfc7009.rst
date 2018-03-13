@@ -4,7 +4,7 @@ OAuth 2.0 Token Revocation
 ==========================
 
 .. meta::
-   :description: API references on RFC7009 OAuth 2.0 Token Revocation Authlib implementation.
+    :description: API references on RFC7009 OAuth 2.0 Token Revocation Authlib implementation.
 
 This section contains the generic implementation of RFC7009_.
 
@@ -12,8 +12,55 @@ This section contains the generic implementation of RFC7009_.
 
 .. module:: authlib.specs.rfc7009
 
-Revocation Endpoint
--------------------
+.. _register_revocation_endpoint:
+
+Register Revocation Endpoint
+----------------------------
+
+The revocation endpoint can be easily registered to :ref:`flask_oauth2_server`.
+But there are missing methods to be implemented::
+
+    from authlib.specs.rfc7009 import RevocationEndpoint
+
+    class MyRevocationEndpoint(RevocationEndpoint):
+        def query_token(self, token, token_type_hint, client):
+            q = Token.query.filter_by(client_id=client.client_id)
+            if token_type_hint == 'access_token':
+                return q.filter_by(access_token=token).first()
+            elif token_type_hint == 'refresh_token':
+                return q.filter_by(refresh_token=token).first()
+            # without token_type_hint
+            item = q.filter_by(access_token=token).first()
+            if item:
+                return item
+            return q.filter_by(refresh_token=token).first()
+
+        def revoke_token(self, token):
+            token.revoked = True
+            db.session.add(token)
+            db.session.commit()
+
+    # register it to authorization server
+    server.register_endpoint(MyRevocationEndpoint)
+
+There is also a shortcut method to create revocation endpoint::
+
+    from authlib.flask.oauth2.sqla import create_revocation_endpoint
+
+    RevocationEndpoint = create_revocation_endpoint(db.session, Token)
+
+    # register it to authorization server
+    server.register_endpoint(RevocationEndpoint)
+
+After the registration, you can create a response with::
+
+    @app.route('/oauth/revoke', methods=['POST'])
+    def revoke_token():
+        return server.create_endpoint_response(MyRevocationEndpoint.ENDPOINT_NAME)
+
+
+API Reference
+-------------
 
 .. autoclass:: RevocationEndpoint
    :member-order: bysource

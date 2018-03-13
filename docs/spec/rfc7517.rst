@@ -13,7 +13,7 @@ This section contains the generic implementation of RFC7517_.
 .. module:: authlib.specs.rfc7517
 
 
-Guide on JWS
+Guide on JWK
 ------------
 
 
