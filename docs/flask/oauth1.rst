@@ -1,13 +1,13 @@
 .. _flask_oauth1_server:
 
-Flask OAuth 1 Server
-====================
+Flask OAuth 1.0 Server
+======================
 
 .. meta::
-    :description: How to create an OAuth 1 server in Flask with Authlib.
-        And understand how OAuth 1 works.
+    :description: How to create an OAuth 1.0 server in Flask with Authlib.
+        And understand how OAuth 1.0 works.
 
-Implement OAuth 1 provider in Flask. An OAuth 1 provider contains two servers:
+Implement OAuth 1.0 provider in Flask. An OAuth 1 provider contains two servers:
 
 - Authorization Server: to issue access tokens
 - Resources Server: to serve your users' resources
