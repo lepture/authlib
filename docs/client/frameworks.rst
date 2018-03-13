@@ -414,8 +414,7 @@ There are two views to be completed, no matter it is OAuth 1 or OAuth 2::
     def fetch_resource(request):
         token = get_user_token_from_db(request.user)
         # remember to assign user's token to the client
-        oauth.twitter.token = token
-        resp = oauth.twitter.get('account/verify_credentials.json')
+        resp = oauth.twitter.get('account/verify_credentials.json', token=token)
         profile = resp.json()
         # ...
 

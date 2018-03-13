@@ -3,7 +3,6 @@ from django.dispatch import Signal
 from django.http import HttpResponseRedirect
 from authlib.client.client import OAuthClient
 from authlib.client.errors import OAuthException
-from authlib.deprecate import deprecate
 
 __all__ = ['token_update', 'OAuth', 'RemoteApp']
 
@@ -51,9 +50,8 @@ class RemoteApp(OAuthClient):
     """Django integrated RemoteApp of :class:`~authlib.client.OAuthClient`.
     It has built-in hooks for OAuthClient.
     """
-    def __init__(self, name, token=None, *args, **kwargs):
+    def __init__(self, name, *args, **kwargs):
         self.name = name
-        self.token = token
 
         compliance_fix = kwargs.pop('compliance_fix', None)
         config = _get_conf(name)
@@ -82,9 +80,6 @@ class RemoteApp(OAuthClient):
             token=token,
         )
 
-    def get_token(self):
-        return self.token
-
     def authorize_redirect(self, request, redirect_uri=None, **kwargs):
         """Create a HTTP Redirect for Authorization Endpoint.
 
@@ -98,27 +93,21 @@ class RemoteApp(OAuthClient):
             request.session[key] = redirect_uri
 
         if self.request_token_url:
-            self.session.redirect_uri = redirect_uri
-            params = {}
-            if self.request_token_params:
-                params.update(self.request_token_params)
-            token = self.session.fetch_request_token(
-                self.request_token_url, **params
-            )
-            # remember oauth_token, oauth_token_secret
-            key = '_{}_req_token_'.format(self.name)
-            request.session[key] = token
-            url = self.session.authorization_url(
-                self.authorize_url,  **kwargs)
-            self.session.redirect_uri = None
+            def save_request_token(token):
+                k = '_{}_req_token_'.format(self.name)
+                request.session[k] = token
         else:
-            self.session.redirect_uri = redirect_uri
-            url, state = self.session.authorization_url(
-                self.authorize_url, **kwargs)
-            if state:
-                key = '_{}_state_'.format(self.name)
-                request.session[key] = state
-        return HttpResponseRedirect(url)
+            save_request_token = None
+
+        uri, state = self.generate_authorize_redirect(
+            redirect_uri,
+            save_request_token,
+            **kwargs
+        )
+        if state:
+            key = '_{}_state_'.format(self.name)
+            request.session[key] = state
+        return HttpResponseRedirect(uri)
 
     def authorize_access_token(self, request, **kwargs):
         """Fetch access token in one step.

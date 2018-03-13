@@ -68,7 +68,6 @@ class OAuthClient(object):
         self.compliance_fix = compliance_fix
 
         self._kwargs = kwargs
-        self._sess = None
 
     def generate_authorize_redirect(
             self, redirect_uri=None, save_request_token=None, **kwargs):
@@ -82,25 +81,25 @@ class OAuthClient(object):
         if not self.authorize_url:
             raise RuntimeError('Missing "authorize_url" value')
 
-        if self.request_token_url:
-            self.session.redirect_uri = redirect_uri
-            params = {}
-            if self.request_token_params:
-                params.update(self.request_token_params)
-            token = self.session.fetch_request_token(
-                self.request_token_url, **params
-            )
-            # remember oauth_token, oauth_token_secret
-            save_request_token(token)
-            url = self.session.authorization_url(
-                self.authorize_url,  **kwargs)
-            self.session.redirect_uri = None
-            state = None
-        else:
-            self.session.redirect_uri = redirect_uri
-            url, state = self.session.authorization_url(
-                self.authorize_url, **kwargs)
-        return url, state
+        with self._get_session() as session:
+            if self.request_token_url:
+                session.redirect_uri = redirect_uri
+                params = {}
+                if self.request_token_params:
+                    params.update(self.request_token_params)
+                token = session.fetch_request_token(
+                    self.request_token_url, **params
+                )
+                # remember oauth_token, oauth_token_secret
+                save_request_token(token)
+                url = session.authorization_url(
+                    self.authorize_url,  **kwargs)
+                state = None
+            else:
+                session.redirect_uri = redirect_uri
+                url, state = session.authorization_url(
+                    self.authorize_url, **kwargs)
+            return url, state
 
     def fetch_access_token(self, redirect_uri=None, request_token=None,
                            **params):
@@ -112,46 +111,38 @@ class OAuthClient(object):
         :param params: Extra parameters to fetch access token.
         :return: A token dict.
         """
+        with self._get_session() as session:
+            if self.request_token_url:
+                session.redirect_uri = redirect_uri
+                if request_token is None:
+                    raise OAuthException('Missing request token')
+                # merge request token with verifier
+                token = {}
+                token.update(request_token)
+                token.update(params)
+                session.token = token
+                kwargs = self.access_token_params or {}
+                token = session.fetch_access_token(
+                    self.access_token_url, **kwargs)
+                session.redirect_uri = None
+            else:
+                session.redirect_uri = redirect_uri
+                kwargs = {}
+                if self.access_token_params:
+                    kwargs.update(self.access_token_params)
+                kwargs.update(params)
+                token = session.fetch_access_token(
+                    self.access_token_url, **kwargs)
+            return token
+
+    def _get_session(self):
         if self.request_token_url:
-            self.session.redirect_uri = redirect_uri
-            if request_token is None:
-                raise OAuthException('Missing request token')
-            # merge request token with verifier
-            token = {}
-            token.update(request_token)
-            token.update(params)
-            self.session.token = token
-            kwargs = self.access_token_params or {}
-            token = self.session.fetch_access_token(
-                self.access_token_url, **kwargs)
-            self.session.redirect_uri = None
-        else:
-            self.session.redirect_uri = redirect_uri
-            kwargs = {}
-            if self.access_token_params:
-                kwargs.update(self.access_token_params)
-            kwargs.update(params)
-            token = self.session.fetch_access_token(
-                self.access_token_url, **kwargs)
-        return token
-
-    @property
-    def session(self):
-        """OAuth 1/2 Session for requests. Initialized lazily.
-
-        If ``request_token_url`` is configured, it is a
-        :class:`OAuth1Session`, otherwise it is a :class:`OAuth2Session`.
-        """
-        if self._sess:
-            return self._sess
-
-        if self.request_token_url:
-            self._sess = OAuth1Session(
+            session = OAuth1Session(
                 self.client_id, self.client_secret,
                 **self.client_kwargs
             )
         else:
-            self._sess = OAuth2Session(
+            session = OAuth2Session(
                 client_id=self.client_id,
                 client_secret=self.client_secret,
                 refresh_token_url=self.refresh_token_url,
@@ -160,28 +151,23 @@ class OAuthClient(object):
             )
             # only OAuth2 has compliance_fix currently
             if self.compliance_fix:
-                self.compliance_fix(self._sess)
-        self._sess.headers['User-Agent'] = default_user_agent
-        return self._sess
+                self.compliance_fix(session)
 
-    def set_token(self, token):
-        if token is None:
-            raise OAuthException('No token available', type='token_missing')
-        if not self.request_token_url and isinstance(token, dict):
-            token = OAuth2Token(token)
-        self.session.token = token
+        session.headers['User-Agent'] = default_user_agent
+        return session
 
-    def get_token(self):
-        raise NotImplementedError()
-
-    def request(self, method, url, **kwargs):
+    def request(self, method, url, token=None, **kwargs):
         if self.api_base_url and not url.startswith(('https://', 'http://')):
             url = urlparse.urljoin(self.api_base_url, url)
-        if kwargs.get('withhold_token'):
-            return self.session.request(method, url, **kwargs)
-        if not self.session.token:
-            self.set_token(self.get_token())
-        return self.session.request(method, url, **kwargs)
+        with self._get_session() as session:
+            if kwargs.get('withhold_token'):
+                return session.request(method, url, **kwargs)
+            if token is None:
+                raise OAuthException('No token available', type='token_missing')
+            if not self.request_token_url and isinstance(token, dict):
+                token = OAuth2Token(token)
+            session.token = token
+            return session.request(method, url, **kwargs)
 
     def get(self, url, **kwargs):
         """Invoke GET http request.

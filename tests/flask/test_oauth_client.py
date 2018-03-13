@@ -1,4 +1,4 @@
-from __future__ import unicode_literals, print_function
+import mock
 from unittest import TestCase
 from flask import Flask, session
 from authlib.client import OAuthException
@@ -6,8 +6,7 @@ from authlib.flask.client import OAuth
 from authlib.client.apps import register_apps, get_oauth_app, get_app
 from .cache import SimpleCache
 from ..client_base import (
-    mock_json_response,
-    mock_text_response,
+    mock_send_value,
     get_bearer_token
 )
 
@@ -94,22 +93,19 @@ class FlaskOAuthTest(TestCase):
             authorize_url='https://i.b/authorize'
         )
 
-        client.session.send = mock_text_response(
-            'oauth_token=foo&oauth_verifier=baz'
-        )
-
         with app.test_request_context():
-            resp = client.authorize_redirect('https://b.com/bar')
-            self.assertEqual(resp.status_code, 302)
-            url = resp.headers.get('Location')
-            self.assertIn('oauth_token=foo', url)
-            self.assertIsNotNone(session.get('_dev_req_token_'))
+            with mock.patch('requests.sessions.Session.send') as send:
+                send.return_value = mock_send_value('oauth_token=foo&oauth_verifier=baz')
+                resp = client.authorize_redirect('https://b.com/bar')
+                self.assertEqual(resp.status_code, 302)
+                url = resp.headers.get('Location')
+                self.assertIn('oauth_token=foo', url)
+                self.assertIsNotNone(session.get('_dev_req_token_'))
 
-            client.session.send = mock_text_response(
-                'oauth_token=a&oauth_token_secret=b'
-            )
-            token = client.authorize_access_token()
-            self.assertEqual(token['oauth_token'], 'a')
+            with mock.patch('requests.sessions.Session.send') as send:
+                send.return_value = mock_send_value('oauth_token=a&oauth_token_secret=b')
+                token = client.authorize_access_token()
+                self.assertEqual(token['oauth_token'], 'a')
 
     def test_oauth2_authorize(self):
         app = Flask(__name__)
@@ -123,7 +119,6 @@ class FlaskOAuthTest(TestCase):
             access_token_url='https://i.b/token',
             authorize_url='https://i.b/authorize'
         )
-        client.session.send = mock_json_response(get_bearer_token())
 
         with app.test_request_context():
             resp = client.authorize_redirect('https://b.com/bar')
@@ -137,8 +132,11 @@ class FlaskOAuthTest(TestCase):
             self.assertRaises(OAuthException, client.authorize_access_token)
             # session is cleared in tests
             session['_dev_state_'] = state
-            token = client.authorize_access_token()
-            self.assertEqual(token['access_token'], 'a')
+
+            with mock.patch('requests.sessions.Session.send') as send:
+                send.return_value = mock_send_value(get_bearer_token())
+                token = client.authorize_access_token()
+                self.assertEqual(token['access_token'], 'a')
 
         with app.test_request_context():
-            self.assertEqual(client.session.token, None)
+            self.assertEqual(client.token, None)

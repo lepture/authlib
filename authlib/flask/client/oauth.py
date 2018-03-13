@@ -1,6 +1,7 @@
 import uuid
 import functools
 from flask import request, redirect, session
+from flask import _app_ctx_stack
 from werkzeug.local import LocalProxy
 from authlib.client.errors import OAuthException
 from authlib.client.client import OAuthClient
@@ -95,13 +96,6 @@ class OAuth(object):
             client.compliance_fix = compliance_fix
 
         self._clients[name] = client
-
-        @self.app.teardown_appcontext
-        def reset_client_token(response_or_exc):
-            if client.session.token:
-                client.session.token = None
-            return response_or_exc
-
         return client
 
     def register(self, name, **kwargs):
@@ -164,8 +158,27 @@ class RemoteApp(OAuthClient):
         session[key] = sid
         self.cache.set(sid, token, timeout=600)
 
-    def get_token(self):
-        return self._fetch_token()
+    @property
+    def token(self):
+        ctx = _app_ctx_stack.top
+        token = getattr(ctx, 'authlib_oauth2_token', None)
+        if token:
+            return token
+        if self._fetch_token:
+            token = self._fetch_token()
+            self.token = token
+            return token
+
+    @token.setter
+    def token(self, token):
+        ctx = _app_ctx_stack.top
+        ctx.authlib_oauth2_token = token
+
+    def request(self, method, url, token=None, **kwargs):
+        if token is None and not kwargs.get('withhold_token'):
+            token = self.token
+        return super(RemoteApp, self).request(
+            method, url, token=token, **kwargs)
 
     def authorize_redirect(self, redirect_uri=None, **kwargs):
         """Create a HTTP Redirect for Authorization Endpoint.
@@ -213,4 +226,6 @@ class RemoteApp(OAuthClient):
         cb_key = '_{}_callback_'.format(self.name)
         redirect_uri = session.pop(cb_key, None)
         params.update(kwargs)
-        return self.fetch_access_token(redirect_uri, request_token, **params)
+        token = self.fetch_access_token(redirect_uri, request_token, **params)
+        self.token = token
+        return token

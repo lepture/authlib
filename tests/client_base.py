@@ -22,6 +22,17 @@ def mock_text_response(body, status_code=200):
     return fake_send
 
 
+def mock_send_value(body, status_code=200):
+    resp = mock.MagicMock(spec=requests.Response)
+    resp.cookies = []
+    if isinstance(body, dict):
+        resp.json = lambda: body
+    else:
+        resp.text = body
+    resp.status_code = status_code
+    return resp
+
+
 def get_bearer_token():
     return {
         'token_type': 'Bearer',

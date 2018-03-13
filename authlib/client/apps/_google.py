@@ -9,7 +9,6 @@ GOOGLE_AUTH_URL = (
     'https://accounts.google.com/o/oauth2/v2/auth'
     '?access_type=offline'
 )
-GOOGLE_REVOKE_URL = 'https://accounts.google.com/o/oauth2/revoke'
 GOOGLE_JWK_SET = None
 
 GOOGLE_CLAIMS_OPTIONS = {
@@ -38,11 +37,6 @@ def parse_openid(client, response, nonce=None):
     return UserInfo(claims)
 
 
-def revoke_token(client):
-    token = client.get_token()['access_token']
-    return client.post(GOOGLE_AUTH_URL, params={'token': token})
-
-
 def fetch_profile(client):
     resp = client.get('oauth2/v3/userinfo')
     return UserInfo(**resp.json())
@@ -63,6 +57,5 @@ google = AppFactory('google', {
     'client_kwargs': {'scope': 'openid email profile'},
 }, "The OAuth app for Google API.")
 
-patch_method(google, revoke_token, 'revoke_token')
 patch_method(google, fetch_profile, 'profile')
 patch_method(google, parse_openid, 'parse_openid')

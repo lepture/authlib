@@ -1,12 +1,12 @@
 from __future__ import unicode_literals, print_function
 
+import mock
 from django.conf import settings
 from django.utils.module_loading import import_module
 from django.test import TestCase, RequestFactory, override_settings
 from authlib.django.client import OAuth, RemoteApp
 from ..client_base import (
-    mock_text_response,
-    mock_json_response,
+    mock_send_value,
     get_bearer_token
 )
 
@@ -70,19 +70,19 @@ class DjangoOAuthTest(TestCase):
             access_token_url='https://i.b/token',
             authorize_url='https://i.b/authorize',
         )
-        client.session.send = mock_text_response(
-            'oauth_token=foo&oauth_verifier=baz'
-        )
-        resp = client.authorize_redirect(request)
-        self.assertEqual(resp.status_code, 302)
-        url = resp.get('Location')
-        self.assertIn('oauth_token=foo', url)
 
-        client.session.send = mock_text_response(
-            'oauth_token=a&oauth_token_secret=b'
-        )
-        token = client.authorize_access_token(request)
-        self.assertEqual(token['oauth_token'], 'a')
+        with mock.patch('requests.sessions.Session.send') as send:
+            send.return_value = mock_send_value('oauth_token=foo&oauth_verifier=baz')
+
+            resp = client.authorize_redirect(request)
+            self.assertEqual(resp.status_code, 302)
+            url = resp.get('Location')
+            self.assertIn('oauth_token=foo', url)
+
+        with mock.patch('requests.sessions.Session.send') as send:
+            send.return_value = mock_send_value('oauth_token=a&oauth_token_secret=b')
+            token = client.authorize_access_token(request)
+            self.assertEqual(token['oauth_token'], 'a')
 
     def test_oauth2_authorize(self):
         request = self.factory.get('/login')
@@ -102,10 +102,11 @@ class DjangoOAuthTest(TestCase):
         self.assertIn('state=', url)
         state = request.session['_dev_state_']
 
-        client.session.send = mock_json_response(get_bearer_token())
-        request = self.factory.get('/authorize?state={}'.format(state))
-        request.session = self.factory.session
-        request.session['_dev_state_'] = state
+        with mock.patch('requests.sessions.Session.send') as send:
+            send.return_value = mock_send_value(get_bearer_token())
+            request = self.factory.get('/authorize?state={}'.format(state))
+            request.session = self.factory.session
+            request.session['_dev_state_'] = state
 
-        token = client.authorize_access_token(request)
-        self.assertEqual(token['access_token'], 'a')
+            token = client.authorize_access_token(request)
+            self.assertEqual(token['access_token'], 'a')
