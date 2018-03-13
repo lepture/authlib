@@ -22,7 +22,7 @@ from ..specs.rfc5849 import (
 )
 
 
-__all__ = ['OAuth1Session', 'OAuth1']
+__all__ = ['OAuth1Session', 'OAuth1Auth']
 
 CONTENT_TYPE_FORM_URLENCODED = 'application/x-www-form-urlencoded'
 
@@ -85,7 +85,7 @@ class OAuth1Session(Session):
             if redirect_uri is None:
                 redirect_uri = kwargs.pop('callback_uri', None)
 
-        self._client = OAuth1(
+        self._client = OAuth1Auth(
             client_id, client_secret=client_secret,
             token=token,
             token_secret=token_secret,
@@ -251,7 +251,7 @@ class OAuth1Session(Session):
             prepared_request.prepare_auth(self.auth)
 
 
-class OAuth1(AuthBase, Client):
+class OAuth1Auth(AuthBase, Client):
     """Signs the request using OAuth 1 (RFC5849)"""
 
     def sign_request(self, req):

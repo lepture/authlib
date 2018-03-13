@@ -12,13 +12,19 @@ Sessions and Client
 .. module:: authlib.client
 
 .. autoclass:: OAuth1Session
-   :members:
+    :members:
+
+.. autoclass:: OAuth1Auth
+    :members:
 
 .. autoclass:: OAuth2Session
-   :members:
+    :members:
+
+.. autoclass:: OAuth2ClientAuth
+    :members:
 
 .. autoclass:: OAuthClient
-   :members:
+    :members:
 
 
 Flask Registry and RemoteApp
@@ -27,10 +33,10 @@ Flask Registry and RemoteApp
 .. module:: authlib.flask.client
 
 .. autoclass:: OAuth
-   :members:
+    :members:
 
 .. autoclass:: RemoteApp
-   :members:
+    :members:
 
 
 Django Registry and RemoteApp
@@ -39,7 +45,7 @@ Django Registry and RemoteApp
 .. module:: authlib.django.client
 
 .. autoclass:: OAuth
-   :members:
+    :members:
 
 .. autoclass:: RemoteApp
-   :members:
+    :members:

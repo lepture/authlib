@@ -16,7 +16,7 @@ from ..specs.rfc6749 import InsecureTransportError
 from ..specs.rfc6750 import add_bearer_token
 from ..specs.rfc7009 import prepare_revoke_token_request
 
-__all__ = ['OAuth2Session']
+__all__ = ['OAuth2Session', 'OAuth2ClientAuth']
 
 log = logging.getLogger(__name__)
 DEFAULT_HEADERS = {
@@ -30,6 +30,7 @@ class OAuth2Session(Session):
 
     :param client_id: Client ID, which you get from client registration.
     :param client_secret: Client Secret, which you get from registration.
+    :param token_endpoint_auth_method: Client auth method for token endpoint.
     :param refresh_token_url: Refresh Token endpoint for auto refresh token.
     :param refresh_token_params: Extra parameters for refresh token endpoint.
     :param scope: Scope that you needed to access user resources.
@@ -45,6 +46,7 @@ class OAuth2Session(Session):
                           :class:`OAuth2Token` as parameter.
     """
     def __init__(self, client_id=None, client_secret=None,
+                 token_endpoint_auth_method='client_secret_basic',
                  refresh_token_url=None, refresh_token_params=None,
                  scope=None, redirect_uri=None,
                  token=None, token_placement='header',
@@ -52,7 +54,10 @@ class OAuth2Session(Session):
         super(OAuth2Session, self).__init__()
 
         self.client_id = client_id
-        self._client_auth = OAuth2ClientAuth(client_id, client_secret)
+        self._client_auth = OAuth2ClientAuth(
+            client_id, client_secret,
+            auth_method=token_endpoint_auth_method
+        )
 
         if refresh_token_url is None and 'auto_refresh_url' in kwargs:  # pragma: no cover
             # compatible with requests-oauthlib
@@ -355,6 +360,17 @@ class OAuth2Session(Session):
 
 
 class OAuth2ClientAuth(HTTPBasicAuth):
+    """Attaches OAuth Client Authentication to the given Request object.
+
+    :param client_id: Client ID, which you get from client registration.
+    :param client_secret: Client Secret, which you get from registration.
+    :param auth_method: Client auth method for token endpoint. The supported
+        methods for now:
+
+        * client_secret_basic
+        * client_secret_post
+        * client_secret_none
+    """
     def __init__(self, client_id, client_secret,
                  auth_method='client_secret_basic'):
         super(OAuth2ClientAuth, self).__init__(client_id, client_secret)
@@ -368,5 +384,13 @@ class OAuth2ClientAuth(HTTPBasicAuth):
                 ('client_id', self.username),
                 ('client_secret', self.password or '')
             ])
-            return req
+        elif self.auth_method == 'client_secret_none':
+            if req.method == 'GET':
+                req.url = add_params_to_qs(req.url, [
+                    ('client_id', self.username)
+                ])
+            elif req.method == 'POST':
+                req.body = add_params_to_qs(req.body or '', [
+                    ('client_id', self.username)
+                ])
         return req
