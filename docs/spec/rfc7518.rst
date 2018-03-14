@@ -10,4 +10,46 @@ This section contains the generic implementation of RFC7518_.
 
 .. _RFC7518: https://tools.ietf.org/html/rfc7518
 
-.. module:: authlib.specs.rfc7517
+
+
+Algorithms for JWS
+------------------
+
+.. module:: authlib.specs.rfc7518.jws_algorithms
+
+.. autoclass:: HMACAlgorithm
+   :member-order: bysource
+   :members:
+
+
+.. autoclass:: RSAAlgorithm
+   :member-order: bysource
+   :members:
+
+
+.. autoclass:: ECAlgorithm
+   :member-order: bysource
+   :members:
+
+.. autoclass:: RSAPSSAlgorithm
+   :member-order: bysource
+   :members:
+
+Algorithms for JWK
+------------------
+
+.. module:: authlib.specs.rfc7518.jwk_algorithms
+
+.. autoclass:: OCTAlgorithm
+   :member-order: bysource
+   :members:
+
+
+.. autoclass:: RSAAlgorithm
+   :member-order: bysource
+   :members:
+
+
+.. autoclass:: ECAlgorithm
+   :member-order: bysource
+   :members:

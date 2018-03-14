@@ -7,10 +7,86 @@ Flask OpenID Connect Server
     :description: How to create an OpenID Connect server in Flask with Authlib.
         And understand how OpenID Connect works.
 
-OpenID Connect 1.0 is supported from version 0.6. The integration is built as
-:ref:`flask_oauth2_custom_grant_types`.
+OpenID Connect 1.0 is supported from version 0.6. The integrations are built
+with :ref:`flask_oauth2_custom_grant_types`.
 
 .. module:: authlib.specs.rfc6749.grants
+
+Configuration
+-------------
+
+OpenID Connect 1.0 requires JWT. It can be enabled by setting::
+
+    OAUTH2_JWT_ENABLED = True
+
+When JWT is enabled, these configurations are available:
+
+==================== ===============================
+OAUTH2_JWT_ALG       Algorithm for JWT
+OAUTH2_JWT_KEY       Private key (in text) for JWT
+OAUTH2_JWT_KEY_PATH  Private key path for JWT
+OAUTH2_JWT_ISS       Issuer value for JWT
+==================== ===============================
+
+OAUTH2_JWT_ALG
+~~~~~~~~~~~~~~
+
+The algorithm to sign a JWT. This is the ``alg`` value defined in header
+part of a JWS:
+
+.. code-block:: json
+
+    {"alg": "RS256"}
+
+The available algorithms are defined in :ref:`specs/rfc7518`, which are:
+
+- HS256: HMAC using SHA-256
+- HS384: HMAC using SHA-384
+- HS512: HMAC using SHA-512
+- RS256: RSASSA-PKCS1-v1_5 using SHA-256
+- RS384: RSASSA-PKCS1-v1_5 using SHA-384
+- RS512: RSASSA-PKCS1-v1_5 using SHA-512
+- ES256: ECDSA using P-256 and SHA-256
+- ES384: ECDSA using P-384 and SHA-384
+- ES512: ECDSA using P-521 and SHA-512
+- PS256: RSASSA-PSS using SHA-256 and MGF1 with SHA-256
+- PS384: RSASSA-PSS using SHA-384 and MGF1 with SHA-384
+- PS512: RSASSA-PSS using SHA-512 and MGF1 with SHA-512
+
+The HMAC using SHA algorithms are not suggested since you need to share the
+secrets between server and client. Most OpenID Connect services are using
+``RS256``.
+
+OAUTH2_JWT_KEY / OAUTH2_JWT_KEY_PATH
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A private key is required to generate JWT. The value can be configured with
+either ``OAUTH2_JWT_KEY`` or ``OAUTH2_JWT_KEY_PATH``. The key that you are
+going to use dependents on the ``alg`` you are using. For instance, the alg
+is ``RS256``, you need to use a RSA private key. It can be set with::
+
+    OAUTH2_JWT_KEY = '''-----BEGIN RSA PRIVATE KEY-----\nMIIEog...'''
+
+    # or in JWK format
+    OAUTH2_JWT_KEY = {"kty": "RSA", "n": ...}
+
+    # or in JWK set format
+    OAUTH2_JWT_KEY = {"keys": [{"kty": "RSA", "kid": "uu-id", ...}, ...]}
+
+If you are using JWK set format, that would be better. Authlib will randomly
+choose a key among them to sign the JWT. To make it easier for maintenance,
+``OAUTH2_JWT_KEY_PATH`` is a good choice::
+
+    OAUTH2_JWT_KEY_PATH = '/path/to/rsa_private.pem'
+    OAUTH2_JWT_KEY_PATH = '/path/to/jwk_set_private.json'
+
+OAUTH2_JWT_ISS
+~~~~~~~~~~~~~~
+
+The ``iss`` value in JWT payload. The value can be you website name or URL.
+For example, Google is using::
+
+    {"iss": "https://accounts.google.com"}
 
 .. _flask_odic_code:
 

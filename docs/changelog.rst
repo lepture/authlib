@@ -6,8 +6,8 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
-Version 0.6
------------
+Version 0.6: Matoi
+------------------
 
 **Release Date not Decided. Going Beta!**
 
