@@ -14,7 +14,7 @@ from authlib.specs.rfc5849.util import escape
 from authlib.common.encoding import to_unicode, unicode_type
 from authlib.client import OAuth1Session, OAuthException
 from ..client_base import mock_text_response
-from ..util import get_rsa_private_key
+from ..util import read_file_path
 
 
 TEST_RSA_OAUTH_SIGNATURE = (
@@ -87,7 +87,7 @@ class OAuth1SessionTest(TestCase):
             'oauth_signature="{sig}"'
         ).format(sig=TEST_RSA_OAUTH_SIGNATURE)
 
-        rsa_key = get_rsa_private_key()
+        rsa_key = read_file_path('rsa_private.pem')
         auth = OAuth1Session(
             'foo', signature_method=SIGNATURE_RSA_SHA1, rsa_key=rsa_key)
         auth.send = self.verify_signature(signature)

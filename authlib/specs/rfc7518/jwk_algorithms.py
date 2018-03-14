@@ -41,7 +41,7 @@ class RSAAlgorithm(JWKAlgorithm):
         raise NotImplementedError()
 
     def loads_private_key(self, obj):
-        if 'oth' in obj:
+        if 'oth' in obj:  # pragma: no cover
             # https://tools.ietf.org/html/rfc7518#section-6.3.2.7
             return self.loads_other_primes_info(obj)
 

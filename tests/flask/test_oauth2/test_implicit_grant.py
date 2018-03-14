@@ -5,7 +5,7 @@ from .oauth2_server import create_authorization_server
 
 
 class ImplicitTest(TestCase):
-    def prepare_data(self, is_confidential=False):
+    def prepare_data(self, is_confidential=False, response_type='token'):
         server = create_authorization_server(self.app)
         server.register_grant(ImplicitGrant)
 
@@ -24,7 +24,7 @@ class ImplicitTest(TestCase):
             client_id='implicit-client',
             client_secret=client_secret,
             redirect_uri='http://localhost/authorized',
-            response_type='token',
+            response_type=response_type,
             grant_type='implicit',
             scope='profile',
             token_endpoint_auth_method=token_endpoint_auth_method,
@@ -45,6 +45,11 @@ class ImplicitTest(TestCase):
         self.prepare_data(True)
         rv = self.client.get(self.authorize_url)
         self.assertEqual(rv.data, b'invalid_client')
+
+    def test_unsupported_client(self):
+        self.prepare_data(response_type='code')
+        rv = self.client.get(self.authorize_url)
+        self.assertEqual(rv.data, b'unauthorized_client')
 
     def test_invalid_authorize(self):
         self.prepare_data()

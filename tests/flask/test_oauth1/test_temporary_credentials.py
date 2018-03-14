@@ -1,6 +1,6 @@
 import time
 from authlib.specs.rfc5849 import signature
-from tests.util import get_rsa_private_key
+from tests.util import read_file_path
 from .oauth1_server import db, User, Client
 from .oauth1_server import (
     TestCase,
@@ -230,7 +230,8 @@ class TemporaryCredentialsWithCacheTest(TestCase):
         base_string = signature.construct_base_string(
             'POST', 'http://localhost/oauth/initiate', params
         )
-        sig = signature.rsa_sha1_signature(base_string, get_rsa_private_key())
+        sig = signature.rsa_sha1_signature(
+            base_string, read_file_path('rsa_private.pem'))
         params.append(('oauth_signature', sig))
         auth_param = ','.join(['{}="{}"'.format(k, v) for k, v in params])
         auth_header = 'OAuth ' + auth_param

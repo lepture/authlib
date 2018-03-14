@@ -91,7 +91,7 @@ class RevocationEndpoint(object):
             try:
                 self.server.execute_hook(
                     'after_revoke_token', self._token, self._client)
-            except RuntimeError:
+            except RuntimeError:  # pragma: no cover
                 pass
             status = 200
             body = {}

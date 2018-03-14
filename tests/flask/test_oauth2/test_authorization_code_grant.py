@@ -49,6 +49,16 @@ class AuthorizationCodeTest(TestCase):
         rv = self.client.get(self.authorize_url)
         self.assertEqual(rv.data, b'ok')
 
+    def test_invalid_client_id(self):
+        self.prepare_data()
+        url = '/oauth/authorize?response_type=code'
+        rv = self.client.get(url)
+        self.assertEqual(rv.data, b'invalid_client')
+
+        url = '/oauth/authorize?response_type=code&client_id=invalid'
+        rv = self.client.get(url)
+        self.assertEqual(rv.data, b'invalid_client')
+
     def test_invalid_authorize(self):
         self.prepare_data()
         rv = self.client.post(self.authorize_url)

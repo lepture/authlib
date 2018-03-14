@@ -1,4 +1,5 @@
 import time
+import random
 from authlib.specs.rfc6749 import InvalidRequestError
 from authlib.specs.rfc6749.util import scope_to_list
 from authlib.specs.rfc7519 import JWT
@@ -111,7 +112,7 @@ class OpenIDMixin(object):
             payload['nonce'] = nonce
 
         # calculate at_hash
-        alg = config.get('jwt_alg', 'HS256')
+        alg = config['jwt_alg']
 
         access_token = token.get('access_token')
         if access_token:
@@ -125,7 +126,16 @@ class OpenIDMixin(object):
         payload.update(user_info)
         jwt = JWT(algorithms=alg)
         header = {'alg': alg}
+
         key = config['jwt_key']
+        if isinstance(key, dict):
+            # JWK set format
+            if 'keys' in key:
+                key = random.choice(key['keys'])
+                header['kid'] = key['kid']
+            elif 'kid' in key:
+                header['kid'] = key['kid']
+
         id_token = jwt.encode(header, payload, key)
         return to_native(id_token)
 

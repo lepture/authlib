@@ -24,9 +24,9 @@ class RefreshTokenTest(TestCase):
         db.session.add(client)
         db.session.commit()
 
-    def create_token(self, scope='profile'):
+    def create_token(self, scope='profile', user_id=1):
         token = Token(
-            user_id=1,
+            user_id=user_id,
             client_id='refresh-client',
             token_type='bearer',
             access_token='a1',
@@ -111,6 +111,20 @@ class RefreshTokenTest(TestCase):
         }, headers=headers)
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'invalid_scope')
+
+    def test_invalid_user(self):
+        self.prepare_data()
+        self.create_token(user_id=5)
+        headers = self.create_basic_header(
+            'refresh-client', 'refresh-secret'
+        )
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': 'refresh_token',
+            'refresh_token': 'r1',
+            'scope': 'profile',
+        }, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['error'], 'invalid_request')
 
     def test_invalid_grant_type(self):
         self.prepare_data(grant_type='invalid')

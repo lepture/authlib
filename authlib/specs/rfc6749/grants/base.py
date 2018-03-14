@@ -82,7 +82,7 @@ class BaseGrant(object):
         )
         try:
             self.server.execute_hook('after_authenticate_client', client, self)
-        except RuntimeError:
+        except RuntimeError:  # pragma: no cover
             pass
         return client
 

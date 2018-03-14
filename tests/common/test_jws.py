@@ -2,7 +2,7 @@ import unittest
 from authlib.specs.rfc7515 import JWS
 from authlib.specs.rfc7515 import errors
 from authlib.specs.rfc7518 import JWS_ALGORITHMS
-from tests.util import get_rsa_private_key, get_rsa_public_key
+from tests.util import read_file_path
 
 
 class JWSTest(unittest.TestCase):
@@ -46,8 +46,11 @@ class JWSTest(unittest.TestCase):
 
     def test_rsa_encode_decode(self):
         jws = JWS(algorithms=JWS_ALGORITHMS)
-        s = jws.encode({'alg': 'RS256'}, 'hello', get_rsa_private_key())
-        header, payload = jws.decode(s, get_rsa_public_key())
+        s = jws.encode(
+            {'alg': 'RS256'}, 'hello',
+            read_file_path('rsa_private.pem')
+        )
+        header, payload = jws.decode(s, read_file_path('rsa_public.pem'))
         self.assertEqual(payload, b'hello')
         self.assertEqual(header['alg'], 'RS256')
 

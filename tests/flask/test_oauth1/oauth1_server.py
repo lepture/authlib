@@ -23,7 +23,7 @@ from authlib.flask.oauth1.cache import (
 from authlib.specs.rfc5849 import OAuth1Error
 from authlib.common.urls import url_decode, url_encode
 from authlib.common.encoding import to_unicode
-from tests.util import get_rsa_public_key
+from tests.util import read_file_path
 from ..cache import SimpleCache
 os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
 
@@ -47,7 +47,7 @@ class Client(db.Model, OAuth1ClientMixin):
     user = db.relationship('User')
 
     def get_rsa_public_key(self):
-        return get_rsa_public_key()
+        return read_file_path('rsa_public.pem')
 
 
 class TokenCredential(db.Model, OAuth1TokenCredentialMixin):

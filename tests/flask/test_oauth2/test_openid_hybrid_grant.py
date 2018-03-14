@@ -44,8 +44,46 @@ class OpenIDCodeTest(TestCase):
         )
         claims.validate()
 
+    def test_invalid_response_type(self):
+        self.prepare_data()
+        rv = self.client.post('/oauth/authorize', data={
+            'client_id': 'hybrid-client',
+            'response_type': 'code id_token invalid',
+            'state': 'bar',
+            'nonce': 'abc',
+            'scope': 'profile',
+            'redirect_uri': 'https://a.b',
+            'user_id': '1',
+        })
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['error'], 'invalid_grant')
+
+    def test_invalid_scope(self):
+        self.prepare_data()
+        rv = self.client.post('/oauth/authorize', data={
+            'client_id': 'hybrid-client',
+            'response_type': 'code id_token',
+            'state': 'bar',
+            'nonce': 'abc',
+            'scope': 'profile',
+            'redirect_uri': 'https://a.b',
+            'user_id': '1',
+        })
+        self.assertIn('error=invalid_scope', rv.location)
+
+    def test_access_denied(self):
+        self.prepare_data()
+        rv = self.client.post('/oauth/authorize', data={
+            'client_id': 'hybrid-client',
+            'response_type': 'code token',
+            'state': 'bar',
+            'nonce': 'abc',
+            'scope': 'openid profile',
+            'redirect_uri': 'https://a.b',
+        })
+        self.assertIn('error=access_denied', rv.location)
+
     def test_code_access_token(self):
-        # generate refresh token
         self.prepare_data()
         rv = self.client.post('/oauth/authorize', data={
             'client_id': 'hybrid-client',
