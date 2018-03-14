@@ -1,6 +1,6 @@
 from werkzeug.utils import import_string
 from flask import Response, json
-from flask import request as _req
+from flask import request as flask_req
 from authlib.specs.rfc6749 import (
     OAuth2Request,
     register_error_uri,
@@ -164,7 +164,7 @@ class AuthorizationServer(_AuthorizationServer):
         deprecate(
             'use `server.validate_consent_request(end_user=current_user)` instead',
             '0.8', link_uid='vAAUK', link_file='VAR')
-        grant = self.get_authorization_grant(_create_oauth2_request())
+        grant = self.get_authorization_grant(_create_oauth2_request(None))
         grant.validate_authorization_request()
         return grant
 
@@ -187,9 +187,8 @@ class AuthorizationServer(_AuthorizationServer):
                         error=error
                     )
         """
-        if request is None:
-            request = _create_oauth2_request()
-        grant = self.get_authorization_grant(request)
+        req = _create_oauth2_request(request)
+        grant = self.get_authorization_grant(req)
         grant.validate_authorization_request()
         if hasattr(grant, 'validate_prompt'):
             # prompt is designed for OpenID Connect
@@ -219,7 +218,7 @@ class AuthorizationServer(_AuthorizationServer):
                 '0.8', 'vAAUK', 'car'
             )
         status, body, headers = self.create_valid_authorization_response(
-            _create_oauth2_request(),
+            _create_oauth2_request(None),
             grant_user=grant_user
         )
         if isinstance(body, dict):
@@ -234,17 +233,15 @@ class AuthorizationServer(_AuthorizationServer):
             def issue_token():
                 return server.create_token_response()
         """
-        if request is None:
-            request = _create_oauth2_request()
+        req = _create_oauth2_request(request)
         status, body, headers = super(
-            AuthorizationServer, self).create_token_response(request)
+            AuthorizationServer, self).create_token_response(req)
         return Response(json.dumps(body), status=status, headers=headers)
 
     def create_endpoint_response(self, name, request=None):
-        if request is None:
-            request = _create_oauth2_request()
+        req = _create_oauth2_request(request)
         status, body, headers = super(
-            AuthorizationServer, self).create_endpoint_response(name, request)
+            AuthorizationServer, self).create_endpoint_response(name, req)
         return Response(json.dumps(body), status=status, headers=headers)
 
     def create_revocation_response(self):
@@ -266,15 +263,16 @@ def _compatible_query_client(query_client):
     return query_client
 
 
-def _create_oauth2_request():
-    if _req.method == 'POST':
-        body = _req.form.to_dict(flat=True)
+def _create_oauth2_request(request):
+    q = request or flask_req
+    if q.method == 'POST':
+        body = q.form.to_dict(flat=True)
     else:
         body = None
 
     return OAuth2Request(
-        _req.method,
-        _req.url,
+        q.method,
+        q.url,
         body,
-        _req.headers
+        q.headers
     )

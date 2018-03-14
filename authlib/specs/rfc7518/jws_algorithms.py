@@ -57,6 +57,7 @@ class HMACAlgorithm(JWSAlgorithm):
         return key
 
     def sign(self, msg, key):
+        # it is faster than the one in cryptography
         return hmac.new(key, msg, self.hash_alg).digest()
 
     def verify(self, msg, key, sig):
