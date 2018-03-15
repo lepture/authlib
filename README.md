@@ -180,11 +180,11 @@ Framework integrations with current specification implementations:
 - [x] Requests OAuth 2 Session
 - [x] Flask OAuth 1/2 Client
 - [x] Django OAuth 1/2 Client
-- [x] Flask OAuth 1 Server
-- [x] Flask OAuth 2 Server
-- [x] Flask OpenID Connect Server
-- [ ] Django OAuth 1 Server
-- [ ] Django OAuth 2 Server
+- [x] Flask OAuth 1.0 Server
+- [x] Flask OAuth 2.0 Server
+- [x] Flask OpenID Connect 1.0
+- [ ] Django OAuth 1.0 Server
+- [ ] Django OAuth 2.0 Server
 - [ ] Django OpenID Connect Server
 
 
