@@ -53,7 +53,7 @@ The available algorithms are defined in :ref:`specs/rfc7518`, which are:
 - PS384: RSASSA-PSS using SHA-384 and MGF1 with SHA-384
 - PS512: RSASSA-PSS using SHA-512 and MGF1 with SHA-512
 
-The HMAC using SHA algorithms are not suggested since you need to share the
+The HMAC using SHA algorithms are not suggested since you need to share
 secrets between server and client. Most OpenID Connect services are using
 ``RS256``.
 
@@ -83,7 +83,7 @@ choose a key among them to sign the JWT. To make it easier for maintenance,
 OAUTH2_JWT_ISS
 ~~~~~~~~~~~~~~
 
-The ``iss`` value in JWT payload. The value can be you website name or URL.
+The ``iss`` value in JWT payload. The value can be your website name or URL.
 For example, Google is using::
 
     {"iss": "https://accounts.google.com"}

@@ -29,7 +29,7 @@ setup(
     license='LGPLv3',
     install_requires=['requests', 'cryptography'],
     classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Environment :: Web Environment',
         'Intended Audience :: Developers',

@@ -81,8 +81,8 @@ This project is inspired by:
 * OAuthLib
 * Flask-OAuthlib
 * requests-oauthlib
+* pyjwt
 
-And many codes come from these three projects.
 
 Authlib License
 ---------------

@@ -8,7 +8,16 @@ from .errors import (
 
 
 class JWTClaims(dict):
-    """
+    """Payload claims for JWT, which contains a validate interface.
+
+    :param payload: the payload dict of JWT
+    :param header: the header dict of JWT
+    :param options: validate options
+    :param params: other params
+
+    An example on ``options`` parameter, the format is inspired by
+    `OpenID Connect Claims`_::
+
         {
             "iss": {
                 "essential": True,
@@ -23,7 +32,8 @@ class JWTClaims(dict):
             }
         }
 
-    http://openid.net/specs/openid-connect-core-1_0.html#IndividualClaimsRequests
+    .. _`OpenID Connect Claims`:
+        http://openid.net/specs/openid-connect-core-1_0.html#IndividualClaimsRequests
     """
     REGISTERED_CLAIMS = ['iss', 'sub', 'aud', 'exp', 'nbf', 'iat', 'jti']
 
@@ -42,6 +52,7 @@ class JWTClaims(dict):
             raise error
 
     def validate(self, now=None, leeway=0):
+        """Validate everything in claims payload."""
         self._validate_essential_claims()
 
         if now is None:

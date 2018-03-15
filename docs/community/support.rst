@@ -31,3 +31,14 @@ If you have feature requests, please comment on `Features Checklist`_.
 If they are accepted, they will be listed in the post.
 
 .. _`Features Checklist`: https://github.com/lepture/authlib/issues/1
+
+
+Commercial Support
+------------------
+
+I do provide commercial support on Authlib. If you need personal help or
+consulting on your project, please send an email with a brief of what you
+need to <me@lepture.com>, I'll decide whether I can take the job.
+
+Note that work must be Authlib related. Find more information on
+https://authlib.org/support#consulting-and-supports

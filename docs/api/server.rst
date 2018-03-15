@@ -92,3 +92,11 @@ SQLAlchemy Helper Functions
 .. module:: authlib.flask.oauth2.sqla
 
 .. autofunction:: create_query_client_func
+
+.. autofunction:: create_save_token_func
+
+.. autofunction:: create_query_token_func
+
+.. autofunction:: create_revocation_endpoint
+
+.. autofunction:: create_bearer_token_validator

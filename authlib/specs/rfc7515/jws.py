@@ -25,11 +25,22 @@ class JWSAlgorithm(object):
         raise NotImplementedError
 
     def sign(self, msg, key):
-        """Sign the text msg with a private/sign key."""
+        """Sign the text msg with a private/sign key.
+
+        :param msg: message bytes to be signed
+        :param key: private key to sign the message
+        :return: bytes
+        """
         raise NotImplementedError
 
     def verify(self, msg, key, sig):
-        """Verify the signature of text msg with a public/verify key."""
+        """Verify the signature of text msg with a public/verify key.
+
+        :param msg: message bytes to be signed
+        :param key: public key to verify the signature
+        :param sig: result signature to be compared
+        :return: boolean
+        """
         raise NotImplementedError
 
 

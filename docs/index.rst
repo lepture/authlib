@@ -8,8 +8,9 @@ Authlib: Ready to use Authentication
 
 Release v\ |version|. (:ref:`Installation <install>`)
 
-Authlib is a ready to use authentication library. It is designed from low level
-APIs to high level APIs, to meet the needs of everyone.
+Authlib is an ambitious authentication library for OAuth 1, OAuth 2, OpenID
+clients and servers. It is designed from low level APIs to high level APIs,
+to meet the needs of everyone.
 
 
 Features
@@ -62,7 +63,8 @@ about Authlib, and information on the client parts.
 Server Guide
 ------------
 
-This part of the documentation contains information on the server parts.
+This part of the documentation contains information on the server parts for
+frameworks.
 
 .. toctree::
     :maxdepth: 2
@@ -79,8 +81,6 @@ Specifications
 Guide on specifications. You don't have to read this section if you are
 just using Authlib. But it would be good for you to understand how Authlib
 works.
-
-(Under Construction)
 
 .. toctree::
     :maxdepth: 2
@@ -133,6 +133,3 @@ Stay tuned with Authlib, here is a history of Authlib changes.
     :maxdepth: 2
 
     changelog
-
-- Subscribe the Newsletter: https://tinyletter.com/authlib
-- Follow Authlib on Twitter: https://twitter.com/authlib

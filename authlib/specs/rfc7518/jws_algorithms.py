@@ -46,6 +46,16 @@ class NoneAlgorithm(JWSAlgorithm):
 
 
 class HMACAlgorithm(JWSAlgorithm):
+    """HMAC using SHA algorithms for JWS. Available algorithms:
+
+    - HS256: HMAC using SHA-256
+    - HS384: HMAC using SHA-384
+    - HS512: HMAC using SHA-512
+    """
+    SHA256 = hashlib.sha256
+    SHA384 = hashlib.sha384
+    SHA512 = hashlib.sha512
+
     def __init__(self, hash_alg):
         self.hash_alg = hash_alg
 
@@ -65,6 +75,16 @@ class HMACAlgorithm(JWSAlgorithm):
 
 
 class RSAAlgorithm(JWSAlgorithm):
+    """RSA using SHA algorithms for JWS. Available algorithms:
+
+    - RS256: RSASSA-PKCS1-v1_5 using SHA-256
+    - RS384: RSASSA-PKCS1-v1_5 using SHA-384
+    - RS512: RSASSA-PKCS1-v1_5 using SHA-512
+    """
+    SHA256 = hashes.SHA256
+    SHA384 = hashes.SHA384
+    SHA512 = hashes.SHA512
+
     def __init__(self, hash_alg):
         self.hash_alg = hash_alg
 
@@ -95,6 +115,16 @@ class RSAAlgorithm(JWSAlgorithm):
 
 
 class ECAlgorithm(JWSAlgorithm):
+    """ECDSA using SHA algorithms for JWS. Available algorithms:
+
+    - ES256: ECDSA using P-256 and SHA-256
+    - ES384: ECDSA using P-384 and SHA-384
+    - ES512: ECDSA using P-521 and SHA-512
+    """
+    SHA256 = hashes.SHA256
+    SHA384 = hashes.SHA384
+    SHA512 = hashes.SHA512
+
     def __init__(self, hash_alg):
         self.hash_alg = hash_alg
 
@@ -130,6 +160,12 @@ class ECAlgorithm(JWSAlgorithm):
 
 
 class RSAPSSAlgorithm(RSAAlgorithm):
+    """RSASSA-PSS using SHA algorithms for JWS. Available algorithms:
+
+    - PS256: RSASSA-PSS using SHA-256 and MGF1 with SHA-256
+    - PS384: RSASSA-PSS using SHA-384 and MGF1 with SHA-384
+    - PS512: RSASSA-PSS using SHA-512 and MGF1 with SHA-512
+    """
     def sign(self, msg, key):
         return key.sign(
             msg,
@@ -158,18 +194,18 @@ class RSAPSSAlgorithm(RSAAlgorithm):
 
 JWS_ALGORITHMS = {
     'none': NoneAlgorithm(),
-    'HS256': HMACAlgorithm(hashlib.sha256),
-    'HS384': HMACAlgorithm(hashlib.sha384),
-    'HS512': HMACAlgorithm(hashlib.sha512),
-    'RS256': RSAAlgorithm(hashes.SHA256),
-    'RS384': RSAAlgorithm(hashes.SHA384),
-    'RS512': RSAAlgorithm(hashes.SHA512),
-    'ES256': ECAlgorithm(hashes.SHA256),
-    'ES384': ECAlgorithm(hashes.SHA384),
-    'ES512': ECAlgorithm(hashes.SHA512),
-    'PS256': RSAPSSAlgorithm(hashes.SHA256),
-    'PS384': RSAPSSAlgorithm(hashes.SHA384),
-    'PS512': RSAPSSAlgorithm(hashes.SHA512)
+    'HS256': HMACAlgorithm(HMACAlgorithm.SHA256),
+    'HS384': HMACAlgorithm(HMACAlgorithm.SHA384),
+    'HS512': HMACAlgorithm(HMACAlgorithm.SHA512),
+    'RS256': RSAAlgorithm(RSAAlgorithm.SHA256),
+    'RS384': RSAAlgorithm(RSAAlgorithm.SHA384),
+    'RS512': RSAAlgorithm(RSAAlgorithm.SHA512),
+    'ES256': ECAlgorithm(ECAlgorithm.SHA256),
+    'ES384': ECAlgorithm(ECAlgorithm.SHA384),
+    'ES512': ECAlgorithm(ECAlgorithm.SHA512),
+    'PS256': RSAPSSAlgorithm(RSAPSSAlgorithm.SHA256),
+    'PS384': RSAPSSAlgorithm(RSAPSSAlgorithm.SHA384),
+    'PS512': RSAPSSAlgorithm(RSAPSSAlgorithm.SHA512)
 }
 
 

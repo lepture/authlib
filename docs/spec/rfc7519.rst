@@ -4,9 +4,10 @@ JSON Web Token
 ==============
 
 .. meta::
-   :description: API references on RFC7519 JSON Web Token (JWT) Authlib implementation.
+    :description: API references on RFC7519 JSON Web Token (JWT) Python
+        implementation, by Authlib.
 
-This section contains the generic implementation of RFC7519_.
+This section contains the generic Python implementation of RFC7519_.
 
 .. _RFC7519: https://tools.ietf.org/html/rfc7519
 
@@ -16,10 +17,33 @@ This section contains the generic implementation of RFC7519_.
 Guide on JWT
 ------------
 
+JSON Web Token (JWT) is structured by JSON Web Signature (JWS) with certain
+payload claims. The JWT implementation in Authlib has all built-in algorithms
+via :ref:`specs/rfc7518`, it can also load private/public keys of
+:ref:`specs/rfc7517`::
+
+    >>> from authlib.specs.rfc7519 import JWT
+    >>> jwt = JWT()
+    >>> header = {'alg': 'RS256'}
+    >>> payload = {'iss': 'Authlib', 'sub': '123', ...}
+    >>> key = read_file('private.pem')
+    >>> s = jwt.encode(header, payload, key)
+    >>> claims = jwt.decode(s,read_file('public.pem'))
+    >>> print(claims)
+    {'iss': 'Authlib', 'sub': '123', ...}
+    >>> print(claims.header)
+    {'alg': 'RS256', 'typ': 'JWT'}
+    >>> claims.validate()
+
 
 API Reference
 -------------
 
 .. autoclass:: JWT
-   :member-order: bysource
-   :members:
+    :member-order: bysource
+    :members:
+
+
+.. autoclass:: JWTClaims
+    :member-order: bysource
+    :members:
