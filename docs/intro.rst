@@ -62,16 +62,16 @@ related specification, we add it into ``specs``.
 
 Currently, these specs are in the warehouse:
 
-* RFC5849 :ref:`specs/rfc5849`
-* RFC6749 :ref:`specs/rfc6749`
-* RFC6750 :ref:`specs/rfc6750`
-* RFC7009 :ref:`specs/rfc7009`
-* RFC7515 :ref:`specs/rfc7515`
-* RFC7517 :ref:`specs/rfc7517`
-* RFC7518 :ref:`specs/rfc7518`
-* RFC7519 :ref:`specs/rfc7519`
-* RFC7662 :ref:`specs/rfc7662`
-* OIDC :ref:`specs/oidc`
+* RFC5849 :ref:`spec/rfc5849`
+* RFC6749 :ref:`spec/rfc6749`
+* RFC6750 :ref:`spec/rfc6750`
+* RFC7009 :ref:`spec/rfc7009`
+* RFC7515 :ref:`spec/rfc7515`
+* RFC7517 :ref:`spec/rfc7517`
+* RFC7518 :ref:`spec/rfc7518`
+* RFC7519 :ref:`spec/rfc7519`
+* RFC7662 :ref:`spec/rfc7662`
+* OIDC :ref:`spec/oidc`
 
 Credits
 -------

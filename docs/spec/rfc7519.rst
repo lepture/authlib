@@ -1,4 +1,4 @@
-.. _specs/rfc7519:
+.. _spec/rfc7519:
 
 JSON Web Token
 ==============
@@ -19,8 +19,8 @@ Guide on JWT
 
 JSON Web Token (JWT) is structured by JSON Web Signature (JWS) with certain
 payload claims. The JWT implementation in Authlib has all built-in algorithms
-via :ref:`specs/rfc7518`, it can also load private/public keys of
-:ref:`specs/rfc7517`::
+via :ref:`spec/rfc7518`, it can also load private/public keys of
+:ref:`spec/rfc7517`::
 
     >>> from authlib.specs.rfc7519 import JWT
     >>> jwt = JWT()

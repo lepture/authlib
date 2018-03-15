@@ -3,8 +3,8 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Authlib: Ready to use Authentication
-====================================
+Authlib: Python Authentication
+==============================
 
 Release v\ |version|. (:ref:`Installation <install>`)
 
@@ -18,26 +18,26 @@ Features
 
 Generic specification implementations that Authlib has built-in:
 
-- RFC5849: The OAuth 1.0 Protocol
-- RFC6749: The OAuth 2.0 Authorization Framework
-- RFC6750: The OAuth 2.0 Authorization Framework: Bearer Token Usage
-- RFC7009: OAuth 2.0 Token Revocation
-- RFC7515: JSON Web Signature (JWS)
-- RFC7517: JSON Web Key (JWK)
-- RFC7518: JSON Web Algorithms (JWA)
-- RFC7519: JSON Web Token (JWT)
-- RFC7662: OAuth 2.0 Token Introspection
-- OpenID Connect 1.0
+- RFC5849: :ref:`spec/rfc5849`
+- RFC6749: :ref:`spec/rfc6749`
+- RFC6750: :ref:`spec/rfc6750`
+- RFC7009: :ref:`spec/rfc7009`
+- RFC7515: :ref:`spec/rfc7515`
+- RFC7517: :ref:`spec/rfc7517`
+- RFC7518: :ref:`spec/rfc7518`
+- RFC7519: :ref:`spec/rfc7519`
+- RFC7662: :ref:`spec/rfc7662`
+- OIDC: :ref:`spec/oidc`
 
 Framework integrations with current specification implementations:
 
-- Requests OAuth 1 Session
-- Requests OAuth 2 Session
-- Flask OAuth 1/2 Client
-- Django OAuth 1/2 Client
-- Flask OAuth 1 Server
-- Flask OAuth 2 Server
-- Flask OpenID Connect Server
+- Requests :ref:`oauth_1_session`
+- Requests :ref:`oauth_2_session`
+- :ref:`flask_client`
+- :ref:`django_client`
+- :ref:`flask_oauth1_server`
+- :ref:`flask_oauth2_server`
+- :ref:`flask_odic_server`
 - **TODO** Django OAuth 1 Server
 - **TODO** Django OAuth 2 Server
 

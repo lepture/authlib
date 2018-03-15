@@ -4,16 +4,16 @@ Integrated Frameworks
 =====================
 
 .. meta::
-   :description: The built-in Flask and Django integrations for OAuth 1 and
-      OAuth 2 clients.
+    :description: The built-in Flask and Django integrations for OAuth 1 and
+        OAuth 2 clients.
 
 Authlib has built-in integrated frameworks support, which makes
 it much easier to develop with your favorite framework.
 
 .. _flask_client:
 
-Flask
------
+Flask OAuth 1.0/2.0 Client
+--------------------------
 
 .. module:: authlib.flask.client
 
@@ -278,8 +278,10 @@ remote app or sharing it in OAuth registry::
     oauth = OAuth()
     oauth.init_app(app, update_token=update_token)
 
-Django
-------
+.. _django_client:
+
+Django OAuth 1.0/2.0 Client
+---------------------------
 
 .. module:: authlib.django.client
 

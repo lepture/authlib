@@ -1,4 +1,4 @@
-.. _specs/rfc6750:
+.. _spec/rfc6750:
 
 The OAuth 2.0 Authorization Framework: Bearer Token Usage
 =========================================================

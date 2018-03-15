@@ -18,11 +18,6 @@ Installing Authlib is simple with `pip <http://www.pip-installer.org/>`_::
 
     $ pip install Authlib
 
-To support RSA in OAuth 1 or OpenID Connect in OAuth 2, install with ``crypto``
-extra dependency::
-
-    $ pip install Authlib[crypto]
-
 Get the Source Code
 -------------------
 

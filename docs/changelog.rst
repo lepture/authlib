@@ -152,7 +152,7 @@ there will still be breaking changes in the future. Some of the breaking
 changes are compatible with deprecated messages, a few are not. I'll keep the
 deprecated message for 2 versions. Here is the main features:
 
-- :ref:`RFC5847 <specs/rfc5849>`, OAuth 1 client and server
+- :ref:`RFC5847 <spec/rfc5849>`, OAuth 1 client and server
 - :ref:`Flask implementation <flask_oauth1_server>` of OAuth 1 authorization
   server and resource protector.
 - Mixin of SQLAlchemy models for easy integration with OAuth 1.
@@ -177,10 +177,6 @@ contributors.
     * ``resource_owner_key`` has been changed to ``token``
     * ``resource_owner_secret`` has been changed to ``token_secret``
 
-    There is a huge change in client apps. Instead of ``fetch_user``, it is
-    suggested that you use ``profile()`` instead, which will return a UserInfo
-    object.
-
     Currently, they are backward compatible. You will be notified by warnings.
 
 Version 0.3: Nagato
@@ -192,9 +188,9 @@ This is a feature releasing for OAuth 2 server. Since this is the first
 release of the server implementation, you would expect that there are bugs,
 security vulnerabilities, and uncertainties. Try it bravely.
 
-- :ref:`RFC6749 <specs/rfc6749>`, all grant types, refresh token, authorization server.
-- :ref:`RFC6750 <specs/rfc6750>`, bearer token creation and validation.
-- :ref:`RFC7009 <specs/rfc7009>`, token revocation.
+- :ref:`RFC6749 <spec/rfc6749>`, all grant types, refresh token, authorization server.
+- :ref:`RFC6750 <spec/rfc6750>`, bearer token creation and validation.
+- :ref:`RFC7009 <spec/rfc7009>`, token revocation.
 - :ref:`Flask implementation <flask_oauth2_server>` of authorization server and resource protector.
 - Mixin of SQLAlchemy models for easy integration with OAuth 2.
 

@@ -1,4 +1,4 @@
-.. _specs/rfc7009:
+.. _spec/rfc7009:
 
 OAuth 2.0 Token Revocation
 ==========================

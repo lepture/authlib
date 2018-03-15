@@ -427,7 +427,7 @@ Register Error URIs
 
 To create a better developer experience for debugging, it is suggested that
 you creating some documentation for errors. Here is a list of built-in
-:ref:`specs/rfc6949-errors`.
+:ref:`spec/rfc6949-errors`.
 
 You can design a documentation page with a description of each error. For
 instance, there is a web page for ``invalid_client``::

@@ -1,7 +1,7 @@
 .. _flask_odic_server:
 
-Flask OpenID Connect Server
-===========================
+Flask OpenID Connect 1.0
+========================
 
 .. meta::
     :description: How to create an OpenID Connect server in Flask with Authlib.
@@ -38,7 +38,7 @@ part of a JWS:
 
     {"alg": "RS256"}
 
-The available algorithms are defined in :ref:`specs/rfc7518`, which are:
+The available algorithms are defined in :ref:`spec/rfc7518`, which are:
 
 - HS256: HMAC using SHA-256
 - HS384: HMAC using SHA-384
