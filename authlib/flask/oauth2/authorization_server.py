@@ -107,9 +107,14 @@ class AuthorizationServer(_AuthorizationServer):
             raise RuntimeError('Missing "OAUTH2_JWT_KEY" configuration.')
 
         jwt_alg = app.config.get('OAUTH2_JWT_ALG')
+        if not jwt_alg:
+            raise RuntimeError('Missing "OAUTH2_JWT_ALG" configuration.')
+
+        jwt_exp = app.config.get('OAUTH2_JWT_EXP', 3600)
         self.config.setdefault('jwt_iss', jwt_iss)
         self.config.setdefault('jwt_key', jwt_key)
         self.config.setdefault('jwt_alg', jwt_alg)
+        self.config.setdefault('jwt_exp', jwt_exp)
 
     def create_expires_generator(self, app):
         """Create a generator function for generating ``expires_in`` value.

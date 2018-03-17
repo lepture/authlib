@@ -1,6 +1,7 @@
 import functools
-from flask import g, Response, json
+from flask import Response, json
 from flask import request as _req
+from flask import _app_ctx_stack
 from werkzeug.local import LocalProxy
 from authlib.specs.rfc6749 import OAuth2Error, TokenRequest
 from authlib.specs.rfc6749 import ResourceProtector as _ResourceProtector
@@ -53,7 +54,8 @@ class ResourceProtector(_ResourceProtector):
                     )
                     token = self.validate_request(scope, request)
                     token_authenticated.send(self, token=token)
-                    g._oauth2_token_ = token
+                    ctx = _app_ctx_stack.top
+                    ctx.authlib_server_oauth2_token = token
                 except OAuth2Error as error:
                     status = error.status_code
                     body = dict(error.get_body())
@@ -65,7 +67,8 @@ class ResourceProtector(_ResourceProtector):
 
 
 def _get_current_token():
-    return getattr(g, '_oauth2_token_', None)
+    ctx = _app_ctx_stack.top
+    return getattr(ctx, 'authlib_server_oauth2_token', None)
 
 
 current_token = LocalProxy(_get_current_token)

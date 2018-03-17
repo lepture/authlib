@@ -161,7 +161,7 @@ class RemoteApp(OAuthClient):
     @property
     def token(self):
         ctx = _app_ctx_stack.top
-        token = getattr(ctx, 'authlib_oauth2_token', None)
+        token = getattr(ctx, 'authlib_client_oauth_token', None)
         if token:
             return token
         if self._fetch_token:
@@ -172,7 +172,7 @@ class RemoteApp(OAuthClient):
     @token.setter
     def token(self, token):
         ctx = _app_ctx_stack.top
-        ctx.authlib_oauth2_token = token
+        ctx.authlib_client_oauth_token = token
 
     def request(self, method, url, token=None, **kwargs):
         if token is None and not kwargs.get('withhold_token'):

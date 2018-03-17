@@ -21,12 +21,13 @@ OpenID Connect 1.0 requires JWT. It can be enabled by setting::
 
 When JWT is enabled, these configurations are available:
 
-==================== ===============================
+==================== =================================
 OAUTH2_JWT_ALG       Algorithm for JWT
 OAUTH2_JWT_KEY       Private key (in text) for JWT
 OAUTH2_JWT_KEY_PATH  Private key path for JWT
 OAUTH2_JWT_ISS       Issuer value for JWT
-==================== ===============================
+OAUTH2_JWT_EXP       JWT expires time, default is 3600
+==================== =================================
 
 OAUTH2_JWT_ALG
 ~~~~~~~~~~~~~~

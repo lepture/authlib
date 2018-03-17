@@ -105,7 +105,7 @@ class OpenIDMixin(object):
             'iss': config['jwt_iss'],
             'aud': [request.client.client_id],
             'iat': now,
-            'exp': now + token['expires_in'],
+            'exp': now + config['jwt_exp'],
             'auth_time': auth_time,
         }
         if nonce:

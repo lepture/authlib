@@ -1,6 +1,7 @@
 import functools
-from flask import g, json, Response
+from flask import json, Response
 from flask import request as _req
+from flask import _app_ctx_stack
 from werkzeug.local import LocalProxy
 from authlib.specs.rfc5849 import OAuth1Error
 from authlib.specs.rfc5849 import ResourceProtector as _ResourceProtector
@@ -92,7 +93,8 @@ class ResourceProtector(_ResourceProtector):
                         _req.form.to_dict(flat=True),
                         _req.headers
                     )
-                    g._oauth1_credential_ = req.credential
+                    ctx = _app_ctx_stack.top
+                    ctx.authlib_server_oauth1_credential = req.credential
                 except OAuth1Error as error:
                     body = dict(error.get_body())
                     return Response(
@@ -106,7 +108,8 @@ class ResourceProtector(_ResourceProtector):
 
 
 def _get_current_credential():
-    return getattr(g, '_oauth1_credential_', None)
+    ctx = _app_ctx_stack.top
+    return getattr(ctx, 'authlib_server_oauth1_credential', None)
 
 
 current_credential = LocalProxy(_get_current_credential)
