@@ -1,4 +1,4 @@
-.. _spec/rfc7515:
+.. _specs/rfc7515:
 
 JSON Web Signature
 ==================

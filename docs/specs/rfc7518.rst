@@ -1,4 +1,4 @@
-.. _spec/rfc7518:
+.. _specs/rfc7518:
 
 JSON Web Algorithms
 ===================

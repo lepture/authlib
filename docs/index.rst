@@ -18,16 +18,16 @@ Features
 
 Generic specification implementations that Authlib has built-in:
 
-- RFC5849: :ref:`spec/rfc5849`
-- RFC6749: :ref:`spec/rfc6749`
-- RFC6750: :ref:`spec/rfc6750`
-- RFC7009: :ref:`spec/rfc7009`
-- RFC7515: :ref:`spec/rfc7515`
-- RFC7517: :ref:`spec/rfc7517`
-- RFC7518: :ref:`spec/rfc7518`
-- RFC7519: :ref:`spec/rfc7519`
-- RFC7662: :ref:`spec/rfc7662`
-- OIDC: :ref:`spec/oidc`
+- RFC5849: :ref:`specs/rfc5849`
+- RFC6749: :ref:`specs/rfc6749`
+- RFC6750: :ref:`specs/rfc6750`
+- RFC7009: :ref:`specs/rfc7009`
+- RFC7515: :ref:`specs/rfc7515`
+- RFC7517: :ref:`specs/rfc7517`
+- RFC7518: :ref:`specs/rfc7518`
+- RFC7519: :ref:`specs/rfc7519`
+- RFC7662: :ref:`specs/rfc7662`
+- OIDC: :ref:`specs/oidc`
 
 Framework integrations with current specification implementations:
 
@@ -85,16 +85,16 @@ works.
 .. toctree::
     :maxdepth: 2
 
-    spec/rfc5849
-    spec/rfc6749
-    spec/rfc6750
-    spec/rfc7009
-    spec/rfc7515
-    spec/rfc7517
-    spec/rfc7518
-    spec/rfc7519
-    spec/rfc7662
-    spec/oidc
+    specs/rfc5849
+    specs/rfc6749
+    specs/rfc6750
+    specs/rfc7009
+    specs/rfc7515
+    specs/rfc7517
+    specs/rfc7518
+    specs/rfc7519
+    specs/rfc7662
+    specs/oidc
 
 Community & Contribution
 ------------------------
@@ -115,8 +115,8 @@ issues and finance.
 API Reference
 -------------
 
-If you are looking for information on a specific function, class or method,
-this part of the documentation is for you.
+If you are looking for information on a specific function, class or method for
+non specifications, this part of the documentation is for you.
 
 .. toctree::
     :maxdepth: 2

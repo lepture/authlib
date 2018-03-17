@@ -1,4 +1,4 @@
-.. _spec/rfc6749:
+.. _specs/rfc6749:
 
 The OAuth 2.0 Authorization Framework
 =====================================
@@ -27,7 +27,7 @@ Client Model
 .. autoclass:: ClientMixin
     :members:
 
-.. _spec/rfc6949-errors:
+.. _specs/rfc6949-errors:
 
 Errors
 ------

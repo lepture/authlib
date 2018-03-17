@@ -40,7 +40,7 @@ specification implementation to high-level framework integrations, if a high
 level can't meet your needs, you can always create one for your own based on
 the low level implementation.
 
-Most of the case, you don't need to do such thing. Flexible has been taken
+Most of the cases, you don't need to do such thing. Flexible has been taken
 into account from the start of the project. Take OAuth 2.0 server as an
 example, instead of a pre configured server, Authlib takes the advantage of
 ``register``.
@@ -62,16 +62,16 @@ related specification, we add it into ``specs``.
 
 Currently, these specs are in the warehouse:
 
-* RFC5849 :ref:`spec/rfc5849`
-* RFC6749 :ref:`spec/rfc6749`
-* RFC6750 :ref:`spec/rfc6750`
-* RFC7009 :ref:`spec/rfc7009`
-* RFC7515 :ref:`spec/rfc7515`
-* RFC7517 :ref:`spec/rfc7517`
-* RFC7518 :ref:`spec/rfc7518`
-* RFC7519 :ref:`spec/rfc7519`
-* RFC7662 :ref:`spec/rfc7662`
-* OIDC :ref:`spec/oidc`
+* RFC5849 :ref:`specs/rfc5849`
+* RFC6749 :ref:`specs/rfc6749`
+* RFC6750 :ref:`specs/rfc6750`
+* RFC7009 :ref:`specs/rfc7009`
+* RFC7515 :ref:`specs/rfc7515`
+* RFC7517 :ref:`specs/rfc7517`
+* RFC7518 :ref:`specs/rfc7518`
+* RFC7519 :ref:`specs/rfc7519`
+* RFC7662 :ref:`specs/rfc7662`
+* OIDC :ref:`specs/oidc`
 
 Credits
 -------

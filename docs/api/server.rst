@@ -76,7 +76,15 @@ Flask OAuth 2 Server
 .. data:: current_token
 
     Routes protected by :class:`ResourceProtector` can access current token
-    with this variable.
+    with this variable::
+
+        from authlib.flask.oauth2 import current_token
+
+        @require_oauth()
+        @app.route('/user_id')
+        def user_id():
+            # current token instance of the OAuth Token model
+            return current_token.user_id
 
 Cache Helper Functions
 ~~~~~~~~~~~~~~~~~~~~~~

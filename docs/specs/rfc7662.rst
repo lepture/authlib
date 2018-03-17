@@ -1,4 +1,4 @@
-.. _spec/rfc7662:
+.. _specs/rfc7662:
 
 OAuth 2.0 Token Introspection
 =============================

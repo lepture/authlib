@@ -1,4 +1,4 @@
-.. _spec/oidc:
+.. _specs/oidc:
 
 OpenID Connect 1.0
 ==================

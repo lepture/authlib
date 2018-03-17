@@ -38,7 +38,7 @@ part of a JWS:
 
     {"alg": "RS256"}
 
-The available algorithms are defined in :ref:`spec/rfc7518`, which are:
+The available algorithms are defined in :ref:`specs/rfc7518`, which are:
 
 - HS256: HMAC using SHA-256
 - HS384: HMAC using SHA-384

@@ -1,4 +1,4 @@
-.. _spec/rfc7517:
+.. _specs/rfc7517:
 
 JSON Web Key
 ============
