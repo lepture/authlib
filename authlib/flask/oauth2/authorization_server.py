@@ -68,11 +68,13 @@ class AuthorizationServer(_AuthorizationServer):
         deprecate('Use "register_endpoint" instead.', '0.8', 'vAAUK', 're')
         self.register_endpoint(cls)
 
-    def init_app(self, app, query_client=None):
+    def init_app(self, app, query_client=None, save_token=None):
         """Initialize later with Flask app instance."""
         query_client = _compatible_query_client(query_client)
         if query_client is not None:
             self.query_client = query_client
+        if save_token is not None:
+            self.save_token = save_token
         for k in GRANT_TYPES_EXPIRES:
             conf_key = 'OAUTH2_EXPIRES_{}'.format(k.upper())
             app.config.setdefault(conf_key, GRANT_TYPES_EXPIRES[k])

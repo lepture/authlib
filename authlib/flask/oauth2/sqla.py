@@ -46,32 +46,32 @@ class OAuth2ClientMixin(ClientMixin):
     @hybrid_property
     def redirect_uris(self):
         if self.redirect_uri:
-            return self.redirect_uri.split()
+            return self.redirect_uri.split('\n')
         return []
 
     @redirect_uris.setter
     def redirect_uris(self, value):
-        self.redirect_uri = ' '.join(value)
+        self.redirect_uri = '\n'.join(value)
 
     @hybrid_property
     def grant_types(self):
         if self.grant_type:
-            return self.grant_type.split('|')
+            return self.grant_type.split('\n')
         return []
 
     @grant_types.setter
     def grant_types(self, value):
-        self.grant_type = '|'.join(value)
+        self.grant_type = '\n'.join(value)
 
     @hybrid_property
     def response_types(self):
         if self.response_type:
-            return self.response_type.split('|')
+            return self.response_type.split('\n')
         return []
 
     @response_types.setter
     def response_types(self, value):
-        self.response_type = '|'.join(value)
+        self.response_type = '\n'.join(value)
 
     @hybrid_property
     def contacts(self):

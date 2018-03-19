@@ -12,7 +12,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 project = u'Authlib'
-copyright = u'2017, Hsiaoming Yang'
+copyright = u'2018, Hsiaoming Ltd'
 author = u'Hsiaoming Yang'
 
 # The version info for the project you're documenting, acts as replacement for
