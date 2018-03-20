@@ -9,7 +9,7 @@ Here you can see the full list of changes between each Authlib release.
 Version 0.6: Matoi
 ------------------
 
-**Release Date not Decided. Going Beta!**
+**Released on Mar 20, 2018. Going Beta!**
 
 From alpha to beta. This is a huge release with lots of deprecating changes
 and some breaking changes. And finally, OpenID Connect server is supported
