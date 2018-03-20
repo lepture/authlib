@@ -29,7 +29,7 @@ class OpenIDCodeTest(TestCase):
             client_secret='hybrid-secret',
             redirect_uri='https://a.b',
             scope='openid profile address',
-            response_type='code id_token|code token|code id_token token',
+            response_type='code id_token\ncode token\ncode id_token token',
             grant_type='authorization_code',
         )
         db.session.add(client)

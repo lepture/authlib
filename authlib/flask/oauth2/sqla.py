@@ -46,7 +46,7 @@ class OAuth2ClientMixin(ClientMixin):
     @hybrid_property
     def redirect_uris(self):
         if self.redirect_uri:
-            return self.redirect_uri.split('\n')
+            return self.redirect_uri.splitlines()
         return []
 
     @redirect_uris.setter
@@ -56,7 +56,7 @@ class OAuth2ClientMixin(ClientMixin):
     @hybrid_property
     def grant_types(self):
         if self.grant_type:
-            return self.grant_type.split('\n')
+            return self.grant_type.splitlines()
         return []
 
     @grant_types.setter
@@ -66,7 +66,7 @@ class OAuth2ClientMixin(ClientMixin):
     @hybrid_property
     def response_types(self):
         if self.response_type:
-            return self.response_type.split('\n')
+            return self.response_type.splitlines()
         return []
 
     @response_types.setter
@@ -153,12 +153,12 @@ class OAuth2ClientMixin(ClientMixin):
 
     def check_response_type(self, response_type):
         if self.response_type:
-            return response_type in self.response_type.split('|')
+            return response_type in self.response_types
         return False
 
     def check_grant_type(self, grant_type):
         if self.grant_type:
-            return grant_type in self.grant_type.split('|')
+            return grant_type in self.grant_types
         return False
 
     def check_requested_scopes(self, scopes):

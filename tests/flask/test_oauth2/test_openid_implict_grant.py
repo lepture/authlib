@@ -29,7 +29,7 @@ class ImplicitTest(TestCase):
             redirect_uri='https://a.b/c',
             scope='openid profile',
             token_endpoint_auth_method='none',
-            response_type='id_token|id_token token',
+            response_type='id_token\nid_token token',
         )
         self.authorize_url = (
             '/oauth/authorize?response_type=token'
