@@ -189,7 +189,7 @@ def create_authorization_server(app):
 def create_resource_server(app):
     require_oauth = ResourceProtector()
     BearerTokenValidator = create_bearer_token_validator(db.session, Token)
-    require_oauth.register_token_validator('bearer', BearerTokenValidator())
+    require_oauth.register_token_validator(BearerTokenValidator())
 
     @app.route('/user')
     @require_oauth('profile')

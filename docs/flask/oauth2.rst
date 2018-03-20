@@ -344,6 +344,8 @@ endpoints:
 - :ref:`register_revocation_endpoint`
 - :ref:`register_introspection_endpoint`
 
+.. _flask_oauth2_resource_protector:
+
 Protect Resources
 -----------------
 
@@ -368,13 +370,13 @@ server. Here is the way to protect your users' resources::
             return token.revoked
 
     # only bearer token is supported currently
-    ResourceProtector.register_token_validator('bearer', MyBearerTokenValidator())
+    ResourceProtector.register_token_validator(MyBearerTokenValidator())
 
     # you can also create BearerTokenValidator with shortcut
     from authlib.flask.oauth2.sqla import create_bearer_token_validator
 
     BearerTokenValidator = create_bearer_token_validator(db.session, Token)
-    ResourceProtector.register_token_validator('bearer', BearerTokenValidator())
+    ResourceProtector.register_token_validator(BearerTokenValidator())
 
     require_oauth = ResourceProtector()
 

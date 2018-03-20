@@ -30,7 +30,7 @@ class ResourceProtector(_ResourceProtector):
             def token_revoked(self, token):
                 return False
 
-        ResourceProtector.register_token_validator('bearer', MyBearerTokenValidator())
+        ResourceProtector.register_token_validator(MyBearerTokenValidator())
 
         # protect resource with require_oauth
 

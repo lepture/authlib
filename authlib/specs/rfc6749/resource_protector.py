@@ -14,10 +14,9 @@ class ResourceProtector(object):
     TOKEN_VALIDATORS = {}
 
     @classmethod
-    def register_token_validator(cls, token_type, validator):
-        token_type = token_type.lower()
-        if token_type not in cls.TOKEN_VALIDATORS:
-            cls.TOKEN_VALIDATORS[token_type] = validator
+    def register_token_validator(cls, validator):
+        if validator.TOKEN_TYPE not in cls.TOKEN_VALIDATORS:
+            cls.TOKEN_VALIDATORS[validator.TOKEN_TYPE] = validator
 
     def validate_request(self, scope, request):
         auth = request.headers.get('Authorization')

@@ -18,6 +18,8 @@ from .errors import (
 
 
 class BearerTokenValidator(object):
+    TOKEN_TYPE = 'bearer'
+
     def __init__(self, realm=None):
         self.realm = realm
 

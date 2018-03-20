@@ -36,11 +36,16 @@ Besides that, there are more changes:
 - Signal feature for Flask integration of OAuth 2.0 server.
 - Bug fixes for OAuth client parts, thanks for the instruction by Lukas Schink.
 
-**Breaking Changes**: the columns in ``authlib.flask.oauth2.sqla`` has been
-changed a lot. If you are using it, you need to upgrade your database.
+**Breaking Changes**:
 
-**Breaking Changes**: ``authlib.client.oauth1.OAuth1`` has been renamed to
-``authlib.client.oauth1.OAuth1Auth``.
+1. the columns in ``authlib.flask.oauth2.sqla`` has been changed a lot.
+   If you are using it, you need to upgrade your database.
+
+2. use ``register_token_validator`` on
+   :ref:`ResourceProtector <flask_oauth2_resource_protector>`.
+
+3. ``authlib.client.oauth1.OAuth1`` has been renamed to
+   ``authlib.client.oauth1.OAuth1Auth``.
 
 **Deprecate Changes**: find how to solve the deprecate issues via https://git.io/vAAUK
 
