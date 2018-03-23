@@ -19,8 +19,8 @@ setup(
     url=homepage,
     packages=find_packages(exclude=['tests']),
     description=(
-        'A ready to use authentication library for '
-        'OAuth1, OAuth2, OpenID connect and more.'
+        'An ambitious authentication library for OAuth 1, OAuth 2, '
+        'OpenID clients and servers.'
     ),
     zip_safe=False,
     include_package_data=True,
@@ -32,6 +32,8 @@ setup(
         'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Environment :: Web Environment',
+        'Framework :: Flask',
+        'Framework :: Django',
         'Intended Audience :: Developers',
         'License :: OSI Approved',
         'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
