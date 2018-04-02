@@ -286,7 +286,7 @@ class OAuth2Session(Session):
             auth = self._client_auth
 
         return self.post(
-            url, data=dict(url_decode(body)), timeout=timeout,
+            url, data=dict(url_decode(data)), timeout=timeout,
             headers=headers, auth=auth, verify=verify, proxies=proxies,
             withhold_token=True,
         )
