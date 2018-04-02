@@ -3,9 +3,6 @@
     ~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Validate Bearer Token for in request, scope and token.
-
-    :copyright: (c) 2017 by Hsiaoming Yang.
-    :license: LGPLv3, see LICENSE for more details.
 """
 
 import time

@@ -25,7 +25,7 @@ We are not ready for company sponsorship right now. Stay tuned.
 Commercial License
 ------------------
 
-Authlib is licensed under LGPLv3, if this license doesn't fit your company,
+Authlib is licensed under AGPLv3+, if this license doesn't fit your company,
 consider to purchase a commercial license.
 
 Find more information on

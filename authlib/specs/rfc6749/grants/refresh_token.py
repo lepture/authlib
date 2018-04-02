@@ -6,9 +6,6 @@
     Access Token per `Section 6`_.
 
     .. _`Section 6`: https://tools.ietf.org/html/rfc6749#section-6
-
-    :copyright: (c) 2017 by Hsiaoming Yang.
-    :license: LGPLv3, see LICENSE for more details.
 """
 
 import logging

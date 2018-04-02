@@ -13,9 +13,6 @@
 
     .. _`RFC6749`: https://tools.ietf.org/html/rfc6749
     .. _`RFC7591`: https://tools.ietf.org/html/rfc7591
-
-    :copyright: (c) 2017 by Hsiaoming Yang.
-    :license: LGPLv3, see LICENSE for more details.
 """
 
 import logging

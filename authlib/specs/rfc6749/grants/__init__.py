@@ -18,9 +18,6 @@
     types. Authlib defines refresh_token as a grant type too.
 
     .. _`Section 4`: https://tools.ietf.org/html/rfc6749#section-4
-
-    :copyright: (c) 2017 by Hsiaoming Yang.
-    :license: LGPLv3, see LICENSE for more details.
 """
 
 # flake8: noqa

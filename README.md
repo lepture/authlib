@@ -6,10 +6,10 @@
 
 <a href="https://travis-ci.org/lepture/authlib"><img src="https://api.travis-ci.org/lepture/authlib.svg?branch=master" alt="Build Status"></a>
 <a href="https://codecov.io/gh/lepture/authlib?branch=master"><img src="https://codecov.io/gh/lepture/authlib/branch/master/graph/badge.svg" alt="Coverage Status"></a>
-<a href="https://pypi.org/project/Authlib/"><img src="https://img.shields.io/pypi/wheel/authlib.svg" alt="Wheel Status"></a>
-<a href="https://pypi.org/project/Authlib/"><img src="https://img.shields.io/pypi/v/authlib.svg" alt="PyPI Version"></a>
-<a href="https://pypi.org/project/Authlib/"><img src="https://img.shields.io/pypi/status/authlib.svg" alt="Release Stage"></a>
-<a href="https://twitter.com/intent/follow?screen_name=authlib"><img src="https://img.shields.io/twitter/follow/authlib.svg?style=social&logo=twitter&label=Follow" alt="Follow Twitter"></a>
+<a href="https://pypi.org/project/Authlib/"><img src="https://img.shields.io/pypi/wheel/authlib.svg?maxAge=3600" alt="Wheel Status"></a>
+<a href="https://pypi.org/project/Authlib/"><img src="https://img.shields.io/pypi/v/authlib.svg?maxAge=3600" alt="PyPI Version"></a>
+<a href="https://pypi.org/project/Authlib/"><img src="https://img.shields.io/pypi/status/authlib.svg?maxAge=3600" alt="Release Stage"></a>
+<a href="https://twitter.com/intent/follow?screen_name=authlib"><img src="https://img.shields.io/twitter/follow/authlib.svg?maxAge=3600&style=social&logo=twitter&label=Follow" alt="Follow Twitter"></a>
 
 Authlib is an ambitious authentication library for OAuth 1, OAuth 2, OpenID
 clients, servers and more.
@@ -203,7 +203,7 @@ You can also find it at <https://keybase.io/lepture>.
 
 ## License
 
-Authlib is licensed under LGPLv3. Please see LICENSE for licensing details.
+Authlib is licensed under AGPLv3+. Please see LICENSE for licensing details.
 
 If this license does not fit your company, consider to purchase a commercial
 license.

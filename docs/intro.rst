@@ -87,5 +87,5 @@ This project is inspired by:
 Authlib License
 ---------------
 
-Authlib is licensed under LGPLv3. But there is a commercial license under
+Authlib is licensed under AGPLv3+. But there is a commercial license under
 `Authlib Plus <https://authlib.org/plans>`_ plan.

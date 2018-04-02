@@ -26,7 +26,7 @@ setup(
     include_package_data=True,
     platforms='any',
     long_description=fread('README.rst'),
-    license='LGPLv3',
+    license='AGPLv3+',
     install_requires=['requests', 'cryptography'],
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -36,7 +36,7 @@ setup(
         'Framework :: Django',
         'Intended Audience :: Developers',
         'License :: OSI Approved',
-        'License :: OSI Approved :: GNU Lesser General Public License v3 (LGPLv3)',
+        'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
         'Operating System :: MacOS',
         'Operating System :: POSIX',
         'Operating System :: POSIX :: Linux',
