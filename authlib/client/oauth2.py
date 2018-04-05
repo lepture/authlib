@@ -118,9 +118,12 @@ class OAuth2Session(Session):
 
         response_type = self._kwargs.get('response_type', 'code')
         response_type = kwargs.pop('response_type', response_type)
+        if 'redirect_uri' not in kwargs:
+            kwargs['redirect_uri'] = self.redirect_uri
+        if 'scope' not in kwargs:
+            kwargs['scope'] = self.scope
         uri = prepare_grant_uri(
             url, client_id=self.client_id, response_type=response_type,
-            redirect_uri=self.redirect_uri, scope=self.scope,
             state=state, **kwargs
         )
         return uri, state
@@ -166,14 +169,11 @@ class OAuth2Session(Session):
             body = prepare_token_request(
                 'password', body,
                 username=username, password=password,
-                client_id=self.client_id, **kwargs
-            )
+                client_id=self.client_id, **kwargs)
         else:
             grant_type = kwargs.pop('grant_type', 'client_credentials')
             body = prepare_token_request(
-                grant_type, body,
-                client_id=self.client_id, **kwargs
-            )
+                grant_type, body, client_id=self.client_id, **kwargs)
 
         if auth is None:
             auth = self._client_auth
@@ -350,9 +350,10 @@ class OAuth2Session(Session):
                 state=state
             )
             code = params['code']
+        if 'redirect_uri' not in kwargs:
+            kwargs['redirect_uri'] = self.redirect_uri
         return prepare_token_request(
             'authorization_code', body=body,
-            redirect_uri=self.redirect_uri,
             client_id=self.client_id,
             code=code, state=state,
             **kwargs
