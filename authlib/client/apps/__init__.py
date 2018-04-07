@@ -1,6 +1,7 @@
 # flake8: noqa
 
 from collections import defaultdict
+from authlib.deprecate import deprecate
 from .base import AppFactory
 from ._dropbox import dropbox
 from ._facebook import facebook
