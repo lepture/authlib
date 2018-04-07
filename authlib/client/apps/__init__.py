@@ -11,7 +11,7 @@ from ._google import google
 
 __all__ = ['register_apps', 'get_app', 'get_oauth_app']
 
-deprecate('"authlib.client.apps" will be removed, use "socialism" instead', '0.9')
+deprecate('"authlib.client.apps" will be removed, use "loginpass" instead', '0.9')
 
 _apps_map = {
     'dropbox': dropbox,
