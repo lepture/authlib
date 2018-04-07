@@ -43,7 +43,6 @@ class AuthorizationServer(_AuthorizationServer):
         server.init_app(app, query_client, save_token)
     """
     def __init__(self, app=None, query_client=None, save_token=None, **config):
-        query_client = _compatible_query_client(query_client)
         super(AuthorizationServer, self).__init__(
             query_client, None, save_token, **config)
 
@@ -70,7 +69,6 @@ class AuthorizationServer(_AuthorizationServer):
 
     def init_app(self, app, query_client=None, save_token=None):
         """Initialize later with Flask app instance."""
-        query_client = _compatible_query_client(query_client)
         if query_client is not None:
             self.query_client = query_client
         if save_token is not None:
@@ -257,17 +255,6 @@ class AuthorizationServer(_AuthorizationServer):
             '0.8', 'vAAUK', 're'
         )
         return self.create_endpoint_response('revocation')
-
-
-def _compatible_query_client(query_client):
-    if query_client and hasattr(query_client, 'get_by_client_id'):
-        message = (
-            'client_model is deprecated.\n\n'
-            'Please read: <https://github.com/lepture/authlib/issues/27>'
-        )
-        deprecate(message, '0.7')
-        query_client = query_client.get_by_client_id
-    return query_client
 
 
 def _create_oauth2_request(request):

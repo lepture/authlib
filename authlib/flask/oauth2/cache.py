@@ -1,7 +1,6 @@
 from flask import Flask
 from authlib.common.security import generate_token
 from authlib.specs.rfc6749.grants import AuthorizationCodeGrant
-from ..cache import Cache
 
 
 class AuthorizationCode(dict):
@@ -62,7 +61,5 @@ def register_cache_authorization_code(
     :param authorization_server: AuthorizationServer instance.
     :param authenticate_user: A function to authenticate user.
     """
-    if isinstance(cache, Flask):
-        cache = Cache(cache, config_prefix='OAUTH2_CODE')
     grant_cls = create_authorization_code_grant(cache, authenticate_user)
     authorization_server.register_grant(grant_cls)

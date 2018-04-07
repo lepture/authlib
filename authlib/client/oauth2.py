@@ -58,17 +58,7 @@ class OAuth2Session(Session):
             client_id, client_secret,
             auth_method=token_endpoint_auth_method
         )
-
-        if refresh_token_url is None and 'auto_refresh_url' in kwargs:  # pragma: no cover
-            # compatible with requests-oauthlib
-            refresh_token_url = kwargs.pop('auto_refresh_url')
-            deprecate('Use "refresh_token_url" instead of "auto_refresh_url"', '0.7')
         self.refresh_token_url = refresh_token_url
-
-        if refresh_token_params is None and 'auto_refresh_kwargs' in kwargs:  # pragma: no cover
-            # compatible with requests-oauthlib
-            refresh_token_params = kwargs.pop('auto_refresh_kwargs')
-            deprecate('Use "refresh_token_params" instead of "auto_refresh_kwargs"', '0.7')
         self.refresh_token_params = refresh_token_params
 
         self.scope = scope
