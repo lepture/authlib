@@ -5,7 +5,6 @@ from flask import _app_ctx_stack
 from werkzeug.local import LocalProxy
 from authlib.client.errors import OAuthException
 from authlib.client.client import OAuthClient
-from ..cache import Cache
 
 __all__ = ['OAuth', 'RemoteApp']
 
@@ -45,9 +44,7 @@ class OAuth(object):
     def init_app(self, app, cache=None, fetch_token=None, update_token=None):
         """Init app with Flask instance."""
         self.app = app
-        if 'OAUTH_CLIENT_CACHE_TYPE' in app.config:
-            self.cache = Cache(app, config_prefix='OAUTH_CLIENT')
-        elif cache:
+        if cache:
             self.cache = cache
 
         if fetch_token:
@@ -75,24 +72,16 @@ class OAuth(object):
 
         kwargs = self._registry[name]
         compliance_fix = kwargs.pop('compliance_fix', None)
+        client_cls = kwargs.pop('client_cls', RemoteApp)
+
         for k in keys:
             if k not in kwargs:
                 conf_key = '{}_{}'.format(name, k).upper()
                 v = self.app.config.get(conf_key, None)
                 kwargs[k] = v
 
-        fetch_token = kwargs.pop('fetch_token', None)
-        if fetch_token is None and self.fetch_token:
-            fetch_token = functools.partial(self.fetch_token, name=name)
-
-        update_token = kwargs.pop('update_token', None)
-        if update_token is None and self.update_token:
-            update_token = functools.partial(self.update_token, name=name)
-
-        client_cls = kwargs.pop('client_cls', RemoteApp)
-        client = client_cls(
-            name, self.cache, fetch_token, update_token, **kwargs
-        )
+        kwargs = self._generate_client_kwargs(name, kwargs)
+        client = client_cls(name, **kwargs)
         if compliance_fix:
             client.compliance_fix = compliance_fix
 
@@ -117,6 +106,46 @@ class OAuth(object):
             return self.create_client(name)
         return LocalProxy(lambda: self.create_client(name))
 
+    def _generate_client_kwargs(self, name, kwargs):
+        fetch_token = kwargs.pop('fetch_token', None)
+        if fetch_token is None and self.fetch_token:
+            fetch_token = functools.partial(self.fetch_token, name=name)
+        if fetch_token:
+            kwargs['fetch_token'] = fetch_token
+
+        if kwargs['request_token_url']:
+            # for OAuth 1
+            cache = self.cache
+            if not kwargs.get('fetch_request_token') and cache:
+                def fetch_request_token():
+                    key = '_{}_req_token_'.format(name)
+                    sid = session.pop(key, None)
+                    if not sid:
+                        return None
+
+                    token = cache.get(sid)
+                    cache.delete(sid)
+                    return token
+
+                kwargs['fetch_request_token'] = fetch_request_token
+
+            if not kwargs.get('save_request_token') and cache:
+                def save_request_token(token):
+                    key = '_{}_req_token_'.format(name)
+                    sid = uuid.uuid4().hex
+                    session[key] = sid
+                    cache.set(sid, token, timeout=600)
+
+                kwargs['save_request_token'] = save_request_token
+        else:
+            # for OAuth 2
+            update_token = kwargs.pop('update_token', None)
+            if update_token is None and self.update_token:
+                update_token = functools.partial(self.update_token, name=name)
+            if update_token:
+                kwargs['update_token'] = update_token
+        return kwargs
+
     def __getattr__(self, key):
         try:
             return object.__getattribute__(self, key)
@@ -132,32 +161,17 @@ class RemoteApp(OAuthClient):
     is token model.
     """
 
-    def __init__(self, name, cache=None, fetch_token=None, update_token=None,
-                 *args, **kwargs):
+    def __init__(self, name, fetch_token=None, update_token=None,
+                 fetch_request_token=None, save_request_token=None, **kwargs):
         self.name = name
-        self.cache = cache
         self._fetch_token = fetch_token
+        self._fetch_request_token = fetch_request_token
+        self._save_request_token = save_request_token
 
-        super(RemoteApp, self).__init__(*args, **kwargs)
+        super(RemoteApp, self).__init__(**kwargs)
 
         if self.client_kwargs.get('refresh_token_url'):
             self.client_kwargs['token_updater'] = update_token
-
-    def _get_request_token(self):
-        key = '_{}_req_token_'.format(self.name)
-        sid = session.pop(key, None)
-        if not sid:
-            return None
-
-        token = self.cache.get(sid)
-        self.cache.delete(sid)
-        return token
-
-    def _save_request_token(self, token):
-        key = '_{}_req_token_'.format(self.name)
-        sid = uuid.uuid4().hex
-        session[key] = sid
-        self.cache.set(sid, token, timeout=600)
 
     @property
     def token(self):
@@ -210,7 +224,7 @@ class RemoteApp(OAuthClient):
     def authorize_access_token(self, **kwargs):
         """Authorize access token."""
         if self.request_token_url:
-            request_token = self._get_request_token()
+            request_token = self._fetch_request_token()
             params = request.args.to_dict(flat=True)
         else:
             request_token = None
