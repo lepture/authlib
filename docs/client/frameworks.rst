@@ -75,23 +75,19 @@ EXAMPLE_CLIENT_SECRET      Twitter Consumer Secret
 EXAMPLE_ACCESS_TOKEN_URL   URL to fetch OAuth access token
 ========================== ===============================
 
-Cache & Database
-~~~~~~~~~~~~~~~~
-
 The remote app that :meth:`OAuth.register` configured, is a subclass of
 :class:`~authlib.client.OAuthClient`. You can read more on :ref:`oauth_client`.
 There are hooks for OAuthClient, and flask integration has registered them
-all for you. However, you need to configure cache and database access.
+all for you.
 
-Cache is used for temporary information, such as request token, state and
-callback uri. A ``cache`` interface MUST have methods:
+Database
+~~~~~~~~
 
-- ``.get(key)``
-- ``.set(key, value, expires=None)``
+.. note:: If OAuth login is what you need ONLY, you don't need to configure
+    a database with ``fetch_token`` method.
 
-We need to ``fetch_token`` from database for later requests. If OAuth login is
-what you want ONLY, you don't need ``fetch_token`` at all. Here is an example
-on database schema design::
+We need to ``fetch_token`` from database for later requests. Here is an
+example on database schema design::
 
     class OAuth1Token(db.Model)
         user_id = Column(Integer, nullable=False)
@@ -124,8 +120,54 @@ on database schema design::
             )
 
 To send requests on behalf of the user, you need to save user's access token
-into database after ``authorize_access_token``. And then use the access token
+into database after ``authorize_access_token``. Then use the access token
 with ``fetch_token`` from database.
+
+OAuth 1 Request Token
+~~~~~~~~~~~~~~~~~~~~~
+
+OAuth 1 requires a temporary request token for exchanging access token. There
+should be a place to store these temporary information. If a cache system is
+available, the ONLY thing you need to do is pass the cache instance into OAuth
+registry. A ``cache`` interface MUST have methods:
+
+- ``.get(key)``
+- ``.set(key, value, expires=None)``
+
+Pass the ``cache`` instance into OAuth registry::
+
+    from authlib.flask.client import OAuth
+
+    oauth = OAuth(app)
+    # or initialize lazily
+    oauth = OAuth()
+    oauth.init_app(app, cache=cache)
+
+If cache system is not available, you can define methods for getting and
+saving request token::
+
+    def save_request_token(token):
+        save_request_token_to_someplace(current_user, token)
+
+    def fetch_request_token():
+        return get_request_token_from_someplace(current_user)
+
+    # register the two methods
+    oauth.register('twitter',
+        client_id='Twitter Consumer Key',
+        client_secret='Twitter Consumer Secret',
+        request_token_url='https://api.twitter.com/oauth/request_token',
+        request_token_params=None,
+        access_token_url='https://api.twitter.com/oauth/access_token',
+        access_token_params=None,
+        refresh_token_url=None,
+        authorize_url='https://api.twitter.com/oauth/authenticate',
+        api_base_url='https://api.twitter.com/1.1/',
+        client_kwargs=None,
+        # NOTICE HERE
+        save_request_token=save_request_token,
+        fetch_request_token=fetch_request_token,
+    )
 
 Implement the Server
 ~~~~~~~~~~~~~~~~~~~~
@@ -166,7 +208,6 @@ and grant it to the registry::
     # we can registry this ``fetch_token`` with oauth.register
     oauth.register(
         'twitter',
-        fetch_token=fetch_twitter_token,  # register fetch_token
         client_id='Twitter Consumer Key',
         client_secret='Twitter Consumer Secret',
         request_token_url='https://api.twitter.com/oauth/request_token',
@@ -177,6 +218,8 @@ and grant it to the registry::
         authorize_url='https://api.twitter.com/oauth/authenticate',
         api_base_url='https://api.twitter.com/1.1/',
         client_kwargs=None,
+        # NOTICE HERE
+        fetch_token=fetch_twitter_token,
     )
 
 Since the OAuth registry can contain many services, it would be good enough
