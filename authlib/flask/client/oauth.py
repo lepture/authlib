@@ -89,7 +89,8 @@ class OAuth(object):
         if update_token is None and self.update_token:
             update_token = functools.partial(self.update_token, name=name)
 
-        client = RemoteApp(
+        client_cls = kwargs.pop('client_cls', RemoteApp)
+        client = client_cls(
             name, self.cache, fetch_token, update_token, **kwargs
         )
         if compliance_fix:

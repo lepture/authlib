@@ -33,7 +33,8 @@ class OAuth(object):
             oauth.register('twitter', client_id='', ...)
             oauth.twitter.get('timeline')
         """
-        client = RemoteApp(name, **kwargs)
+        client_cls = kwargs.pop('client_cls', RemoteApp)
+        client = client_cls(name, **kwargs)
         self._clients[name] = client
         return client
 
