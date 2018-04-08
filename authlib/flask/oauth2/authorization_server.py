@@ -28,7 +28,12 @@ class AuthorizationServer(_AuthorizationServer):
         def query_client(client_id):
             return Client.query.filter_by(client_id=client_id).first()
 
-        def save_token(token, client, user):
+        def save_token(token, request):
+            if request.user:
+                user_id = request.user.get_user_id()
+            else:
+                user_id = None
+            client = request.client
             tok = Token(
                 client_id=client.client_id,
                 user_id=user.get_user_id(),

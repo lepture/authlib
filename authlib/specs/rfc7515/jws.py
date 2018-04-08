@@ -45,9 +45,56 @@ class JWSAlgorithm(object):
 
 
 class JWS(object):
-    def __init__(self, algorithms, load_key=None):
+    def __init__(self, algorithms):
         self._algorithms = algorithms
-        self.load_key = load_key
+
+    def extract(self, s):
+        try:
+            s = to_bytes(s)
+            signing_input, signature_segment = s.rsplit(b'.', 1)
+            header_segment, payload_segment = signing_input.split(b'.', 1)
+        except ValueError:
+            raise DecodeError('Not enough segments')
+
+        try:
+            header_data = urlsafe_b64decode(header_segment)
+        except (TypeError, binascii.Error):
+            raise DecodeError('Invalid header padding')
+
+        try:
+            header = json.loads(header_data.decode('utf-8'))
+        except ValueError as e:
+            raise DecodeError('Invalid header string: {}'.format(e))
+
+        if not isinstance(header, Mapping):
+            raise DecodeError('Header must be a json object')
+
+        try:
+            payload = urlsafe_b64decode(payload_segment)
+        except (TypeError, binascii.Error):
+            raise DecodeError('Invalid payload padding')
+
+        try:
+            signature = urlsafe_b64decode(signature_segment)
+        except (TypeError, binascii.Error):
+            raise DecodeError('Invalid crypto padding')
+
+        self._validate_header(header)
+        return header, payload, signing_input, signature
+
+    def _validate_header(self, header):
+        if 'alg' not in header:
+            raise MissingAlgorithmError()
+
+        alg = header['alg']
+        if alg not in self._algorithms:
+            raise UnsupportedAlgorithmError()
+
+    def _prepare_algorithm_key(self, header, payload, key):
+        algorithm = self._algorithms[header['alg']]
+        if callable(key):
+            key = key(header, payload)
+        return algorithm, key
 
     def verify(self, s, key):
         """Extract and verify the JSON web signature.
@@ -56,16 +103,8 @@ class JWS(object):
         :param key: key used to verify the signature
         :returns: (header, payload, verified)
         """
-        header, payload, signing_input, signature = _extract(s)
-
-        alg = header['alg']
-        if alg not in self._algorithms:
-            raise UnsupportedAlgorithmError()
-
-        if self.load_key:
-            key = self.load_key(key, header)
-
-        algorithm = self._algorithms[alg]
+        header, payload, signing_input, signature = self.extract(s)
+        algorithm, key = self._prepare_algorithm_key(header, payload, key)
         key = algorithm.prepare_verify_key(key)
         verified = algorithm.verify(signing_input, key, signature)
 
@@ -96,20 +135,9 @@ class JWS(object):
         :param key: key used to sign the signature
         :return: JWS text
         """
-        if 'alg' not in header:
-            raise MissingAlgorithmError()
-
-        alg = header['alg']
-        if alg not in self._algorithms:
-            raise UnsupportedAlgorithmError()
-
-        algorithm = self._algorithms[alg]
-
-        if self.load_key:
-            key = self.load_key(key, header)
-
+        self._validate_header(header)
+        algorithm, key = self._prepare_algorithm_key(header, payload, key)
         key = algorithm.prepare_sign_key(key)
-
         header = json.dumps(header, separators=(',', ':'))
         if isinstance(payload, Mapping):
             payload = json.dumps(payload, separators=(',', ':'))
@@ -121,40 +149,3 @@ class JWS(object):
         signing_input = b'.'.join(segments)
         signature = urlsafe_b64encode(algorithm.sign(signing_input, key))
         return b'.'.join([signing_input, signature])
-
-
-def _extract(s):
-    try:
-        s = to_bytes(s)
-        signing_input, signature_segment = s.rsplit(b'.', 1)
-        header_segment, payload_segment = signing_input.split(b'.', 1)
-    except ValueError:
-        raise DecodeError('Not enough segments')
-
-    try:
-        header_data = urlsafe_b64decode(header_segment)
-    except (TypeError, binascii.Error):
-        raise DecodeError('Invalid header padding')
-
-    try:
-        header = json.loads(header_data.decode('utf-8'))
-    except ValueError as e:
-        raise DecodeError('Invalid header string: {}'.format(e))
-
-    if not isinstance(header, Mapping):
-        raise DecodeError('Header must be a json object')
-
-    if 'alg' not in header:
-        raise DecodeError('Missing "alg" in header')
-
-    try:
-        payload = urlsafe_b64decode(payload_segment)
-    except (TypeError, binascii.Error):
-        raise DecodeError('Invalid payload padding')
-
-    try:
-        signature = urlsafe_b64decode(signature_segment)
-    except (TypeError, binascii.Error):
-        raise DecodeError('Invalid crypto padding')
-
-    return header, payload, signing_input, signature
