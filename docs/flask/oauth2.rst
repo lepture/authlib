@@ -7,15 +7,15 @@ Flask OAuth 2.0 Server
     :description: How to create an OAuth 2.0 server in Flask with Authlib.
         And understand how OAuth 2.0 works.
 
-Implement OAuth 2.0 provider in Flask. An OAuth 2.0 provider contains two servers:
+In this section, we will learn how to create an OAuth 2.0 server in Flask.
+An OAuth 2.0 provider contains two servers:
 
 - Authorization Server: to issue access tokens
 - Resources Server: to serve your users' resources
 
-.. note::
+Here is an `example of OAuth 2.0 server <https://github.com/authlib/example-oauth2-server>`_.
 
-    Only Bearer Token is supported by now. MAC Token is still under drafts,
-    it will be available when it goes into RFC.
+.. note::
 
     If you are developing on your localhost, remember to set the environment
     variable::
@@ -73,6 +73,11 @@ inside with :class:`~authlib.specs.rfc6749.ClientMixin` API reference.
 
 Token
 ~~~~~
+
+.. note::
+
+    Only Bearer Token is supported by now. MAC Token is still under drafts,
+    it will be available when it goes into RFC.
 
 Tokens are used to access the users' resources. A token is issued with a
 valid duration, limited scopes and etc. It contains at least:
