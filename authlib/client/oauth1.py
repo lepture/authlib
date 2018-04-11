@@ -1,12 +1,9 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
-
 import json
 from requests import Session
 from requests.auth import AuthBase
 from requests.utils import to_native_string
 from .errors import OAuthException
-from ..deprecate import deprecate
 from ..common.encoding import to_native
 from ..common.urls import (
     url_decode,

@@ -31,7 +31,7 @@ def add_to_body(token, body=None):
     return add_params_to_qs(body, [('access_token', token)])
 
 
-def add_bearer_token(token, uri, headers, body, placement='headers'):
+def add_bearer_token(token, uri, headers, body, placement='header'):
     if placement in ('uri', 'url', 'query'):
         uri = add_to_uri(token, uri)
     elif placement in ('header', 'headers'):

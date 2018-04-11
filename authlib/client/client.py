@@ -2,7 +2,6 @@ import logging
 from .oauth1 import OAuth1Session
 from .oauth2 import OAuth2Session
 from .errors import OAuthException
-from ..specs.rfc6749 import OAuth2Token
 from ..common.urls import urlparse
 from ..consts import default_user_agent
 
@@ -164,8 +163,6 @@ class OAuthClient(object):
                 return session.request(method, url, **kwargs)
             if token is None:
                 raise OAuthException('No token available', type='token_missing')
-            if not self.request_token_url and isinstance(token, dict):
-                token = OAuth2Token(token)
             session.token = token
             return session.request(method, url, **kwargs)
 

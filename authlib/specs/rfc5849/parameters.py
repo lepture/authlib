@@ -8,8 +8,6 @@
 
     .. _`section 3.5`: https://tools.ietf.org/html/rfc5849#section-3.5
 """
-from __future__ import absolute_import, unicode_literals
-
 from authlib.common.urls import urlparse, url_encode, extract_params
 from .util import escape
 

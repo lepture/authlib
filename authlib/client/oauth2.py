@@ -2,7 +2,6 @@ import logging
 from requests import Session
 from requests.auth import HTTPBasicAuth
 from .errors import OAuthException
-from ..deprecate import deprecate
 from ..common.security import generate_token
 from ..common.urls import url_decode, add_params_to_qs
 from ..specs.rfc6749.parameters import (
@@ -54,18 +53,17 @@ class OAuth2Session(Session):
         super(OAuth2Session, self).__init__()
 
         self.client_id = client_id
+        self._token = None
         self._client_auth = OAuth2ClientAuth(
             client_id, client_secret,
-            auth_method=token_endpoint_auth_method
-        )
+            auth_method=token_endpoint_auth_method)
+
         self.refresh_token_url = refresh_token_url
         self.refresh_token_params = refresh_token_params
 
         self.scope = scope
         self.redirect_uri = redirect_uri
 
-        if isinstance(token, dict) and not isinstance(token, OAuth2Token):
-            token = OAuth2Token(token)
         self.token = token
         self.token_placement = token_placement
 
@@ -81,6 +79,16 @@ class OAuth2Session(Session):
             'revoke_token_request': set(),
         }
 
+    @property
+    def token(self):
+        return self._token
+
+    @token.setter
+    def token(self, token):
+        if isinstance(token, dict) and not isinstance(token, OAuth2Token):
+            token = OAuth2Token(token)
+        self._token = token
+
     def add_token(self, url, headers, data):
         if not self.token:
             raise RuntimeError('There is no "token"')
@@ -89,8 +97,7 @@ class OAuth2Session(Session):
         if token_type == 'bearer':
             return add_bearer_token(
                 self.token['access_token'],
-                url, headers, data, self.token_placement
-            )
+                url, headers, data, self.token_placement)
         raise RuntimeError('Unsupported "token_type"')
 
     def authorization_url(self, url, state=None, **kwargs):
@@ -114,15 +121,13 @@ class OAuth2Session(Session):
             kwargs['scope'] = self.scope
         uri = prepare_grant_uri(
             url, client_id=self.client_id, response_type=response_type,
-            state=state, **kwargs
-        )
+            state=state, **kwargs)
         return uri, state
 
     def fetch_access_token(
             self, url=None, code=None, authorization_response=None,
             body='', auth=None, username=None, password=None, method='POST',
             headers=None, timeout=None, verify=True, proxies=None, **kwargs):
-
         """Generic method for fetching an access token from the token endpoint.
 
         :param url: Access Token endpoint URL, if not configured,
@@ -175,14 +180,12 @@ class OAuth2Session(Session):
             resp = self.post(
                 url, data=dict(url_decode(body)), timeout=timeout,
                 headers=headers, auth=auth, verify=verify, proxies=proxies,
-                withhold_token=True,
-            )
+                withhold_token=True)
         else:
             resp = self.get(
                 url, params=dict(url_decode(body)), timeout=timeout,
                 headers=headers, auth=auth, verify=verify, proxies=proxies,
-                withhold_token=True,
-            )
+                withhold_token=True)
 
         for hook in self.compliance_hook['access_token_response']:
             resp = hook(resp)
@@ -200,7 +203,6 @@ class OAuth2Session(Session):
     def refresh_token(self, url, refresh_token=None, body='', auth=None,
                       headers=None, timeout=None, verify=True,
                       proxies=None, **kwargs):
-
         """Fetch a new access token using a refresh token.
 
         :param url: Refresh Token endpoint, must be HTTPS.
@@ -221,16 +223,16 @@ class OAuth2Session(Session):
 
         body = prepare_token_request(
             'refresh_token', body=body, scope=self.scope,
-            refresh_token=refresh_token, **kwargs
-        )
+            refresh_token=refresh_token, **kwargs)
 
         if headers is None:
             headers = DEFAULT_HEADERS
 
         resp = self.post(
             url, data=dict(url_decode(body)), auth=auth, timeout=timeout,
-            headers=headers, verify=verify, withhold_token=True, proxies=proxies
-        )
+            headers=headers, verify=verify, withhold_token=True,
+            proxies=proxies)
+
         for hook in self.compliance_hook['refresh_token_response']:
             resp = hook(resp)
 
@@ -278,8 +280,7 @@ class OAuth2Session(Session):
         return self.post(
             url, data=dict(url_decode(data)), timeout=timeout,
             headers=headers, auth=auth, verify=verify, proxies=proxies,
-            withhold_token=True,
-        )
+            withhold_token=True)
 
     def request(self, method, url, data=None, headers=None,
                 withhold_token=False, auth=None, **kwargs):
@@ -292,9 +293,7 @@ class OAuth2Session(Session):
                 if auth is None:
                     auth = self._client_auth
 
-                self.refresh_token(
-                    self.refresh_token_url, auth=auth, **kwargs
-                )
+                self.refresh_token(self.refresh_token_url, auth=auth, **kwargs)
 
             url, headers, data = self.add_token(url, headers, data)
 
@@ -321,7 +320,7 @@ class OAuth2Session(Session):
 
     def _parse_and_validate_token(self, params):
         if 'error' not in params:
-            self.token = OAuth2Token(params)
+            self.token = params
             return self.token
 
         error = params['error']
@@ -346,8 +345,7 @@ class OAuth2Session(Session):
             'authorization_code', body=body,
             client_id=self.client_id,
             code=code, state=state,
-            **kwargs
-        )
+            **kwargs)
 
 
 class OAuth2ClientAuth(HTTPBasicAuth):
