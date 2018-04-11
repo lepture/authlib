@@ -274,7 +274,7 @@ class OAuth2Session(Session):
 
     def request(self, method, url, data=None, headers=None,
                 withhold_token=False, auth=None, **kwargs):
-
+        """Send request with auto refresh token feature (if available)."""
         if self.token and not withhold_token:
             if self.token.is_expired():
                 if not self.refresh_token_url:
