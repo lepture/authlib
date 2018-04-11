@@ -122,6 +122,65 @@ class OAuth2SessionTest(TestCase):
         token = sess.fetch_access_token(url, code='v', method='GET')
         self.assertEqual(token, self.token)
 
+    def test_token_auth_method_client_secret_post(self):
+        url = 'https://example.com/token'
+
+        def fake_send(r, **kwargs):
+            self.assertIn('code=v', r.body)
+            self.assertIn('client_id=', r.body)
+            self.assertIn('client_secret=bar', r.body)
+            self.assertIn('grant_type=authorization_code', r.body)
+            resp = mock.MagicMock()
+            resp.json = lambda: self.token
+            return resp
+
+        sess = OAuth2Session(
+            client_id=self.client_id,
+            client_secret='bar',
+            token_endpoint_auth_method='client_secret_post',
+        )
+        sess.send = fake_send
+        token = sess.fetch_access_token(url, code='v')
+        self.assertEqual(token, self.token)
+
+    def test_token_auth_method_none_get(self):
+        url = 'https://example.com/token'
+
+        def fake_send(r, **kwargs):
+            self.assertIn('code=v', r.url)
+            self.assertIn('client_id=', r.url)
+            self.assertIn('grant_type=authorization_code', r.url)
+            resp = mock.MagicMock()
+            resp.json = lambda: self.token
+            return resp
+
+        sess = OAuth2Session(
+            client_id=self.client_id,
+            token_endpoint_auth_method='none',
+        )
+        sess.send = fake_send
+        token = sess.fetch_access_token(url, code='v', method='GET')
+        self.assertEqual(token, self.token)
+
+    def test_token_auth_method_none_post(self):
+        url = 'https://example.com/token'
+
+        def fake_send(r, **kwargs):
+            self.assertIn('code=v', r.body)
+            self.assertIn('client_id=', r.body)
+            self.assertIn('grant_type=authorization_code', r.body)
+            resp = mock.MagicMock()
+            resp.json = lambda: self.token
+            return resp
+
+        sess = OAuth2Session(
+            client_id=self.client_id,
+            token_endpoint_auth_method='none',
+        )
+        sess.send = fake_send
+        token = sess.fetch_access_token(url, code='v')
+        self.assertEqual(token, self.token)
+
     def test_access_token_response_hook(self):
         url = 'https://example.com/token'
 

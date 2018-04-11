@@ -1,6 +1,6 @@
 import logging
 from requests import Session
-from requests.auth import HTTPBasicAuth
+from requests.auth import AuthBase, HTTPBasicAuth
 from .errors import OAuthException
 from ..common.security import generate_token
 from ..common.urls import url_decode, add_params_to_qs
@@ -15,7 +15,7 @@ from ..specs.rfc6749 import InsecureTransportError
 from ..specs.rfc6750 import add_bearer_token
 from ..specs.rfc7009 import prepare_revoke_token_request
 
-__all__ = ['OAuth2Session', 'OAuth2ClientAuth']
+__all__ = ['OAuth2Session', 'OAuth2ClientAuth', 'OAuth2Auth']
 
 log = logging.getLogger(__name__)
 DEFAULT_HEADERS = {
@@ -53,7 +53,8 @@ class OAuth2Session(Session):
         super(OAuth2Session, self).__init__()
 
         self.client_id = client_id
-        self._token = None
+
+        self._token_auth = OAuth2Auth(token, token_placement)
         self._client_auth = OAuth2ClientAuth(
             client_id, client_secret,
             auth_method=token_endpoint_auth_method)
@@ -75,30 +76,16 @@ class OAuth2Session(Session):
         self.compliance_hook = {
             'access_token_response': set(),
             'refresh_token_response': set(),
-            'protected_request': set(),
             'revoke_token_request': set(),
         }
 
     @property
     def token(self):
-        return self._token
+        return self._token_auth.token
 
     @token.setter
     def token(self, token):
-        if isinstance(token, dict) and not isinstance(token, OAuth2Token):
-            token = OAuth2Token(token)
-        self._token = token
-
-    def add_token(self, url, headers, data):
-        if not self.token:
-            raise RuntimeError('There is no "token"')
-
-        token_type = self.token['token_type'].lower()
-        if token_type == 'bearer':
-            return add_bearer_token(
-                self.token['access_token'],
-                url, headers, data, self.token_placement)
-        raise RuntimeError('Unsupported "token_type"')
+        self._token_auth.token = _wrap_token(token)
 
     def authorization_url(self, url, state=None, **kwargs):
         """Generate an authorization URL.
@@ -228,6 +215,9 @@ class OAuth2Session(Session):
         if headers is None:
             headers = DEFAULT_HEADERS
 
+        if auth is None:
+            auth = self._client_auth
+
         resp = self.post(
             url, data=dict(url_decode(body)), auth=auth, timeout=timeout,
             headers=headers, verify=verify, withhold_token=True,
@@ -289,17 +279,10 @@ class OAuth2Session(Session):
             if self.token.is_expired():
                 if not self.refresh_token_url:
                     raise OAuthException('Token is expired.')
+                self.refresh_token(self.refresh_token_url, **kwargs)
 
-                if auth is None:
-                    auth = self._client_auth
-
-                self.refresh_token(self.refresh_token_url, auth=auth, **kwargs)
-
-            url, headers, data = self.add_token(url, headers, data)
-
-            for hook in self.compliance_hook['protected_request']:
-                url, headers, data = hook(url, headers, data)
-
+            if auth is None:
+                auth = self._token_auth
         return super(OAuth2Session, self).request(
             method, url, headers=headers, data=data, auth=auth, **kwargs)
 
@@ -313,6 +296,10 @@ class OAuth2Session(Session):
         * protected_request: invoked before making a request.
         * revoke_token_request: invoked before revoking a token.
         """
+        if hook_type == 'protected_request':
+            self._token_auth.hooks.add(hook)
+            return
+
         if hook_type not in self.compliance_hook:
             raise ValueError('Hook type %s is not in %s.',
                              hook_type, self.compliance_hook)
@@ -373,7 +360,7 @@ class OAuth2ClientAuth(HTTPBasicAuth):
                 ('client_id', self.username),
                 ('client_secret', self.password or '')
             ])
-        elif self.auth_method == 'client_secret_none':
+        elif self.auth_method == 'none':
             if req.method == 'GET':
                 req.url = add_params_to_qs(req.url, [
                     ('client_id', self.username)
@@ -383,3 +370,59 @@ class OAuth2ClientAuth(HTTPBasicAuth):
                     ('client_id', self.username)
                 ])
         return req
+
+
+class OAuth2Auth(AuthBase):
+    """Sign requests for OAuth 2.0, currently only bearer token is supported.
+
+    :param token: A dict or OAuth2Token instance of an OAuth 2.0 token
+    :param token_placement: The placement of the token, default is ``header``,
+        available choices:
+
+        * header (default)
+        * body
+        * uri
+    """
+    SIGN_TYPES = {
+        'bearer': add_bearer_token
+    }
+
+    @classmethod
+    def register_sign_type(cls, sign_type, func):
+        cls.SIGN_TYPES[sign_type] = func
+
+    def __init__(self, token, token_placement='header'):
+        self.token = _wrap_token(token)
+        self.token_placement = token_placement
+        self.hooks = set()
+
+    def __call__(self, req):
+        if not self.token:
+            raise OAuthException('There is no "token"', 'missing_token')
+
+        token_type = self.token['token_type']
+        sign = self.SIGN_TYPES.get(token_type.lower())
+        if not sign:
+            raise OAuthException(
+                'Unsupported token_type "{}"'.format(token_type),
+                'unsupported_token_type'
+            )
+
+        url, headers, body = sign(
+            self.token['access_token'],
+            req.url, req.headers, req.body,
+            self.token_placement)
+
+        for hook in self.hooks:
+            url, headers, body = hook(url, headers, body)
+
+        req.url = url
+        req.headers = headers
+        req.body = body
+        return req
+
+
+def _wrap_token(token):
+    if isinstance(token, dict) and not isinstance(token, OAuth2Token):
+        token = OAuth2Token(token)
+    return token
