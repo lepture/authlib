@@ -6,6 +6,14 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 0.7
+-----------
+
+**Release date not decided**
+
+- Refactor :class:`~authlib.client.OAuth2Session` with :class:`~authlib.client.OAuth2Auth`
+- Add :class:`~authlib.client.AssertionSession` for RFC7521.
+
 Version 0.6: Matoi
 ------------------
 

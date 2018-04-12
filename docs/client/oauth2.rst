@@ -222,4 +222,49 @@ Get deep inside with :class:`~authlib.specs.rfc7519.JWT` and
 :class:`authlib.specs.oidc.CodeIDToken`.
 
 There is a built-in Google app which supports OpenID Connect, checkout the
-source code in **authlib.clients.apps.google**.
+source code in loginpass_.
+
+.. _loginpass: https://github.com/authlib/loginpass
+
+AssertionSession
+----------------
+
+:class:`AssertionSession` is a Requests Session for Assertion Framework of
+OAuth 2.0 Authorization Grants. It is also know as service account. A
+configured ``AssertionSession`` with handle token authorization automatically,
+which means you can just use it.
+
+Take `Google Service Account`_ as an example, with the information in your
+service account JSON configure file::
+
+    import json
+    from authlib.client import AssertionSession
+
+    with open('MyProject-1234.json') as f:
+        info = json.load(f)
+
+    token_url = conf['token_uri']
+    header = {'alg': 'RS256'}
+    key_id = conf.get('private_key_id')
+    if key_id:
+        header['kid'] = key_id
+
+    # Google puts scope in payload
+    claims = {'scope': scope}
+
+    session = AssertionSession(
+        grant_type=cls.JWT_BEARER_GRANT_TYPE,
+        token_url=token_url,
+        issuer=conf['client_email'],
+        audience=token_url,
+        claims=claims,
+        subject=None,
+        key=conf['private_key'],
+        header=header,
+    )
+    session.get(...)
+    session.post(...)
+
+There is a ready to use ``GoogleServiceAccount`` in loginpass_.
+
+.. _`Google Service Account`: https://developers.google.com/identity/protocols/OAuth2ServiceAccount

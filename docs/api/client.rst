@@ -20,6 +20,9 @@ Sessions and Client
 .. autoclass:: OAuth2Session
     :members:
 
+.. autoclass:: AssertionSession
+    :members:
+
 .. autoclass:: OAuth2Auth
     :members:
 
