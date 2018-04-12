@@ -34,3 +34,34 @@ class AssertionSessionTest(TestCase):
         )
         sess.send = verifier
         sess.get('https://i.b')
+
+        # trigger more case
+        now = int(time.time())
+        sess = AssertionSession(
+            token_url='https://i.b/token',
+            grant_type=AssertionSession.JWT_BEARER_GRANT_TYPE,
+            issuer='foo',
+            subject=None,
+            audience='foo',
+            issued_at=now,
+            expires_at=now + 3600,
+            header={'alg': 'HS256'},
+            key='secret',
+            scope='email',
+            claims={'test_mode': 'true'}
+        )
+        sess.send = verifier
+        sess.get('https://i.b')
+        # trigger for branch test case
+        sess.get('https://i.b')
+
+    def test_without_alg(self):
+        sess = AssertionSession(
+            token_url='https://i.b/token',
+            grant_type=AssertionSession.JWT_BEARER_GRANT_TYPE,
+            issuer='foo',
+            subject='foo',
+            audience='foo',
+            key='secret',
+        )
+        self.assertRaises(ValueError, sess.get, 'https://i.b')
