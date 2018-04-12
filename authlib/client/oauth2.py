@@ -16,7 +16,10 @@ from ..specs.rfc6750 import add_bearer_token
 from ..specs.rfc7009 import prepare_revoke_token_request
 from ..specs.rfc7523 import JWT_BEARER_GRANT_TYPE, sign_jwt_bearer_assertion
 
-__all__ = ['OAuth2Session', 'OAuth2ClientAuth', 'OAuth2Auth']
+__all__ = [
+    'OAuth2Session', 'AssertionSession',
+    'OAuth2ClientAuth', 'OAuth2Auth',
+]
 
 log = logging.getLogger(__name__)
 DEFAULT_HEADERS = {

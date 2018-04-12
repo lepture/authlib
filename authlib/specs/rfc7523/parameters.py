@@ -3,8 +3,8 @@ from ..rfc7519 import JWT
 
 
 def sign_jwt_bearer_assertion(
-        key, issuer, subject, audience, issued_at=None, expires_at=None,
-        claims=None, **kwargs):
+        key, issuer, audience, subject=None,
+        issued_at=None, expires_at=None, claims=None, **kwargs):
 
     header = kwargs.pop('header', {})
     alg = kwargs.pop('alg', None)
@@ -13,14 +13,22 @@ def sign_jwt_bearer_assertion(
     if 'alg' not in header:
         raise ValueError('Missing "alg" in header')
 
-    payload = {'iss': issuer, 'sub': subject, 'aud': audience}
+    payload = {'iss': issuer, 'aud': audience}
+
+    # subject is not required in Google service
+    if subject:
+        payload['sub'] = subject
+
     if not issued_at:
         issued_at = int(time.time())
+
+    expires_in = kwargs.pop('expires_in', 3600)
     if not expires_at:
-        expires_at = issued_at + 86400
+        expires_at = issued_at + expires_in
 
     payload['iat'] = issued_at
     payload['exp'] = expires_at
+
     if claims:
         payload.update(claims)
 
