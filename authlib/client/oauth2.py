@@ -14,6 +14,7 @@ from ..specs.rfc6749 import OAuth2Token
 from ..specs.rfc6749 import InsecureTransportError
 from ..specs.rfc6750 import add_bearer_token
 from ..specs.rfc7009 import prepare_revoke_token_request
+from ..specs.rfc7523 import JWT_BEARER_GRANT_TYPE, sign_jwt_bearer_assertion
 
 __all__ = ['OAuth2Session', 'OAuth2ClientAuth', 'OAuth2Auth']
 
@@ -345,7 +346,7 @@ class OAuth2ClientAuth(HTTPBasicAuth):
 
         * client_secret_basic
         * client_secret_post
-        * client_secret_none
+        * none
     """
     def __init__(self, client_id, client_secret,
                  auth_method='client_secret_basic'):
@@ -383,13 +384,13 @@ class OAuth2Auth(AuthBase):
         * body
         * uri
     """
-    SIGN_TYPES = {
+    SIGN_METHODS = {
         'bearer': add_bearer_token
     }
 
     @classmethod
-    def register_sign_type(cls, sign_type, func):
-        cls.SIGN_TYPES[sign_type] = func
+    def register_sign_method(cls, sign_type, func):
+        cls.SIGN_METHODS[sign_type] = func
 
     def __init__(self, token, token_placement='header'):
         self.token = _wrap_token(token)
@@ -401,7 +402,7 @@ class OAuth2Auth(AuthBase):
             raise OAuthException('There is no "token"', 'missing_token')
 
         token_type = self.token['token_type']
-        sign = self.SIGN_TYPES.get(token_type.lower())
+        sign = self.SIGN_METHODS.get(token_type.lower())
         if not sign:
             raise OAuthException(
                 'Unsupported token_type "{}"'.format(token_type),
@@ -420,6 +421,75 @@ class OAuth2Auth(AuthBase):
         req.headers = headers
         req.body = body
         return req
+
+
+class AssertionSession(Session):
+    """Constructs a new Assertion Framework for OAuth 2.0 Authorization Grants
+    per RFC7521_.
+
+    .. _RFC7521: https://tools.ietf.org/html/rfc7521
+    """
+    JWT_BEARER_GRANT_TYPE = JWT_BEARER_GRANT_TYPE
+
+    ASSERTION_METHODS = {
+        JWT_BEARER_GRANT_TYPE: sign_jwt_bearer_assertion,
+    }
+
+    def __init__(self, token_url, issuer, subject, audience, grant_type,
+                 claims=None, token_placement='header', scope=None, **kwargs):
+        super(AssertionSession, self).__init__()
+        self.token_url = token_url
+        self.grant_type = grant_type
+
+        # https://tools.ietf.org/html/rfc7521#section-5.1
+        self.issuer = issuer
+        self.subject = subject
+        self.audience = audience
+        self.claims = claims
+        self.scope = scope
+        self._token_auth = OAuth2Auth(None, token_placement)
+        self._kwargs = kwargs
+
+    @property
+    def token(self):
+        return self._token_auth.token
+
+    @token.setter
+    def token(self, token):
+        self._token_auth.token = _wrap_token(token)
+
+    def refresh_token(self):
+        """Using Assertions as Authorization Grants to refresh token as
+        described in `Section 4.1`_.
+
+        .. _`Section 4.1`: https://tools.ietf.org/html/rfc7521#section-4.1
+        """
+        generate_assertion = self.ASSERTION_METHODS[self.grant_type]
+        assertion = generate_assertion(
+            issuer=self.issuer,
+            subject=self.subject,
+            audience=self.audience,
+            claims=self.claims,
+            **self._kwargs
+        )
+        data = {'assertion': assertion, 'grant_type': self.grant_type}
+        if self.scope:
+            data['scope'] = self.scope
+        resp = self.request('POST', self.token_url, data=data, withhold_token=True)
+        self.token = resp.json()
+        return self.token
+
+    def request(self, method, url, data=None, headers=None,
+                withhold_token=False, auth=None, **kwargs):
+        """Send request with auto refresh token feature (if available)."""
+        if not withhold_token:
+            if not self.token or self.token.is_expired():
+                self.refresh_token()
+
+            if auth is None:
+                auth = self._token_auth
+        return super(AssertionSession, self).request(
+            method, url, headers=headers, data=data, auth=auth, **kwargs)
 
 
 def _wrap_token(token):

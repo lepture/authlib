@@ -2,13 +2,14 @@ import logging
 from ..rfc6749.grants import BaseGrant
 from ..rfc6749 import UnauthorizedClientError, InvalidRequestError
 from ..rfc7519 import JWT
+from .consts import JWT_BEARER_GRANT_TYPE
 
 log = logging.getLogger(__name__)
 
 
 class JWTBearerGrant(BaseGrant):
     SPECIFICATION = 'rfc7523'
-    GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:jwt-bearer'
+    GRANT_TYPE = JWT_BEARER_GRANT_TYPE
 
     def validate_assertion(self):
         assertion = self.request.data.get('assertion')
