@@ -25,3 +25,11 @@ class UnsupportedAlgorithmError(JWSError):
 
 class BadSignatureError(JWSError):
     error = 'bad_signature'
+
+
+class InvalidHeaderParameterName(JWSError):
+    error = 'invalid_header_parameter_name'
+
+    def __init__(self, name):
+        error_description = 'Invalid Header Parameter Names: {}'.format(name)
+        super(InvalidHeaderParameterName, self).__init__(error_description)

@@ -9,14 +9,14 @@ from .claims import JWTClaims
 
 
 class JWT(JWS):
-    def __init__(self, algorithms=None):
+    def __init__(self, algorithms=None, private_headers=None):
         if algorithms is None:
             algorithms = JWS_ALGORITHMS
         elif isinstance(algorithms, (tuple, list)):
             algorithms = {k: JWS_ALGORITHMS[k] for k in algorithms}
         elif isinstance(algorithms, text_types):
             algorithms = {algorithms: JWS_ALGORITHMS[algorithms]}
-        super(JWT, self).__init__(algorithms)
+        super(JWT, self).__init__(algorithms, private_headers)
 
     def encode(self, header, payload, key):
         """Encode a JWT with the given header, payload and key.
@@ -34,7 +34,7 @@ class JWT(JWS):
             if isinstance(claim, datetime.datetime):
                 payload[k] = calendar.timegm(claim.utctimetuple())
 
-        return super(JWT, self).encode(header, payload, _wrap_key(key))
+        return self.serialize_compact(header, payload, _wrap_key(key))
 
     def decode(self, s, key, claims_cls=None,
                claims_options=None, claims_params=None):
@@ -52,7 +52,9 @@ class JWT(JWS):
         """
         if claims_cls is None:
             claims_cls = JWTClaims
-        header, bytes_payload = super(JWT, self).decode(s, _wrap_key(key))
+
+        data = self.deserialize_compact(s, _wrap_key(key))
+        header, bytes_payload = data['header'], data['payload']
         payload = json.loads(to_unicode(bytes_payload))
         return claims_cls(
             payload, header,
