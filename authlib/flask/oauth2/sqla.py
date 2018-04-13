@@ -38,11 +38,6 @@ class OAuth2ClientMixin(ClientMixin):
     def __repr__(self):
         return '<Client: {}>'.format(self.client_id)
 
-    @classmethod
-    def get_by_client_id(cls, client_id):
-        # TODO: remove in version 0.7
-        return cls.query.filter_by(client_id=client_id).first()
-
     @hybrid_property
     def redirect_uris(self):
         if self.redirect_uri:
