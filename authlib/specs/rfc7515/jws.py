@@ -49,7 +49,6 @@ class JWSAlgorithm(object):
 class JWS(object):
 
     #: Registered Header Parameter Names defined by `Section 4.1`_
-    #: .. _`Section 4.1`: https://tools.ietf.org/html/rfc7515#section-4.1
     REGISTERED_HEADER_PARAMETER_NAMES = frozenset([
         'alg', 'jku', 'jwk', 'kid',
         'x5u', 'x5c', 'x5t', 'x5t#S256',
@@ -161,13 +160,11 @@ class JWS(object):
         represents digitally signed or MACed content as a compact, URL-safe
         string, per `Section 7.1`_.
 
-        .. code-block::
+        .. code-block:: text
 
             BASE64URL(UTF8(JWS Protected Header)) || '.' ||
             BASE64URL(JWS Payload) || '.' ||
             BASE64URL(JWS Signature)
-
-        .. _`Section 7.1`: https://tools.ietf.org/html/rfc7515#section-7.1
 
         :param header: A dict of header
         :param payload: A string/dict of payload
@@ -182,8 +179,6 @@ class JWS(object):
         """Generate a JWS JSON Serialization. The JWS JSON Serialization
         represents digitally signed or MACed content as a JSON object,
         per `Section 7.2`_.
-
-        .. _`Section 7.2`: https://tools.ietf.org/html/rfc7515#section-7.2
 
         :param header: A dict/list of header
         :param payload: A string/dict of payload
