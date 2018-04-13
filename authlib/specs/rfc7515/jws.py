@@ -101,7 +101,7 @@ class JWS(object):
         """
         if not isinstance(s, dict):
             try:
-                s = json.loads(s)
+                s = json.loads(to_unicode(s))
             except (ValueError, TypeError):
                 raise DecodeError('Invalid JWS')
 
