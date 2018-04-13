@@ -13,15 +13,18 @@ Sessions and Client
 
 .. autoclass:: OAuth1Session
     :members:
+    :member-order: bysource
 
 .. autoclass:: OAuth1Auth
     :members:
 
 .. autoclass:: OAuth2Session
     :members:
+    :member-order: bysource
 
 .. autoclass:: AssertionSession
     :members:
+    :member-order: bysource
 
 .. autoclass:: OAuth2Auth
     :members:
@@ -31,6 +34,7 @@ Sessions and Client
 
 .. autoclass:: OAuthClient
     :members:
+    :member-order: bysource
 
 
 Flask Registry and RemoteApp

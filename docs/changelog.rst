@@ -13,6 +13,7 @@ Version 0.7
 
 - Refactor :class:`~authlib.client.OAuth2Session` with :class:`~authlib.client.OAuth2Auth`
 - Add :class:`~authlib.client.AssertionSession` for RFC7521.
+- Implement a full featured :class:`~authlib.rfc7515.JWS`.
 
 Version 0.6: Matoi
 ------------------
