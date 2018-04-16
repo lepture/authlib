@@ -42,8 +42,8 @@ class JWT(JWS):
             raise DecodeError('Invalid payload type')
         return payload
 
-    def secure_check(self, payload):
-        """Check payload for security."""
+    def check_sensitive_data(self, payload):
+        """Check if payload contains sensitive information."""
         for k in payload:
             # check claims key name
             if k in self.SENSITIVE_NAMES:
@@ -54,12 +54,13 @@ class JWT(JWS):
             if isinstance(v, text_types) and self.SENSITIVE_VALUES.search(v):
                 raise InsecureClaimError(k)
 
-    def encode(self, header, payload, key, secure_check=True):
+    def encode(self, header, payload, key, check=True):
         """Encode a JWT with the given header, payload and key.
 
         :param header: A dict of JWS header
         :param payload: A dict to be encoded
         :param key: key used to sign the signature
+        :param check: check if sensitive data in payload
         :return: JWT
         """
         header['typ'] = 'JWT'
@@ -70,8 +71,8 @@ class JWT(JWS):
             if isinstance(claim, datetime.datetime):
                 payload[k] = calendar.timegm(claim.utctimetuple())
 
-        if secure_check:
-            self.secure_check(payload)
+        if check:
+            self.check_sensitive_data(payload)
         return self.serialize_compact(header, payload, _wrap_key(key))
 
     def decode(self, s, key, claims_cls=None,

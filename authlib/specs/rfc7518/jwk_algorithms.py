@@ -50,7 +50,10 @@ class RSAAlgorithm(JWKAlgorithm):
         any_props_found = any(props_found)
 
         if any_props_found and not all(props_found):
-            raise ValueError('RSA key must include all parameters if any are present besides d')
+            raise ValueError(
+                'RSA key must include all parameters '
+                'if any are present besides d'
+            )
 
         public_numbers = RSAPublicNumbers(
             base64_to_int(obj['e']), base64_to_int(obj['n'])

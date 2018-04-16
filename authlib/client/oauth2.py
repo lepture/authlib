@@ -461,6 +461,11 @@ class AssertionSession(Session):
     def token(self, token):
         self._token_auth.token = _wrap_token(token)
 
+    def auto_refresh_token(self):
+        """Refresh token automatically."""
+        if not self.token or self.token.is_expired():
+            self.refresh_token()
+
     def refresh_token(self):
         """Using Assertions as Authorization Grants to refresh token as
         described in `Section 4.1`_.
@@ -486,8 +491,7 @@ class AssertionSession(Session):
                 withhold_token=False, auth=None, **kwargs):
         """Send request with auto refresh token feature."""
         if not withhold_token:
-            if not self.token or self.token.is_expired():
-                self.refresh_token()
+            self.auto_refresh_token()
 
             if auth is None:
                 auth = self._token_auth
