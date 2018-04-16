@@ -122,7 +122,7 @@ To deserialize a JWS Compact Serialization, use
     key = read_file('public.pem')
     jws.deserialize_compact(s, key)
 
-A `key` can be dynamically loaded, if you don't know which key to be used::
+A ``key`` can be dynamically loaded, if you don't know which key to be used::
 
     def load_key(header, payload):
         kid = header['kid']

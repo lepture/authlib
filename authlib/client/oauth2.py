@@ -484,7 +484,7 @@ class AssertionSession(Session):
 
     def request(self, method, url, data=None, headers=None,
                 withhold_token=False, auth=None, **kwargs):
-        """Send request with auto refresh token feature (if available)."""
+        """Send request with auto refresh token feature."""
         if not withhold_token:
             if not self.token or self.token.is_expired():
                 self.refresh_token()

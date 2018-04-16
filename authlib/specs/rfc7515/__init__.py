@@ -9,5 +9,6 @@
 """
 
 from .jws import JWS, JWSAlgorithm
+from .errors import *
 
 __all__ = ['JWS', 'JWSAlgorithm']

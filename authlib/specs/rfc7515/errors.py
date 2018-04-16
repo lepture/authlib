@@ -1,3 +1,9 @@
+__all__ = [
+    'JWSError', 'DecodeError', 'MissingAlgorithmError',
+    'UnsupportedAlgorithmError', 'BadSignatureError',
+    'InvalidHeaderParameterName',
+]
+
 
 class JWSError(ValueError):
     error = None

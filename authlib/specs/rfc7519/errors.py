@@ -1,18 +1,13 @@
+from ..rfc7515 import JWSError
+
 __all__ = [
-    'JWTError', 'InvalidClaimError', 'MissingClaimError',
+    'JWTError', 'InvalidClaimError',
+    'MissingClaimError', 'InsecureClaimError',
     'ExpiredTokenError', 'InvalidTokenError',
 ]
 
 
-class JWTError(ValueError):
-    error = None
-    error_description = ''
-
-    def __init__(self, error_description=None):
-        if error_description is not None:
-            self.error_description = error_description
-        message = '%s: %s' % (self.error, self.error_description)
-        super(JWTError, self).__init__(message)
+JWTError = JWSError
 
 
 class InvalidClaimError(JWTError):
@@ -29,6 +24,14 @@ class MissingClaimError(JWTError):
     def __init__(self, claim):
         description = 'Missing "{}" claim'.format(claim)
         super(MissingClaimError, self).__init__(description)
+
+
+class InsecureClaimError(JWTError):
+    error = 'insecure_claim'
+
+    def __init__(self, claim):
+        description = 'Insecure claim "{}"'.format(claim)
+        super(InvalidClaimError, self).__init__(description)
 
 
 class ExpiredTokenError(JWTError):

@@ -71,7 +71,18 @@ class JWS(object):
 
         .. _`Section 7.1`: https://tools.ietf.org/html/rfc7515#section-7.1
         """
-        header, payload, signing_input, signature = _extract_compact(s)
+        try:
+            s = to_bytes(s)
+            signing_input, signature_segment = s.rsplit(b'.', 1)
+            header_segment, payload_segment = signing_input.split(b'.', 1)
+        except ValueError:
+            raise DecodeError('Not enough segments')
+
+        # extract header, payload, signature
+        header = _extract_header(header_segment)
+        payload = self.extract_payload(payload_segment)
+        signature = _extract_signature(signature_segment)
+
         self._validate_header(header)
         if not key:
             return {
@@ -113,7 +124,7 @@ class JWS(object):
             raise DecodeError('Missing "payload" value')
 
         payload_segment = to_bytes(payload_segment)
-        payload = urlsafe_b64decode(payload_segment)
+        payload = self.extract_payload(payload_segment)
         if key:
             if 'signatures' not in s:
                 # flattened JSON JWS
@@ -237,6 +248,12 @@ class JWS(object):
             return self.serialize_json(header, payload, key)
         return self.serialize_compact(header, payload, key)
 
+    def extract_payload(self, payload_segment):
+        try:
+            return urlsafe_b64decode(payload_segment)
+        except (TypeError, binascii.Error):
+            raise DecodeError('Invalid payload padding')
+
     def _validate_header(self, header):
         if 'alg' not in header:
             raise MissingAlgorithmError()
@@ -270,8 +287,11 @@ class JWS(object):
 
         protected = to_bytes(protected)
         header = _extract_header(protected)
-        if 'header' in header_obj:
-            header.update(header_obj['header'])
+        pub_header = header_obj.get('header')
+        if pub_header:
+            if not isinstance(pub_header, dict):
+                raise DecodeError('Invalid "header" value')
+            header.update(pub_header)
 
         self._validate_header(header)
         if not key:
@@ -280,7 +300,7 @@ class JWS(object):
         algorithm, key = self._prepare_algorithm_key(header, payload, key)
         key = algorithm.prepare_verify_key(key)
         signing_input = b'.'.join([protected, payload_segment])
-        signature = urlsafe_b64decode(to_bytes(signature_segment))
+        signature = _extract_signature(to_bytes(signature_segment))
         if algorithm.verify(signing_input, key, signature):
             return header
 
@@ -299,7 +319,7 @@ class JWS(object):
         return protected, payload_segment, signature
 
     def verify(self, s, key):  # pragma: no cover
-        deprecate('Method "verify" is deprecated. Use "deserialize" instead.')
+        deprecate('Method "verify" is deprecated. Use "deserialize" instead.', '0.9')
         rv = self.deserialize_compact(s, None)
 
         header, payload = rv['header'], rv['payload']
@@ -314,35 +334,13 @@ class JWS(object):
         return header, payload, verified
 
     def decode(self, s, key):  # pragma: no cover
-        deprecate('Method "decode" is deprecated. Use "deserialize" instead.')
+        deprecate('Method "decode" is deprecated. Use "deserialize" instead.', '0.9')
         rv = self.deserialize_compact(s, key)
         return rv['header'], rv['payload']
 
     def encode(self, header, payload, key):  # pragma: no cover
-        deprecate('Method "encode" is deprecated. Use "serialize" instead.')
+        deprecate('Method "encode" is deprecated. Use "serialize" instead.', '0.9')
         return self.serialize_compact(header, payload, key)
-
-
-def _extract_compact(s):
-    try:
-        s = to_bytes(s)
-        signing_input, signature_segment = s.rsplit(b'.', 1)
-        header_segment, payload_segment = signing_input.split(b'.', 1)
-    except ValueError:
-        raise DecodeError('Not enough segments')
-
-    header = _extract_header(header_segment)
-
-    try:
-        payload = urlsafe_b64decode(payload_segment)
-    except (TypeError, binascii.Error):
-        raise DecodeError('Invalid payload padding')
-
-    try:
-        signature = urlsafe_b64decode(signature_segment)
-    except (TypeError, binascii.Error):
-        raise DecodeError('Invalid crypto padding')
-    return header, payload, signing_input, signature
 
 
 def _extract_header(header_segment):
@@ -359,6 +357,13 @@ def _extract_header(header_segment):
     if not isinstance(header, dict):
         raise DecodeError('Header must be a json object')
     return header
+
+
+def _extract_signature(signature_segment):
+    try:
+        return urlsafe_b64decode(signature_segment)
+    except (TypeError, binascii.Error):
+        raise DecodeError('Invalid signature')
 
 
 def _b64encode_json(text):
