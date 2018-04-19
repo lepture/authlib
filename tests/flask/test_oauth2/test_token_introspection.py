@@ -100,12 +100,6 @@ class IntrospectTokenTest(TestCase):
         self.assertEqual(resp['error'], 'invalid_request')
 
         rv = self.client.post('/oauth/introspect', data={
-            'token': 'invalid-token',
-        }, headers=headers)
-        resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_request')
-
-        rv = self.client.post('/oauth/introspect', data={
             'token': 'a1',
             'token_type_hint': 'unsupported_token_type',
         }, headers=headers)
@@ -113,11 +107,17 @@ class IntrospectTokenTest(TestCase):
         self.assertEqual(resp['error'], 'unsupported_token_type')
 
         rv = self.client.post('/oauth/introspect', data={
+            'token': 'invalid-token',
+        }, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['active'], False)
+
+        rv = self.client.post('/oauth/introspect', data={
             'token': 'a1',
             'token_type_hint': 'refresh_token',
         }, headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_request')
+        self.assertEqual(resp['active'], False)
 
     def test_introspect_token_with_hint(self):
         self.prepare_data()
