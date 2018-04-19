@@ -4,17 +4,17 @@ Ready to Use Apps
 =================
 
 .. meta::
-   :description: The built-in ready to use famous services, including
-      Twitter, Facebook, Google, GitHub, Dropbox, and etc.
+    :description: The built-in ready to use famous services, including
+       Twitter, Facebook, Google, GitHub, Dropbox, and etc.
 
 There are built-in configuration for famous services. Import them and register
 them to frameworks registry. If you haven't read :ref:`client_frameworks`,
 head over back to that section.
 
-.. warning::
+.. deprecated:: v0.7
+    Please use loginpass_ instead.
 
-   There is a plan to make "apps" a separated project which will include 100+
-   services.
+.. _loginpass: https://github.com/authlib/loginpass
 
 Twitter
 -------

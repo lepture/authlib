@@ -15,7 +15,7 @@ An OAuth 2.0 provider contains two servers:
 
 Here is an `example of OAuth 2.0 server <https://github.com/authlib/example-oauth2-server>`_.
 
-.. note::
+.. important::
 
     If you are developing on your localhost, remember to set the environment
     variable::

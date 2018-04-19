@@ -40,7 +40,7 @@ Connect 1.0 is added with:
 
 Besides that, there are more changes:
 
-- Implementation of RFC7662: OAuth 2.0 Token Introspection via `PR#36`_.
+- Implementation of RFC7662: OAuth 2.0 Token Introspection via :gh:`PR#36`.
 - Use the ``token_endpoint_auth_method`` concept defined in `RFC7591`_.
 - Signal feature for Flask integration of OAuth 2.0 server.
 - Bug fixes for OAuth client parts, thanks for the instruction by Lukas Schink.
@@ -63,7 +63,6 @@ Besides that, there are more changes:
 .. _`RFC7518`: https://tools.ietf.org/html/rfc7518
 .. _`RFC7519`: https://tools.ietf.org/html/rfc7519
 .. _`RFC7591`: https://tools.ietf.org/html/rfc7591
-.. _`PR#36`: https://github.com/lepture/authlib/pull/36
 
 
 Version 0.5.1
@@ -88,65 +87,12 @@ changes, I hope Authlib will go into Beta in the next version.
 - Added :meth:`~authlib.specs.rfc6749.register_error_uri` and its Flask
   integration.
 - :class:`~authlib.client.OAuth2Session` supports more grant types.
-- Deprecate built-in cache. Read more on `issue#23`_.
+- Deprecate built-in cache. Read more on :gh:`issue#23`.
 - **Redesigned OAuth 1 Flask server**. Read the docs :ref:`flask_oauth1_server`.
-- Deprecate ``client_model``. Read more on `issue#27`_.
+- Deprecate ``client_model``. Read more on :gh:`issue#27`.
 - **Breaking change** on ``AuthorizationCodeGrant.create_authorization_code``,
   last parameter is changed to an `OAuth2Request` instance.
 - Rename ``callback_uri`` to ``redirect_uri`` in client.
-
-.. _`issue#23`: https://github.com/lepture/authlib/issues/23
-.. _`issue#27`: https://github.com/lepture/authlib/issues/27
-
-.. admonition:: Rollback
-
-    Rollback the breaking change in Version 0.4. Pass ``grant_user`` as a
-    user instance::
-
-        @app.route('/authorize', methods=['POST'])
-        def confirm_authorize():
-            if request.form['confirm'] == 'ok':
-                # HERE
-                grant_user = current_user
-            else:
-                grant_user = None
-            return server.create_authorization_response(grant_user)
-
-    Read the documentation on :ref:`flask_oauth2_server`, and search for
-    ``grant_user``.
-
-.. admonition:: Breaking Changes
-
-    Update the initialization for AuthorizationServer and ResourceProtector
-    for both OAuth 1 and OAuth 2::
-
-        from authlib.flask.oauth2 import AuthorizationServer
-        from your_project.models import Client
-
-        server = AuthorizationServer(app, client_model=Client)
-        # or lazily
-        server = AuthorizationServer()
-        server.init_app(app, client_model=Client)
-
-
-        from authlib.flask.oauth1 import AuthorizationServer, ResourceProtector
-
-        server = AuthorizationServer(app, client_model=Client)
-        # or lazily
-        server.init_app(app, client_model=Client)
-
-        require_oauth = ResourceProtector(
-            app, client_model=Client,
-            query_token=query_token,
-            exists_nonce=exists_nonce,
-        )
-        # or initialize it lazily
-        require_oauth = ResourceProtector()
-        require_oauth.init_app(
-            app, client_model=Client,
-            query_token=query_token,
-            exists_nonce=exists_nonce,
-        )
 
 Version 0.4.1
 -------------
@@ -154,7 +100,7 @@ Version 0.4.1
 **Released on Feb 2, 2018. A Quick Bugfix**
 
 - Fixed missing code params when fetching access token. This bug is
-  introduced when fixing `issue#16`_.
+  introduced when fixing :gh:`issue#16`.
 
 Version 0.4: Tsukino
 --------------------
@@ -175,13 +121,9 @@ In version 0.4, there is also several bug fixes. Thanks for the early
 contributors.
 
 - Allow Flask OAuth register ``fetch_token`` and ``update_token``.
-- Bug fix for OAuthClient when ``refresh_token_params`` is None via `PR#14`_.
-- Don't pass everything in request args for Flask OAuth client via `issue#16`_.
-- Bug fix for ``IDToken.validate_exp`` via `issue#17`_.
-
-.. _`PR#14`: https://github.com/lepture/authlib/pull/14
-.. _`issue#16`: https://github.com/lepture/authlib/issues/16
-.. _`issue#17`: https://github.com/lepture/authlib/issues/17
+- Bug fix for OAuthClient when ``refresh_token_params`` is None via :gh:`PR#14`.
+- Don't pass everything in request args for Flask OAuth client via :gh:`issue#16`.
+- Bug fix for ``IDToken.validate_exp`` via :gh:`issue#17`.
 
 .. admonition:: Deprecated Changes
 
@@ -216,10 +158,8 @@ Version 0.2.1
 This is a bugfix version for Akemi. Sorry for the typo.
 
 - Fixed a typo in :meth:`~authlib.client.OAuth2Session.fetch_access_token`
-  which caused `issue #5`_.
+  which caused :gh:`issue#5`.
 - Removed pyjwt dependency from rfc5849.
-
-.. _`issue #5`: https://github.com/lepture/authlib/issues/5
 
 Version 0.2: Akemi
 ------------------

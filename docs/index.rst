@@ -18,28 +18,30 @@ Features
 
 Generic specification implementations that Authlib has built-in:
 
-- RFC5849: :ref:`specs/rfc5849`
-- RFC6749: :ref:`specs/rfc6749`
-- RFC6750: :ref:`specs/rfc6750`
-- RFC7009: :ref:`specs/rfc7009`
-- RFC7515: :ref:`specs/rfc7515`
-- RFC7517: :ref:`specs/rfc7517`
-- RFC7518: :ref:`specs/rfc7518`
-- RFC7519: :ref:`specs/rfc7519`
-- RFC7662: :ref:`specs/rfc7662`
-- OIDC: :ref:`specs/oidc`
+- :badge:`done` RFC5849: :ref:`specs/rfc5849`
+- :badge:`done` RFC6749: :ref:`specs/rfc6749`
+- :badge:`done` RFC6750: :ref:`specs/rfc6750`
+- :badge:`done` RFC7009: :ref:`specs/rfc7009`
+- :badge:`done` RFC7515: :ref:`specs/rfc7515`
+- :badge:`doing` RFC7516: JSON Web Encryption
+- :badge:`done` RFC7517: :ref:`specs/rfc7517`
+- :badge:`done` RFC7518: :ref:`specs/rfc7518`
+- :badge:`done` RFC7519: :ref:`specs/rfc7519`
+- :badge:`done` RFC7662: :ref:`specs/rfc7662`
+- :badge:`done` OIDC: :ref:`specs/oidc`
 
 Framework integrations with current specification implementations:
 
-- Requests :ref:`oauth_1_session`
-- Requests :ref:`oauth_2_session`
-- :ref:`flask_client`
-- :ref:`django_client`
-- :ref:`flask_oauth1_server`
-- :ref:`flask_oauth2_server`
-- :ref:`flask_odic_server`
-- **TODO** Django OAuth 1 Server
-- **TODO** Django OAuth 2 Server
+- :badge:`done` Requests :ref:`oauth_1_session`
+- :badge:`done` Requests :ref:`oauth_2_session`
+- :badge:`done` :ref:`flask_client`
+- :badge:`done` :ref:`django_client`
+- :badge:`done` :ref:`flask_oauth1_server`
+- :badge:`done` :ref:`flask_oauth2_server`
+- :badge:`done` :ref:`flask_odic_server`
+- :badge:`todo` Django OAuth 1 Server
+- :badge:`todo` Django OAuth 2 Server
+- :badge:`todo` Django OpenID Connect Server
 
 Authlib is compatible with Python2.7+ and Python3.5+.
 
@@ -47,17 +49,31 @@ User Guide
 ----------
 
 This part of the documentation begins with some background information
-about Authlib, and information on the client parts.
+about Authlib, and installation of Authlib.
 
 .. toctree::
     :maxdepth: 2
 
     intro
     install
+
+Client Guide
+------------
+
+This part of the documentation contains information on the client parts,
+for Requests, Flask and Django.
+
+.. toctree::
+    :maxdepth: 2
+
     client/oauth1
     client/oauth2
     client/mixed
     client/frameworks
+
+.. toctree::
+    :maxdepth: 1
+
     client/apps
 
 Server Guide

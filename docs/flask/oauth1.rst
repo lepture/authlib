@@ -13,7 +13,7 @@ Implement OAuth 1.0 provider in Flask. An OAuth 1 provider contains two servers:
 - Resources Server: to serve your users' resources
 
 
-.. note::
+.. important::
 
     If you are developing on your localhost, remember to set the environment
     variable::
