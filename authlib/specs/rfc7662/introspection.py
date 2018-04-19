@@ -1,3 +1,4 @@
+import time
 from authlib.specs.rfc6749 import (
     OAuth2Error,
     InvalidRequestError,
@@ -72,9 +73,8 @@ class IntrospectionEndpoint(object):
 
         token = self.query_token(
             params['token'], token_type, self._client)
-        if not token:
-            raise InvalidRequestError()
-        self._token = token
+        if token:
+            self._token = token
 
     def create_introspection_response(self):
         """Validate introspection request and create the response.
@@ -88,7 +88,7 @@ class IntrospectionEndpoint(object):
             # the revocation request
             self.validate_introspection_request()
             # the authorization server invalidates the token
-            body = self.introspect_token(self._token)
+            body = self.create_introspection_payload(self._token)
             status = 200
             headers = [
                 ('Content-Type', 'application/json'),
@@ -99,8 +99,22 @@ class IntrospectionEndpoint(object):
             status = error.status_code
             body = dict(error.get_body())
             headers = error.get_headers()
-
         return status, body, headers
+
+    def create_introspection_payload(self, token):
+        # the token is not active, does not exist on this server, or the
+        # protected resource is not allowed to introspect this particular
+        # token, then the authorization server MUST return an introspection
+        # response with the "active" field set to "false"
+        if not token:
+            return {'active': False}
+        expires_at = token.get_expires_at()
+        if expires_at < time.time() or token.revoked:
+            return {'active': False}
+        payload = self.introspect_token(token)
+        if 'active' not in payload:
+            payload['active'] = True
+        return payload
 
     def query_token(self, token, token_type_hint, client):
         """Get the token from database/storage by the given token string.
@@ -121,17 +135,17 @@ class IntrospectionEndpoint(object):
         dictionary following `Section 2.2`_::
 
             def introspect_token(self, token):
-                user = User.query.get(token.user_id)
                 return {
-                    "active": not token.revoked,
-                    "client_id": token.client_id,
-                    "username": user.username,
-                    "scope": token.scope,
-                    "sub": user.sub,
-                    "aud": token.client_id,
-                    "iss": "https://server.example.com/",
-                    "exp": token.expires_at,
-                    "iat": token.issued_at,
+                    'active': True,
+                    'client_id': token.client_id,
+                    'token_type': token.token_type,
+                    'username': get_token_username(token),
+                    'scope': token.get_scope(),
+                    'sub': get_token_user_sub(token),
+                    'aud': token.client_id,
+                    'iss': 'https://server.example.com/',
+                    'exp': token.expires_at,
+                    'iat': token.issued_at,
                 }
 
         .. _`Section 2.2`: https://tools.ietf.org/html/rfc7662#section-2.2
