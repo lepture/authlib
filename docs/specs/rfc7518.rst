@@ -4,52 +4,83 @@ JSON Web Algorithms
 ===================
 
 .. meta::
-   :description: API references on RFC7518 JSON Web Algorithms (JWA) Authlib implementation.
+    :description: API references on RFC7518 JSON Web Algorithms (JWA) Authlib implementation.
 
 This section contains the generic implementation of RFC7518_.
 
 .. _RFC7518: https://tools.ietf.org/html/rfc7518
 
 
-
 Algorithms for JWS
 ------------------
 
-.. module:: authlib.specs.rfc7518.jws_algorithms
+The interface for JWS Algorithms are all inherit from
+:class:`authlib.specs.rfc7515.JWSAlgorithm`. Find how to use them in
+:ref:`jws_guide`.
 
-.. autoclass:: HMACAlgorithm
-   :member-order: bysource
-   :members:
+HMAC with SHA-2 Functions
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
+This section is defined by RFC7518 `Section 3.2`_.
 
-.. autoclass:: RSAAlgorithm
-   :member-order: bysource
-   :members:
+.. _`Section 3.2`: https://tools.ietf.org/html/rfc7518#section-3.2
 
+1. HS256: HMAC using SHA-256
+2. HS384: HMAC using SHA-384
+3. HS512: HMAC using SHA-512
 
-.. autoclass:: ECAlgorithm
-   :member-order: bysource
-   :members:
+Digital Signature with RSASSA-PKCS1-v1_5
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. autoclass:: RSAPSSAlgorithm
-   :member-order: bysource
-   :members:
+Algorithms in this section requires extra crypto backends.
+This section is defined by RFC7518 `Section 3.3`_.
+
+.. _`Section 3.3`: https://tools.ietf.org/html/rfc7518#section-3.3
+
+1. RS256: RSASSA-PKCS1-v1_5 using SHA-256
+2. RS384: RSASSA-PKCS1-v1_5 using SHA-384
+3. RS512: RSASSA-PKCS1-v1_5 using SHA-384
+
+Digital Signature with ECDSA
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Algorithms in this section requires extra crypto backends.
+This section is defined by RFC7518 `Section 3.4`_.
+
+.. _`Section 3.4`: https://tools.ietf.org/html/rfc7518#section-3.4
+
+1. ES256: ECDSA using P-256 and SHA-256
+2. ES384: ECDSA using P-384 and SHA-384
+3. ES384: ECDSA using P-521 and SHA-521
+
+Digital Signature with RSASSA-PSS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Algorithms in this section requires extra crypto backends.
+This section is defined by RFC7518 `Section 3.5`_.
+
+.. _`Section 3.5`: https://tools.ietf.org/html/rfc7518#section-3.5
+
+1. PS256: RSASSA-PSS using SHA-256 and MGF1 with SHA-256
+2. PS384: RSASSA-PSS using SHA-384 and MGF1 with SHA-384
+3. PS512: RSASSA-PSS using SHA-512 and MGF1 with SHA-512
+
+Algorithms for JWE
+------------------
+
+This section is not implemented yet.
 
 Algorithms for JWK
 ------------------
 
-.. module:: authlib.specs.rfc7518.jwk_algorithms
+This section defines the parameters for keys using the algorithms via
+RFC7518 `Section 6`_. The interface for JWK Algorithms are all inherit from
+:class:`authlib.specs.rfc7517.JWKAlgorithm`. The available values of ``kty``:
 
-.. autoclass:: OCTAlgorithm
-   :member-order: bysource
-   :members:
+1. EC: Elliptic Curve (requires extra crypto backends)
+2. RSA: RSA (requires extra crypto backends)
+3. oct
 
+Find how to use them in :ref:`jwk_guide`.
 
-.. autoclass:: RSAAlgorithm
-   :member-order: bysource
-   :members:
-
-
-.. autoclass:: ECAlgorithm
-   :member-order: bysource
-   :members:
+.. _`Section 6`: https://tools.ietf.org/html/rfc7518#section-6

@@ -13,6 +13,8 @@ This section contains the generic implementation of RFC7515_.
 .. module:: authlib.specs.rfc7515
 
 
+.. _jws_guide:
+
 Guide on JWS
 ------------
 

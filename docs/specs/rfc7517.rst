@@ -4,7 +4,7 @@ JSON Web Key
 ============
 
 .. meta::
-   :description: API references on RFC7517 JSON Web Key (JWK) Authlib implementation.
+    :description: API references on RFC7517 JSON Web Key (JWK) Authlib implementation.
 
 This section contains the generic implementation of RFC7517_.
 
@@ -13,9 +13,28 @@ This section contains the generic implementation of RFC7517_.
 .. module:: authlib.specs.rfc7517
 
 
+.. _jwk_guide:
+
 Guide on JWK
 ------------
 
+A JSON Web Key (JWK) is a JavaScript Object Notation (JSON) data structure
+that represents a cryptographic key. An example would help a lot::
+
+    {
+      "kty": "EC",
+      "crv": "P-256",
+      "x": "f83OJ3D2xF1Bg8vub9tLe1gHMzV76e8Tus9uPHvRVEU",
+      "y": "x_FEzRu9m36HLN_tue659LNpXW6pCyStikYjKIWI5a0",
+      "kid": "iss-a"
+    }
+
+This is an Elliptic Curve Public Key represented by JSON data structure. How
+do we ``dumps`` a key into JWK, and ``loads`` JWK back into key? The interface
+of :class:`JWK` contains these two methods.
+
+Algorithms for ``kty`` (Key Type) is defined by :ref:`specs/rfc7518`.
+Available ``kty`` values are: **EC**, **RSA** and **oct**.
 
 API Reference
 -------------

@@ -25,20 +25,20 @@ Generic specification implementations that Authlib has built-in:
 - :badge:`done` RFC7515: :ref:`specs/rfc7515`
 - :badge:`doing` RFC7516: JSON Web Encryption
 - :badge:`done` RFC7517: :ref:`specs/rfc7517`
-- :badge:`done` RFC7518: :ref:`specs/rfc7518`
+- :badge-blue:`part` RFC7518: :ref:`specs/rfc7518`
 - :badge:`done` RFC7519: :ref:`specs/rfc7519`
 - :badge:`done` RFC7662: :ref:`specs/rfc7662`
 - :badge:`done` OIDC: :ref:`specs/oidc`
 
 Framework integrations with current specification implementations:
 
-- :badge:`done` Requests :ref:`oauth_1_session`
-- :badge:`done` Requests :ref:`oauth_2_session`
-- :badge:`done` :ref:`flask_client`
-- :badge:`done` :ref:`django_client`
-- :badge:`done` :ref:`flask_oauth1_server`
-- :badge:`done` :ref:`flask_oauth2_server`
-- :badge:`done` :ref:`flask_odic_server`
+- :badge-green:`ready` Requests :ref:`oauth_1_session`
+- :badge-green:`ready` Requests :ref:`oauth_2_session`
+- :badge-green:`ready` :ref:`flask_client`
+- :badge-green:`ready` :ref:`django_client`
+- :badge-green:`ready` :ref:`flask_oauth1_server`
+- :badge-green:`ready` :ref:`flask_oauth2_server`
+- :badge-blue:`beta` :ref:`flask_odic_server`
 - :badge:`todo` Django OAuth 1 Server
 - :badge:`todo` Django OAuth 2 Server
 - :badge:`todo` Django OpenID Connect Server
