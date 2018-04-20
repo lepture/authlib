@@ -17,12 +17,15 @@ from ._backends import JWK_ALGORITHMS
 
 
 class OCTAlgorithm(JWKAlgorithm):
+    def prepare_key(self, key):
+        return to_bytes(key)
+
     def loads(self, obj):
         return urlsafe_b64decode(to_bytes(obj['k']))
 
-    def dumps(self, s):
+    def dumps(self, key):
         return {
-            'k': to_unicode(urlsafe_b64encode(to_bytes(s))),
+            'k': to_unicode(urlsafe_b64encode(key)),
             'kty': 'oct'
         }
 

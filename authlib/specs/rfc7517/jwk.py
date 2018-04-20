@@ -5,6 +5,10 @@ class JWKAlgorithm(object):
     """Interface for JWK algorithm. JWA specification (RFC7518) SHOULD
     implement the algorithms for JWK with this base implementation.
     """
+    def prepare_key(self, key):
+        """Prepare key before dumping it into JWK."""
+        raise NotImplementedError
+
     def loads(self, obj):
         """Load JWK dict object into a public/private key."""
         raise NotImplementedError
@@ -53,7 +57,7 @@ class JWK(object):
         """Generate JWK format for the given public/private key.
 
         :param key: A public/private key
-        :param kty: Optional key type
+        :param kty: key type of the key
         :param params: Other parameters
         :return: JWK dict
         """
@@ -65,7 +69,7 @@ class JWK(object):
             else:
                 kty = 'oct'
         alg = self._algorithms[kty]
-        obj = alg.dumps(key)
+        obj = alg.dumps(alg.prepare_key(key))
 
         if params:
             # https://tools.ietf.org/html/rfc7517#section-4

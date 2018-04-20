@@ -7,23 +7,38 @@
 
     .. _`Section 6`: https://tools.ietf.org/html/rfc7518#section-6
 """
-
+from cryptography.hazmat.primitives.serialization import (
+    load_pem_private_key, load_pem_public_key, load_ssh_public_key
+)
 from cryptography.hazmat.primitives.asymmetric.rsa import (
-    RSAPrivateNumbers, RSAPublicNumbers,
+    RSAPrivateNumbers, RSAPublicNumbers, RSAPrivateKey, RSAPublicKey,
     rsa_recover_prime_factors, rsa_crt_dmp1, rsa_crt_dmq1, rsa_crt_iqmp
 )
 from cryptography.hazmat.primitives.asymmetric.ec import (
     EllipticCurvePrivateNumbers, EllipticCurvePublicNumbers,
+    EllipticCurvePrivateKey, EllipticCurvePublicKey,
     SECP256R1, SECP384R1, SECP521R1,
 )
 from cryptography.hazmat.backends import default_backend
 from authlib.specs.rfc7517 import JWKAlgorithm
-from authlib.common.encoding import base64_to_int, int_to_base64
+from authlib.common.encoding import to_bytes, base64_to_int, int_to_base64
+
+invalid_strings = [
+            b'-----BEGIN PUBLIC KEY-----',
+            b'-----BEGIN CERTIFICATE-----',
+            b'-----BEGIN RSA PUBLIC KEY-----',
+            b'ssh-rsa'
+        ]
 
 
 class RSAAlgorithm(JWKAlgorithm):
     def loads_other_primes_info(self, obj):
         raise NotImplementedError()
+
+    def prepare_key(self, key):
+        if isinstance(key, (RSAPrivateKey, RSAPublicKey)):
+            return key
+        return _load_key(key, b'ssh-rsa')
 
     def loads_private_key(self, obj):
         if 'oth' in obj:  # pragma: no cover
@@ -131,6 +146,11 @@ class ECAlgorithm(JWKAlgorithm):
         SECP521R1.name: 'P-521',
     }
 
+    def prepare_key(self, key):
+        if isinstance(key, (EllipticCurvePrivateKey, EllipticCurvePublicKey)):
+            return key
+        return _load_key(key, b'ecdsa-sha2-')
+
     def loads(self, obj):
         for k in ['crv', 'x', 'y']:
             if k not in obj:
@@ -176,6 +196,23 @@ class ECAlgorithm(JWKAlgorithm):
             return self.dumps_public_key(key)
         else:
             raise ValueError('Not a elliptic curve key')
+
+
+def _load_key(key, ssh_type):
+    key = to_bytes(key)
+    if key.startswith(ssh_type):
+        return load_ssh_public_key(key, backend=default_backend())
+
+    if b'PUBLIC' in key:
+        return load_pem_public_key(key, backend=default_backend())
+
+    if b'PRIVATE' in key:
+        return load_pem_private_key(key, password=None, backend=default_backend())
+
+    try:
+        return load_pem_private_key(key, password=None, backend=default_backend())
+    except ValueError:
+        return load_pem_public_key(key, backend=default_backend())
 
 
 JWK_ALGORITHMS = {
