@@ -47,6 +47,8 @@ class OAuthClient(object):
             client_kwargs={'scope': 'user:email'},
         )
     """
+    DEFAULT_USER_AGENT = default_user_agent
+
     def __init__(self, client_id=None, client_secret=None,
                  request_token_url=None, request_token_params=None,
                  access_token_url=None, access_token_params=None,
@@ -152,7 +154,7 @@ class OAuthClient(object):
             if self.compliance_fix:
                 self.compliance_fix(session)
 
-        session.headers['User-Agent'] = default_user_agent
+        session.headers['User-Agent'] = self.DEFAULT_USER_AGENT
         return session
 
     def request(self, method, url, token=None, **kwargs):
