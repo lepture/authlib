@@ -16,7 +16,7 @@ GRANT_TYPES_EXPIRES = {
     'authorization_code': 864000,
     'implicit': 3600,
     'password': 864000,
-    'client_credential': 864000
+    'client_credentials': 864000
 }
 
 

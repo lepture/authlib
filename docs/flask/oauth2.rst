@@ -119,7 +119,7 @@ which has built-in tools to handle requests and responses::
         else:
             # client_credentials grant_type
             user_id = request.client.user_id
-            # or, depending on how you treat client_credential
+            # or, depending on how you treat client_credentials
             user_id = None
         item = Token(
             client_id=request.client.client_id,
@@ -156,7 +156,7 @@ OAUTH2_EXPIRES_IMPLICIT            Token ``expires_in`` by ``implicit``
                                    grant, default is 3600
 OAUTH2_EXPIRES_PASSWORD            Token ``expires_in`` by ``password``
                                    grant, default is 864000
-OAUTH2_EXPIRES_CLIENT_CREDENTIAL   Token ``expires_in`` by ``client_credential``
+OAUTH2_EXPIRES_CLIENT_CREDENTIALS  Token ``expires_in`` by ``client_credentials``
                                    grant, default is 864000
 OAUTH2_ACCESS_TOKEN_GENERATOR      A string of module path for importing a
                                    function to generate ``access_token``
