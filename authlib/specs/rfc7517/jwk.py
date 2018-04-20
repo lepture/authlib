@@ -1,12 +1,4 @@
-from cryptography.hazmat.primitives.asymmetric.ec import (
-    EllipticCurvePrivateKey, EllipticCurvePublicKey
-)
-from cryptography.hazmat.primitives.asymmetric.rsa import (
-    RSAPrivateKey, RSAPublicKey
-)
-
-EC_TYPES = (EllipticCurvePrivateKey, EllipticCurvePublicKey)
-RSA_TYPES = (RSAPrivateKey, RSAPublicKey)
+from ._backends import EC_TYPES, RSA_TYPES
 
 
 class JWKAlgorithm(object):

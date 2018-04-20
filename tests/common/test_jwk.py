@@ -1,13 +1,8 @@
 import unittest
 from authlib.specs.rfc7517 import JWK
+from authlib.specs.rfc7517.jwk import EC_TYPES, RSA_TYPES
 from authlib.specs.rfc7518 import JWK_ALGORITHMS
 from authlib.common.encoding import base64_to_int
-from cryptography.hazmat.primitives.asymmetric.ec import (
-    EllipticCurvePrivateKey, EllipticCurvePublicKey
-)
-from cryptography.hazmat.primitives.asymmetric.rsa import (
-    RSAPublicKey, RSAPrivateKey
-)
 from ..util import read_file_path
 
 jwk = JWK(algorithms=JWK_ALGORITHMS)
@@ -24,7 +19,7 @@ class JWKTest(unittest.TestCase):
         # https://tools.ietf.org/html/rfc7520#section-3.1
         obj = read_file_path('ec_public.json')
         key = jwk.loads(obj)
-        self.assertIsInstance(key, EllipticCurvePublicKey)
+        self.assertIsInstance(key, EC_TYPES[1])
         new_obj = jwk.dumps(key)
         self.assertEqual(new_obj['crv'], obj['crv'])
         self.assertBase64IntEqual(new_obj['x'], obj['x'])
@@ -34,7 +29,7 @@ class JWKTest(unittest.TestCase):
         # https://tools.ietf.org/html/rfc7520#section-3.2
         obj = read_file_path('ec_private.json')
         key = jwk.loads(obj)
-        self.assertIsInstance(key, EllipticCurvePrivateKey)
+        self.assertIsInstance(key, EC_TYPES[0])
         new_obj = jwk.dumps(key, 'EC')
         self.assertEqual(new_obj['crv'], obj['crv'])
         self.assertBase64IntEqual(new_obj['x'], obj['x'])
@@ -49,7 +44,7 @@ class JWKTest(unittest.TestCase):
         # https://tools.ietf.org/html/rfc7520#section-3.3
         obj = read_file_path('jwk_public.json')
         key = jwk.loads(obj)
-        self.assertIsInstance(key, RSAPublicKey)
+        self.assertIsInstance(key, RSA_TYPES[1])
         new_obj = jwk.dumps(key)
         self.assertBase64IntEqual(new_obj['n'], obj['n'])
         self.assertBase64IntEqual(new_obj['e'], obj['e'])
@@ -58,7 +53,7 @@ class JWKTest(unittest.TestCase):
         # https://tools.ietf.org/html/rfc7520#section-3.4
         obj = RSA_PRIVATE_KEY
         key = jwk.loads(obj)
-        self.assertIsInstance(key, RSAPrivateKey)
+        self.assertIsInstance(key, RSA_TYPES[0])
         new_obj = jwk.dumps(key, 'RSA')
         self.assertBase64IntEqual(new_obj['n'], obj['n'])
         self.assertBase64IntEqual(new_obj['e'], obj['e'])
@@ -79,7 +74,7 @@ class JWKTest(unittest.TestCase):
             "e": "AQAB"
         }
         key = jwk.loads(obj)
-        self.assertIsInstance(key, RSAPrivateKey)
+        self.assertIsInstance(key, RSA_TYPES[0])
         new_obj = jwk.dumps(key, 'RSA')
         self.assertBase64IntEqual(new_obj['n'], obj['n'])
         self.assertBase64IntEqual(new_obj['e'], obj['e'])
