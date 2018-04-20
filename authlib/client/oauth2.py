@@ -283,7 +283,10 @@ class OAuth2Session(Session):
             if self.token.is_expired():
                 if not self.refresh_token_url:
                     raise OAuthException('Token is expired.')
-                self.refresh_token(self.refresh_token_url, **kwargs)
+                refresh_token = self.token.get('refresh_token')
+                if not refresh_token:
+                    raise OAuthException('Token is expired.')
+                self.refresh_token(self.refresh_token_url, refresh_token)
 
             if auth is None:
                 auth = self._token_auth
