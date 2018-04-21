@@ -34,7 +34,22 @@ do we ``dumps`` a key into JWK, and ``loads`` JWK back into key? The interface
 of :class:`JWK` contains these two methods.
 
 Algorithms for ``kty`` (Key Type) is defined by :ref:`specs/rfc7518`.
-Available ``kty`` values are: **EC**, **RSA** and **oct**.
+Available ``kty`` values are: **EC**, **RSA** and **oct**. Initialize a JWK
+instance with JWA::
+
+    from authlib.specs.rfc7517 import JWK
+    from authlib.specs.rfc7518 import JWK_ALGORITHMS
+
+    jwk = JWK(algorithms=JWK_ALGORITHMS)
+    key = read_file('public.pem')
+    obj = jwk.dumps(key, kty='RSA')
+    # obj is a dict, you may turn it into JSON
+    key = jwk.loads(obj)
+
+You may pass extra parameters into ``dumps`` method, available parameters can
+be found on RFC7517 `Section 4`_.
+
+.. _`Section 4`: https://tools.ietf.org/html/rfc7517#section-4
 
 API Reference
 -------------
