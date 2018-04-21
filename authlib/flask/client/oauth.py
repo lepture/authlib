@@ -170,7 +170,7 @@ class RemoteApp(OAuthClient):
 
         super(RemoteApp, self).__init__(**kwargs)
 
-        if self.client_kwargs.get('refresh_token_url'):
+        if kwargs.get('refresh_token_url'):
             self.client_kwargs['token_updater'] = update_token
 
     @property

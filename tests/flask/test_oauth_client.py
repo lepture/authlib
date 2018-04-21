@@ -107,6 +107,23 @@ class FlaskOAuthTest(TestCase):
                 token = client.authorize_access_token()
                 self.assertEqual(token['oauth_token'], 'a')
 
+    def test_register_oauth2_remote_app(self):
+        app = Flask(__name__)
+        oauth = OAuth(app)
+        oauth.register(
+            'dev',
+            client_id='dev',
+            client_secret='dev',
+            base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+            refresh_token_url='https://i.b/token',
+            authorize_url='https://i.b/authorize',
+            update_token=lambda o: o
+        )
+        self.assertEqual(oauth.dev.name, 'dev')
+        session = oauth.dev._get_session()
+        self.assertIsNotNone(session.token_updater)
+
     def test_oauth2_authorize(self):
         app = Flask(__name__)
         app.secret_key = '!'
