@@ -3,6 +3,7 @@ from ..rfc6749.grants import BaseGrant
 from ..rfc6749 import UnauthorizedClientError, InvalidRequestError
 from ..rfc7519 import JWT
 from .consts import JWT_BEARER_GRANT_TYPE
+from .assertion import sign_jwt_bearer_assertion
 
 log = logging.getLogger(__name__)
 
@@ -10,6 +11,13 @@ log = logging.getLogger(__name__)
 class JWTBearerGrant(BaseGrant):
     SPECIFICATION = 'rfc7523'
     GRANT_TYPE = JWT_BEARER_GRANT_TYPE
+
+    @staticmethod
+    def sign(key, issuer, audience, subject=None,
+             issued_at=None, expires_at=None, claims=None, **kwargs):
+        return sign_jwt_bearer_assertion(
+            key, issuer, audience, subject, issued_at,
+            expires_at, claims, **kwargs)
 
     def validate_assertion(self):
         assertion = self.request.data.get('assertion')

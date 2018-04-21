@@ -14,7 +14,7 @@ from ..specs.rfc6749 import OAuth2Token
 from ..specs.rfc6749 import InsecureTransportError
 from ..specs.rfc6750 import add_bearer_token
 from ..specs.rfc7009 import prepare_revoke_token_request
-from ..specs.rfc7523 import JWT_BEARER_GRANT_TYPE, sign_jwt_bearer_assertion
+from ..specs.rfc7523 import JWTBearerGrant
 
 __all__ = [
     'OAuth2Session', 'AssertionSession',
@@ -435,10 +435,10 @@ class AssertionSession(Session):
 
     .. _RFC7521: https://tools.ietf.org/html/rfc7521
     """
-    JWT_BEARER_GRANT_TYPE = JWT_BEARER_GRANT_TYPE
+    JWT_BEARER_GRANT_TYPE = JWTBearerGrant.GRANT_TYPE
 
     ASSERTION_METHODS = {
-        JWT_BEARER_GRANT_TYPE: sign_jwt_bearer_assertion,
+        JWT_BEARER_GRANT_TYPE: JWTBearerGrant.sign,
     }
 
     def __init__(self, token_url, issuer, subject, audience, grant_type,

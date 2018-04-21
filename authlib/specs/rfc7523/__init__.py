@@ -10,5 +10,5 @@
     https://tools.ietf.org/html/rfc7523
 """
 
-from .parameters import sign_jwt_bearer_assertion
+from .grant import JWTBearerGrant
 from .consts import JWT_BEARER_GRANT_TYPE, JWT_BEARER_CLIENT_ASSERTION_TYPE
