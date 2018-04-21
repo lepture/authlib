@@ -1,4 +1,3 @@
-from flask import Flask
 from authlib.common.security import generate_token
 from authlib.specs.rfc6749.grants import AuthorizationCodeGrant
 
