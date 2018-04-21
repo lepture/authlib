@@ -13,7 +13,7 @@ class RevocationEndpoint(TokenEndpoint):
 
     .. _RFC7009: https://tools.ietf.org/html/rfc7009
     """
-    #: endpoint name to be registered
+    #: Endpoint name to be registered
     ENDPOINT_NAME = 'revocation'
 
     def validate_endpoint_request(self):

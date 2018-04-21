@@ -37,18 +37,17 @@ first, we need to implement the missing methods::
             return q.filter_by(refresh_token=token).first()
 
         def introspect_token(self, token):
-            user = User.query.get(token.user_id)
-            # https://tools.ietf.org/html/rfc7662#section-2.2
             return {
-                "active": not token.revoked,
-                "client_id": token.client_id,
-                "username": user.username,
-                "scope": token.scope,
-                "sub": user.sub,
-                "aud": token.client_id,
-                "iss": "https://server.example.com/",
-                "exp": token.expires_at,
-                "iat": token.issued_at,
+                'active': True,
+                'client_id': token.client_id,
+                'token_type': token.token_type,
+                'username': get_token_username(token),
+                'scope': token.get_scope(),
+                'sub': get_token_user_sub(token),
+                'aud': token.client_id,
+                'iss': 'https://server.example.com/',
+                'exp': token.expires_at,
+                'iat': token.issued_at,
             }
 
     # register it to authorization server
@@ -65,5 +64,6 @@ API Reference
 -------------
 
 .. autoclass:: IntrospectionEndpoint
-   :member-order: bysource
-   :members:
+    :member-order: bysource
+    :members:
+    :inherited-members:

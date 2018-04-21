@@ -2,11 +2,11 @@ from .authenticate_client import authenticate_client
 
 
 class TokenEndpoint(object):
-    #: endpoint name to be registered
+    #: Endpoint name to be registered
     ENDPOINT_NAME = None
-    #: supported token types
+    #: Supported token types
     SUPPORTED_TOKEN_TYPES = ('access_token', 'refresh_token')
-    #: allowed client authenticate methods
+    #: Allowed client authenticate methods
     CLIENT_AUTH_METHODS = ['client_secret_basic']
 
     def __init__(self, request, server):

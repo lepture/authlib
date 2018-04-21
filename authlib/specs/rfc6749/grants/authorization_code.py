@@ -46,8 +46,11 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         |         |<---(E)----- Access Token -------------------'
         +---------+       (w/ Optional Refresh Token)
     """
+    #: authorization_code grant type has authorization endpoint
     AUTHORIZATION_ENDPOINT = True
+    #: authorization_code grant type has token endpoint
     TOKEN_ENDPOINT = True
+    #: Allowed client auth methods for token endpoint
     TOKEN_ENDPOINT_AUTH_METHODS = [
         'client_secret_basic', 'client_secret_post', 'none'
     ]

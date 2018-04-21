@@ -28,13 +28,15 @@ via :ref:`specs/rfc7518`, it can also load private/public keys of
     >>> payload = {'iss': 'Authlib', 'sub': '123', ...}
     >>> key = read_file('private.pem')
     >>> s = jwt.encode(header, payload, key)
-    >>> claims = jwt.decode(s,read_file('public.pem'))
+    >>> claims = jwt.decode(s, read_file('public.pem'))
     >>> print(claims)
     {'iss': 'Authlib', 'sub': '123', ...}
     >>> print(claims.header)
     {'alg': 'RS256', 'typ': 'JWT'}
     >>> claims.validate()
 
+.. note::
+    JWE is not ready yet, current JWT is based on JWS compact serialization.
 
 API Reference
 -------------

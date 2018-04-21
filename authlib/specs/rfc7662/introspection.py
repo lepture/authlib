@@ -16,7 +16,7 @@ class IntrospectionEndpoint(TokenEndpoint):
 
     .. _RFC7662: https://tools.ietf.org/html/rfc7662
     """
-    #: endpoint name to be registered
+    #: Endpoint name to be registered
     ENDPOINT_NAME = 'introspection'
 
     def validate_endpoint_request(self):

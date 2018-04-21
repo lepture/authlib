@@ -63,5 +63,6 @@ API Reference
 -------------
 
 .. autoclass:: RevocationEndpoint
-   :member-order: bysource
-   :members:
+    :member-order: bysource
+    :members:
+    :inherited-members:
