@@ -1,10 +1,10 @@
-from authlib.specs.rfc6749 import authenticate_client
+from authlib.specs.rfc6749 import TokenEndpoint
 from authlib.specs.rfc6749 import (
     OAuth2Error, InvalidRequestError, UnsupportedTokenTypeError
 )
 
 
-class RevocationEndpoint(object):
+class RevocationEndpoint(TokenEndpoint):
     """Implementation of revocation endpoint which is described in
     `RFC7009`_.
 
@@ -13,32 +13,10 @@ class RevocationEndpoint(object):
 
     .. _RFC7009: https://tools.ietf.org/html/rfc7009
     """
+    #: endpoint name to be registered
     ENDPOINT_NAME = 'revocation'
-    SUPPORTED_TOKEN_TYPES = ('access_token', 'refresh_token')
-    REVOCATION_ENDPOINT_AUTH_METHODS = ['client_secret_basic']
 
-    def __init__(self, request, server):
-        self.request = request
-        self.server = server
-        self._token = None
-        self._client = None
-
-    def __call__(self):
-        # make it callable for authorization server
-        # ``create_endpoint_response``
-        return self.create_revocation_response()
-
-    def authenticate_revocation_endpoint_client(self):
-        """Authentication client for revocation endpoint with
-        ``REVOCATION_ENDPOINT_AUTH_METHODS``.
-        """
-        self._client = authenticate_client(
-            self.server.query_client,
-            request=self.request,
-            methods=self.REVOCATION_ENDPOINT_AUTH_METHODS,
-        )
-
-    def validate_revocation_request(self):
+    def validate_endpoint_request(self):
         """The client constructs the request by including the following
         parameters using the "application/x-www-form-urlencoded" format in
         the HTTP request entity-body:
@@ -66,7 +44,7 @@ class RevocationEndpoint(object):
             raise InvalidRequestError()
         self._token = token
 
-    def create_revocation_response(self):
+    def create_endpoint_response(self):
         """Validate revocation request and create the response for revocation.
         For example, a client may request the revocation of a refresh token
         with the following request::
@@ -82,10 +60,10 @@ class RevocationEndpoint(object):
         """
         try:
             # The authorization server first validates the client credentials
-            self.authenticate_revocation_endpoint_client()
+            self.authenticate_endpoint_client()
             # then verifies whether the token was issued to the client making
             # the revocation request
-            self.validate_revocation_request()
+            self.validate_endpoint_request()
             # the authorization server invalidates the token
             self.revoke_token(self._token)
             try:

@@ -1,13 +1,13 @@
 import time
 from authlib.specs.rfc6749 import (
+    TokenEndpoint,
     OAuth2Error,
     InvalidRequestError,
     UnsupportedTokenTypeError,
 )
-from authlib.specs.rfc6749 import authenticate_client
 
 
-class IntrospectionEndpoint(object):
+class IntrospectionEndpoint(TokenEndpoint):
     """Implementation of introspection endpoint which is described in
     `RFC7662`_.
 
@@ -16,31 +16,10 @@ class IntrospectionEndpoint(object):
 
     .. _RFC7662: https://tools.ietf.org/html/rfc7662
     """
+    #: endpoint name to be registered
     ENDPOINT_NAME = 'introspection'
-    SUPPORTED_TOKEN_TYPES = ('access_token', 'refresh_token')
-    INTROSPECTION_ENDPOINT_AUTH_METHODS = ['client_secret_basic']
 
-    def __init__(self, request, server):
-        self.request = request
-        self.server = server
-
-        self._client = None
-        self._token = None
-
-    def __call__(self):
-        return self.create_introspection_response()
-
-    def authenticate_introspection_endpoint_client(self):
-        """Authentication client for introspection endpoint with
-        ``INTROSPECTION_ENDPOINT_AUTH_METHODS``.
-        """
-        self._client = authenticate_client(
-            self.server.query_client,
-            request=self.request,
-            methods=self.INTROSPECTION_ENDPOINT_AUTH_METHODS,
-        )
-
-    def validate_introspection_request(self):
+    def validate_endpoint_request(self):
         """The protected resource calls the introspection endpoint using an HTTP
         ``POST`` request with parameters sent as
         "application/x-www-form-urlencoded" data. The protected resource sends a
@@ -76,17 +55,17 @@ class IntrospectionEndpoint(object):
         if token:
             self._token = token
 
-    def create_introspection_response(self):
+    def create_endpoint_response(self):
         """Validate introspection request and create the response.
 
         :returns: (status_code, body, headers)
         """
         try:
             # The authorization server first validates the client credentials
-            self.authenticate_introspection_endpoint_client()
+            self.authenticate_endpoint_client()
             # then verifies whether the token was issued to the client making
             # the revocation request
-            self.validate_introspection_request()
+            self.validate_endpoint_request()
             # the authorization server invalidates the token
             body = self.create_introspection_payload(self._token)
             status = 200

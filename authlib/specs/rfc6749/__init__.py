@@ -20,3 +20,4 @@ from .authenticate_client import (
 )
 from .authorization_server import AuthorizationServer
 from .resource_protector import ResourceProtector
+from .token_endpoint import TokenEndpoint
