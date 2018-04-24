@@ -28,6 +28,11 @@ setup(
     long_description=fread('README.rst'),
     license='AGPLv3+',
     install_requires=['requests', 'cryptography'],
+    project_urls={
+        'Bug Tracker': 'https://github.com/lepture/authlib/issues',
+        'Documentation': 'https://docs.authib.org/',
+        'Source Code': 'https://github.com/lepture/authlib',
+    },
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',
