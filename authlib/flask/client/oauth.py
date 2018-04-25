@@ -70,15 +70,20 @@ class OAuth(object):
             'authorize_url', 'api_base_url', 'client_kwargs',
         )
 
-        kwargs = self._registry[name]
+        overwrite, kwargs = self._registry[name]
         compliance_fix = kwargs.pop('compliance_fix', None)
         client_cls = kwargs.pop('client_cls', RemoteApp)
 
         for k in keys:
+            conf_key = '{}_{}'.format(name, k).upper()
+            v = self.app.config.get(conf_key, None)
             if k not in kwargs:
-                conf_key = '{}_{}'.format(name, k).upper()
-                v = self.app.config.get(conf_key, None)
                 kwargs[k] = v
+            elif overwrite and v:
+                if isinstance(kwargs[k], dict):
+                    kwargs[k].update(v)
+                else:
+                    kwargs[k] = v
 
         kwargs = self._generate_client_kwargs(name, kwargs)
         client = client_cls(name, **kwargs)
@@ -88,10 +93,11 @@ class OAuth(object):
         self._clients[name] = client
         return client
 
-    def register(self, name, **kwargs):
+    def register(self, name, overwrite=False, **kwargs):
         """Registers a new remote application.
 
         :param name: Name of the remote application.
+        :param overwrite: Overwrite existing config with Flask config.
         :param kwargs: Parameters for :class:`RemoteApp`.
 
         Find parameters from :class:`~authlib.client.OAuthClient`.
@@ -101,7 +107,7 @@ class OAuth(object):
             oauth.register('twitter', client_id='', ...)
             oauth.twitter.get('timeline')
         """
-        self._registry[name] = kwargs
+        self._registry[name] = (overwrite, kwargs)
         if self.app:
             return self.create_client(name)
         return LocalProxy(lambda: self.create_client(name))

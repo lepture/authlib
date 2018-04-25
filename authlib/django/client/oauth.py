@@ -20,10 +20,11 @@ class OAuth(object):
     def __init__(self):
         self._clients = {}
 
-    def register(self, name, **kwargs):
+    def register(self, name, overwrite=False, **kwargs):
         """Registers a new remote application.
 
         :param name: Name of the remote application.
+        :param overwrite: Overwrite existing config with django settings.
         :param kwargs: Parameters for :class:`RemoteApp`.
 
         Find parameters from :class:`~authlib.client.OAuthClient`.
@@ -34,7 +35,7 @@ class OAuth(object):
             oauth.twitter.get('timeline')
         """
         client_cls = kwargs.pop('client_cls', RemoteApp)
-        client = client_cls(name, **kwargs)
+        client = client_cls(name, overwrite=overwrite, **kwargs)
         self._clients[name] = client
         return client
 
@@ -51,7 +52,7 @@ class RemoteApp(OAuthClient):
     """Django integrated RemoteApp of :class:`~authlib.client.OAuthClient`.
     It has built-in hooks for OAuthClient.
     """
-    def __init__(self, name, *args, **kwargs):
+    def __init__(self, name, overwrite=False, **kwargs):
         self.name = name
 
         compliance_fix = kwargs.pop('compliance_fix', None)
@@ -65,10 +66,16 @@ class RemoteApp(OAuthClient):
                 'authorize_url', 'api_base_url', 'client_kwargs',
             )
             for k in keys:
+                v = config.get(k, None)
                 if k not in kwargs:
-                    kwargs[k] = config.get(k, None)
+                    kwargs[k] = v
+                elif overwrite and v:
+                    if isinstance(kwargs[k], dict):
+                        kwargs[k].update(v)
+                    else:
+                        kwargs[k] = v
 
-        super(RemoteApp, self).__init__(*args, **kwargs)
+        super(RemoteApp, self).__init__(**kwargs)
 
         self.compliance_fix = compliance_fix
         if self.client_kwargs.get('refresh_token_url'):
