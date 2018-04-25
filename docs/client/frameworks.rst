@@ -17,6 +17,8 @@ Flask OAuth 1.0/2.0 Client
 
 .. module:: authlib.flask.client
 
+Looking for OAuth 2.0 provider? Check out :ref:`flask_oauth2_server`.
+
 Flask OAuth client can handle OAuth 1 and OAuth 2 services.
 It shares a similar API with Flask-OAuthlib, you can
 transfer your code from Flask-OAuthlib to Authlib with ease.

@@ -2,7 +2,7 @@ Changelog
 =========
 
 .. meta::
-   :description: The full list of changes between each Authlib release.
+    :description: The full list of changes between each Authlib release.
 
 Here you can see the full list of changes between each Authlib release.
 
@@ -15,6 +15,7 @@ Version 0.7
 - Add :class:`~authlib.client.AssertionSession` for RFC7521.
 - Implement a full featured :class:`~authlib.rfc7515.JWS`.
 - Bug fix and documentation fix via :gh:`issue#42`, :gh:`issue#43`.
+- Add ``overwrite`` parameter for framework integrations clients.
 
 Version 0.6: Matoi
 ------------------

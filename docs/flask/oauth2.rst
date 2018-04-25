@@ -5,7 +5,8 @@ Flask OAuth 2.0 Server
 
 .. meta::
     :description: How to create an OAuth 2.0 server in Flask with Authlib.
-        And understand how OAuth 2.0 works.
+        And understand how OAuth 2.0 works. Authlib has all built-in grant
+        types for you.
 
 In this section, we will learn how to create an OAuth 2.0 server in Flask.
 An OAuth 2.0 provider contains two servers:
@@ -21,6 +22,8 @@ Here is an `example of OAuth 2.0 server <https://github.com/authlib/example-oaut
     variable::
 
         export AUTHLIB_INSECURE_TRANSPORT=true
+
+Looking for OAuth 2 client? Check out :ref:`flask_client`.
 
 Authorization Server
 --------------------
@@ -467,18 +470,9 @@ Creating a custom grant type with **BaseGrant**::
 
 
     class MyCustomGrant(grants.BaseGrant):
-        AUTHORIZATION_ENDPOINT = True  # if you want to support it
+        AUTHORIZATION_ENDPOINT = False  # if you want to support it
         TOKEN_ENDPOINT = True  # if you want to support it
-
-        @classmethod
-        def check_authorization_endpoint(cls, request):
-            # can MyCustomGrant handle this request for TOKEN_ENDPOINT
-            return True or False
-
-        @classmethod
-        def check_token_endpoint(cls, request):
-            # can MyCustomGrant handle this request for TOKEN_ENDPOINT
-            return True or False
+        GRANT_TYPE = 'custom-grant-type-name'
 
         def validate_authorization_request(self):
             # only needed if AUTHORIZATION_ENDPOINT = True

@@ -27,6 +27,7 @@ and implement a :meth:`OAuthClient.get_token` method::
 .. note::
     This ``OAuthClient`` is designed for developing framework integrations.
     If you are using Flask or Django, you should read :ref:`client_frameworks`.
+    There are also :ref:`client_apps`.
 
 OAuth 1 Flow
 ------------
