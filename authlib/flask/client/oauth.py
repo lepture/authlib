@@ -234,11 +234,16 @@ class RemoteApp(OAuthClient):
             params = request.args.to_dict(flat=True)
         else:
             request_token = None
-            params = {'code': request.args['code']}
+            if request.method == 'GET':
+                params = {'code': request.args['code']}
+                request_state = request.args.get('state')
+            else:
+                params = {'code': request.form['code']}
+                request_state = request.form.get('state')
             # verify state
             state_key = '_{}_state_'.format(self.name)
             state = session.pop(state_key, None)
-            if state != request.args.get('state'):
+            if state != request_state:
                 raise OAuthException(
                     'State not equal in request and response.')
             if state:

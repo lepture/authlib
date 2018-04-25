@@ -126,17 +126,25 @@ class RemoteApp(OAuthClient):
         if self.request_token_url:
             key = '_{}_req_token_'.format(self.name)
             request_token = request.session.pop(key, None)
+            params = request.GET.dict()
         else:
             request_token = None
+            if request.method == 'GET':
+                params = {'code': request.GET.get('code')}
+                request_state = request.GET.get('state')
+            else:
+                params = {'code': request.POST.get('code')}
+                request_state = request.POST.get('state')
             key = '_{}_state_'.format(self.name)
             state = request.session.pop(key, None)
-            if state != request.GET.get('state'):
+            if state != request_state:
                 raise OAuthException(
                     'State not equal in request and response.')
+            if state:
+                params['state'] = state
 
         key = '_{}_callback_'.format(self.name)
         redirect_uri = request.session.get(key, None)
-        params = request.GET.dict()
         params.update(kwargs)
         return self.fetch_access_token(
             redirect_uri,

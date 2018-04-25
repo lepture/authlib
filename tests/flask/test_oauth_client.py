@@ -157,3 +157,23 @@ class FlaskOAuthTest(TestCase):
 
         with app.test_request_context():
             self.assertEqual(client.token, None)
+
+    def test_oauth2_access_token_with_post(self):
+        app = Flask(__name__)
+        app.secret_key = '!'
+        oauth = OAuth(app)
+        client = oauth.register(
+            'dev',
+            client_id='dev',
+            client_secret='dev',
+            base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+            authorize_url='https://i.b/authorize'
+        )
+        payload = {'code': 'a', 'state': 'b'}
+        with app.test_request_context(data=payload, method='POST'):
+            session['_dev_state_'] = 'b'
+            with mock.patch('requests.sessions.Session.send') as send:
+                send.return_value = mock_send_value(get_bearer_token())
+                token = client.authorize_access_token()
+                self.assertEqual(token['access_token'], 'a')

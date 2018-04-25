@@ -110,3 +110,22 @@ class DjangoOAuthTest(TestCase):
 
             token = client.authorize_access_token(request)
             self.assertEqual(token['access_token'], 'a')
+
+    def test_oauth2_access_token_with_post(self):
+        client = RemoteApp(
+            'dev',
+            client_id='dev',
+            client_secret='dev',
+            base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+            authorize_url='https://i.b/authorize',
+        )
+        payload = {'code': 'a', 'state': 'b'}
+
+        with mock.patch('requests.sessions.Session.send') as send:
+            send.return_value = mock_send_value(get_bearer_token())
+            request = self.factory.post('/token', data=payload)
+            request.session = self.factory.session
+            request.session['_dev_state_'] = 'b'
+            token = client.authorize_access_token(request)
+            self.assertEqual(token['access_token'], 'a')
