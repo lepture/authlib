@@ -174,3 +174,22 @@ class OpenIDCodeTest(TestCase):
         resp = json.loads(rv.data)
         self.assertIn('access_token', resp)
         self.assertIn('id_token', resp)
+
+    def test_response_mode_query(self):
+        self.prepare_data()
+        rv = self.client.post('/oauth/authorize', data={
+            'client_id': 'hybrid-client',
+            'response_type': 'code id_token token',
+            'response_mode': 'query',
+            'state': 'bar',
+            'nonce': 'abc',
+            'scope': 'openid profile',
+            'redirect_uri': 'https://a.b',
+            'user_id': '1',
+        })
+        self.assertIn('code=', rv.location)
+        self.assertIn('id_token=', rv.location)
+        self.assertIn('access_token=', rv.location)
+
+        params = dict(url_decode(urlparse.urlparse(rv.location).query))
+        self.assertEqual(params['state'], 'bar')

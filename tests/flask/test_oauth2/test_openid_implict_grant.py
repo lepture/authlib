@@ -104,3 +104,20 @@ class ImplicitTest(TestCase):
         self.assertIn('state=bar', rv.location)
         params = dict(url_decode(urlparse.urlparse(rv.location).fragment))
         self.validate_claims(params['id_token'], params)
+
+    def test_response_mode_query(self):
+        self.prepare_data()
+        rv = self.client.post('/oauth/authorize', data={
+            'response_type': 'id_token',
+            'response_mode': 'query',
+            'client_id': 'implicit-client',
+            'scope': 'openid profile',
+            'state': 'bar',
+            'nonce': 'abc',
+            'redirect_uri': 'https://a.b/c',
+            'user_id': '1'
+        })
+        self.assertIn('id_token=', rv.location)
+        self.assertIn('state=bar', rv.location)
+        params = dict(url_decode(urlparse.urlparse(rv.location).query))
+        self.validate_claims(params['id_token'], params)

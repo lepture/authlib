@@ -62,7 +62,13 @@ class OpenIDHybridGrant(OpenIDMixin, AuthorizationCodeGrant):
             error = AccessDeniedError(state=state)
             params = error.get_body()
 
-        uri = add_params_to_uri(self.redirect_uri, params, fragment=True)
+        # http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#ResponseModes
+        fragment = True
+        response_mode = self.request.response_mode
+        if response_mode and response_mode == 'query':
+            fragment = False
+
+        uri = add_params_to_uri(self.redirect_uri, params, fragment=fragment)
         headers = [('Location', uri)]
         return 302, '', headers
 
