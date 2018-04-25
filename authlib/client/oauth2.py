@@ -110,6 +110,13 @@ class OAuth2Session(Session):
             kwargs['redirect_uri'] = self.redirect_uri
         if 'scope' not in kwargs:
             kwargs['scope'] = self.scope
+
+        # Add OIDC optional parameters
+        oidc_params = ['response_mode', 'nonce', 'prompt', 'login_hint']
+        for k in oidc_params:
+            if k not in kwargs and k in self._kwargs:
+                kwargs[k] = self._kwargs[k]
+
         uri = prepare_grant_uri(
             url, client_id=self.client_id, response_type=response_type,
             state=state, **kwargs)
