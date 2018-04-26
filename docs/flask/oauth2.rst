@@ -153,14 +153,7 @@ It works well without configuration. However, it can be configured with these
 settings:
 
 ================================== ===============================================
-OAUTH2_EXPIRES_AUTHORIZATION_CODE  Token ``expires_in`` by ``authorization_code``
-                                   grant, default is 864000
-OAUTH2_EXPIRES_IMPLICIT            Token ``expires_in`` by ``implicit``
-                                   grant, default is 3600
-OAUTH2_EXPIRES_PASSWORD            Token ``expires_in`` by ``password``
-                                   grant, default is 864000
-OAUTH2_EXPIRES_CLIENT_CREDENTIALS  Token ``expires_in`` by ``client_credentials``
-                                   grant, default is 864000
+OAUTH2_EXPIRES_IN                  A dict to define ``expires_in`` for each grant
 OAUTH2_ACCESS_TOKEN_GENERATOR      A string of module path for importing a
                                    function to generate ``access_token``
 OAUTH2_REFRESH_TOKEN_GENERATOR     A string of module path for importing a
@@ -168,6 +161,17 @@ OAUTH2_REFRESH_TOKEN_GENERATOR     A string of module path for importing a
                                    also be ``True/False``
 OAUTH2_ERROR_URIS                  A list of tuple for (``error``, ``error_uri``)
 ================================== ===============================================
+
+.. hint::
+
+    Here is an example of ``OAUTH2_EXPIRES_IN``::
+
+        OAUTH2_EXPIRES_IN = {
+            'authorization_code': 864000,
+            'implicit': 3600,
+            'password': 864000,
+            'client_credentials': 864000
+        }
 
 Now define an endpoint for authorization. This endpoint is used by
 ``authorization_code`` and ``implicit`` grants::

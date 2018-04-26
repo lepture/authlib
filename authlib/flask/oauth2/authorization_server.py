@@ -78,9 +78,6 @@ class AuthorizationServer(_AuthorizationServer):
             self.query_client = query_client
         if save_token is not None:
             self.save_token = save_token
-        for k in GRANT_TYPES_EXPIRES:
-            conf_key = 'OAUTH2_EXPIRES_{}'.format(k.upper())
-            app.config.setdefault(conf_key, GRANT_TYPES_EXPIRES[k])
 
         # register error uri
         error_uris = app.config.get('OAUTH2_ERROR_URIS')
@@ -126,12 +123,24 @@ class AuthorizationServer(_AuthorizationServer):
         Developers can re-implement this method with a subclass if other means
         required. The default expires_in value is defined by ``grant_type``,
         different ``grant_type`` has different value. It can be configured
-        with: ``OAUTH2_EXPIRES_{{grant_type|upper}}``.
+        with::
+
+            OAUTH2_EXPIRES_IN = {
+                'authorization_code': 864000,
+                'urn:ietf:params:oauth:grant-type:jwt-bearer': 3600,
+            }
         """
+        expires_conf = {}
+        expires_conf.update(GRANT_TYPES_EXPIRES)
+        expires_conf.update(app.config.get('OAUTH2_EXPIRES_IN', {}))
 
         def expires_in(client, grant_type):
             conf_key = 'OAUTH2_EXPIRES_{}'.format(grant_type.upper())
-            return app.config.get(conf_key, BearerToken.DEFAULT_EXPIRES_IN)
+            expires = app.config.get(conf_key)
+            if expires:
+                deprecate('Deprecate "{}".'.format(conf_key), '0.10', 'vpCH5', 'as')
+                return expires
+            return expires_conf.get(grant_type, BearerToken.DEFAULT_EXPIRES_IN)
 
         return expires_in
 
