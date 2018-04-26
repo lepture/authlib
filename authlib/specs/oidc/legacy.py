@@ -1,8 +1,6 @@
-from authlib.specs.rfc7519 import JWT
+from authlib.specs.rfc7519 import jwt
 from authlib.deprecate import deprecate
 from .claims import get_claim_cls_by_response_type
-
-jwt = JWT()
 
 
 def parse_id_token(id_token, key):

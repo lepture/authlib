@@ -75,6 +75,14 @@ class OAuth2SessionTest(TestCase):
         self.assertIn(self.client_id, auth_url)
         self.assertIn('response_type=code', auth_url)
 
+        sess = OAuth2Session(client_id=self.client_id, prompt='none')
+        auth_url, state = sess.authorization_url(
+            url, state='foo', redirect_uri='https://i.b', scope='profile')
+        self.assertEqual(state, 'foo')
+        self.assertIn('i.b', auth_url)
+        self.assertIn('profile', auth_url)
+        self.assertIn('prompt=none', auth_url)
+
     def test_token_from_fragment(self):
         sess = OAuth2Session(self.client_id)
         response_url = 'https://i.b/callback#' + url_encode(self.token.items())
@@ -317,3 +325,17 @@ class OAuth2SessionTest(TestCase):
             token_type_hint='access_token'
         )
         self.assertEqual(resp.json(), answer)
+
+        def revoke_token_request(url, headers, data):
+            self.assertEqual(url, 'https://i.b/token')
+            return url, headers, data
+
+        sess.register_compliance_hook(
+            'revoke_token_request',
+            revoke_token_request,
+        )
+        resp = sess.revoke_token(
+            'https://i.b/token', 'hi',
+            body='',
+            token_type_hint='access_token'
+        )

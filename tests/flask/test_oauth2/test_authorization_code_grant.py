@@ -1,7 +1,7 @@
 from flask import json
 from authlib.common.urls import urlparse, url_decode
 from authlib.flask.oauth2 import register_cache_authorization_code
-from .oauth2_server import db, User, Client
+from .oauth2_server import db, User, Client, AuthorizationCode
 from .oauth2_server import TestCase
 from .oauth2_server import AuthorizationCodeGrant, OpenIDCodeGrant
 from .oauth2_server import create_authorization_server
@@ -105,6 +105,20 @@ class AuthorizationCodeTest(TestCase):
         rv = self.client.post('/oauth/token', data={
             'grant_type': 'authorization_code',
             'code': 'invalid',
+        }, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['error'], 'invalid_request')
+
+        code = AuthorizationCode(
+            code='no-user',
+            client_id='code-client',
+            user_id=0
+        )
+        db.session.add(code)
+        db.session.commit()
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': 'authorization_code',
+            'code': 'no-user',
         }, headers=headers)
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'invalid_request')

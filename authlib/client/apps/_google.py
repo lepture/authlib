@@ -1,4 +1,4 @@
-from authlib.specs.rfc7519 import JWT
+from authlib.specs.rfc7519 import jwt
 from authlib.specs.oidc import CodeIDToken, UserInfo
 from .base import AppFactory, patch_method
 
@@ -26,7 +26,6 @@ def parse_openid(client, response, nonce=None):
         client_id=client.client_id,
         access_token=response['access_token']
     )
-    jwt = JWT()
     claims = jwt.decode(
         id_token, key=jwk_set,
         claims_cls=CodeIDToken,

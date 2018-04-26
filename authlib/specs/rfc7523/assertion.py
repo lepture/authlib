@@ -1,5 +1,5 @@
 import time
-from ..rfc7519 import JWT
+from ..rfc7519 import jwt
 
 
 def sign_jwt_bearer_assertion(
@@ -32,5 +32,4 @@ def sign_jwt_bearer_assertion(
     if claims:
         payload.update(claims)
 
-    jwt = JWT()
     return jwt.encode(header, payload, key)

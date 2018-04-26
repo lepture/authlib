@@ -9,13 +9,14 @@
     https://tools.ietf.org/html/rfc7519
 """
 
-from .jwt import JWT
+from .jwt import JWT, jwk, jwt
 from .claims import JWTClaims
 from .errors import *
 
 
 __all__ = [
-    'JWT', 'JWTClaims', 'JWTError',
+    'JWT', 'jwk', 'jwt', 'JWTClaims', 'JWTError',
     'InvalidClaimError', 'MissingClaimError',
     'ExpiredTokenError', 'InvalidTokenError',
+    'InsecureClaimError',
 ]

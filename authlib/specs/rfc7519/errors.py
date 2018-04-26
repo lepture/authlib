@@ -31,7 +31,7 @@ class InsecureClaimError(JWTError):
 
     def __init__(self, claim):
         description = 'Insecure claim "{}"'.format(claim)
-        super(InvalidClaimError, self).__init__(description)
+        super(InsecureClaimError, self).__init__(description)
 
 
 class ExpiredTokenError(JWTError):

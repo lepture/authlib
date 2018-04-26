@@ -24,6 +24,7 @@ Useful Links
 2. Stay tuned with `Authlib Newsletter <https://tinyletter.com/authlib>`_.
 3. Read `Authlib Documentation <https://docs.authlib.org/>`_.
 4. Play with `Authlib Playground <https://play.authlib.org/>`_.
+5. Browser `Authlib Source Code <https://github.com/lepture/authlib>`_.
 
 Specifications
 --------------

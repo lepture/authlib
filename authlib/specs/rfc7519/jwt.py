@@ -101,6 +101,7 @@ class JWT(JWS):
 
 
 jwk = JWK(algorithms=JWK_ALGORITHMS)
+jwt = JWT()
 
 
 def _load_jwk(key, header):
