@@ -5,7 +5,8 @@ JSON Web Token
 
 .. meta::
     :description: API references on RFC7519 JSON Web Token (JWT) Python
-        implementation, by Authlib.
+        implementation, guide on JWT encoding and decoding, guide on JWT
+        payload claims validation.
 
 This section contains the generic Python implementation of RFC7519_.
 
@@ -37,6 +38,10 @@ via :ref:`specs/rfc7518`, it can also load private/public keys of
 
 .. note::
     JWE is not ready yet, current JWT is based on JWS compact serialization.
+
+JWT Payload Claims Validation
+-----------------------------
+
 
 API Reference
 -------------
