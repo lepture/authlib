@@ -15,6 +15,7 @@ log = logging.getLogger(__name__)
 class JWTBearerGrant(BaseGrant):
     SPECIFICATION = 'rfc7523'
     GRANT_TYPE = JWT_BEARER_GRANT_TYPE
+    TOKEN_ENDPOINT = True
 
     @staticmethod
     def sign(key, issuer, audience, subject=None,
@@ -51,7 +52,7 @@ class JWTBearerGrant(BaseGrant):
         try:
             claims.validate()
         except JWTError as e:
-            log.debug('Assertion Error: {!r}'.format(e.message))
+            log.debug('Assertion Error: {!r}'.format(e))
             raise InvalidGrantError(error_description=e.error_description)
         return claims
 

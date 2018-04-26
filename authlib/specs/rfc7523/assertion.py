@@ -3,10 +3,11 @@ from ..rfc7519 import jwt
 
 
 def sign_jwt_bearer_assertion(
-        key, issuer, audience, subject=None,
-        issued_at=None, expires_at=None, claims=None, **kwargs):
+        key, issuer, audience, subject=None, issued_at=None,
+        expires_at=None, claims=None, header=None, **kwargs):
 
-    header = kwargs.pop('header', {})
+    if header is None:
+        header = {}
     alg = kwargs.pop('alg', None)
     if alg:
         header['alg'] = alg
