@@ -1,7 +1,11 @@
 import logging
 from ..rfc6749.grants import BaseGrant
-from ..rfc6749 import UnauthorizedClientError, InvalidRequestError
-from ..rfc7519 import JWT
+from ..rfc6749 import (
+    UnauthorizedClientError,
+    InvalidRequestError,
+    InvalidGrantError
+)
+from ..rfc7519 import jwt, JWTError
 from .consts import JWT_BEARER_GRANT_TYPE
 from .assertion import sign_jwt_bearer_assertion
 
@@ -19,20 +23,74 @@ class JWTBearerGrant(BaseGrant):
             key, issuer, audience, subject, issued_at,
             expires_at, claims, **kwargs)
 
-    def validate_assertion(self):
+    def create_claims_options(self):
+        """Create a claims_options for verify JWT payload claims. Developers
+        MAY overwrite this method to create a more strict options.
+        """
+        # https://tools.ietf.org/html/rfc7523#section-3
+        return {
+            'iss': {'essential': True},
+            'sub': {'essential': True},
+            'aud': {'essential': True},
+            'exp': {'essential': True},
+        }
+
+    def process_assertion_claims(self, assertion):
+        """Extract JWT payload claims from request "assertion", per
+        `Section 3.1`_.
+
+        :param assertion: assertion string value in the request
+        :return: JWTClaims
+        :raise: InvalidGrantError
+
+        .. _`Section 3.1`: https://tools.ietf.org/html/rfc7523#section-3.1
+        """
+        claims = jwt.decode(
+            assertion, self.resolve_public_key,
+            claims_options=self.create_claims_options())
+        try:
+            claims.validate()
+        except JWTError as e:
+            log.debug('Assertion Error: {!r}'.format(e.message))
+            raise InvalidGrantError(error_description=e.error_description)
+        return claims
+
+    def validate_token_request(self):
+        """The client makes a request to the token endpoint by sending the
+        following parameters using the "application/x-www-form-urlencoded"
+        format per `Section 2.1`_:
+
+        grant_type
+             REQUIRED.  Value MUST be set to
+             "urn:ietf:params:oauth:grant-type:jwt-bearer".
+
+        assertion
+             REQUIRED.  Value MUST contain a single JWT.
+
+        scope
+            OPTIONAL.
+
+        The following example demonstrates an access token request with a JWT
+        as an authorization grant:
+
+        .. code-block:: http
+
+            POST /token.oauth2 HTTP/1.1
+            Host: as.example.com
+            Content-Type: application/x-www-form-urlencoded
+
+            grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer
+            &assertion=eyJhbGciOiJFUzI1NiIsImtpZCI6IjE2In0.
+            eyJpc3Mi[...omitted for brevity...].
+            J9l-ZhwP[...omitted for brevity...]
+
+        .. _`Section 2.1`: https://tools.ietf.org/html/rfc7523#section-2.1
+        """
         assertion = self.request.data.get('assertion')
         if not assertion:
             raise InvalidRequestError('Missing "assertion" in request')
 
-        # TODO: make algorithms configurable
-        jwt = JWT()
-        # TODO: claims options
-        claims = jwt.decode(assertion, self.resolve_public_key)
-        claims.validate()
-        return claims
-
-    def validate_token_request(self):
-        claims = self.validate_assertion()
+        claims = self.process_assertion_claims(assertion)
         client = self.authenticate_client(claims)
         log.debug('Validate token request of {!r}'.format(client))
 
@@ -44,6 +102,9 @@ class JWTBearerGrant(BaseGrant):
         self.request.client = client
 
     def create_token_response(self):
+        """If valid and authorized, the authorization server issues an access
+        token.
+        """
         client = self.request.client
         token = self.generate_token(
             client, self.GRANT_TYPE,
@@ -56,10 +117,39 @@ class JWTBearerGrant(BaseGrant):
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_user(self, claims):
+        """Authenticate user with the given assertion claims. Developers MUST
+        implement it in subclass, e.g.::
+
+            def authenticate_user(self, claims):
+                return User.get_by_sub(claims['sub'])
+
+        :param claims: assertion payload claims
+        :return: User instance
+        """
         raise NotImplementedError()
 
     def authenticate_client(self, claims):
+        """Authenticate client with the given assertion claims. Developers MUST
+        implement it in subclass, e.g.::
+
+            def authenticate_client(self, claims):
+                return Client.get_by_iss(claims['iss'])
+
+        :param claims: assertion payload claims
+        :return: Client instance
+        """
         raise NotImplementedError()
 
     def resolve_public_key(self, headers, payload):
+        """Find public key to verify assertion signature. Developers MUST
+        implement it in subclass, e.g.::
+
+            def resolve_public_key(self, headers, payload):
+                jwk_set = get_jwk_set_by_iss(payload['iss'])
+                return filter_jwk_set(jwk_set, headers['kid'])
+
+        :param headers: JWT headers dict
+        :param payload: JWT payload dict
+        :return: A public key
+        """
         raise NotImplementedError()

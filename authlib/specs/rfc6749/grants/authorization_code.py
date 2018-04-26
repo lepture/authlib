@@ -189,8 +189,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
     def validate_token_request(self):
         """The client makes a request to the token endpoint by sending the
         following parameters using the "application/x-www-form-urlencoded"
-        format per Appendix B with a character encoding of UTF-8 in the HTTP
-        request entity-body, per `Section 4.1.3`_:
+        format per `Section 4.1.3`_:
 
         grant_type
              REQUIRED.  Value MUST be set to "authorization_code".
@@ -358,7 +357,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
 
     def delete_authorization_code(self, authorization_code):
         """Delete authorization code from database or cache. Developers should
-        implement it in subclass::
+        implement it in subclass, e.g.::
 
             def delete_authorization_code(self, authorization_code):
                 authorization_code.delete()
@@ -369,7 +368,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
 
     def authenticate_user(self, authorization_code):
         """Authenticate the user related to this authorization_code. Developers
-        should implement this method in subclass::
+        should implement this method in subclass, e.g.::
 
             def authenticate_user(self, authorization_code):
                 return User.query.get(authorization_code.user_id)

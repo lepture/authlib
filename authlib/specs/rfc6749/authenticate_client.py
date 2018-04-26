@@ -21,10 +21,10 @@ from .util import extract_basic_authorization
 
 log = logging.getLogger(__name__)
 
-__all__ = ['register_authenticate_method', 'authenticate_client']
+__all__ = ['authenticate_client']
 
 
-def authenticate_client_via_client_secret_basic(query_client, request):
+def authenticate_client_secret_basic(query_client, request):
     """Authenticate client by ``client_secret_basic`` method. The client
     uses HTTP Basic for authentication.
     """
@@ -44,7 +44,7 @@ def authenticate_client_via_client_secret_basic(query_client, request):
     )
 
 
-def authenticate_client_via_client_secret_post(query_client, request):
+def authenticate_client_secret_post(query_client, request):
     """Authenticate client by ``client_secret_post`` method. The client
     uses POST parameters for authentication.
     """
@@ -66,7 +66,7 @@ def authenticate_client_via_client_secret_post(query_client, request):
     )
 
 
-def authenticate_client_via_none(query_client, request):
+def authenticate_none(query_client, request):
     """Authenticate public client by ``none`` method. The client
     does not have a client secret.
     """
@@ -87,25 +87,23 @@ def authenticate_client_via_none(query_client, request):
 
 
 AUTHENTICATE_METHODS = {
-    'none': authenticate_client_via_none,
-    'client_secret_basic': authenticate_client_via_client_secret_basic,
-    'client_secret_post': authenticate_client_via_client_secret_post,
+    'none': authenticate_none,
+    'client_secret_basic': authenticate_client_secret_basic,
+    'client_secret_post': authenticate_client_secret_post,
 }
 
 
-def register_authenticate_method(name, func):
-    """Extend authenticate client methods."""
-    if name not in AUTHENTICATE_METHODS:
-        AUTHENTICATE_METHODS[name] = func
-
-
-def authenticate_client(query_client, request, methods):
+def authenticate_client(query_client, request, methods, available=None):
     """Authenticate client with the given methods."""
+    if available is None:
+        available = AUTHENTICATE_METHODS
+
     for method in methods:
-        func = AUTHENTICATE_METHODS[method]
+        func = available[method]
         client = func(query_client, request)
         if client:
             return client
+
     if 'client_secret_basic' in methods:
         raise InvalidClientError(state=request.state, status_code=401)
     raise InvalidClientError(state=request.state)
