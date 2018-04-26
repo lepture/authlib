@@ -20,6 +20,8 @@ class JWTTest(unittest.TestCase):
         )
 
     def test_encode_sensitive_data(self):
+        # check=False won't raise error
+        jwt.encode({'alg': 'HS256'}, {'password': ''}, 'k', check=False)
         self.assertRaises(
             errors.InsecureClaimError,
             jwt.encode, {'alg': 'HS256'},  {'password': ''}, 'k'

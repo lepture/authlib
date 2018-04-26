@@ -25,7 +25,11 @@ from authlib.specs.rfc6749.grants import (
     ResourceOwnerPasswordCredentialsGrant as _PasswordGrant,
     RefreshTokenGrant as _RefreshTokenGrant,
 )
-from authlib.specs.oidc import grants
+from authlib.specs.rfc7523 import JWTBearerGrant as _JWTBearerGrant
+from authlib.specs.oidc.grants import (
+    OpenIDCodeGrant as _OpenIDCodeGrant,
+    OpenIDHybridGrant as _OpenIDHybridGrant,
+)
 from authlib.specs.oidc import UserInfo
 
 os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
@@ -111,11 +115,11 @@ class AuthorizationCodeGrant(CodeGrantMixin, _AuthorizationCodeGrant):
     pass
 
 
-class OpenIDCodeGrant(CodeGrantMixin, grants.OpenIDCodeGrant):
+class OpenIDCodeGrant(CodeGrantMixin, _OpenIDCodeGrant):
     pass
 
 
-class OpenIDHybridGrant(CodeGrantMixin, grants.OpenIDHybridGrant):
+class OpenIDHybridGrant(CodeGrantMixin, _OpenIDHybridGrant):
     pass
 
 
@@ -134,6 +138,19 @@ class RefreshTokenGrant(_RefreshTokenGrant):
 
     def authenticate_user(self, credential):
         return User.query.get(credential.user_id)
+
+
+class JWTBearerGrant(_JWTBearerGrant):
+    def authenticate_user(self, claims):
+        return None
+
+    def authenticate_client(self, claims):
+        iss = claims['iss']
+        return Client.query.filter_by(client_id=iss).first()
+
+    def resolve_public_key(self, headers, payload):
+        keys = {'1': 'foo', '2': 'bar'}
+        return keys[headers['kid']]
 
 
 def create_authorization_server(app):
