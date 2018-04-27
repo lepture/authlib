@@ -143,6 +143,11 @@ class OAuth1SessionTest(TestCase):
         self.assertEqual(sess.token['oauth_token_secret'], 'b')
         self.assertEqual(sess.token['oauth_verifier'], 'c')
 
+        sess.token = None
+        self.assertIsNone(sess.token['oauth_token'])
+        self.assertIsNone(sess.token['oauth_token_secret'])
+        self.assertIsNone(sess.token['oauth_verifier'])
+
     def test_authorization_url(self):
         auth = OAuth1Session('foo')
         url = 'https://example.comm/authorize'

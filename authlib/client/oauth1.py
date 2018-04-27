@@ -249,7 +249,7 @@ class OAuth1Auth(AuthBase, Client):
         # this point.
 
         content_type = to_native(req.headers.get('Content-Type', ''))
-        if self.signature_method == SIGNATURE_TYPE_BODY:
+        if self.signature_type == SIGNATURE_TYPE_BODY:
             content_type = CONTENT_TYPE_FORM_URLENCODED
         elif not content_type and extract_params(req.body):
             content_type = CONTENT_TYPE_FORM_URLENCODED

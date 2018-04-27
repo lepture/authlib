@@ -263,7 +263,7 @@ class AuthorizationServer(_AuthorizationServer):
             AuthorizationServer, self).create_endpoint_response(name, req)
         return Response(json.dumps(body), status=status, headers=headers)
 
-    def create_revocation_response(self):
+    def create_revocation_response(self):  # pragma: no cover
         deprecate(
             'Use `create_endpoint_response("revocation")` instead',
             '0.8', 'vAAUK', 're'
