@@ -19,3 +19,14 @@ CACHES = {
         'LOCATION': 'unique-snowflake',
     }
 }
+
+AUTHLIB_OAUTH_CLIENTS = {
+    'dev_overwrite': {
+        'client_id': 'dev-client-id',
+        'client_secret': 'dev-client-secret',
+        'access_token_params': {
+            'foo': 'foo-1',
+            'bar': 'bar-2'
+        }
+    }
+}

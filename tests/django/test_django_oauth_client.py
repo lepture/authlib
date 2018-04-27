@@ -50,6 +50,25 @@ class DjangoOAuthTest(TestCase):
         self.assertEqual(oauth.dev.name, 'dev')
         self.assertEqual(oauth.dev.client_id, 'dev')
 
+    def test_register_with_overwrite(self):
+        oauth = OAuth()
+        oauth.register(
+            'dev_overwrite',
+            overwrite=True,
+            client_id='dev',
+            client_secret='dev',
+            request_token_url='https://i.b/reqeust-token',
+            base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+            access_token_params={
+                'foo': 'foo'
+            },
+            authorize_url='https://i.b/authorize'
+        )
+        self.assertEqual(oauth.dev_overwrite.client_id, 'dev-client-id')
+        self.assertEqual(
+            oauth.dev_overwrite.access_token_params['foo'], 'foo-1')
+
     @override_settings(AUTHLIB_OAUTH_CLIENTS={'dev': dev_client})
     def test_register_from_settings(self):
         oauth = OAuth()

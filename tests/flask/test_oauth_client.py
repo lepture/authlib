@@ -3,7 +3,6 @@ from unittest import TestCase
 from flask import Flask, session
 from authlib.client import OAuthException
 from authlib.flask.client import OAuth
-from authlib.client.apps import register_apps, get_oauth_app, get_app
 from .cache import SimpleCache
 from ..client_base import (
     mock_send_value,
@@ -35,6 +34,23 @@ class FlaskOAuthTest(TestCase):
         oauth.register('dev')
         self.assertEqual(oauth.dev.client_id, 'dev')
 
+    def test_register_with_overwrite(self):
+        app = Flask(__name__)
+        app.config.update({
+            'DEV_CLIENT_ID': 'dev-1',
+            'DEV_CLIENT_SECRET': 'dev',
+            'DEV_ACCESS_TOKEN_PARAMS': {'foo': 'foo-1'}
+        })
+        oauth = OAuth(app)
+        oauth.register(
+            'dev', overwrite=True,
+            client_id='dev',
+            access_token_params={'foo': 'foo'}
+        )
+        self.assertEqual(oauth.dev.client_id, 'dev-1')
+        self.assertEqual(oauth.dev.client_secret, 'dev')
+        self.assertEqual(oauth.dev.access_token_params['foo'], 'foo-1')
+
     def test_init_app_later(self):
         app = Flask(__name__)
         app.config.update({
@@ -62,22 +78,6 @@ class FlaskOAuthTest(TestCase):
         )
         self.assertEqual(oauth.dev.name, 'dev')
         self.assertEqual(oauth.dev.client_id, 'dev')
-
-    def test_register_built_in_app(self):
-        app = Flask(__name__)
-        app.config.update({
-            'TWITTER_CLIENT_ID': 'twitter_key',
-            'TWITTER_CLIENT_SECRET': 'twitter_secret',
-        })
-        oauth = OAuth(app)
-        register_apps(oauth, ['twitter'])
-        self.assertEqual(oauth.twitter.name, 'twitter')
-
-        twitter = get_oauth_app(oauth, 'twitter')
-        self.assertEqual(twitter, get_app('twitter'))
-        self.assertEqual(twitter.name, 'twitter')
-        self.assertEqual(twitter.client.name, 'twitter')
-        self.assertTrue(callable(twitter.profile))
 
     def test_oauth1_authorize(self):
         app = Flask(__name__)
