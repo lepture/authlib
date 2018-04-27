@@ -12,7 +12,7 @@ them to frameworks registry. If you haven't read :ref:`client_frameworks`,
 head over back to that section.
 
 .. deprecated:: v0.7
-    Please use loginpass_ instead.
+    Please use loginpass_ instead. This module will be removed in v0.9.
 
 .. _loginpass: https://github.com/authlib/loginpass
 

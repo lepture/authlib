@@ -8,7 +8,8 @@ Flask OpenID Connect 1.0
         And understand how OpenID Connect works.
 
 OpenID Connect 1.0 is supported from version 0.6. The integrations are built
-with :ref:`flask_oauth2_custom_grant_types`.
+with :ref:`flask_oauth2_custom_grant_types`. Since OpenID Connect is built on
+OAuth 2.0 frameworks, you need to read :ref:`flask_oauth2_server` at first.
 
 .. module:: authlib.specs.rfc6749.grants
 
@@ -151,7 +152,7 @@ OpenID Connect request has a scope of "openid":
 :class:`OpenIDCodeGrant` can handle the standard code flow too. You **MUST NOT**
 use use them together.
 
-.. admonition:: Notice
+.. important::
 
     If the server can handle OpenID requests, use :class:`OpenIDCodeGrant`.
     DON'T ``register_grant(AuthorizationCodeGrant)``.

@@ -9,13 +9,34 @@ Here you can see the full list of changes between each Authlib release.
 Version 0.7
 -----------
 
-**Release date not decided**
+**Release date not decided. Better Beta.**
 
-- Refactor :class:`~authlib.client.OAuth2Session` with :class:`~authlib.client.OAuth2Auth`
-- Add :class:`~authlib.client.AssertionSession` for RFC7521.
-- Implement a full featured :class:`~authlib.rfc7515.JWS`.
-- Bug fix and documentation fix via :gh:`issue#42`, :gh:`issue#43`.
+Authlib has changed its license from LGPL to AGPL. This is not a hug release
+like v0.6, but it still contains some deprecate changes, the good news is
+they are compatible, they won't break your project. Authlib can't go further
+without these deprecate changes.
+
+As always, Authlib is adding specification implementations. Here is what's in
+version 0.7:
+
+- RFC7515_: Refactored :class:`~authlib.rfc7515.JWS`, make it a full implementation.
+- RFC7521_: Add :class:`~authlib.client.AssertionSession`, only works with RFC7523_.
+- RFC7523_: Add :class:`~authlib.specs.rfc7523.JWTBearerGrant`, read the guide in
+  :ref:`specs/rfc7523`.
+
+Besides that, there are more changes:
+
 - Add ``overwrite`` parameter for framework integrations clients.
+- Add ``response_mode=query`` for OpenID Connect implicit and hybrid flow.
+- Bug fix and documentation fix via :gh:`issue#42`, :gh:`issue#43`.
+- Dropping ``authlib.client.apps``. Use Loginpass_ instead.
+
+**Deprecate Changes**: find how to solve the deprecate issues via https://git.io/vpCH5
+
+.. _RFC7521: https://tools.ietf.org/html/rfc7521
+.. _RFC7523: https://tools.ietf.org/html/rfc7523
+.. _Loginpass: https://github.com/authlib/loginpass
+
 
 Version 0.6: Matoi
 ------------------

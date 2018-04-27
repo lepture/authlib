@@ -334,12 +334,14 @@ class JWS(object):
         return header, payload, verified
 
     def decode(self, s, key):  # pragma: no cover
-        deprecate('Method "decode" is deprecated. Use "deserialize" instead.', '0.9')
+        deprecate('Method "decode" is deprecated. Use "deserialize" instead.',
+                  '0.9', 'vpCH5', 'jws')
         rv = self.deserialize_compact(s, key)
         return rv['header'], rv['payload']
 
     def encode(self, header, payload, key):  # pragma: no cover
-        deprecate('Method "encode" is deprecated. Use "serialize" instead.', '0.9')
+        deprecate('Method "encode" is deprecated. Use "serialize" instead.',
+                  '0.9', 'vpCH5', 'jws')
         return self.serialize_compact(header, payload, key)
 
 
