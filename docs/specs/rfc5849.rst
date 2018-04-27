@@ -3,7 +3,15 @@
 The OAuth 1.0 Protocol
 ======================
 
-This section contains the generic implementation of RFC5849_.
+.. meta::
+    :description: API references of RFC5849 in Python implementation.
+        Learn how to create an OAuth 1.0 provider in Python.
+
+This section contains the generic implementation of RFC5849_. Learn how to
+create an OAuth 1.0 provider in these frameworks:
+
+1. Flask: :ref:`flask_oauth1_server`.
+2. Django: not ready yet.
 
 .. _RFC5849: https://tools.ietf.org/html/rfc5849
 

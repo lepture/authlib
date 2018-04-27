@@ -3,10 +3,12 @@
 OpenID Connect 1.0
 ==================
 
-This part of the documentation covers the specification of OpenID Connect.
+.. meta::
+    :description: General implementation of OpenID Connect 1.0 in Python.
+        Learn how to create a OpenID Connect provider in Python.
 
-1. http://openid.net/specs/openid-connect-core-1_0.html
-
+This part of the documentation covers the specification of OpenID Connect. Learn
+how to use it in :ref:`flask_odic_server`.
 
 OpenID Grants
 -------------

@@ -4,9 +4,14 @@ The OAuth 2.0 Authorization Framework
 =====================================
 
 .. meta::
-    :description: API references on RFC6749 Authlib implementation.
+    :description: API references of RFC6749 in Python implementation.
+        Learn how to create an OAuth 2.0 provider in Python.
 
-This section contains the generic implementation of RFC6749_.
+This section contains the generic implementation of RFC6749_. Learn how to
+create an OAuth 2.0 provider in these frameworks:
+
+1. Flask: :ref:`flask_oauth2_server`.
+2. Django: not ready yet.
 
 .. _RFC6749: https://tools.ietf.org/html/rfc6749
 

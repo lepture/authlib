@@ -4,16 +4,27 @@ The OAuth 2.0 Authorization Framework: Bearer Token Usage
 =========================================================
 
 .. meta::
-   :description: API references on RFC6750 Authlib implementation.
+    :description: API references of RFC6750 in Python implementation.
+        Guide on how to use Bearer Token and its validator.
 
 This section contains the generic implementation of RFC6750_.
 
 .. _RFC6750: https://tools.ietf.org/html/rfc6750
 
-Bearer Token
-------------
+Guide on Bearer Token
+---------------------
+
+Bearer token is used in OAuth 2.0 framework to protect resources. You need
+to implement the missing methods of :class:`BearerTokenValidator` before
+using it. Learn how to use it in :ref:`flask_oauth2_resource_protector`.
+
+API Reference
+-------------
 
 .. module:: authlib.specs.rfc6750
 
+.. autoclass:: BearerTokenValidator
+    :members:
+
 .. autoclass:: BearerToken
-   :members:
+    :members:
