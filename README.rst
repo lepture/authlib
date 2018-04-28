@@ -4,10 +4,10 @@ Authlib
 Authlib is an ambitious authentication library for OAuth 1, OAuth 2, OpenID
 clients, servers and more.
 
-.. image:: https://travis-ci.org/lepture/authlib.svg?branch=master
+.. image:: https://travis-ci.org/lepture/authlib.svg?branch=v0.7
     :target: https://travis-ci.org/lepture/authlib
     :alt: Build Status
-.. image:: https://codecov.io/gh/lepture/authlib/branch/master/graph/badge.svg
+.. image:: https://codecov.io/gh/lepture/authlib/branch/v0.7/graph/badge.svg
     :target: https://codecov.io/gh/lepture/authlib
     :alt: Coverage
 .. image:: https://img.shields.io/badge/subscribe-newsletter-green.svg

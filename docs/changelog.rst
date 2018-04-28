@@ -6,12 +6,12 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
-Version 0.7
------------
+Version 0.7: Honami
+-------------------
 
-**Release date not decided. Better Beta.**
+**Apr 28, 2018. Better Beta.**
 
-Authlib has changed its license from LGPL to AGPL. This is not a hug release
+Authlib has changed its license from LGPL to AGPL. This is not a huge release
 like v0.6, but it still contains some deprecate changes, the good news is
 they are compatible, they won't break your project. Authlib can't go further
 without these deprecate changes.
