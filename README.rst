@@ -4,10 +4,10 @@ Authlib
 Authlib is an ambitious authentication library for OAuth 1, OAuth 2, OpenID
 clients, servers and more.
 
-.. image:: https://travis-ci.org/lepture/authlib.svg?branch=v0.7
+.. image:: https://travis-ci.org/lepture/authlib.svg?branch=master
     :target: https://travis-ci.org/lepture/authlib
     :alt: Build Status
-.. image:: https://codecov.io/gh/lepture/authlib/branch/v0.7/graph/badge.svg
+.. image:: https://codecov.io/gh/lepture/authlib/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/lepture/authlib
     :alt: Coverage
 .. image:: https://img.shields.io/badge/subscribe-newsletter-green.svg
@@ -37,6 +37,7 @@ Specifications
 - RFC7517: JSON Web Key
 - RFC7518: JSON Web Algorithms
 - RFC7519: JSON Web Token
+- RFC7523: JSON Web Token (JWT) Profile for OAuth 2.0 Client Authentication and Authorization Grants
 - RFC7662: OAuth 2.0 Token Introspection
 - OpenID Connect 1.0
 
@@ -45,6 +46,7 @@ Implementations
 
 - Requests OAuth 1 Session
 - Requests OAuth 2 Session
+- Requests Assertion Session
 - Flask OAuth 1/2 Client
 - Django OAuth 1/2 Client
 - Flask OAuth 1.0 Server
