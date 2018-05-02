@@ -17,7 +17,7 @@ setup(
     author='Hsiaoming Yang',
     author_email='me@lepture.com',
     url=homepage,
-    packages=find_packages(exclude=['tests']),
+    packages=find_packages(exclude=['tests', 'tests.*']),
     description=(
         'An ambitious authentication library for OAuth 1, OAuth 2, '
         'OpenID clients and servers.'
