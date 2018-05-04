@@ -1,7 +1,7 @@
 import mock
 from unittest import TestCase
 from flask import Flask, session
-from authlib.client import OAuthException
+from authlib.client import OAuthError
 from authlib.flask.client import OAuth
 from .cache import SimpleCache
 from ..client_base import (
@@ -146,7 +146,7 @@ class FlaskOAuthTest(TestCase):
             self.assertIsNotNone(state)
 
         with app.test_request_context(path='/?code=a&state={}'.format(state)):
-            self.assertRaises(OAuthException, client.authorize_access_token)
+            self.assertRaises(OAuthError, client.authorize_access_token)
             # session is cleared in tests
             session['_dev_state_'] = state
 

@@ -53,7 +53,7 @@ class JWTBearerGrant(BaseGrant):
             claims.validate()
         except JWTError as e:
             log.debug('Assertion Error: {!r}'.format(e))
-            raise InvalidGrantError(description=e.error_description)
+            raise InvalidGrantError(description=e.description)
         return claims
 
     def validate_token_request(self):

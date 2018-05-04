@@ -6,7 +6,7 @@ from unittest import TestCase
 
 from authlib.common.urls import url_encode
 from authlib.client import OAuth2Session
-from authlib.client.errors import OAuthException
+from authlib.client.errors import OAuthError
 from authlib.specs.rfc6749 import (
     MismatchingStateException,
 )
@@ -113,7 +113,7 @@ class OAuth2SessionTest(TestCase):
         error = {'error': 'invalid_request'}
         sess = OAuth2Session(client_id=self.client_id, token=self.token)
         sess.send = mock_json_response(error)
-        self.assertRaises(OAuthException, sess.fetch_access_token, url)
+        self.assertRaises(OAuthError, sess.fetch_access_token, url)
 
     def test_fetch_access_token_with_get(self):
         url = 'https://example.com/token'
@@ -270,7 +270,7 @@ class OAuth2SessionTest(TestCase):
         token = dict(access_token='a', token_type='bearer', expires_at=100)
         sess = OAuth2Session('foo', token=token)
         self.assertRaises(
-            OAuthException,
+            OAuthError,
             sess.get,
             'https://i.b/token',
         )

@@ -7,44 +7,13 @@
 
     .. _`Section 10`: https://oauth.net/core/1.0a/#rfc.section.10
 """
+from authlib.errors import AuthlibHTTPError
 from authlib.common.security import is_secure_transport
 
 
-class OAuth1Error(Exception):
-    error = None
-    error_description = ''
-    status_code = 400
-
-    def __init__(self, error_description=None, status_code=None):
-        if error_description is not None:
-            self.error_description = error_description
-
-        message = '%s: %s' % (self.error, self.error_description)
-        super(OAuth1Error, self).__init__(message)
-
-        if status_code is not None:
-            self.status_code = status_code
-
-    def __str__(self):
-        return '{} {}: {}'.format(
-            self.status_code,
-            self.error,
-            self.error_description
-        )
-
-    def __repr__(self):
-        return "<{} '{}: {}'>".format(
-            self.__class__.__name__,
-            self.status_code,
-            self.error
-        )
-
-    def get_body(self):
-        """Get a list of body."""
-        error = [('error', self.error)]
-        if self.error_description:
-            error.append(('error_description', self.error_description))
-        return error
+class OAuth1Error(AuthlibHTTPError):
+    def __init__(self, description=None, uri=None, status_code=None):
+        super(OAuth1Error, self).__init__(None, description, uri, status_code)
 
     def get_headers(self):
         """Get a list of headers."""
@@ -57,7 +26,9 @@ class OAuth1Error(Exception):
 
 class InsecureTransportError(OAuth1Error):
     error = 'insecure_transport'
-    error_description = 'OAuth 2 MUST utilize https.'
+
+    def get_error_description(self):
+        return self.gettext('OAuth 2 MUST utilize https.')
 
     @classmethod
     def check(cls, uri):
@@ -81,8 +52,12 @@ class MissingRequiredParameterError(OAuth1Error):
     error = 'missing_required_parameter'
 
     def __init__(self, key):
-        description = 'missing "{}" in parameters'.format(key)
-        super(MissingRequiredParameterError, self).__init__(description)
+        super(MissingRequiredParameterError, self).__init__()
+        self._key = key
+
+    def get_error_description(self):
+        return self.gettext(
+            'missing "%(key)s" in parameters') % dict(key=self._key)
 
 
 class DuplicatedOAuthProtocolParameterError(OAuth1Error):
@@ -96,8 +71,10 @@ class InvalidClientError(OAuth1Error):
 
 class InvalidTokenError(OAuth1Error):
     error = 'invalid_token'
-    error_description = 'Invalid or expired "oauth_token" in parameters'
     status_code = 401
+
+    def get_error_description(self):
+        return self.gettext('Invalid or expired "oauth_token" in parameters')
 
 
 class InvalidSignatureError(OAuth1Error):
@@ -112,9 +89,10 @@ class InvalidNonceError(OAuth1Error):
 
 class AccessDeniedError(OAuth1Error):
     error = 'access_denied'
-    error_description = (
-        'The resource owner or authorization server denied the request'
-    )
+
+    def get_error_description(self):
+        return self.gettext(
+            'The resource owner or authorization server denied the request')
 
 
 class MethodNotAllowedError(OAuth1Error):

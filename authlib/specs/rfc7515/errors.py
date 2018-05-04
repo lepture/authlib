@@ -1,3 +1,5 @@
+from authlib.errors import AuthlibBaseError
+
 __all__ = [
     'JWSError', 'DecodeError', 'MissingAlgorithmError',
     'UnsupportedAlgorithmError', 'BadSignatureError',
@@ -5,16 +7,7 @@ __all__ = [
 ]
 
 
-class JWSError(ValueError):
-    error = None
-    error_description = ''
-
-    def __init__(self, error_description=None):
-        if error_description is not None:
-            self.error_description = error_description
-
-        message = '%s: %s' % (self.error, self.error_description)
-        super(JWSError, self).__init__(message)
+JWSError = AuthlibBaseError
 
 
 class DecodeError(JWSError):
@@ -37,5 +30,6 @@ class InvalidHeaderParameterName(JWSError):
     error = 'invalid_header_parameter_name'
 
     def __init__(self, name):
-        error_description = 'Invalid Header Parameter Names: {}'.format(name)
-        super(InvalidHeaderParameterName, self).__init__(error_description)
+        description = 'Invalid Header Parameter Names: {}'.format(name)
+        super(InvalidHeaderParameterName, self).__init__(
+            description=description)

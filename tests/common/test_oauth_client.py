@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function
 import unittest
 import mock
 from authlib.common.urls import quote
-from authlib.client import OAuthClient, OAuthException
+from authlib.client import OAuthClient, OAuthError
 from ..client_base import (
     mock_send_value,
     get_bearer_token,
@@ -95,8 +95,8 @@ class OAuthClientTest(unittest.TestCase):
             client = OAuthClient(client_id='foo')
             try:
                 client.get('https://i.b/user')
-            except OAuthException as exc:
-                self.assertEqual('token_missing', exc.type)
+            except OAuthError as exc:
+                self.assertEqual('missing_token', exc.error)
 
     def test_request_with_token(self):
         with mock.patch('requests.sessions.Session.send') as send:

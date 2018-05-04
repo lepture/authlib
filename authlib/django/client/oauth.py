@@ -2,7 +2,7 @@ from django.conf import settings
 from django.dispatch import Signal
 from django.http import HttpResponseRedirect
 from authlib.client.client import OAuthClient
-from authlib.client.errors import OAuthException
+from authlib.client.errors import MismatchingStateError
 
 __all__ = ['token_update', 'OAuth', 'RemoteApp']
 
@@ -138,8 +138,7 @@ class RemoteApp(OAuthClient):
             key = '_{}_state_'.format(self.name)
             state = request.session.pop(key, None)
             if state != request_state:
-                raise OAuthException(
-                    'State not equal in request and response.')
+                raise MismatchingStateError()
             if state:
                 params['state'] = state
 

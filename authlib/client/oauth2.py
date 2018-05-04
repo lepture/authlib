@@ -1,7 +1,12 @@
 import logging
 from requests import Session
 from requests.auth import AuthBase, HTTPBasicAuth
-from .errors import OAuthException
+from .errors import (
+    OAuthError,
+    TokenExpiredError,
+    MissingTokenError,
+    UnsupportedTokenTypeError,
+)
 from ..common.security import generate_token
 from ..common.urls import url_decode, add_params_to_qs
 from ..specs.rfc6749.parameters import (
@@ -289,10 +294,10 @@ class OAuth2Session(Session):
         if self.token and not withhold_token:
             if self.token.is_expired():
                 if not self.refresh_token_url:
-                    raise OAuthException('Token is expired.')
+                    raise TokenExpiredError()
                 refresh_token = self.token.get('refresh_token')
                 if not refresh_token:
-                    raise OAuthException('Token is expired.')
+                    raise TokenExpiredError()
                 self.refresh_token(self.refresh_token_url, refresh_token)
 
             if auth is None:
@@ -326,7 +331,7 @@ class OAuth2Session(Session):
 
         error = params['error']
         description = params.get('error_description', error)
-        raise OAuthException(description, type=error)
+        raise OAuthError(error=error, description=description)
 
     def _prepare_authorization_code_body(self, code, authorization_response,
                                          body, **kwargs):
@@ -412,15 +417,13 @@ class OAuth2Auth(AuthBase):
 
     def __call__(self, req):
         if not self.token:
-            raise OAuthException('There is no "token"', 'missing_token')
+            raise MissingTokenError()
 
         token_type = self.token['token_type']
         sign = self.SIGN_METHODS.get(token_type.lower())
         if not sign:
-            raise OAuthException(
-                'Unsupported token_type "{}"'.format(token_type),
-                'unsupported_token_type'
-            )
+            description = 'Unsupported token_type "{}"'.format(token_type)
+            raise UnsupportedTokenTypeError(description=description)
 
         url, headers, body = sign(
             self.token['access_token'],

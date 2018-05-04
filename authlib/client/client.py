@@ -1,7 +1,10 @@
 import logging
 from .oauth1 import OAuth1Session
 from .oauth2 import OAuth2Session
-from .errors import OAuthException
+from .errors import (
+    MissingRequestTokenError,
+    MissingTokenError,
+)
 from ..common.urls import urlparse
 from ..consts import default_user_agent
 
@@ -116,7 +119,7 @@ class OAuthClient(object):
             if self.request_token_url:
                 session.redirect_uri = redirect_uri
                 if request_token is None:
-                    raise OAuthException('Missing request token')
+                    raise MissingRequestTokenError()
                 # merge request token with verifier
                 token = {}
                 token.update(request_token)
@@ -164,7 +167,7 @@ class OAuthClient(object):
             if kwargs.get('withhold_token'):
                 return session.request(method, url, **kwargs)
             if token is None:
-                raise OAuthException('No token available', type='token_missing')
+                raise MissingTokenError()
             session.token = token
             return session.request(method, url, **kwargs)
 

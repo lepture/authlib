@@ -3,7 +3,11 @@ import json
 from requests import Session
 from requests.auth import AuthBase
 from requests.utils import to_native_string
-from .errors import OAuthException
+from .errors import (
+    MissingTokenError,
+    MissingVerifierError,
+    FetchTokenDeniedError,
+)
 from ..common.encoding import to_native
 from ..common.urls import (
     url_decode,
@@ -114,8 +118,8 @@ class OAuth1Session(Session):
             if 'oauth_verifier' in token:
                 self._client.verifier = token['oauth_verifier']
         else:
-            msg = 'oauth_token is missing: {resp}'.format(resp=token)
-            raise OAuthException(msg, 'token_missing', token)
+            msg = 'oauth_token is missing: {!r}'.format(token)
+            raise MissingTokenError(description=msg)
 
     def authorization_url(self, url, request_token=None, **kwargs):
         """Create an authorization URL by appending request_token and optional
@@ -181,7 +185,7 @@ class OAuth1Session(Session):
         if verifier:
             self._client.verifier = verifier
         if not self._client.verifier:
-            raise OAuthException('No client verifier has been set.')
+            raise MissingVerifierError()
         token = self._fetch_token(url, **kwargs)
         self._client.verifier = None
         return token
@@ -204,7 +208,7 @@ class OAuth1Session(Session):
         if resp.status_code >= 400:
             error = "Token request failed with code {}, response was '{}'."
             message = error.format(resp.status_code, resp.text)
-            raise OAuthException(message, 'token_request_denied', resp)
+            raise FetchTokenDeniedError(description=message)
 
         try:
             text = resp.text.strip()

@@ -1,4 +1,4 @@
-from ..rfc7515 import JWSError
+from authlib.errors import AuthlibBaseError
 
 __all__ = [
     'JWTError', 'InvalidClaimError',
@@ -6,8 +6,7 @@ __all__ = [
     'ExpiredTokenError', 'InvalidTokenError',
 ]
 
-
-JWTError = JWSError
+JWTError = AuthlibBaseError
 
 
 class InvalidClaimError(JWTError):
@@ -15,7 +14,7 @@ class InvalidClaimError(JWTError):
 
     def __init__(self, claim):
         description = 'Invalid claim "{}"'.format(claim)
-        super(InvalidClaimError, self).__init__(description)
+        super(InvalidClaimError, self).__init__(description=description)
 
 
 class MissingClaimError(JWTError):
@@ -23,7 +22,7 @@ class MissingClaimError(JWTError):
 
     def __init__(self, claim):
         description = 'Missing "{}" claim'.format(claim)
-        super(MissingClaimError, self).__init__(description)
+        super(MissingClaimError, self).__init__(description=description)
 
 
 class InsecureClaimError(JWTError):
@@ -31,14 +30,14 @@ class InsecureClaimError(JWTError):
 
     def __init__(self, claim):
         description = 'Insecure claim "{}"'.format(claim)
-        super(InsecureClaimError, self).__init__(description)
+        super(InsecureClaimError, self).__init__(description=description)
 
 
 class ExpiredTokenError(JWTError):
     error = 'expired_token'
-    error_description = 'The token is expired'
+    description = 'The token is expired'
 
 
 class InvalidTokenError(JWTError):
     error = 'invalid_token'
-    error_description = 'The token is not valid yet'
+    description = 'The token is not valid yet'

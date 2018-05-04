@@ -3,7 +3,7 @@ import functools
 from flask import request, redirect, session
 from flask import _app_ctx_stack
 from werkzeug.local import LocalProxy
-from authlib.client.errors import OAuthException
+from authlib.client.errors import MismatchingStateError
 from authlib.client.client import OAuthClient
 
 __all__ = ['OAuth', 'RemoteApp']
@@ -244,8 +244,8 @@ class RemoteApp(OAuthClient):
             state_key = '_{}_state_'.format(self.name)
             state = session.pop(state_key, None)
             if state != request_state:
-                raise OAuthException(
-                    'State not equal in request and response.')
+                raise MismatchingStateError()
+
             if state:
                 params['state'] = state
 

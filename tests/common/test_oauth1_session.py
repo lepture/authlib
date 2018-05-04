@@ -12,7 +12,7 @@ from authlib.specs.rfc5849 import (
 )
 from authlib.specs.rfc5849.util import escape
 from authlib.common.encoding import to_unicode, unicode_type
-from authlib.client import OAuth1Session, OAuthException
+from authlib.client import OAuth1Session, OAuthError
 from ..client_base import mock_text_response
 from ..util import read_file_path
 
@@ -134,8 +134,8 @@ class OAuth1SessionTest(TestCase):
         sess = OAuth1Session('foo')
         try:
             sess.token = {}
-        except OAuthException as exc:
-            self.assertEqual(exc.type, 'token_missing')
+        except OAuthError as exc:
+            self.assertEqual(exc.error, 'missing_token')
 
         sess.token = {'oauth_token': 'a', 'oauth_token_secret': 'b'}
         self.assertIsNone(sess.token['oauth_verifier'])
@@ -234,8 +234,8 @@ class OAuth1SessionTest(TestCase):
         # assertRaises is not a context manager.
         try:
             auth.fetch_access_token('https://example.com/token')
-        except OAuthException as exc:
-            self.assertEqual('No client verifier has been set.', exc.message)
+        except OAuthError as exc:
+            self.assertEqual(exc.error, 'missing_verifier')
 
     def test_fetch_token_invalid_response(self):
         auth = OAuth1Session('foo')
@@ -249,9 +249,8 @@ class OAuth1SessionTest(TestCase):
             # assert on the properties of the exception
             try:
                 auth.fetch_request_token('https://example.com/token')
-            except OAuthException as err:
-                self.assertEqual(err.type, 'token_request_denied')
-                self.assertTrue(isinstance(err.data, requests.Response))
+            except OAuthError as err:
+                self.assertEqual(err.error, 'fetch_token_denied')
             else:  # no exception raised
                 self.fail("ValueError not raised")
 
