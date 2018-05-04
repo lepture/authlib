@@ -27,7 +27,10 @@
          client.
 
     https://tools.ietf.org/html/rfc6749#section-5.2
+
+    :copyright: (c) 2017 by Hsiaoming Yang.
 """
+from authlib.errors import AuthlibHTTPError
 from authlib.common.security import is_secure_transport
 
 __all__ = [
@@ -58,66 +61,27 @@ def register_error_uri(error, error_uri):
     _error_uris[error] = error_uri
 
 
-class OAuth2Error(Exception):
-    error = None
-    error_uri = None
-    error_description = ''
-    status_code = 400
-
-    def __init__(self, error_description=None, error_uri=None,
-                 state=None, status_code=None):
-        if error_description is not None:
-            self.error_description = error_description
-
-        message = '%s: %s' % (self.error, self.error_description)
-        super(OAuth2Error, self).__init__(message)
-
-        if status_code is not None:
-            self.status_code = status_code
-
-        if error_uri is None:
-            self.error_uri = _error_uris.get(self.error)
-        else:
-            self.error_uri = error_uri
+class OAuth2Error(AuthlibHTTPError):
+    def __init__(self, description=None, uri=None,
+                 status_code=None, state=None):
+        if uri is None:
+            uri = _error_uris.get(self.error)
+        super(OAuth2Error, self).__init__(None, description, uri, status_code)
         self.state = state
-
-    def __str__(self):
-        return '{} {}: {}'.format(
-            self.status_code,
-            self.error,
-            self.error_description
-        )
-
-    def __repr__(self):
-        return "<{} '{}: {}'>".format(
-            self.__class__.__name__,
-            self.status_code,
-            self.error
-        )
 
     def get_body(self):
         """Get a list of body."""
-        error = [('error', self.error)]
-        if self.error_description:
-            error.append(('error_description', self.error_description))
-        if self.error_uri:
-            error.append(('error_uri', self.error_uri))
+        error = super(OAuth2Error, self).get_body()
         if self.state:
             error.append(('state', self.state))
         return error
 
-    def get_headers(self):
-        """Get a list of headers."""
-        return [
-            ('Content-Type', 'application/json'),
-            ('Cache-Control', 'no-store'),
-            ('Pragma', 'no-cache')
-        ]
-
 
 class InsecureTransportError(OAuth2Error):
     error = 'insecure_transport'
-    error_description = 'OAuth 2 MUST utilize https.'
+
+    def get_error_description(self):
+        return self.gettext('OAuth 2 MUST utilize https.')
 
     @classmethod
     def check(cls, uri):
@@ -158,9 +122,12 @@ class InvalidClientError(OAuth2Error):
     def get_headers(self):
         headers = super(InvalidClientError, self).get_headers()
         if self.status_code == 401:
+            error_description = self.get_error_description()
+            # safe escape
+            error_description = error_description.replace('"', '|')
             extras = [
                 'error="{}"'.format(self.error),
-                'error_description="{}"'.format(self.error_description)
+                'error_description="{}"'.format(error_description)
             ]
             headers.append(
                 ('WWW-Authenticate', 'Basic ' + ', '.join(extras))
@@ -205,7 +172,10 @@ class InvalidScopeError(OAuth2Error):
     https://tools.ietf.org/html/rfc6749#section-5.2
     """
     error = 'invalid_scope'
-    error_description = 'The requested scope is invalid, unknown, or malformed.'
+
+    def get_error_description(self):
+        return self.gettext(
+            'The requested scope is invalid, unknown, or malformed.')
 
 
 class AccessDeniedError(OAuth2Error):
@@ -217,9 +187,10 @@ class AccessDeniedError(OAuth2Error):
     .. _`Section 4.1.2.1`: https://tools.ietf.org/html/rfc6749#section-4.1.2.1
     """
     error = 'access_denied'
-    error_description = (
-        'The resource owner or authorization server denied the request'
-    )
+
+    def get_error_description(self):
+        return self.gettext(
+            'The resource owner or authorization server denied the request')
 
 
 # -- below are extended errors -- #
@@ -227,7 +198,9 @@ class AccessDeniedError(OAuth2Error):
 
 class MissingAuthorizationError(OAuth2Error):
     error = 'missing_authorization'
-    error_description = 'Missing "Authorization" in headers.'
+
+    def get_error_description(self):
+        return self.gettext('Missing "Authorization" in headers.')
 
 
 class UnsupportedTokenTypeError(OAuth2Error):
@@ -239,19 +212,19 @@ class UnsupportedTokenTypeError(OAuth2Error):
 
 class MissingCodeException(OAuth2Error):
     error = 'missing_code'
-    error_description = 'Missing "code" in response.'
+    description = 'Missing "code" in response.'
 
 
 class MissingTokenException(OAuth2Error):
     error = 'missing_token'
-    error_description = 'Missing "access_token" in response.'
+    description = 'Missing "access_token" in response.'
 
 
 class MissingTokenTypeException(OAuth2Error):
     error = 'missing_token_type'
-    error_description = 'Missing "token_type" in response.'
+    description = 'Missing "token_type" in response.'
 
 
 class MismatchingStateException(OAuth2Error):
     error = 'mismatching_state'
-    error_description = 'CSRF Warning! State not equal in request and response.'
+    description = 'CSRF Warning! State not equal in request and response.'

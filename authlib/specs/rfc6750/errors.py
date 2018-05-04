@@ -29,16 +29,18 @@ class InvalidTokenError(OAuth2Error):
     """
     error = 'invalid_token'
     status_code = 401
-    error_description = (
-        'The access token provided is expired, revoked, malformed, '
-        'or invalid for other reasons.'
-    )
 
-    def __init__(self, error_description=None, status_code=None,
-                 error_uri=None, state=None, realm=None):
+    def __init__(self, description=None, uri=None, status_code=None,
+                 state=None, realm=None):
         super(InvalidTokenError, self).__init__(
-            error_description, status_code, error_uri, state)
+            description, uri, status_code, state)
         self.realm = realm
+
+    def get_error_description(self):
+        return self.gettext(
+            'The access token provided is expired, revoked, malformed, '
+            'or invalid for other reasons.'
+        )
 
     def get_headers(self):
         """If the protected resource request does not include authentication
@@ -55,7 +57,8 @@ class InvalidTokenError(OAuth2Error):
         if self.realm:
             extras.append('realm="{}"'.format(self.realm))
         extras.append('error="{}"'.format(self.error))
-        extras.append('error_description="{}"'.format(self.error_description))
+        error_description = self.get_error_description()
+        extras.append('error_description="{}"'.format(error_description))
         headers.append(
             ('WWW-Authenticate', 'Bearer ' + ', '.join(extras))
         )
@@ -73,7 +76,9 @@ class InsufficientScopeError(OAuth2Error):
     """
     error = 'insufficient_scope'
     status_code = 403
-    error_description = (
-        'The request requires higher privileges than '
-        'provided by the access token.'
-    )
+
+    def get_error_description(self):
+        return self.gettext(
+            'The request requires higher privileges than '
+            'provided by the access token.'
+        )
