@@ -30,7 +30,7 @@
 
     :copyright: (c) 2017 by Hsiaoming Yang.
 """
-from authlib.errors import AuthlibHTTPError
+from authlib.common.errors import AuthlibHTTPError
 from authlib.common.security import is_secure_transport
 
 __all__ = [

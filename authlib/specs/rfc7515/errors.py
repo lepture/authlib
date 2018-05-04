@@ -1,4 +1,4 @@
-from authlib.errors import AuthlibBaseError
+from authlib.common.errors import AuthlibBaseError
 
 __all__ = [
     'JWSError', 'DecodeError', 'MissingAlgorithmError',

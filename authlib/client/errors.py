@@ -1,5 +1,5 @@
 from requests.compat import is_py3
-from authlib.errors import AuthlibBaseError
+from authlib.common.errors import AuthlibBaseError
 
 
 OAuthError = AuthlibBaseError

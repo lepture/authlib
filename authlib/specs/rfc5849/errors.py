@@ -7,7 +7,7 @@
 
     .. _`Section 10`: https://oauth.net/core/1.0a/#rfc.section.10
 """
-from authlib.errors import AuthlibHTTPError
+from authlib.common.errors import AuthlibHTTPError
 from authlib.common.security import is_secure_transport
 
 
