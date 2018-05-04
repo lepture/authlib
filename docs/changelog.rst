@@ -6,6 +6,13 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 0.8
+-----------
+
+**Release Date not Decided**
+
+- Redesign error system. Add i18n support for error descriptions.
+
 Version 0.7: Honami
 -------------------
 
