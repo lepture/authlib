@@ -9,9 +9,9 @@ OAuth 2 Session
 
 .. module:: authlib.client
 
-The :class:`OAuth2Session` in Authlib is designed to be compatible
-with the one in **requests-oauthlib**. This section is a guide on
-how to obtain an access token in OAuth 2 flow.
+The :class:`OAuth2Session` in Authlib was designed to be compatible with
+the one in **requests-oauthlib**. But now, there are some differences.
+This section is a guide on how to obtain an access token in OAuth 2 flow.
 
 
 OAuth2Session for Authorization Code
@@ -268,6 +268,9 @@ service account JSON configure file::
     session.get(...)
     session.post(...)
 
-There is a ready to use ``GoogleServiceAccount`` in loginpass_.
+There is a ready to use ``GoogleServiceAccount`` in loginpass_. You can
+also read these posts:
+
+- `Access Google Analytics API <https://blog.authlib.org/2018/access-google-analytics-api>`_.
 
 .. _`Google Service Account`: https://developers.google.com/identity/protocols/OAuth2ServiceAccount

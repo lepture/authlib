@@ -47,7 +47,7 @@ html_theme_options = {
     'color': '#3E7FCB',
     'navs': [
         {'url': 'https://authlib.org/', 'title': 'Home'},
-        {'url': 'https://play.authlib.org/', 'title': 'Playground'},
+        {'url': 'https://blog.authlib.org/', 'title': 'Blog'},
         {'url': 'https://github.com/lepture/authlib', 'title': 'GitHub'},
     ],
     'description': (
