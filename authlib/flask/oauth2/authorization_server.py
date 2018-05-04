@@ -3,7 +3,6 @@ from flask import Response, json
 from flask import request as flask_req
 from authlib.specs.rfc6749 import (
     OAuth2Request,
-    register_error_uri,
     AuthorizationServer as _AuthorizationServer,
 )
 from authlib.specs.rfc6750 import BearerToken
@@ -79,12 +78,6 @@ class AuthorizationServer(_AuthorizationServer):
         if save_token is not None:
             self.save_token = save_token
 
-        # register error uri
-        error_uris = app.config.get('OAUTH2_ERROR_URIS')
-        if error_uris:
-            for k, v in error_uris:
-                register_error_uri(k, v)
-
         self.app = app
         self.generate_token = self.create_bearer_token_generator(app)
         if app.config.get('OAUTH2_JWT_ENABLED'):
@@ -117,6 +110,15 @@ class AuthorizationServer(_AuthorizationServer):
         self.config.setdefault('jwt_key', jwt_key)
         self.config.setdefault('jwt_alg', jwt_alg)
         self.config.setdefault('jwt_exp', jwt_exp)
+
+    def get_translations(self):
+        # TODO: try Flask-Babel and Flask-Babelex
+        return None
+
+    def get_error_uris(self):
+        error_uris = self.app.config.get('OAUTH2_ERROR_URIS')
+        if error_uris:
+            return dict(error_uris)
 
     def create_expires_generator(self, app):
         """Create a generator function for generating ``expires_in`` value.

@@ -32,6 +32,7 @@
 """
 from authlib.common.errors import AuthlibHTTPError
 from authlib.common.security import is_secure_transport
+from authlib.deprecate import deprecate
 
 __all__ = [
     'register_error_uri', 'OAuth2Error',
@@ -59,6 +60,7 @@ def register_error_uri(error, error_uri):
     """
     global _error_uris
     _error_uris[error] = error_uri
+    deprecate('This function is deprecated.', version='0.10')
 
 
 class OAuth2Error(AuthlibHTTPError):

@@ -22,6 +22,12 @@ class AuthorizationServer(object):
         self._hooks = {}
         self._endpoints = {}
 
+    def get_translations(self):
+        return None
+
+    def get_error_uris(self):
+        return None
+
     def register_grant_endpoint(self, grant_cls):  # pragma: no cover
         deprecate('Use `register_grant` instead.', '0.8', 'vAAUK', 'rg')
         self.register_grant(grant_cls)
@@ -100,8 +106,11 @@ class AuthorizationServer(object):
         try:
             grant = self.get_authorization_grant(request)
         except InvalidGrantError as error:
-            body = dict(error.get_body())
-            return error.status_code, body, error.get_headers()
+            return error(
+                translations=self.get_translations(),
+                error_uris=self.get_error_uris()
+            )
+
         try:
             grant.validate_authorization_request()
             return grant.create_authorization_response(grant_user)
@@ -111,7 +120,10 @@ class AuthorizationServer(object):
                 loc = add_params_to_uri(grant.redirect_uri, params)
                 headers = [('Location', loc)]
                 return 302, '', headers
-            return 400, dict(error.get_body()), error.get_headers()
+            return error(
+                translations=self.get_translations(),
+                error_uris=self.get_error_uris()
+            )
 
     def create_token_response(self, request):
         """Validate token request and create token response.
@@ -121,13 +133,15 @@ class AuthorizationServer(object):
         try:
             grant = self.get_token_grant(request)
         except InvalidGrantError as error:
-            payload = dict(error.get_body())
-            return error.status_code, payload, error.get_headers()
+            return error(
+                translations=self.get_translations(),
+                error_uris=self.get_error_uris()
+            )
         try:
             grant.validate_token_request()
             return grant.create_token_response()
         except OAuth2Error as error:
-            status = error.status_code
-            payload = dict(error.get_body())
-            headers = error.get_headers()
-            return status, payload, headers
+            return error(
+                translations=self.get_translations(),
+                error_uris=self.get_error_uris()
+            )
