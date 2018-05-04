@@ -17,7 +17,7 @@ setup(
     author='Hsiaoming Yang',
     author_email='me@lepture.com',
     url=homepage,
-    packages=find_packages(exclude=['tests', 'tests.*']),
+    packages=find_packages(include=('authlib', 'authlib.*')),
     description=(
         'An ambitious authentication library for OAuth 1, OAuth 2, '
         'OpenID clients and servers.'
@@ -26,12 +26,13 @@ setup(
     include_package_data=True,
     platforms='any',
     long_description=fread('README.rst'),
-    license='AGPLv3+',
+    license='GNU AGPLv3+',
     install_requires=['requests', 'cryptography'],
     project_urls={
         'Bug Tracker': 'https://github.com/lepture/authlib/issues',
         'Documentation': 'https://docs.authib.org/',
         'Source Code': 'https://github.com/lepture/authlib',
+        'Blog': 'https://blog.authlib.org/',
     },
     classifiers=[
         'Development Status :: 4 - Beta',
@@ -40,18 +41,17 @@ setup(
         'Framework :: Flask',
         'Framework :: Django',
         'Intended Audience :: Developers',
-        'License :: OSI Approved',
         'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
-        'Operating System :: MacOS',
-        'Operating System :: POSIX',
-        'Operating System :: POSIX :: Linux',
+        'Operating System :: OS Independent',
         'Programming Language :: Python',
+        'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: Implementation',
-        'Programming Language :: Python :: Implementation :: CPython',
+        'Programming Language :: Python :: 3.7',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
+        'Topic :: Internet :: WWW/HTTP :: WSGI :: Application',
         'Topic :: Software Development :: Libraries :: Python Modules',
     ]
 )
