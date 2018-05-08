@@ -70,14 +70,19 @@ html_theme_options = {
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
+_sidebar_templates = [
+    'project.html',
+    'localtoc.html',
+    'relations.html',
+    'links.html',
+    'sponsors.html',
+    'searchbox.html',
+]
+if not '.dev' in release:
+    _sidebar_templates.remove('sponsors.html')
+
 html_sidebars = {
-    '**': [
-        'project.html',
-        'localtoc.html',
-        'relations.html',
-        'links.html',
-        'searchbox.html',
-    ]
+    '**': _sidebar_templates
 }
 
 # -- Options for HTMLHelp output ------------------------------------------
