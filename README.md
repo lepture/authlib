@@ -12,7 +12,7 @@
 <a href="https://twitter.com/intent/follow?screen_name=authlib"><img src="https://img.shields.io/twitter/follow/authlib.svg?maxAge=3600&style=social&logo=twitter&label=Follow" alt="Follow Twitter"></a>
 
 Authlib is an ambitious authentication library for OAuth 1, OAuth 2, OpenID
-clients, servers and more.
+clients, servers and more. JWS, JWK, JWA, JWT are included.
 
 Authlib is compatible with Python2.7+ and Python3.5+.
 
@@ -33,8 +33,8 @@ authorization_server.register_endpoint(IntrospectionEndpoint)
 
 1. Take a look at [Authlib Homepage](https://authlib.org/)
 2. Get more information with [Authlib Documentation](https://docs.authlib.org/)
-3. Have a taste with [Authlib Playground](https://play.authlib.org/)
-4. Stay tuned with [Authlib Newsletter](https://tinyletter.com/authlib)
+3. Check other [Authlib Repositories](https://github.com/authlib)
+4. Learn some skills on [Authlib Blog](https://blog.authlib.org/)
 5. Get latest news via [Authlib on Twitter](https://twitter.com/authlib)
 6. Ask questions on StackOverflow with [Authlib Tag](https://stackoverflow.com/questions/tagged/authlib)
 
@@ -80,18 +80,8 @@ Lovely features that Authlib has built-in:
 <details>
 <summary>🎉 RFC7515: JSON Web Signature (JWS)</summary>
 
-- [x] "HS256" algorithm via RFC7518
-- [x] "HS384" algorithm via RFC7518
-- [x] "HS512" algorithm via RFC7518
-- [x] "RS256" algorithm via RFC7518
-- [x] "RS384" algorithm via RFC7518
-- [x] "RS512" algorithm via RFC7518
-- [x] "ES256" algorithm via RFC7518
-- [x] "ES384" algorithm via RFC7518
-- [x] "ES512" algorithm via RFC7518
-- [x] "PS256" algorithm via RFC7518
-- [x] "PS384" algorithm via RFC7518
-- [x] "PS512" algorithm via RFC7518
+- [x] Compact serialize and deserialize
+- [x] JSON serialize and deserialize
 </details>
 
 <details>
@@ -131,7 +121,7 @@ Lovely features that Authlib has built-in:
 </details>
 
 <details>
-<summary>🎁 RFC7523: JSON Web Token (JWT) Profile for OAuth 2.0 Client Authentication and Authorization Grants</summary>
+<summary>🎉 RFC7523: JSON Web Token (JWT) Profile for OAuth 2.0 Client Authentication and Authorization Grants</summary>
 
 - [ ] Using JWTs as Client Authorization
 - [x] Using JWTs as Authorization Grants
@@ -180,6 +170,7 @@ Framework integrations with current specification implementations:
 
 - [x] Requests OAuth 1 Session
 - [x] Requests OAuth 2 Session
+- [x] Requests Assertion Session
 - [x] Flask OAuth 1/2 Client
 - [x] Django OAuth 1/2 Client
 - [x] Flask OAuth 1.0 Server

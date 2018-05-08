@@ -2,7 +2,7 @@ Authlib
 =======
 
 Authlib is an ambitious authentication library for OAuth 1, OAuth 2, OpenID
-clients, servers and more.
+clients, servers and more. JWS, JWK, JWA, JWT are included.
 
 .. image:: https://travis-ci.org/lepture/authlib.svg?branch=master
     :target: https://travis-ci.org/lepture/authlib
@@ -21,10 +21,10 @@ Useful Links
 ------------
 
 1. Take a look at `Authlib Homepage <https://authlib.org/>`_.
-2. Stay tuned with `Authlib Newsletter <https://tinyletter.com/authlib>`_.
-3. Read `Authlib Documentation <https://docs.authlib.org/>`_.
-4. Play with `Authlib Playground <https://play.authlib.org/>`_.
-5. Browser `Authlib Source Code <https://github.com/lepture/authlib>`_.
+2. Get more information with `Authlib Documentation <https://docs.authlib.org/>`_.
+3. Check other `Authlib Repositories <https://github.com/authlib>`_.
+4. Learn some skills on `Authlib Blog <https://blog.authlib.org/>`_.
+5. Get latest news via `Authlib on Twitter <https://twitter.com/authlib>`_.
 
 Specifications
 --------------
