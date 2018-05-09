@@ -1,8 +1,8 @@
 Authlib
 =======
 
-Authlib is an ambitious authentication library for OAuth 1, OAuth 2, OpenID
-clients, servers and more. JWS, JWK, JWA, JWT are included.
+The ultimate Python library in building OAuth and OpenID Connect servers.
+JWS, JWK, JWA, JWT are included.
 
 .. image:: https://travis-ci.org/lepture/authlib.svg?branch=master
     :target: https://travis-ci.org/lepture/authlib

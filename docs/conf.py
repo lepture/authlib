@@ -51,8 +51,8 @@ html_theme_options = {
         {'url': 'https://github.com/lepture/authlib', 'title': 'GitHub'},
     ],
     'description': (
-        'An ambitious authentication library for OAuth 1, OAuth 2, OpenID '
-        'clients and servers. JWS, JWK, JWA, JWT included.'
+        'The ultimate Python library in building OAuth and OpenID Connect '
+        'servers. JWS, JWK, JWA, JWT are included.'
     ),
     'github_user': 'lepture',
     'github_repo': 'authlib',

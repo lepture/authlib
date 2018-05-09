@@ -8,9 +8,9 @@ Authlib: Python Authentication
 
 Release v\ |version|. (:ref:`Installation <install>`)
 
-Authlib is an ambitious authentication library for OAuth 1, OAuth 2, OpenID
-clients and servers. It is designed from low level APIs to high level APIs,
-to meet the needs of everyone.
+The ultimate Python library in building OAuth and OpenID Connect servers.
+It is designed from low level specifications implementations to high level
+frameworks integrations, to meet the needs of everyone.
 
 
 Features

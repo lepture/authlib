@@ -28,4 +28,4 @@ Here is the process when we have received a security report:
 Previous CVEs
 -------------
 
-.. note:: No previous CVEs before version 0.5.
+.. note:: No CVEs yet

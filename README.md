@@ -11,8 +11,8 @@
 <a href="https://pypi.org/project/Authlib/"><img src="https://img.shields.io/pypi/status/authlib.svg?maxAge=3600" alt="Release Stage"></a>
 <a href="https://twitter.com/intent/follow?screen_name=authlib"><img src="https://img.shields.io/twitter/follow/authlib.svg?maxAge=3600&style=social&logo=twitter&label=Follow" alt="Follow Twitter"></a>
 
-Authlib is an ambitious authentication library for OAuth 1, OAuth 2, OpenID
-clients, servers and more. JWS, JWK, JWA, JWT are included.
+The ultimate Python library in building OAuth and OpenID Connect servers.
+JWS, JWK, JWA, JWT are included.
 
 Authlib is compatible with Python2.7+ and Python3.5+.
 

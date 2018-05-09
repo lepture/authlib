@@ -19,8 +19,8 @@ setup(
     url=homepage,
     packages=find_packages(include=('authlib', 'authlib.*')),
     description=(
-        'An ambitious authentication library for OAuth 1, OAuth 2, '
-        'OpenID clients and servers.'
+        'The ultimate Python library in building OAuth and '
+        'OpenID Connect servers.'
     ),
     zip_safe=False,
     include_package_data=True,
