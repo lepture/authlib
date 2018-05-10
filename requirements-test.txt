@@ -1,4 +1,4 @@
 -r requirements.txt
 mock
 pytest
-coverage<4.4
+coverage
