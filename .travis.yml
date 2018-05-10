@@ -5,17 +5,20 @@ cache: pip
 matrix:
   include:
   - python: 2.7
-    env: TOXENV=py27,flask,py27-django,codecov
+    env: TOXENV=py27,flask,py27-django
   - python: 3.5
-    env: TOXENV=py35,flask,py35-django,codecov
+    env: TOXENV=py35,flask,py35-django
   - python: 3.6
-    env: TOXENV=py36,flask,py36-django,codecov
+    env: TOXENV=py36,flask,py36-django
 
 install:
   - pip install -U setuptools
   - pip install tox
 
 script: tox
+
+after_success:
+  - TOXENV=codecov tox
 
 notifications:
   email: false
