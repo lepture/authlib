@@ -5,7 +5,7 @@
 # Authlib
 
 <a href="https://travis-ci.org/lepture/authlib"><img src="https://api.travis-ci.org/lepture/authlib.svg?branch=master" alt="Build Status"></a>
-<a href="https://codeclimate.com/github/lepture/authlib/maintainability"><img src="https://api.codeclimate.com/v1/badges/8c09859e1ab803f7b9ac/maintainability" alt="Maintainability"></a>
+<a href="https://codecov.io/gh/lepture/authlib?branch=master"><img src="https://codecov.io/gh/lepture/authlib/branch/master/graph/badge.svg" alt="Coverage Status"></a>
 <a href="https://pypi.org/project/Authlib/"><img src="https://img.shields.io/pypi/wheel/authlib.svg?maxAge=3600" alt="Wheel Status"></a>
 <a href="https://pypi.org/project/Authlib/"><img src="https://img.shields.io/pypi/v/authlib.svg?maxAge=3600" alt="PyPI Version"></a>
 <a href="https://pypi.org/project/Authlib/"><img src="https://img.shields.io/pypi/status/authlib.svg?maxAge=3600" alt="Release Stage"></a>
