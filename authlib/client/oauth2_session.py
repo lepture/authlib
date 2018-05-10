@@ -1,14 +1,11 @@
 import logging
 from requests import Session
-from requests.auth import AuthBase, HTTPBasicAuth
 from .errors import (
     OAuthError,
     TokenExpiredError,
-    MissingTokenError,
-    UnsupportedTokenTypeError,
 )
 from ..common.security import generate_token
-from ..common.urls import url_decode, add_params_to_qs
+from ..common.urls import url_decode
 from ..specs.rfc6749.parameters import (
     prepare_grant_uri,
     prepare_token_request,
@@ -17,14 +14,10 @@ from ..specs.rfc6749.parameters import (
 )
 from ..specs.rfc6749 import OAuth2Token
 from ..specs.rfc6749 import InsecureTransportError
-from ..specs.rfc6750 import add_bearer_token
 from ..specs.rfc7009 import prepare_revoke_token_request
-from ..specs.rfc7523 import JWTBearerGrant
+from .oauth2_auth import OAuth2Auth, OAuth2ClientAuth
 
-__all__ = [
-    'OAuth2Session', 'AssertionSession',
-    'OAuth2ClientAuth', 'OAuth2Auth',
-]
+__all__ = ['OAuth2Session']
 
 log = logging.getLogger(__name__)
 DEFAULT_HEADERS = {
@@ -94,7 +87,7 @@ class OAuth2Session(Session):
 
     @token.setter
     def token(self, token):
-        self._token_auth.token = _wrap_token(token)
+        self._token_auth.token = OAuth2Token.from_dict(token)
 
     def authorization_url(self, url, state=None, **kwargs):
         """Generate an authorization URL.
@@ -352,167 +345,3 @@ class OAuth2Session(Session):
             client_id=self.client_id,
             code=code, state=state,
             **kwargs)
-
-
-class OAuth2ClientAuth(HTTPBasicAuth):
-    """Attaches OAuth Client Authentication to the given Request object.
-
-    :param client_id: Client ID, which you get from client registration.
-    :param client_secret: Client Secret, which you get from registration.
-    :param auth_method: Client auth method for token endpoint. The supported
-        methods for now:
-
-        * client_secret_basic
-        * client_secret_post
-        * none
-    """
-    def __init__(self, client_id, client_secret,
-                 auth_method='client_secret_basic'):
-        super(OAuth2ClientAuth, self).__init__(client_id, client_secret)
-        self.auth_method = auth_method
-
-    def __call__(self, req):
-        if self.auth_method == 'client_secret_basic':
-            return super(OAuth2ClientAuth, self).__call__(req)
-        if self.auth_method == 'client_secret_post':
-            req.body = add_params_to_qs(req.body or '', [
-                ('client_id', self.username),
-                ('client_secret', self.password or '')
-            ])
-        elif self.auth_method == 'none':
-            if req.method == 'GET':
-                req.url = add_params_to_qs(req.url, [
-                    ('client_id', self.username)
-                ])
-            elif req.method == 'POST':
-                req.body = add_params_to_qs(req.body or '', [
-                    ('client_id', self.username)
-                ])
-        return req
-
-
-class OAuth2Auth(AuthBase):
-    """Sign requests for OAuth 2.0, currently only bearer token is supported.
-
-    :param token: A dict or OAuth2Token instance of an OAuth 2.0 token
-    :param token_placement: The placement of the token, default is ``header``,
-        available choices:
-
-        * header (default)
-        * body
-        * uri
-    """
-    SIGN_METHODS = {
-        'bearer': add_bearer_token
-    }
-
-    @classmethod
-    def register_sign_method(cls, sign_type, func):
-        cls.SIGN_METHODS[sign_type] = func
-
-    def __init__(self, token, token_placement='header'):
-        self.token = _wrap_token(token)
-        self.token_placement = token_placement
-        self.hooks = set()
-
-    def __call__(self, req):
-        if not self.token:
-            raise MissingTokenError()
-
-        token_type = self.token['token_type']
-        sign = self.SIGN_METHODS.get(token_type.lower())
-        if not sign:
-            description = 'Unsupported token_type "{}"'.format(token_type)
-            raise UnsupportedTokenTypeError(description=description)
-
-        url, headers, body = sign(
-            self.token['access_token'],
-            req.url, req.headers, req.body,
-            self.token_placement)
-
-        for hook in self.hooks:
-            url, headers, body = hook(url, headers, body)
-
-        req.url = url
-        req.headers = headers
-        req.body = body
-        return req
-
-
-class AssertionSession(Session):
-    """Constructs a new Assertion Framework for OAuth 2.0 Authorization Grants
-    per RFC7521_.
-
-    .. _RFC7521: https://tools.ietf.org/html/rfc7521
-    """
-    JWT_BEARER_GRANT_TYPE = JWTBearerGrant.GRANT_TYPE
-
-    ASSERTION_METHODS = {
-        JWT_BEARER_GRANT_TYPE: JWTBearerGrant.sign,
-    }
-
-    def __init__(self, token_url, issuer, subject, audience, grant_type,
-                 claims=None, token_placement='header', scope=None, **kwargs):
-        super(AssertionSession, self).__init__()
-        self.token_url = token_url
-        self.grant_type = grant_type
-
-        # https://tools.ietf.org/html/rfc7521#section-5.1
-        self.issuer = issuer
-        self.subject = subject
-        self.audience = audience
-        self.claims = claims
-        self.scope = scope
-        self._token_auth = OAuth2Auth(None, token_placement)
-        self._kwargs = kwargs
-
-    @property
-    def token(self):
-        return self._token_auth.token
-
-    @token.setter
-    def token(self, token):
-        self._token_auth.token = _wrap_token(token)
-
-    def auto_refresh_token(self):
-        """Refresh token automatically."""
-        if not self.token or self.token.is_expired():
-            self.refresh_token()
-
-    def refresh_token(self):
-        """Using Assertions as Authorization Grants to refresh token as
-        described in `Section 4.1`_.
-
-        .. _`Section 4.1`: https://tools.ietf.org/html/rfc7521#section-4.1
-        """
-        generate_assertion = self.ASSERTION_METHODS[self.grant_type]
-        assertion = generate_assertion(
-            issuer=self.issuer,
-            subject=self.subject,
-            audience=self.audience,
-            claims=self.claims,
-            **self._kwargs
-        )
-        data = {'assertion': assertion, 'grant_type': self.grant_type}
-        if self.scope:
-            data['scope'] = self.scope
-        resp = self.request('POST', self.token_url, data=data, withhold_token=True)
-        self.token = resp.json()
-        return self.token
-
-    def request(self, method, url, data=None, headers=None,
-                withhold_token=False, auth=None, **kwargs):
-        """Send request with auto refresh token feature."""
-        if not withhold_token:
-            self.auto_refresh_token()
-
-            if auth is None:
-                auth = self._token_auth
-        return super(AssertionSession, self).request(
-            method, url, headers=headers, data=data, auth=auth, **kwargs)
-
-
-def _wrap_token(token):
-    if isinstance(token, dict) and not isinstance(token, OAuth2Token):
-        token = OAuth2Token(token)
-    return token

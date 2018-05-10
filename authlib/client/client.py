@@ -1,6 +1,6 @@
 import logging
-from .oauth1 import OAuth1Session
-from .oauth2 import OAuth2Session
+from .oauth1_session import OAuth1Session
+from .oauth2_session import OAuth2Session
 from .errors import (
     MissingRequestTokenError,
     MissingTokenError,

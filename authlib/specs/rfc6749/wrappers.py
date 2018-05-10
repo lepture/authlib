@@ -21,6 +21,12 @@ class OAuth2Token(dict):
             return None
         return expires_at < time.time()
 
+    @classmethod
+    def from_dict(cls, token):
+        if isinstance(token, dict) and not isinstance(token, cls):
+            token = cls(token)
+        return token
+
 
 class OAuth2Request(object):
     def __init__(self, method, uri, body=None, headers=None):

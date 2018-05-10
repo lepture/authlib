@@ -29,6 +29,48 @@ class RefreshTokenGrant(BaseGrant):
     TOKEN_ENDPOINT = True
     GRANT_TYPE = 'refresh_token'
 
+    def _validate_request_client(self):
+        # require client authentication for confidential clients or for any
+        # client that was issued client credentials (or with other
+        # authentication requirements)
+        client = self.authenticate_token_endpoint_client()
+        log.debug('Validate token request of {!r}'.format(client))
+
+        if not client.has_client_secret():
+            raise UnauthorizedClientError()
+
+        if not client.check_grant_type(self.GRANT_TYPE):
+            raise UnauthorizedClientError()
+
+        return client
+
+    def _validate_request_token(self):
+        refresh_token = self.request.data.get('refresh_token')
+        if refresh_token is None:
+            raise InvalidRequestError(
+                'Missing "refresh_token" in request.',
+            )
+
+        token = self.authenticate_refresh_token(refresh_token)
+        if not token:
+            raise InvalidRequestError(
+                'Invalid "refresh_token" in request.',
+            )
+        return token
+
+    def _validate_token_scope(self, token):
+        scope = self.request.scope
+        if not scope:
+            return
+
+        original_scope = token.get_scope()
+        if not original_scope:
+            raise InvalidScopeError()
+
+        original_scope = set(scope_to_list(original_scope))
+        if not original_scope.issuperset(set(scope_to_list(scope))):
+            raise InvalidScopeError()
+
     def validate_token_request(self):
         """If the authorization server issued a refresh token to the client, the
         client makes a refresh request to the token endpoint by adding the
@@ -63,40 +105,9 @@ class RefreshTokenGrant(BaseGrant):
 
             grant_type=refresh_token&refresh_token=tGzv3JOkF0XG5Qx2TlKWIA
         """
-
-        # require client authentication for confidential clients or for any
-        # client that was issued client credentials (or with other
-        # authentication requirements)
-        client = self.authenticate_token_endpoint_client()
-        log.debug('Validate token request of {!r}'.format(client))
-
-        if not client.has_client_secret():
-            raise UnauthorizedClientError()
-
-        if not client.check_grant_type(self.GRANT_TYPE):
-            raise UnauthorizedClientError()
-
-        refresh_token = self.request.data.get('refresh_token')
-        if refresh_token is None:
-            raise InvalidRequestError(
-                'Missing "refresh_token" in request.',
-            )
-
-        token = self.authenticate_refresh_token(refresh_token)
-        if not token:
-            raise InvalidRequestError(
-                'Invalid "refresh_token" in request.',
-            )
-
-        scope = self.request.scope
-        if scope:
-            original_scope = token.get_scope()
-            if not original_scope:
-                raise InvalidScopeError()
-            original_scope = set(scope_to_list(original_scope))
-            if not original_scope.issuperset(set(scope_to_list(scope))):
-                raise InvalidScopeError()
-
+        client = self._validate_request_client()
+        token = self._validate_request_token()
+        self._validate_token_scope(token)
         self.request.client = client
         self.request.credential = token
 
