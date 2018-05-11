@@ -14,7 +14,8 @@ An OAuth 2.0 provider contains two servers:
 - Authorization Server: to issue access tokens
 - Resources Server: to serve your users' resources
 
-Here is an `example of OAuth 2.0 server <https://github.com/authlib/example-oauth2-server>`_.
+Checkout the step by step tutorial:
+`example of OAuth 2.0 server <https://github.com/authlib/example-oauth2-server>`_.
 
 .. important::
 

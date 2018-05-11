@@ -90,8 +90,6 @@ frameworks.
     flask/oauth2
     flask/oidc
 
-.. note:: Django support will be added in Version 0.8.
-
 Specifications
 --------------
 
@@ -141,6 +139,7 @@ non specifications, this part of the documentation is for you.
 
     api/client
     api/server
+    api/errors
 
 Get Updates
 -----------

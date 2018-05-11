@@ -7,8 +7,11 @@ Integrated Frameworks
     :description: The built-in Flask and Django integrations for OAuth 1 and
         OAuth 2 clients.
 
-Authlib has built-in integrated frameworks support, which makes
-it much easier to develop with your favorite framework.
+Authlib has built-in integrated frameworks support, which makes it much easier
+to develop with your favorite framework. It is also suggested to take a look
+at loginpass_, which provides many ready to use social connections.
+
+.. _loginpass: https://github.com/authlib/loginpass
 
 .. _flask_client:
 
@@ -145,7 +148,7 @@ Pass the ``cache`` instance into OAuth registry::
     oauth = OAuth()
     oauth.init_app(app, cache=cache)
 
-If cache system is not available, you can define methods for getting and
+If cache system is not available, you can define methods for retrieving and
 saving request token::
 
     def save_request_token(token):
@@ -283,10 +286,6 @@ initialization. Define a common ``fetch_token``::
 
 With this common ``fetch_token`` in OAuth, you don't need to design the method
 for each services one by one.
-
-.. note::
-   Authlib has a playground example which is implemented in Flask. Check it at
-   https://github.com/authlib/playground
 
 Auto Refresh Token
 ~~~~~~~~~~~~~~~~~~
@@ -438,10 +437,6 @@ Here are some hints on how to design your schema::
                 expires_at=self.expires_at,
             )
 
-.. note::
-
-    In the future, we will provide a full featured Django App in another
-    library.
 
 Implement the Server
 ~~~~~~~~~~~~~~~~~~~~
