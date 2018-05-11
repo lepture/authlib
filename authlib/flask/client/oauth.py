@@ -8,6 +8,14 @@ from authlib.client.client import OAuthClient
 
 __all__ = ['OAuth', 'RemoteApp']
 
+_CLIENT_KEYS = (
+    'client_id', 'client_secret',
+    'request_token_url', 'request_token_params',
+    'access_token_url', 'access_token_params',
+    'refresh_token_url', 'refresh_token_params',
+    'authorize_url', 'api_base_url', 'client_kwargs',
+)
+
 
 class OAuth(object):
     """Registry for oauth clients.
@@ -62,30 +70,11 @@ class OAuth(object):
         if name in self._clients:
             return self._clients[name]
 
-        keys = (
-            'client_id', 'client_secret',
-            'request_token_url', 'request_token_params',
-            'access_token_url', 'access_token_params',
-            'refresh_token_url', 'refresh_token_params',
-            'authorize_url', 'api_base_url', 'client_kwargs',
-        )
-
         overwrite, kwargs = self._registry[name]
         compliance_fix = kwargs.pop('compliance_fix', None)
         client_cls = kwargs.pop('client_cls', RemoteApp)
 
-        for k in keys:
-            conf_key = '{}_{}'.format(name, k).upper()
-            v = self.app.config.get(conf_key, None)
-            if k not in kwargs:
-                kwargs[k] = v
-            elif overwrite and v:
-                if isinstance(kwargs[k], dict):
-                    kwargs[k].update(v)
-                else:
-                    kwargs[k] = v
-
-        kwargs = self._generate_client_kwargs(name, kwargs)
+        kwargs = self._generate_client_kwargs(name, kwargs, overwrite)
         client = client_cls(name, **kwargs)
         if compliance_fix:
             client.compliance_fix = compliance_fix
@@ -112,7 +101,18 @@ class OAuth(object):
             return self.create_client(name)
         return LocalProxy(lambda: self.create_client(name))
 
-    def _generate_client_kwargs(self, name, kwargs):
+    def _generate_client_kwargs(self, name, kwargs, overwrite):
+        for k in _CLIENT_KEYS:
+            conf_key = '{}_{}'.format(name, k).upper()
+            v = self.app.config.get(conf_key, None)
+            if k not in kwargs:
+                kwargs[k] = v
+            elif overwrite and v:
+                if isinstance(kwargs[k], dict):
+                    kwargs[k].update(v)
+                else:
+                    kwargs[k] = v
+
         fetch_token = kwargs.pop('fetch_token', None)
         if fetch_token is None and self.fetch_token:
             fetch_token = functools.partial(self.fetch_token, name=name)
@@ -120,36 +120,41 @@ class OAuth(object):
             kwargs['fetch_token'] = fetch_token
 
         if kwargs['request_token_url']:
-            # for OAuth 1
-            cache = self.cache
-            if not kwargs.get('fetch_request_token') and cache:
-                def fetch_request_token():
-                    key = '_{}_req_token_'.format(name)
-                    sid = session.pop(key, None)
-                    if not sid:
-                        return None
-
-                    token = cache.get(sid)
-                    cache.delete(sid)
-                    return token
-
-                kwargs['fetch_request_token'] = fetch_request_token
-
-            if not kwargs.get('save_request_token') and cache:
-                def save_request_token(token):
-                    key = '_{}_req_token_'.format(name)
-                    sid = uuid.uuid4().hex
-                    session[key] = sid
-                    cache.set(sid, token, timeout=600)
-
-                kwargs['save_request_token'] = save_request_token
+            return self._generate_oauth1_client_kwargs(name, kwargs)
         else:
-            # for OAuth 2
-            update_token = kwargs.pop('update_token', None)
-            if update_token is None and self.update_token:
-                update_token = functools.partial(self.update_token, name=name)
-            if update_token:
-                kwargs['update_token'] = update_token
+            return self._generate_oauth2_client_kwargs(name, kwargs)
+
+    def _generate_oauth1_client_kwargs(self, name, kwargs):
+        cache = self.cache
+        if not kwargs.get('fetch_request_token') and cache:
+            def fetch_request_token():
+                key = '_{}_req_token_'.format(name)
+                sid = session.pop(key, None)
+                if not sid:
+                    return None
+
+                token = cache.get(sid)
+                cache.delete(sid)
+                return token
+
+            kwargs['fetch_request_token'] = fetch_request_token
+
+        if not kwargs.get('save_request_token') and cache:
+            def save_request_token(token):
+                key = '_{}_req_token_'.format(name)
+                sid = uuid.uuid4().hex
+                session[key] = sid
+                cache.set(sid, token, timeout=600)
+
+            kwargs['save_request_token'] = save_request_token
+        return kwargs
+
+    def _generate_oauth2_client_kwargs(self, name, kwargs):
+        update_token = kwargs.pop('update_token', None)
+        if update_token is None and self.update_token:
+            update_token = functools.partial(self.update_token, name=name)
+        if update_token:
+            kwargs['update_token'] = update_token
         return kwargs
 
     def __getattr__(self, key):

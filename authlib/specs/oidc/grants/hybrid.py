@@ -27,35 +27,7 @@ class OpenIDHybridGrant(OpenIDMixin, AuthorizationCodeGrant):
     def create_authorization_response(self, grant_user):
         state = self.request.state
         if grant_user:
-            self.request.user = grant_user
-            client = self.request.client
-
-            code = self.create_authorization_code(
-                client, grant_user, self.request)
-            params = [('code', code)]
-
-            token = self.generate_token(
-                client, 'implicit',
-                scope=self.request.scope,
-                include_refresh_token=False
-            )
-
-            response_types = self.request.response_type.split()
-            if 'token' in response_types:
-                log.debug('Grant token {!r} to {!r}'.format(token, client))
-                self.server.save_token(token, self.request)
-                if 'id_token' in response_types:
-                    token = self.process_implicit_token(
-                        token, self.request, code)
-            else:
-                # response_type is "code id_token"
-                token = {
-                    'expires_in': token['expires_in'],
-                    'scope': token['scope']
-                }
-                token = self.process_implicit_token(token, self.request, code)
-
-            params.extend([(k, token[k]) for k in token])
+            params = self._create_granted_params(grant_user)
             if state:
                 params.append(('state', state))
         else:
@@ -72,7 +44,39 @@ class OpenIDHybridGrant(OpenIDMixin, AuthorizationCodeGrant):
         headers = [('Location', uri)]
         return 302, '', headers
 
-    def process_implicit_token(self, token, request, code):
+    def _create_granted_params(self, grant_user):
+        self.request.user = grant_user
+        client = self.request.client
+
+        code = self.create_authorization_code(
+            client, grant_user, self.request)
+        params = [('code', code)]
+
+        token = self.generate_token(
+            client, 'implicit',
+            scope=self.request.scope,
+            include_refresh_token=False
+        )
+
+        response_types = self.request.response_type.split()
+        if 'token' in response_types:
+            log.debug('Grant token {!r} to {!r}'.format(token, client))
+            self.server.save_token(token, self.request)
+            if 'id_token' in response_types:
+                token = self._process_implicit_token(
+                    token, self.request, code)
+        else:
+            # response_type is "code id_token"
+            token = {
+                'expires_in': token['expires_in'],
+                'scope': token['scope']
+            }
+            token = self._process_implicit_token(token, self.request, code)
+
+        params.extend([(k, token[k]) for k in token])
+        return params
+
+    def _process_implicit_token(self, token, request, code):
         id_token = self.generate_id_token(
             token, request,
             nonce=request.nonce,

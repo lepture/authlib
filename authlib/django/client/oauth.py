@@ -7,6 +7,13 @@ from authlib.client.errors import MismatchingStateError
 __all__ = ['token_update', 'OAuth', 'RemoteApp']
 
 token_update = Signal(providing_args=['name', 'token'])
+_CLIENT_KEYS = (
+    'client_id', 'client_secret',
+    'request_token_url', 'request_token_params',
+    'access_token_url', 'access_token_params',
+    'refresh_token_url', 'refresh_token_params',
+    'authorize_url', 'api_base_url', 'client_kwargs',
+)
 
 
 class OAuth(object):
@@ -58,23 +65,7 @@ class RemoteApp(OAuthClient):
         compliance_fix = kwargs.pop('compliance_fix', None)
         config = _get_conf(name)
         if config:
-            keys = (
-                'client_id', 'client_secret',
-                'request_token_url', 'request_token_params',
-                'access_token_url', 'access_token_params',
-                'refresh_token_url', 'refresh_token_params',
-                'authorize_url', 'api_base_url', 'client_kwargs',
-            )
-            for k in keys:
-                v = config.get(k, None)
-                if k not in kwargs:
-                    kwargs[k] = v
-                elif overwrite and v:
-                    if isinstance(kwargs[k], dict):
-                        kwargs[k].update(v)
-                    else:
-                        kwargs[k] = v
-
+            kwargs = _config_client(config, kwargs, overwrite)
         super(RemoteApp, self).__init__(**kwargs)
 
         self.compliance_fix = compliance_fix
@@ -156,3 +147,16 @@ def _get_conf(name):
     config = getattr(settings, 'AUTHLIB_OAUTH_CLIENTS', None)
     if config:
         return config.get(name)
+
+
+def _config_client(config, kwargs, overwrite):
+    for k in _CLIENT_KEYS:
+        v = config.get(k, None)
+        if k not in kwargs:
+            kwargs[k] = v
+        elif overwrite and v:
+            if isinstance(kwargs[k], dict):
+                kwargs[k].update(v)
+            else:
+                kwargs[k] = v
+    return kwargs

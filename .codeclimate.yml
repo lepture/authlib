@@ -1,0 +1,14 @@
+version: "2"
+checks:
+  argument-count:
+    enabled: false
+
+  method-complexity:
+    enabled: true
+    config:
+      threshold: 10
+
+  method-lines:
+    enabled: true
+    config:
+      threshold: 35

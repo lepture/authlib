@@ -33,22 +33,20 @@ class OpenIDMixin(object):
             # an error is returned
             raise InvalidRequestError('Invalid "prompt" parameter.')
 
+        if not end_user and 'login' in prompts:
+            self.prompt = 'login'
+            return self
+
         if 'consent' in prompts:
             if end_user:
                 self.prompt = 'consent'
-            elif 'login' in prompts:
-                self.prompt = 'login'
             else:
                 raise ConsentRequiredError()
         elif 'select_account' in prompts:
             if end_user:
                 self.prompt = 'select_account'
-            elif 'login' in prompts:
-                self.prompt = 'login'
             else:
                 raise AccountSelectionRequiredError()
-        elif 'login' in prompts:
-            self.prompt = 'login'
         return self
 
     def validate_authorization_redirect_uri(self, client):
@@ -88,7 +86,6 @@ class OpenIDMixin(object):
 
     def generate_id_token(self, token, request, nonce=None,
                           auth_time=None, code=None):
-
         scopes = scope_to_list(token['scope'])
         if not scopes or scopes[0] != 'openid':
             return None
@@ -116,8 +113,7 @@ class OpenIDMixin(object):
 
         access_token = token.get('access_token')
         if access_token:
-            at_hash = to_native(create_half_hash(access_token, alg))
-            payload['at_hash'] = at_hash
+            payload['at_hash'] = to_native(create_half_hash(access_token, alg))
 
         # calculate c_hash
         if code:
@@ -136,8 +132,7 @@ class OpenIDMixin(object):
             elif 'kid' in key:
                 header['kid'] = key['kid']
 
-        id_token = jwt.encode(header, payload, key)
-        return to_native(id_token)
+        return to_native(jwt.encode(header, payload, key))
 
 
 def is_openid_request(request):
