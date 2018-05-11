@@ -61,6 +61,9 @@ class OAuth1Session(Session):
                  force_include_body=False, **kwargs):
         super(OAuth1Session, self).__init__()
 
+        if not client_id:
+            raise ValueError('Missing "client_id"')
+
         self._client = OAuth1Auth(
             client_id, client_secret=client_secret,
             token=token,

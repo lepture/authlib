@@ -29,6 +29,9 @@ TEST_RSA_OAUTH_SIGNATURE = (
 
 class OAuth1SessionTest(TestCase):
 
+    def test_no_client_id(self):
+        self.assertRaises(ValueError, lambda: OAuth1Session(None))
+
     def test_signature_types(self):
         def verify_signature(getter):
             def fake_send(r, **kwargs):
