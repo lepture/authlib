@@ -1,5 +1,4 @@
 import time
-from authlib.deprecate import deprecate
 from authlib.common.urls import (
     urlparse, extract_params, url_decode,
 )
@@ -54,16 +53,6 @@ class OAuth2Request(object):
             'client_id', 'code', 'redirect_uri', 'scope', 'state',
             'response_type', 'grant_type'
         }
-
-    @property
-    def grant_user(self):  # pragma: no cover
-        deprecate('Use "request.user" instead.', '0.8')
-        return self.user
-
-    @grant_user.setter
-    def grant_user(self, user):  # pragma: no cover
-        deprecate('Use "request.user" instead.', '0.8')
-        self.user = user
 
     def __getattr__(self, key):
         try:

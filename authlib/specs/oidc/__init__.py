@@ -8,6 +8,5 @@
 """
 # flake8: noqa
 
-from .legacy import parse_id_token, verify_id_token
 from .models import AuthorizationCodeMixin
 from .claims import *

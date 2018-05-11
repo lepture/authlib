@@ -9,7 +9,6 @@
 """
 
 import logging
-from authlib.deprecate import deprecate
 from .base import BaseGrant
 from ..util import scope_to_list
 from ..errors import (
@@ -130,16 +129,13 @@ class RefreshTokenGrant(BaseGrant):
             scope=scope,
         )
         log.debug('Issue token {!r} to {!r}'.format(token, client))
-        if self.server.save_token:
-            user = self.authenticate_user(credential)
-            if not user:
-                raise InvalidRequestError('There is no "user" for this token.')
-            self.request.user = user
-            self.server.save_token(token, self.request)
-            token = self.process_token(token, self.request)
-        else:
-            deprecate('"create_access_token" deprecated', '0.8', 'vAAUK', 'gt')
-            self.create_access_token(token, client, credential)  # pragma: no cover
+        user = self.authenticate_user(credential)
+        if not user:
+            raise InvalidRequestError('There is no "user" for this token.')
+
+        self.request.user = user
+        self.server.save_token(token, self.request)
+        token = self.process_token(token, self.request)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_refresh_token(self, refresh_token):
@@ -167,6 +163,3 @@ class RefreshTokenGrant(BaseGrant):
         :return: user
         """
         raise NotImplementedError()
-
-    def create_access_token(self, token, client, authenticated_token):
-        raise DeprecationWarning()

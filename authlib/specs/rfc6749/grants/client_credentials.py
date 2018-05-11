@@ -1,5 +1,4 @@
 import logging
-from authlib.deprecate import deprecate
 from .base import BaseGrant
 from ..errors import UnauthorizedClientError
 
@@ -104,13 +103,6 @@ class ClientCredentialsGrant(BaseGrant):
             include_refresh_token=False,
         )
         log.debug('Issue token {!r} to {!r}'.format(token, client))
-        if self.server.save_token:
-            self.server.save_token(token, self.request)
-            token = self.process_token(token, self.request)
-        else:
-            deprecate('"create_access_token" deprecated', '0.8', 'vAAUK', 'gt')
-            self.create_access_token(token, client)  # pragma: no cover
+        self.server.save_token(token, self.request)
+        token = self.process_token(token, self.request)
         return 200, token, self.TOKEN_RESPONSE_HEADER
-
-    def create_access_token(self, token, client):
-        raise DeprecationWarning()

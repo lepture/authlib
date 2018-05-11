@@ -67,10 +67,6 @@ class AuthorizationServer(_AuthorizationServer):
         if app is not None:
             self.init_app(app)
 
-    def register_revoke_token_endpoint(self, cls):  # pragma: no cover
-        deprecate('Use "register_endpoint" instead.', '0.8', 'vAAUK', 're')
-        self.register_endpoint(cls)
-
     def init_app(self, app, query_client=None, save_token=None):
         """Initialize later with Flask app instance."""
         if query_client is not None:
@@ -181,14 +177,6 @@ class AuthorizationServer(_AuthorizationServer):
             expires_generator
         )
 
-    def validate_authorization_request(self):  # pragma: no cover
-        deprecate(
-            'use `server.validate_consent_request(end_user=current_user)` instead',
-            '0.8', link_uid='vAAUK', link_file='VAR')
-        grant = self.get_authorization_grant(_create_oauth2_request(None))
-        grant.validate_authorization_request()
-        return grant
-
     def validate_consent_request(self, request=None, end_user=None):
         """Validate current HTTP request for authorization page. This page
         is designed for resource owner to grant or deny the authorization::
@@ -233,13 +221,10 @@ class AuthorizationServer(_AuthorizationServer):
         """
         if request and not grant_user:  # pragma: no cover
             grant_user = request
-            # prepare for next upgrade
-            deprecate(
-                'Use "create_authorization_response(grant_user=grant_user)" instead',
-                '0.8', 'vAAUK', 'car'
-            )
+            request = None
+
         status, body, headers = self.create_valid_authorization_response(
-            _create_oauth2_request(None),
+            _create_oauth2_request(request),
             grant_user=grant_user
         )
         if isinstance(body, dict):
@@ -264,13 +249,6 @@ class AuthorizationServer(_AuthorizationServer):
         status, body, headers = super(
             AuthorizationServer, self).create_endpoint_response(name, req)
         return Response(json.dumps(body), status=status, headers=headers)
-
-    def create_revocation_response(self):  # pragma: no cover
-        deprecate(
-            'Use `create_endpoint_response("revocation")` instead',
-            '0.8', 'vAAUK', 're'
-        )
-        return self.create_endpoint_response('revocation')
 
 
 def _create_oauth2_request(request):

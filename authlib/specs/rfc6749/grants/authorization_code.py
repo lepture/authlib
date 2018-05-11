@@ -1,6 +1,5 @@
 import logging
 from authlib.common.urls import add_params_to_uri
-from authlib.deprecate import deprecate
 from .base import RedirectAuthGrant
 from ..errors import (
     UnauthorizedClientError,
@@ -305,16 +304,13 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         )
         log.debug('Issue token {!r} to {!r}'.format(token, client))
 
-        if self.server.save_token:
-            user = self.authenticate_user(authorization_code)
-            if not user:
-                raise InvalidRequestError('There is no "user" for this code.')
-            self.request.user = user
-            self.server.save_token(token, self.request)
-            token = self.process_token(token, self.request)
-        else:
-            deprecate('"create_access_token" deprecated', '0.8', 'vAAUK', 'gt')
-            self.create_access_token(token, client, authorization_code)  # pragma: no cover
+        user = self.authenticate_user(authorization_code)
+        if not user:
+            raise InvalidRequestError('There is no "user" for this code.')
+
+        self.request.user = user
+        self.server.save_token(token, self.request)
+        token = self.process_token(token, self.request)
         self.delete_authorization_code(authorization_code)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
@@ -377,6 +373,3 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         :return: user
         """
         raise NotImplementedError()
-
-    def create_access_token(self, token, client, authorization_code):
-        raise DeprecationWarning()

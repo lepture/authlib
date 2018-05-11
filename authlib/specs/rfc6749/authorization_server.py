@@ -1,5 +1,4 @@
 from authlib.common.urls import add_params_to_uri
-from authlib.deprecate import deprecate
 from .errors import InvalidGrantError, OAuth2Error
 
 
@@ -27,10 +26,6 @@ class AuthorizationServer(object):
 
     def get_error_uris(self):
         return None
-
-    def register_grant_endpoint(self, grant_cls):  # pragma: no cover
-        deprecate('Use `register_grant` instead.', '0.8', 'vAAUK', 'rg')
-        self.register_grant(grant_cls)
 
     def register_grant(self, grant_cls):
         """Register a grant class into the endpoint registry. Developers

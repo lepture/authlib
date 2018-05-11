@@ -1,6 +1,5 @@
 import logging
 from authlib.common.urls import add_params_to_uri
-from authlib.deprecate import deprecate
 from .base import RedirectAuthGrant
 from ..errors import (
     UnauthorizedClientError,
@@ -197,12 +196,8 @@ class ImplicitGrant(RedirectAuthGrant):
             )
             log.debug('Grant token {!r} to {!r}'.format(token, client))
 
-            if self.server.save_token:
-                self.server.save_token(token, self.request)
-                token = self.process_token(token, self.request)
-            else:
-                deprecate('"create_access_token" deprecated', '0.8', 'vAAUK', 'gt')
-                self.create_access_token(token, client, grant_user)  # pragma: no cover
+            self.server.save_token(token, self.request)
+            token = self.process_token(token, self.request)
 
             params = [(k, token[k]) for k in token]
             if state:
@@ -214,6 +209,3 @@ class ImplicitGrant(RedirectAuthGrant):
         uri = add_params_to_uri(self.redirect_uri, params, fragment=True)
         headers = [('Location', uri)]
         return 302, '', headers
-
-    def create_access_token(self, token, client, grant_user):
-        raise DeprecationWarning()

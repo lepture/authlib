@@ -1,5 +1,4 @@
 import logging
-from authlib.deprecate import deprecate
 from .base import BaseGrant
 from ..errors import (
     UnauthorizedClientError,
@@ -142,18 +141,13 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
         :returns: (status_code, body, headers)
         """
         client = self.request.client
-        user = self.request.user
         token = self.generate_token(
             client, self.GRANT_TYPE,
             scope=self.request.scope,
         )
         log.debug('Issue token {!r} to {!r}'.format(token, client))
-        if self.server.save_token:
-            self.server.save_token(token, self.request)
-            token = self.process_token(token, self.request)
-        else:
-            deprecate('"create_access_token" deprecated', '0.8', 'vAAUK', 'gt')
-            self.create_access_token(token, client, user)  # pragma: no cover
+        self.server.save_token(token, self.request)
+        token = self.process_token(token, self.request)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_user(self, username, password):
@@ -166,6 +160,3 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
                    return user
         """
         raise NotImplementedError()
-
-    def create_access_token(self, token, client, user):
-        raise DeprecationWarning()
