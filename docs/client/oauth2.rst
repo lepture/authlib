@@ -13,6 +13,10 @@ The :class:`OAuth2Session` in Authlib was designed to be compatible with
 the one in **requests-oauthlib**. But now, there are some differences.
 This section is a guide on how to obtain an access token in OAuth 2 flow.
 
+.. note::
+    This ``OAuth2Session`` is a customized ``requests.Session``. It shares
+    the same API with requests. If you are using Flask or Django, you may
+    have interests in :ref:`client_frameworks`.
 
 OAuth2Session for Authorization Code
 ------------------------------------
@@ -127,15 +131,20 @@ Client Authentication
 ---------------------
 
 When fetching access token, the authorization server will require a client
-authentication, which is usually a **Basic** HTTP authentication of client_id
-and client_secret. :class:`OAuth2Session` is using this authenticate method
-by default, which is::
+authentication, Authlib has provided a :class:`OAuth2ClientAuth` which
+supports 3 methods defined by RFC7591:
 
-    >>> from requests.auth import HTTPBasicAuth
-    >>> auth = HTTPBasicAuth(client_id, client_secret)
+- client_secret_basic
+- client_secret_post
+- none
+
+The default value is ``client_secret_basic``. You can change the auth method
+with ``token_endpoint_auth_method``::
+
+    >>> session = OAuth2Session(token_endpoint_auth_method='client_secret_post')
 
 If the authorization server requires other means of authentication, you can
-construct an ``auth`` for requests, and pass it to ``fetch_access_token``::
+construct an ``auth`` of requests, and pass it to ``fetch_access_token``::
 
     >>> auth = YourAuth(...)
     >>> token = session.fetch_access_token(token_url, auth=auth, ...)
@@ -205,6 +214,15 @@ the authorization server will return a value of ``id_token`` in response::
     >>> scope = 'openid email profile'
     >>> session = OAuth2Session(client_id, client_secret, scope=scope)
 
+The remote server may require other parameters for OpenID Connect requests, for
+instance, it may require a ``nonce`` parameter, in thise case, you need to
+generate it yourself, and pass it to ``authorization_url``::
+
+    >>> from authlib.common.security import generate_token
+    >>> # remember to save this nonce for verification
+    >>> nonce = generate_token()
+    >>> session.authorization_url(url, redirect_uri='xxx', nonce=nonce, ...)
+
 At the last step of ``session.fetch_access_token``, the return value contains
 a ``id_token``::
 
@@ -222,7 +240,8 @@ Authlib has provided tools for parsing and validating OpenID Connect id_token::
     >>> claims.validate()
 
 Get deep inside with :class:`~authlib.specs.rfc7519.JWT` and
-:class:`authlib.specs.oidc.CodeIDToken`.
+:class:`~authlib.specs.oidc.CodeIDToken`. Learn how to validate JWT claims
+at :ref:`specs/rfc7519`.
 
 There is a built-in Google app which supports OpenID Connect, checkout the
 source code in loginpass_.

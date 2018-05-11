@@ -14,6 +14,12 @@ compatible with the one in **requests-oauthlib**, although there are
 differences. This section is a guide on how to obtain an access token
 in OAuth 1 flow.
 
+.. note::
+    This ``OAuth1Session`` is a customized ``requests.Session``. It shares
+    the same API with requests. If you are using Flask or Django, you may
+    have interests in :ref:`client_frameworks`.
+
+
 There are three steps in OAuth 1 to obtain an access token. Initialize
 the session for reuse::
 
@@ -89,11 +95,11 @@ Now fetch the access token with this response::
         'screen_name': 'lepture',
         'x_auth_expires': '0'
     }
-    >>> save_request_token(token)
+    >>> save_access_token(token)
 
 Save this token to access protected resources.
 
-The above flow is not always what we will use in real project. When we are
+The above flow is not always what we will use in a real project. When we are
 redirected to authorization endpoint, our session is over. In this case, when
 the authorization server send us back to our server, we need to create another
 session::

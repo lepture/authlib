@@ -100,7 +100,7 @@ just using Authlib. But it would be good for you to understand how Authlib
 works.
 
 .. toctree::
-    :maxdepth: 2
+    :maxdepth: 1
 
     specs/rfc5849
     specs/rfc6749
