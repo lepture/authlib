@@ -86,7 +86,7 @@ class JWTClaims(dict):
             raise InvalidClaimError(claim_name)
 
         validate = option.get('validate')
-        if validate and not validate(value):
+        if validate and not validate(self, value):
             raise InvalidClaimError(claim_name)
 
     def validate_iss(self):

@@ -11,4 +11,4 @@
 """
 
 from .grant import JWTBearerGrant
-from .consts import JWT_BEARER_GRANT_TYPE, JWT_BEARER_CLIENT_ASSERTION_TYPE
+from .client import JWTBearerClientAssertion

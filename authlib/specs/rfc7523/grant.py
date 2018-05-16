@@ -6,10 +6,10 @@ from ..rfc6749 import (
     InvalidGrantError
 )
 from ..rfc7519 import jwt, JWTError
-from .consts import JWT_BEARER_GRANT_TYPE
 from .assertion import sign_jwt_bearer_assertion
 
 log = logging.getLogger(__name__)
+JWT_BEARER_GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:jwt-bearer'
 
 
 class JWTBearerGrant(BaseGrant):

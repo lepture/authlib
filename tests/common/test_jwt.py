@@ -144,7 +144,7 @@ class JWTTest(unittest.TestCase):
         id_token = jwt.encode({'alg': 'HS256'}, {'jti': 'bar'}, 'k')
         claims_options = {
             'jti': {
-                'validate': lambda o: o == 'foo'
+                'validate': lambda c, o: o == 'foo'
             }
         }
         claims = jwt.decode(id_token, 'k', claims_options=claims_options)
