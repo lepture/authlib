@@ -21,7 +21,34 @@ from .util import extract_basic_authorization
 
 log = logging.getLogger(__name__)
 
-__all__ = ['authenticate_client']
+__all__ = ['ClientAuthentication']
+
+
+class ClientAuthentication(object):
+    def __init__(self, query_client):
+        self.query_client = query_client
+        self._methods = {
+            'none': authenticate_none,
+            'client_secret_basic': authenticate_client_secret_basic,
+            'client_secret_post': authenticate_client_secret_post,
+        }
+
+    def register(self, method, func):
+        self._methods[method] = func
+
+    def authenticate(self, request, methods):
+        for method in methods:
+            func = self._methods[method]
+            client = func(self.query_client, request)
+            if client:
+                return client
+
+        if 'client_secret_basic' in methods:
+            raise InvalidClientError(state=request.state, status_code=401)
+        raise InvalidClientError(state=request.state)
+
+    def __call__(self, request, methods):
+        return self.authenticate(request, methods)
 
 
 def authenticate_client_secret_basic(query_client, request):
@@ -84,29 +111,6 @@ def authenticate_none(query_client, request):
         'Authenticate {} via "none" '
         'failed'.format(client_id)
     )
-
-
-AUTHENTICATE_METHODS = {
-    'none': authenticate_none,
-    'client_secret_basic': authenticate_client_secret_basic,
-    'client_secret_post': authenticate_client_secret_post,
-}
-
-
-def authenticate_client(query_client, request, methods, available=None):
-    """Authenticate client with the given methods."""
-    if available is None:
-        available = AUTHENTICATE_METHODS
-
-    for method in methods:
-        func = available[method]
-        client = func(query_client, request)
-        if client:
-            return client
-
-    if 'client_secret_basic' in methods:
-        raise InvalidClientError(state=request.state, status_code=401)
-    raise InvalidClientError(state=request.state)
 
 
 def _validate_client(query_client, client_id, state=None, status_code=400):

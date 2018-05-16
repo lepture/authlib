@@ -51,9 +51,9 @@ class IntrospectionEndpoint(TokenEndpoint):
             raise UnsupportedTokenTypeError()
 
         token = self.query_token(
-            params['token'], token_type, self._client)
+            params['token'], token_type, self.request.client)
         if token:
-            self._token = token
+            self.request.credential = token
 
     def create_endpoint_response(self):
         """Validate introspection request and create the response.
@@ -67,7 +67,7 @@ class IntrospectionEndpoint(TokenEndpoint):
             # the revocation request
             self.validate_endpoint_request()
             # the authorization server invalidates the token
-            body = self.create_introspection_payload(self._token)
+            body = self.create_introspection_payload(self.request.credential)
             status = 200
             headers = [
                 ('Content-Type', 'application/json'),

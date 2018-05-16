@@ -3,7 +3,6 @@ from ..errors import (
     InvalidScopeError,
 )
 from ..util import scope_to_list
-from ..authenticate_client import authenticate_client
 
 
 class BaseGrant(object):
@@ -29,7 +28,6 @@ class BaseGrant(object):
         self.request = request
         self.redirect_uri = request.redirect_uri
         self.server = server
-        self._clients = {}
 
     @classmethod
     def check_token_endpoint(cls, request):
@@ -37,7 +35,7 @@ class BaseGrant(object):
 
     @property
     def client(self):
-        return self.get_client_by_id(self.request.client_id)
+        return self.request.client
 
     def generate_token(self, client, grant_type, expires_in=None,
                        scope=None, include_refresh_token=True):
@@ -47,13 +45,6 @@ class BaseGrant(object):
             scope=scope,
             include_refresh_token=include_refresh_token,
         )
-
-    def get_client_by_id(self, client_id):
-        if client_id in self._clients:
-            return self._clients[client_id]
-        client = self.server.query_client(client_id)
-        self._clients[client_id] = client
-        return client
 
     def authenticate_token_endpoint_client(self):
         """Authenticate client with the given methods for token endpoint.
@@ -75,10 +66,9 @@ class BaseGrant(object):
 
         :return: client
         """
-        client = authenticate_client(
-            self.get_client_by_id,
-            request=self.request,
-            methods=self.TOKEN_ENDPOINT_AUTH_METHODS,
+        client = self.server.authenticate_client(
+            self.request,
+            self.TOKEN_ENDPOINT_AUTH_METHODS
         )
         try:
             self.server.execute_hook('after_authenticate_client', client, self)

@@ -1,4 +1,5 @@
 from authlib.common.urls import add_params_to_uri
+from .authenticate_client import ClientAuthentication
 from .errors import InvalidGrantError, OAuth2Error
 
 
@@ -16,10 +17,35 @@ class AuthorizationServer(object):
         self.generate_token = generate_token
         self.save_token = save_token
         self.config = config
+        self.authenticate_client = ClientAuthentication(query_client)
         self._authorization_grants = []
         self._token_grants = []
         self._hooks = {}
         self._endpoints = {}
+
+    def register_client_auth_method(self, method, func):
+        """Add more client auth method. The default methods are:
+
+        * none: The client is a public client and does not have a client secret
+        * client_secret_post: The client uses the HTTP POST parameters
+        * client_secret_basic: The client uses HTTP Basic
+
+        :param method: Name of the Auth method
+        :param func: Function to authenticate the client
+
+        The auth method accept two parameters: ``query_client`` and ``request``,
+        an example for this method::
+
+            def authenticate_client_via_custom(query_client, request):
+                client_id = request.headers['X-Client-Id']
+                client = query_client(client_id)
+                do_some_validation(client)
+                return client
+
+            authorization_server.register_client_auth_method(
+                'custom', authenticate_client_via_custom)
+        """
+        self.authenticate_client.register(method, func)
 
     def get_translations(self):
         return None

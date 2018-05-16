@@ -114,7 +114,8 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
             raise InvalidClientError(
                 state=self.request.state,
             )
-        client = self.get_client_by_id(client_id)
+
+        client = self.server.query_client(client_id)
         if not client:
             raise InvalidClientError(
                 state=self.request.state,

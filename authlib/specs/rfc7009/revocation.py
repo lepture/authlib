@@ -39,10 +39,10 @@ class RevocationEndpoint(TokenEndpoint):
         if token_type and token_type not in self.SUPPORTED_TOKEN_TYPES:
             raise UnsupportedTokenTypeError()
         token = self.query_token(
-            params['token'], token_type, self._client)
+            params['token'], token_type, self.request.client)
         if not token:
             raise InvalidRequestError()
-        self._token = token
+        self.request.credential = token
 
     def create_endpoint_response(self):
         """Validate revocation request and create the response for revocation.
@@ -65,10 +65,13 @@ class RevocationEndpoint(TokenEndpoint):
             # the revocation request
             self.validate_endpoint_request()
             # the authorization server invalidates the token
-            self.revoke_token(self._token)
+            self.revoke_token(self.request.credential)
             try:
                 self.server.execute_hook(
-                    'after_revoke_token', self._token, self._client)
+                    'after_revoke_token',
+                    self.request.credential,
+                    self.request.client
+                )
             except RuntimeError:  # pragma: no cover
                 pass
             status = 200

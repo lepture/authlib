@@ -47,6 +47,7 @@ class OAuth2Request(object):
         self.data = params
 
         self.user = None
+        #: authorization_code or token model instance
         self.credential = None
         self.client = None
         self._data_keys = {

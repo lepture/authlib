@@ -1,6 +1,3 @@
-from .authenticate_client import authenticate_client
-
-
 class TokenEndpoint(object):
     #: Endpoint name to be registered
     ENDPOINT_NAME = None
@@ -12,8 +9,6 @@ class TokenEndpoint(object):
     def __init__(self, request, server):
         self.request = request
         self.server = server
-        self._token = None
-        self._client = None
 
     def __call__(self):
         # make it callable for authorization server
@@ -23,11 +18,11 @@ class TokenEndpoint(object):
     def authenticate_endpoint_client(self):
         """Authentication client for endpoint with ``CLIENT_AUTH_METHODS``.
         """
-        self._client = authenticate_client(
-            self.server.query_client,
+        client = self.server.authenticate_client(
             request=self.request,
             methods=self.CLIENT_AUTH_METHODS,
         )
+        self.request.client = client
 
     def validate_endpoint_request(self):
         raise NotImplementedError()
