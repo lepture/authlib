@@ -81,6 +81,9 @@ class OAuth2Session(Session):
             'revoke_token_request': set(),
         }
 
+    def register_client_auth_method(self, method, func):
+        self._client_auth.register(method, func)
+
     @property
     def token(self):
         return self._token_auth.token

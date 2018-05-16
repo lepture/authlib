@@ -71,23 +71,44 @@ class OAuth2ClientAuth(HTTPBasicAuth):
     def __init__(self, client_id, client_secret,
                  auth_method='client_secret_basic'):
         super(OAuth2ClientAuth, self).__init__(client_id, client_secret)
+
+        self.client_id = client_id
+        self.client_secret = client_secret
         self.auth_method = auth_method
+        self._methods = {
+            'none': _auth_none,
+            'client_secret_post': _auth_client_secret_post,
+        }
+
+    def register(self, method, func):
+        assert method not in self._methods
+        self._methods[method] = func
 
     def __call__(self, req):
         if self.auth_method == 'client_secret_basic':
             return super(OAuth2ClientAuth, self).__call__(req)
-        if self.auth_method == 'client_secret_post':
-            req.body = add_params_to_qs(req.body or '', [
-                ('client_id', self.username),
-                ('client_secret', self.password or '')
-            ])
-        elif self.auth_method == 'none':
-            if req.method == 'GET':
-                req.url = add_params_to_qs(req.url, [
-                    ('client_id', self.username)
-                ])
-            elif req.method == 'POST':
-                req.body = add_params_to_qs(req.body or '', [
-                    ('client_id', self.username)
-                ])
+
+        func = self._methods.get(self.auth_method)
+        if func:
+            req = func(self, req)
         return req
+
+
+def _auth_none(auth, req):
+    if req.method == 'GET':
+        req.url = add_params_to_qs(req.url, [
+            ('client_id', auth.client_id)
+        ])
+    elif req.method == 'POST':
+        req.body = add_params_to_qs(req.body or '', [
+            ('client_id', auth.client_id)
+        ])
+    return req
+
+
+def _auth_client_secret_post(auth, req):
+    req.body = add_params_to_qs(req.body or '', [
+        ('client_id', auth.client_id),
+        ('client_secret', auth.client_secret or '')
+    ])
+    return req
