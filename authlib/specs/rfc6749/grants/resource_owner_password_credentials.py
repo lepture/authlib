@@ -43,6 +43,7 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
         |         |    (w/ Optional Refresh Token)   |               |
         +---------+                                  +---------------+
     """
+    #: authorization_code grant type has token endpoint
     TOKEN_ENDPOINT = True
     GRANT_TYPE = 'password'
 

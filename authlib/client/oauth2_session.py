@@ -82,6 +82,11 @@ class OAuth2Session(Session):
         }
 
     def register_client_auth_method(self, method, func):
+        """Extend client authenticate for token endpoint.
+
+        :param method: name of the ``token_endpoint_auth_method``
+        :param func: a function to sign the request
+        """
         self._client_auth.register(method, func)
 
     @property

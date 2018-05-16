@@ -117,9 +117,10 @@ def _load_jwk(key, header):
 
 def _wrap_key(key):
     if callable(key):
-        return key
-
-    def key_func(header, payload):
-        return _load_jwk(key, header)
-
+        def key_func(header, payload):
+            v = key(header, payload)
+            return _load_jwk(v, header)
+    else:
+        def key_func(header, payload):
+            return _load_jwk(key, header)
     return key_func

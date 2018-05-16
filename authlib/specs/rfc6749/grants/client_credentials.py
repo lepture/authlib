@@ -25,6 +25,7 @@ class ClientCredentialsGrant(BaseGrant):
 
     https://tools.ietf.org/html/rfc6749#section-4.4
     """
+    #: authorization_code grant type has token endpoint
     TOKEN_ENDPOINT = True
     GRANT_TYPE = 'client_credentials'
 

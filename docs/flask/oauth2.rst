@@ -8,14 +8,25 @@ Flask OAuth 2.0 Server
         And understand how OAuth 2.0 works. Authlib has all built-in grant
         types for you.
 
-In this section, we will learn how to create an OAuth 2.0 server in Flask.
-An OAuth 2.0 provider contains two servers:
+This section is not a step by step guide on how to create an OAuth 2.0 server
+in Flask. Instead, we will learn how the Flask implementation works, some
+technical details of an OAuth 2.0 provider.
+
+We have provided an official example guide on GitHub. Checkout the source
+code and tutorial:
+`example of OAuth 2.0 server <https://github.com/authlib/example-oauth2-server>`_.
+
+At the very beginning, we need to know that OAuth 2.0 provider contains two
+type of servers:
 
 - Authorization Server: to issue access tokens
-- Resources Server: to serve your users' resources
+- Resources Servers: to serve your users' resources
 
-Checkout the step by step tutorial:
-`example of OAuth 2.0 server <https://github.com/authlib/example-oauth2-server>`_.
+They can be the same server, or different servers. For instance, if you are
+a big company, your account system may be separated from other servers. The
+authorization server is some sort of the account system, and you may have
+many resources servers, each resource server serves a certain type of resources,
+like users' photos, posts and etc.
 
 .. important::
 
@@ -42,10 +53,12 @@ Resource Owner
 Resource Owner is the user who is using your service. A resource owner can
 log in your website with username/email and password, or other methods.
 
-A resource owner SHOULD implement ``get_user_id()`` method::
+A resource owner SHOULD implement ``get_user_id()`` method, lets take
+SQLAlchemy models for example::
 
-    class User(db.Model):
-        id = db.Column(db.Integer, primary_key=True)
+    class User(Model):
+        id = Column(Integer, primary_key=True)
+        # other columns
 
         def get_user_id(self):
             return self.id
@@ -65,15 +78,16 @@ Authlib has provided a mixin for SQLAlchemy, define the client with this mixin::
 
     from authlib.flask.oauth2.sqla import OAuth2ClientMixin
 
-    class Client(db.Model, OAuth2ClientMixin):
-        id = db.Column(db.Integer, primary_key=True)
-        user_id = db.Column(
-            db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')
+    class Client(Model, OAuth2ClientMixin):
+        id = Column(Integer, primary_key=True)
+        user_id = Column(
+            Integer, ForeignKey('user.id', ondelete='CASCADE')
         )
-        user = db.relationship('User')
+        user = relationship('User')
 
-A client is registered by a user (developer) on your website. Get a deep
-inside with :class:`~authlib.specs.rfc6749.ClientMixin` API reference.
+A client is registered by a user (developer) on your website. If you decide to
+implement all the missing methods by yourself, get a deep inside with
+:class:`~authlib.specs.rfc6749.ClientMixin` API reference.
 
 Token
 ~~~~~

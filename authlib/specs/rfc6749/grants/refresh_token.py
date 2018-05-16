@@ -25,6 +25,7 @@ class RefreshTokenGrant(BaseGrant):
 
     .. _`Section 6`: https://tools.ietf.org/html/rfc6749#section-6
     """
+    #: authorization_code grant type has token endpoint
     TOKEN_ENDPOINT = True
     GRANT_TYPE = 'refresh_token'
 

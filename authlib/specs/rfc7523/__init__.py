@@ -11,4 +11,8 @@
 """
 
 from .grant import JWTBearerGrant
-from .client import JWTBearerClientAssertion
+from .client import (
+    JWTBearerClientAssertion,
+    ClientSecretJWT,
+    PrivateKeyJWT,
+)

@@ -83,7 +83,10 @@ class ClientSecretJWT(JWTBearerClientAssertion):
     ``client_secret_jwt``.
     """
     # http://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication
+
+    #: name of the authentication method
     CLIENT_AUTH_METHOD = 'client_secret_jwt'
+    #: default ``alg`` to sign the signature
     JWT_SIGN_ALG = 'HS256'
 
     @classmethod
@@ -107,11 +110,11 @@ class ClientSecretJWT(JWTBearerClientAssertion):
             claims, alg=alg, **kwargs)
 
     def validate_jti(self, claims, jti):
-        """Validate if the given ``jti`` value is used before. For instance,
-        you can use a redis to check it::
+        """Validate if the given ``jti`` value is used before. Developers
+        MUST implement this method::
 
             def validate_jti(self, claims, jti):
-                key = 'jit:{}-{}'.format(claims['sub'], jti)
+                key = 'jti:{}-{}'.format(claims['sub'], jti)
                 if redis.get(key):
                     return False
                 redis.set(key, 1, ex=3600)
@@ -145,13 +148,18 @@ class PrivateKeyJWT(ClientSecretJWT):
     implementation is defined by OpenID Connect, which is called
     ``private_key_jwt``.
     """
+    #: name of the authentication method
     CLIENT_AUTH_METHOD = 'private_key_jwt'
+    #: default ``alg`` to sign the signature
     JWT_SIGN_ALG = 'RS256'
 
     def resolve_client_public_key(self, client, headers):
         """Resolve the client public key for verifying the JWT signature.
         A client may have many public keys, in this case, we can retrieve it
-        via ``kid`` value in headers.
+        via ``kid`` value in headers. Developers MUST implement this method::
+
+            def resolve_client_public_key(self, client, headers):
+                return client.public_key
         """
         raise NotImplementedError()
 

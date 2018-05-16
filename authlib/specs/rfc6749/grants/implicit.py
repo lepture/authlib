@@ -65,7 +65,9 @@ class ImplicitGrant(RedirectAuthGrant):
         |         |
         +---------+
     """
+    #: authorization_code grant type has authorization endpoint
     AUTHORIZATION_ENDPOINT = True
+    #: Allowed client auth methods for token endpoint
     TOKEN_ENDPOINT_AUTH_METHODS = ['none']
 
     RESPONSE_TYPE = 'token'

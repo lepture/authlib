@@ -149,6 +149,16 @@ construct an ``auth`` of requests, and pass it to ``fetch_access_token``::
     >>> auth = YourAuth(...)
     >>> token = session.fetch_access_token(token_url, auth=auth, ...)
 
+It is also possible to extend the client authentication method with
+:meth:`~OAuth2Session.register_client_auth_method`. Besides the default
+three authentication methods, there are more provided by Authlib. e.g.
+
+- client_secret_jwt
+- private_key_jwt
+
+These two methods are defined by RFC7523 and OpenID Connect. Find more in
+:ref:`jwt_client_authentication`.
+
 Access Protected Resources
 --------------------------
 

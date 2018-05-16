@@ -7,9 +7,13 @@ from ..util import scope_to_list
 
 class BaseGrant(object):
     SPECIFICATION = 'rfc6749'
+    #: If this grant type has authorization endpoint
     AUTHORIZATION_ENDPOINT = False
+    #: If this grant type has token endpoint
     TOKEN_ENDPOINT = False
+    #: Allowed HTTP methods of this token endpoint
     TOKEN_ENDPOINT_HTTP_METHODS = ['POST']
+    #: Allowed client auth methods for token endpoint
     TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic']
     RESPONSE_TYPE = None
     GRANT_TYPE = None
