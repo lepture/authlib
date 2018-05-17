@@ -5,7 +5,7 @@ from .oauth2_server import JWTBearerGrant
 from .oauth2_server import create_authorization_server
 
 
-class ClientCredentialsTest(TestCase):
+class JWTBearerGrantTest(TestCase):
     def prepare_data(self, grant_type=None):
         server = create_authorization_server(self.app)
         server.register_grant(JWTBearerGrant)

@@ -13,6 +13,6 @@
 from .grant import JWTBearerGrant
 from .client import (
     JWTBearerClientAssertion,
-    ClientSecretJWT,
-    PrivateKeyJWT,
+    client_secret_jwt_sign,
+    private_key_jwt_sign,
 )

@@ -70,37 +70,13 @@ The :class:`~authlib.specs.rfc6749.AuthorizationServer` has provided a method
 :meth:`~authlib.specs.rfc6749.AuthorizationServer.register_client_auth_method`
 to add more client authentication methods.
 
-client_secret_jwt
-~~~~~~~~~~~~~~~~~
+In Authlib, ``client_secret_jwt`` and ``private_key_jwt`` share the same API,
+using :class:`JWTBearerClientAssertion` to create a new client authentication::
 
-This authentication is provided by :class:`ClientSecretJWT`, but you need to
-implement the missing methods at first::
-
-    class MyClientSecretJWT(ClientSecretJWT):
+    class JWTClientAuth(JWTBearerClientAssertion):
         def validate_jti(self, claims, jti):
-            # use cache to validate jti value
-            key = 'jti:{}-{}'.format(claims['sub'], jti)
-            if cache.get(key):
-                return False
-            cache.set(key, 1, timeout=3600)
-            return True
-
-    authorization_server.register_client_auth_method(
-        MyClientSecretJWT.CLIENT_AUTH_METHOD,
-        MyClientSecretJWT('https://example.com/oauth/token')
-    )
-
-The value ``https://example.com/oauth/token`` is your authorization servers's
-token endpoint, which is used as ``aud`` value in JWT.
-
-private_key_jwt
-~~~~~~~~~~~~~~~
-
-This authentication is provided by :class:`PrivateKeyJWT`, it is a subclass
-of :class:`ClientSecretJWT`::
-
-    class MyPrivateKeyJWT(PrivateKeyJWT):
-        def validate_jti(self, claims, jti):
+            # validate_jti is required by OpenID Connect
+            # but it is optional by RFC7523
             # use cache to validate jti value
             key = 'jti:{}-{}'.format(claims['sub'], jti)
             if cache.get(key):
@@ -109,17 +85,55 @@ of :class:`ClientSecretJWT`::
             return True
 
         def resolve_client_public_key(self, client, headers):
-            # the JWT assertion is signed by client's secret key
-            # we need to use client's public key to verify the signature
-            # how to store client's public key is decided by you
-            return client.public_key
+            if headers['alg'] == 'HS256':
+                return client.client_secret
+            if headers['alg'] == 'RS256':
+                return client.public_key
+            # you may support other ``alg`` value
 
     authorization_server.register_client_auth_method(
-        MyPrivateKeyJWT.CLIENT_AUTH_METHOD,
-        MyPrivateKeyJWT('https://example.com/oauth/token')
+        JWTClientAuth.CLIENT_AUTH_METHOD,
+        JWTClientAuth('https://example.com/oauth/token')
     )
 
+The value ``https://example.com/oauth/token`` is your authorization servers's
+token endpoint, which is used as ``aud`` value in JWT.
+
+Now we have added this client auth method to authorization server, but no
+grant types support this authentication method, you need to add it to the
+supported grant types too, e.g. we want to support this in authorization
+code grant::
+
+    from authlib.specs.rfc6749 import grants
+
+    class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
+        TOKEN_ENDPOINT_AUTH_METHODS = [
+            'client_secret_basic',
+            JWTClientAuth.CLIENT_AUTH_METHOD,
+        ]
+        # ...
+
+You may noticed that the value of ``CLIENT_AUTH_METHOD`` is
+``client_assertion_jwt``. It is not ``client_secret_jwt`` or
+``private_key_jwt``, because they have the same logic. In the above
+implementation::
+
+    def resolve_client_public_key(self, client, headers):
+        alg = headers['alg']
+
+If this ``alg`` is a MAC SHA like ``HS256``, it is called ``client_secret_jwt``,
+because the key used to sign a JWT is the client's ``client_secret`` value. If
+this ``alg`` is ``RS256`` or something else, it is called ``private_key_jwt``,
+because client will use its private key to sign the JWT. You can set a limitation
+in the implementation of ``resolve_client_public_key`` to accept only ``HS256``
+alg, in this case, you can also alter ``CLIENT_AUTH_METHOD = 'client_secret_jwt'``.
+
 .. _ClientAuthentication: http://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication
+
+
+Using JWTs Client Assertion in OAuth2Session
+--------------------------------------------
+
 
 
 API Reference
@@ -132,12 +146,3 @@ API Reference
 .. autoclass:: JWTBearerClientAssertion
     :member-order: bysource
     :members:
-
-.. autoclass:: ClientSecretJWT
-    :member-order: bysource
-    :members:
-
-.. autoclass:: PrivateKeyJWT
-    :member-order: bysource
-    :members:
-    :inherited-members:
