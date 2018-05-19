@@ -285,10 +285,8 @@ class OAuth2Session(Session):
         """Send request with auto refresh token feature (if available)."""
         if self.token and not withhold_token:
             if self.token.is_expired():
-                if not self.refresh_token_url:
-                    raise TokenExpiredError()
                 refresh_token = self.token.get('refresh_token')
-                if not refresh_token:
+                if not self.refresh_token_url or not refresh_token:
                     raise TokenExpiredError()
                 self.refresh_token(self.refresh_token_url, refresh_token)
 

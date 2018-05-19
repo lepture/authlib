@@ -110,14 +110,7 @@ class JWS(object):
 
         .. _`Section 7.2`: https://tools.ietf.org/html/rfc7515#section-7.2
         """
-        if not isinstance(s, dict):
-            try:
-                s = json.loads(to_unicode(s))
-            except (ValueError, TypeError):
-                raise DecodeError('Invalid JWS')
-
-        if not isinstance(s, dict):
-            raise DecodeError('Invalid JWS')
+        s = _ensure_dict(s)
 
         payload_segment = s.get('payload')
         if not payload_segment:
@@ -372,3 +365,16 @@ def _b64encode_json(text):
     if isinstance(text, dict):
         text = json.dumps(text, separators=(',', ':'))
     return urlsafe_b64encode(to_bytes(text))
+
+
+def _ensure_dict(s):
+    if not isinstance(s, dict):
+        try:
+            s = json.loads(to_unicode(s))
+        except (ValueError, TypeError):
+            raise DecodeError('Invalid JWS')
+
+    if not isinstance(s, dict):
+        raise DecodeError('Invalid JWS')
+
+    return s

@@ -58,19 +58,23 @@ class BearerToken(object):
         self.refresh_token_generator = refresh_token_generator
         self.expires_generator = expires_generator
 
+    def _get_expires_in(self, client, grant_type):
+        if self.expires_generator is None:
+            expires_in = self.DEFAULT_EXPIRES_IN
+        elif callable(self.expires_generator):
+            expires_in = self.expires_generator(client, grant_type)
+        elif isinstance(self.expires_generator, int):
+            expires_in = self.expires_generator
+        else:
+            expires_in = self.DEFAULT_EXPIRES_IN
+        return expires_in
+
     def __call__(self, client, grant_type, expires_in=None,
                  scope=None, include_refresh_token=True):
         access_token = self.access_token_generator()
 
         if expires_in is None:
-            if self.expires_generator is None:
-                expires_in = self.DEFAULT_EXPIRES_IN
-            elif callable(self.expires_generator):
-                expires_in = self.expires_generator(client, grant_type)
-            elif isinstance(self.expires_generator, int):
-                expires_in = self.expires_generator
-            else:
-                expires_in = self.DEFAULT_EXPIRES_IN
+            expires_in = self._get_expires_in(client, grant_type)
 
         token = {
             'token_type': 'Bearer',
