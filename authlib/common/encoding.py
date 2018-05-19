@@ -1,8 +1,9 @@
+import sys
 import base64
 import struct
-from requests.compat import is_py2
 
-if is_py2:
+
+if sys.version_info[0] == 2:
     unicode_type = unicode
     byte_type = str
     text_types = (unicode, str)

@@ -1,9 +1,5 @@
 import logging
 from requests import Session
-from .errors import (
-    OAuthError,
-    TokenExpiredError,
-)
 from ..common.security import generate_token
 from ..common.urls import url_decode
 from ..specs.rfc6749.parameters import (
@@ -15,6 +11,7 @@ from ..specs.rfc6749.parameters import (
 from ..specs.rfc6749 import OAuth2Token
 from ..specs.rfc6749 import InsecureTransportError
 from ..specs.rfc7009 import prepare_revoke_token_request
+from .errors import OAuthError, TokenExpiredError
 from .oauth2_auth import OAuth2Auth, OAuth2ClientAuth
 
 __all__ = ['OAuth2Session']
@@ -252,8 +249,7 @@ class OAuth2Session(Session):
         return self.token
 
     def revoke_token(self, url, token, token_type_hint=None,
-                     body=None, auth=None, headers=None, timeout=None,
-                     verify=True, proxies=None, **kwargs):
+                     body=None, auth=None, headers=None, **kwargs):
         """Revoke token method defined via `RFC7009`_.
 
         :param url: Revoke Token endpoint, must be HTTPS.
@@ -264,9 +260,6 @@ class OAuth2Session(Session):
                      include in the token request. Prefer kwargs over body.
         :param auth: An auth tuple or method as accepted by requests.
         :param headers: Dict to default request headers with.
-        :param timeout: Timeout of the request in seconds.
-        :param verify: Verify SSL certificate.
-        :param proxies: Proxies to use with requests.
         :param kwargs: Extra parameters to include in the token request.
         :return: A :class:`OAuth2Token` object (a dict too).
 
@@ -285,12 +278,10 @@ class OAuth2Session(Session):
             auth = self._client_auth
 
         return self.post(
-            url, data=dict(url_decode(data)), timeout=timeout,
-            headers=headers, auth=auth, verify=verify, proxies=proxies,
-            withhold_token=True)
+            url, data=dict(url_decode(data)),
+            headers=headers, auth=auth, **kwargs)
 
-    def request(self, method, url, data=None, headers=None,
-                withhold_token=False, auth=None, **kwargs):
+    def request(self, method, url, withhold_token=False, auth=None, **kwargs):
         """Send request with auto refresh token feature (if available)."""
         if self.token and not withhold_token:
             if self.token.is_expired():
@@ -304,7 +295,7 @@ class OAuth2Session(Session):
             if auth is None:
                 auth = self._token_auth
         return super(OAuth2Session, self).request(
-            method, url, headers=headers, data=data, auth=auth, **kwargs)
+            method, url, auth=auth, **kwargs)
 
     def register_compliance_hook(self, hook_type, hook):
         """Register a hook for request/response tweaking.

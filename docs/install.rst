@@ -16,7 +16,21 @@ $ pip install Authlib
 
 Installing Authlib is simple with `pip <http://www.pip-installer.org/>`_::
 
-    $ pip install Authlib
+    $ pip install Authlib[full]
+
+This command will install all the dependencies. But if you don't need all
+the features, you can install the requirements separately::
+
+   $ # no dependencies will be installed
+   $ pip install Authlib
+
+   $ # client part with requests
+   $ pip install Authlib[client]
+
+   $ # crypto requirements for RSA and JWT
+   $ pip install Authlib[crypto]
+
+In this case, Authlib won't install the dependencies that you don't need.
 
 Get the Source Code
 -------------------
