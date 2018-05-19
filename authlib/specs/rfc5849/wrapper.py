@@ -31,33 +31,9 @@ class OAuth1Request(object):
         self.query_params = url_decode(self.query)
         self.body_params = extract_params(body) or []
 
-        auth = headers.get('Authorization')
-        self.realm = None
-        if auth:
-            self.auth_params = _parse_authorization_header(auth)
-            self.realm = dict(self.auth_params).get('realm')
-        else:
-            self.auth_params = []
-
-        oauth_params_set = [
-            (SIGNATURE_TYPE_QUERY, list(_filter_oauth(self.query_params))),
-            (SIGNATURE_TYPE_BODY, list(_filter_oauth(self.body_params))),
-            (SIGNATURE_TYPE_HEADER, list(_filter_oauth(self.auth_params)))
-        ]
-        oauth_params_set = [params for params in oauth_params_set if params[1]]
-        if len(oauth_params_set) > 1:
-            found_types = [p[0] for p in oauth_params_set]
-            raise DuplicatedOAuthProtocolParameterError(
-                '"oauth_" params must come from only 1 signature type '
-                'but were found in {}'.format(','.join(found_types))
-            )
-
-        if oauth_params_set:
-            self.signature_type = oauth_params_set[0][0]
-            self.oauth_params = dict(oauth_params_set[0][1])
-        else:
-            self.signature_type = None
-            self.oauth_params = {}
+        self.auth_params, self.realm = _parse_authorization_header(headers)
+        self.signature_type, self.oauth_params = _parse_oauth_params(
+            self.query_params, self.body_params, self.auth_params)
 
         params = []
         params.extend(self.query_params)
@@ -111,14 +87,43 @@ def _filter_oauth(params):
             yield (k, v)
 
 
-def _parse_authorization_header(authorization_header):
+def _parse_authorization_header(headers):
     """Parse an OAuth authorization header into a list of 2-tuples"""
+    authorization_header = headers.get('Authorization')
+    if not authorization_header:
+        return [], None
+
     auth_scheme = 'oauth '
     if authorization_header.lower().startswith(auth_scheme):
         items = parse_http_list(authorization_header[len(auth_scheme):])
         try:
             items = parse_keqv_list(items).items()
-            return [(unescape(k), unescape(v)) for k, v in items]
+            auth_params = [(unescape(k), unescape(v)) for k, v in items]
+            realm = dict(auth_params).get('realm')
+            return auth_params, realm
         except (IndexError, ValueError):
             pass
     raise ValueError('Malformed authorization header')
+
+
+def _parse_oauth_params(query_params, body_params, auth_params):
+    oauth_params_set = [
+        (SIGNATURE_TYPE_QUERY, list(_filter_oauth(query_params))),
+        (SIGNATURE_TYPE_BODY, list(_filter_oauth(body_params))),
+        (SIGNATURE_TYPE_HEADER, list(_filter_oauth(auth_params)))
+    ]
+    oauth_params_set = [params for params in oauth_params_set if params[1]]
+    if len(oauth_params_set) > 1:
+        found_types = [p[0] for p in oauth_params_set]
+        raise DuplicatedOAuthProtocolParameterError(
+            '"oauth_" params must come from only 1 signature type '
+            'but were found in {}'.format(','.join(found_types))
+        )
+
+    if oauth_params_set:
+        signature_type = oauth_params_set[0][0]
+        oauth_params = dict(oauth_params_set[0][1])
+    else:
+        signature_type = None
+        oauth_params = {}
+    return signature_type, oauth_params

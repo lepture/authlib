@@ -43,13 +43,6 @@ class AuthlibHTTPError(AuthlibBaseError):
             return self._translations.gettext(s)
         return s
 
-    def ngettext(self, singular, plural, n):
-        if self._translations:
-            return self._translations.ngettext(singular, plural, n)
-        if n == 1:
-            return singular
-        return plural
-
     def get_error_description(self):
         return self.description
 
