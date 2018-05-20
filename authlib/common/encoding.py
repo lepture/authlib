@@ -2,8 +2,9 @@ import sys
 import base64
 import struct
 
+is_py2 = sys.version_info[0] == 2
 
-if sys.version_info[0] == 2:
+if is_py2:
     unicode_type = unicode
     byte_type = str
     text_types = (unicode, str)
