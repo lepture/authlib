@@ -86,7 +86,7 @@ class ClientMixin(object):
         are two response types defined by RFC6749: code and token. For
         instance, there is a ``allowed_response_types`` column in your client::
 
-            def check_response_type(response_type):
+            def check_response_type(self, response_type):
                 return response_type in self.response_types
 
         :param response_type: the requested response_type string.
@@ -105,7 +105,7 @@ class ClientMixin(object):
 
         For instance, there is a ``allowed_grant_types`` column in your client::
 
-            def check_grant_type(grant_type):
+            def check_grant_type(self, grant_type):
                 return grant_type in self.grant_types
 
         :param grant_type: the requested grant_type string.
