@@ -51,7 +51,7 @@ first, we need to implement the missing methods::
             }
 
     # register it to authorization server
-    server.register_endpoint(MyRevocationEndpoint)
+    server.register_endpoint(MyIntrospectionEndpoint)
 
 After the registration, we can create a response with::
 
