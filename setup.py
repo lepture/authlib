@@ -32,7 +32,7 @@ setup(
     platforms='any',
     long_description=fread('README.rst'),
     license='GNU AGPLv3+',
-    extra_require={
+    extras_require={
         'full': client_requires + crypto_requires,
         'client': client_requires,
         'crypto': crypto_requires,

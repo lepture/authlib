@@ -9,12 +9,14 @@ Flask OAuth 2.0 Server
         types for you.
 
 This section is not a step by step guide on how to create an OAuth 2.0 server
-in Flask. Instead, we will learn how the Flask implementation works, some
-technical details of an OAuth 2.0 provider.
+in Flask. Instead, we will learn how the Flask implementation works, and some
+technical details in an OAuth 2.0 provider.
 
-We have provided an official example guide on GitHub. Checkout the source
-code and tutorial:
-`example of OAuth 2.0 server <https://github.com/authlib/example-oauth2-server>`_.
+If you need a quick example, here are the official tutorial guide and examples
+on GitHub:
+
+1. Example of OAuth 2.0 server <https://github.com/authlib/example-oauth2-server>`_
+2. Example of OpenID Connect server (not ready)
 
 At the very beginning, we need to know that OAuth 2.0 provider contains two
 type of servers:
@@ -70,9 +72,9 @@ A client is an application making protected resource requests on behalf of the
 resource owner and with its authorization. It contains at least three
 information:
 
-- Client Type, confidential or public
 - Client Identifier, usually called **client_id**
 - Client Password, usually called **client_secret**
+- Client Token Endpoint Authentication Method
 
 Authlib has provided a mixin for SQLAlchemy, define the client with this mixin::
 
@@ -120,8 +122,8 @@ With the SQLAlchemy mixin provided by Authlib::
 A token is associated with a resource owner. There is no certain name for
 it, here we call it ``user``, but it can be anything else.
 
-Define Server
-~~~~~~~~~~~~~
+Server
+~~~~~~
 
 Authlib provides a ready to use :class:`~authlib.flask.oauth2.AuthorizationServer`
 which has built-in tools to handle requests and responses::
@@ -227,6 +229,73 @@ grants for them.
 
 .. _`authlib/playground`: https://github.com/authlib/playground
 
+
+Token Endpoint Auth Methods
+---------------------------
+
+A token endpoint auth method is a certain method to authenticate a client at
+the token endpoint. For example:
+
+.. code:: http
+
+    POST /token HTTP/1.1
+    Host: server.example.com
+    Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
+    Content-Type: application/x-www-form-urlencoded
+
+    grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA
+    &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb
+
+That ``Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW`` is used to
+authenticate the client. Use of a Basic Authorization in header is called
+``client_secret_basic``.
+
+RFC6749 has no clarification for token endpoint client authentication methods,
+but there are some use cases in RFC6749, except that they have no names. The
+names are defined by RFC7591, which are:
+
+- **none**: The client is a public client which means it has no client_secret
+
+.. code:: http
+
+    POST /token HTTP/1.1
+    Host: server.example.com
+    Content-Type: application/x-www-form-urlencoded
+
+    grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA
+    &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb
+    &client_id=s6BhdRkqt3
+
+- **client_secret_post**: The client uses the HTTP POST parameters
+
+.. code:: http
+
+    POST /token HTTP/1.1
+    Host: server.example.com
+    Content-Type: application/x-www-form-urlencoded
+
+    grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA
+    &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb
+    &client_id=s6BhdRkqt3&client_secret=gX1fBat3bV
+
+- **client_secret_basic**: The client uses HTTP Basic Authorization
+
+.. code:: http
+
+    POST /token HTTP/1.1
+    Host: server.example.com
+    Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
+    Content-Type: application/x-www-form-urlencoded
+
+    grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA
+    &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb
+
+In the Client model, there is an attribute ``token_endpoint_auth_method``,
+it will set a limitation on the authentication methods of the client.
+
+It is also possible to add other client authentication methods, read more
+in :ref:`jwt_client_authentication`.
+
 Register Grants
 ---------------
 
@@ -293,6 +362,12 @@ Implement this grant by subclass :class:`AuthorizationCodeGrant`::
 
 .. note:: AuthorizationCodeGrant is the most complex grant.
 
+Default allowed client authentication methods::
+
+    TOKEN_ENDPOINT_AUTH_METHODS = [
+        'client_secret_basic', 'client_secret_post', 'none'
+    ]
+
 Implicit Grant
 ~~~~~~~~~~~~~~
 
@@ -307,6 +382,7 @@ with::
     server.register_grant(grants.ImplicitGrant)
 
 Implicit Grant is used by **public** client which has no **client_secret**.
+Only allowed client authentication methods: ``none``.
 
 Resource Owner Password Credentials Grant
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -326,6 +402,15 @@ it with a subclass of :class:`ResourceOwnerPasswordCredentialsGrant`::
     # register it to grant endpoint
     server.register_grant(PasswordGrant)
 
+
+Default allowed client authentication methods: ``client_secret_basic``.
+You can add more in the subclass::
+
+    class PasswordGrant(grants.ResourceOwnerPasswordCredentialsGrant):
+        TOKEN_ENDPOINT_AUTH_METHODS = [
+            'client_secret_basic', 'client_secret_post'
+        ]
+
 Client Credentials Grant
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -337,6 +422,14 @@ grant type. It can be easily registered with::
 
     # register it to grant endpoint
     server.register_grant(grants.ClientCredentialsGrant)
+
+Default allowed client authentication methods: ``client_secret_basic``.
+You can add more in the subclass::
+
+    class ClientCredentialsGrant(grants.ClientCredentialsGrant):
+        TOKEN_ENDPOINT_AUTH_METHODS = [
+            'client_secret_basic', 'client_secret_post'
+        ]
 
 Refresh Token
 -------------
@@ -360,6 +453,13 @@ provides it as a grant type, implement it with a subclass of
     # register it to grant endpoint
     server.register_grant(RefreshTokenGrant)
 
+Default allowed client authentication methods: ``client_secret_basic``.
+You can add more in the subclass::
+
+    class RefreshTokenGrant(grants.RefreshTokenGrant):
+        TOKEN_ENDPOINT_AUTH_METHODS = [
+            'client_secret_basic', 'client_secret_post'
+        ]
 
 Other Token Endpoints
 ---------------------
