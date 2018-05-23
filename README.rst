@@ -4,19 +4,6 @@ Authlib
 The ultimate Python library in building OAuth and OpenID Connect servers.
 JWS, JWK, JWA, JWT are included.
 
-.. image:: https://travis-ci.org/lepture/authlib.svg?branch=master
-    :target: https://travis-ci.org/lepture/authlib
-    :alt: Build Status
-.. image:: https://codecov.io/gh/lepture/authlib/branch/master/graph/badge.svg
-    :target: https://codecov.io/gh/lepture/authlib
-    :alt: Coverage
-.. image:: https://img.shields.io/badge/subscribe-newsletter-green.svg
-    :target: https://tinyletter.com/authlib
-    :alt: Newsletter
-.. image:: https://img.shields.io/twitter/follow/authlib.svg?style=social&logo=twitter&label=Follow
-    :target: https://twitter.com/intent/follow?screen_name=authlib
-    :alt: Twitter
-
 Useful Links
 ------------
 

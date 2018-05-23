@@ -132,7 +132,7 @@ Lovely features that Authlib has built-in:
 <details>
 <summary>🎉 RFC7523: JSON Web Token (JWT) Profile for OAuth 2.0 Client Authentication and Authorization Grants</summary>
 
-- [ ] Using JWTs as Client Authorization
+- [x] Using JWTs as Client Authorization
 - [x] Using JWTs as Authorization Grants
 </details>
 

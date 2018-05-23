@@ -17,7 +17,7 @@ Version 0.8
 
 **Breaking Changes**:
 
-- Make all requirements optional, read more on :ref:`install`.
+- Make all requirements optional, read more in :ref:`install`.
 
 Version 0.7: Honami
 -------------------
