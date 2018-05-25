@@ -14,6 +14,7 @@ Version 0.8
 - Redesign error system. Add i18n support for error descriptions.
 - Improve JWT key handles, auto load JWK and JWK set.
 - Add JWTs for Client Authentication of :ref:`specs/rfc7523`.
+- Add ``require_oauth.acquire`` with statement.
 
 
 Version 0.7: Honami

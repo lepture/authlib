@@ -68,7 +68,6 @@ class ResourceProtector(_ResourceProtector):
             @app.route('/api/user')
             def user_api():
                 with require_oauth.acquire('profile') as token:
-                    # Note: token can be None
                     user = User.query.get(token.user_id)
                     return jsonify(user.to_dict())
         """
