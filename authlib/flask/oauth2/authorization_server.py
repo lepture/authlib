@@ -150,24 +150,22 @@ class AuthorizationServer(_AuthorizationServer):
         ``OAUTH2_REFRESH_TOKEN_GENERATOR=True``.
         """
         access_token_generator = app.config.get(
-            'OAUTH2_ACCESS_TOKEN_GENERATOR', True
-        )
+            'OAUTH2_ACCESS_TOKEN_GENERATOR', True)
 
         if isinstance(access_token_generator, str):
             access_token_generator = import_string(access_token_generator)
-        else:
+        elif not callable(access_token_generator):
             def access_token_generator(**kwargs):
                 return generate_token(42)
 
         refresh_token_generator = app.config.get(
-            'OAUTH2_REFRESH_TOKEN_GENERATOR', False
-        )
+            'OAUTH2_REFRESH_TOKEN_GENERATOR', False)
         if isinstance(refresh_token_generator, str):
             refresh_token_generator = import_string(refresh_token_generator)
         elif refresh_token_generator is True:
             def refresh_token_generator(**kwargs):
                 return generate_token(48)
-        else:
+        elif not callable(refresh_token_generator):
             refresh_token_generator = None
 
         expires_generator = self.create_expires_generator(app)
