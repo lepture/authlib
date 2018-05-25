@@ -226,6 +226,12 @@ def create_resource_server(app):
     def public_info():
         return jsonify(status='ok')
 
+    @app.route('/acquire')
+    def test_acquire():
+        with require_oauth.acquire('profile') as token:
+            user = token.user
+            return jsonify(id=user.id, username=user.username)
+
 
 def create_flask_app():
     app = Flask(__name__)

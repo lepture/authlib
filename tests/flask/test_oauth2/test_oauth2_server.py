@@ -82,10 +82,14 @@ class ResourceTest(TestCase):
         self.prepare_data()
         self.create_token(0)
         headers = self.create_bearer_header('a1')
+
         rv = self.client.get('/user', headers=headers)
         self.assertEqual(rv.status_code, 401)
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'invalid_token')
+
+        rv = self.client.get('/acquire', headers=headers)
+        self.assertEqual(rv.status_code, 401)
 
     def test_insufficient_token(self):
         self.prepare_data()
@@ -100,7 +104,12 @@ class ResourceTest(TestCase):
         self.prepare_data()
         self.create_token()
         headers = self.create_bearer_header('a1')
+
         rv = self.client.get('/user', headers=headers)
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['username'], 'foo')
+
+        rv = self.client.get('/acquire', headers=headers)
         resp = json.loads(rv.data)
         self.assertEqual(resp['username'], 'foo')
 

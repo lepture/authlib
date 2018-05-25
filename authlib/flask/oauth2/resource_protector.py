@@ -1,11 +1,12 @@
 import functools
-from flask import Response, json
+from contextlib import contextmanager
 from flask import request as _req
 from flask import _app_ctx_stack
 from werkzeug.local import LocalProxy
 from authlib.specs.rfc6749 import OAuth2Error, TokenRequest
 from authlib.specs.rfc6749 import ResourceProtector as _ResourceProtector
 from .signals import token_authenticated
+from ..error import raise_oauth2_error
 
 
 class ResourceProtector(_ResourceProtector):
@@ -41,26 +42,49 @@ class ResourceProtector(_ResourceProtector):
             return jsonify(user.to_dict())
 
     """
+    def acquire_token(self, scope=None):
+        """A method to acquire current valid token with the given scope.
+
+        :param scope: resource scope value
+        :return: token object
+        """
+        request = TokenRequest(
+            _req.method,
+            _req.full_path,
+            _req.data,
+            _req.headers
+        )
+        token = self.validate_request(scope, request)
+        token_authenticated.send(self, token=token)
+        ctx = _app_ctx_stack.top
+        ctx.authlib_server_oauth2_token = token
+        return token
+
+    @contextmanager
+    def acquire(self, scope=None):
+        """The with statement of ``require_oauth``. Instead of using a
+        decorator, you can use a with statement instead::
+
+            @app.route('/api/user')
+            def user_api():
+                with require_oauth.acquire('profile') as token:
+                    # Note: token can be None
+                    user = User.query.get(token.user_id)
+                    return jsonify(user.to_dict())
+        """
+        try:
+            yield self.acquire_token(scope)
+        except OAuth2Error as error:
+            raise_oauth2_error(error)
+
     def __call__(self, scope=None):
         def wrapper(f):
             @functools.wraps(f)
             def decorated(*args, **kwargs):
                 try:
-                    request = TokenRequest(
-                        _req.method,
-                        _req.full_path,
-                        _req.data,
-                        _req.headers
-                    )
-                    token = self.validate_request(scope, request)
-                    token_authenticated.send(self, token=token)
-                    ctx = _app_ctx_stack.top
-                    ctx.authlib_server_oauth2_token = token
+                    self.acquire_token(scope)
                 except OAuth2Error as error:
-                    status = error.status_code
-                    body = dict(error.get_body())
-                    headers = error.get_headers()
-                    return Response(json.dumps(body), status=status, headers=headers)
+                    raise_oauth2_error(error)
                 return f(*args, **kwargs)
             return decorated
         return wrapper
