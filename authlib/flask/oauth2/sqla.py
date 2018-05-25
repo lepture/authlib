@@ -2,8 +2,11 @@ import time
 import json
 from sqlalchemy import Column, String, Boolean, Text, Integer
 from sqlalchemy.ext.hybrid import hybrid_property
-from authlib.specs.rfc6749 import ClientMixin, TokenMixin
-from authlib.specs.oidc import AuthorizationCodeMixin
+from authlib.specs.rfc6749 import (
+    ClientMixin,
+    TokenMixin,
+    AuthorizationCodeMixin,
+)
 
 
 class OAuth2ClientMixin(ClientMixin):
