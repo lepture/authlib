@@ -156,7 +156,7 @@ class AuthorizationServer(_AuthorizationServer):
         if isinstance(access_token_generator, str):
             access_token_generator = import_string(access_token_generator)
         else:
-            def access_token_generator():
+            def access_token_generator(**kwargs):
                 return generate_token(42)
 
         refresh_token_generator = app.config.get(
@@ -165,7 +165,7 @@ class AuthorizationServer(_AuthorizationServer):
         if isinstance(refresh_token_generator, str):
             refresh_token_generator = import_string(refresh_token_generator)
         elif refresh_token_generator is True:
-            def refresh_token_generator():
+            def refresh_token_generator(**kwargs):
                 return generate_token(48)
         else:
             refresh_token_generator = None

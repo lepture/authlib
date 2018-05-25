@@ -117,8 +117,12 @@ class RefreshTokenGrant(BaseGrant):
         verification or is invalid, the authorization server returns an error
         response as described in Section 5.2.
         """
-        scope = self.request.scope
         credential = self.request.credential
+        user = self.authenticate_user(credential)
+        if not user:
+            raise InvalidRequestError('There is no "user" for this token.')
+
+        scope = self.request.scope
         if not scope:
             scope = credential.get_scope()
 
@@ -126,13 +130,11 @@ class RefreshTokenGrant(BaseGrant):
         expires_in = credential.get_expires_in()
         token = self.generate_token(
             client, self.GRANT_TYPE,
+            user=user,
             expires_in=expires_in,
             scope=scope,
         )
         log.debug('Issue token {!r} to {!r}'.format(token, client))
-        user = self.authenticate_user(credential)
-        if not user:
-            raise InvalidRequestError('There is no "user" for this token.')
 
         self.request.user = user
         self.server.save_token(token, self.request)

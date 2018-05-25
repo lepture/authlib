@@ -144,6 +144,7 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
         client = self.request.client
         token = self.generate_token(
             client, self.GRANT_TYPE,
+            user=self.request.user,
             scope=self.request.scope,
         )
         log.debug('Issue token {!r} to {!r}'.format(token, client))

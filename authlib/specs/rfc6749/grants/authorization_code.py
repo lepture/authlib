@@ -296,18 +296,19 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         client = self.request.client
         authorization_code = self.request.credential
 
+        user = self.authenticate_user(authorization_code)
+        if not user:
+            raise InvalidRequestError('There is no "user" for this code.')
+
         scope = authorization_code.get_scope()
         token = self.generate_token(
             client,
             self.GRANT_TYPE,
+            user=user,
             scope=scope,
             include_refresh_token=client.has_client_secret(),
         )
         log.debug('Issue token {!r} to {!r}'.format(token, client))
-
-        user = self.authenticate_user(authorization_code)
-        if not user:
-            raise InvalidRequestError('There is no "user" for this code.')
 
         self.request.user = user
         self.server.save_token(token, self.request)

@@ -41,12 +41,13 @@ class BaseGrant(object):
     def client(self):
         return self.request.client
 
-    def generate_token(self, client, grant_type, expires_in=None,
-                       scope=None, include_refresh_token=True):
+    def generate_token(self, client, grant_type, user=None, scope=None,
+                       expires_in=None, include_refresh_token=True):
         return self.server.generate_token(
             client, grant_type,
-            expires_in=expires_in,
+            user=user,
             scope=scope,
+            expires_in=expires_in,
             include_refresh_token=include_refresh_token,
         )
 

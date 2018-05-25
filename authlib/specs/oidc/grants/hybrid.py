@@ -54,6 +54,7 @@ class OpenIDHybridGrant(OpenIDMixin, AuthorizationCodeGrant):
 
         token = self.generate_token(
             client, 'implicit',
+            user=grant_user,
             scope=self.request.scope,
             include_refresh_token=False
         )

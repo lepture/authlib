@@ -193,6 +193,7 @@ class ImplicitGrant(RedirectAuthGrant):
             client = self.request.client
             token = self.generate_token(
                 client, self.GRANT_TYPE,
+                user=grant_user,
                 scope=self.request.scope,
                 include_refresh_token=False
             )
