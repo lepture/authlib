@@ -7,6 +7,9 @@ from authlib.specs.rfc6749 import (
     TokenMixin,
     AuthorizationCodeMixin,
 )
+from authlib.specs.oidc import (
+    AuthorizationCodeMixin as OIDCCodeMixin
+)
 
 
 class OAuth2ClientMixin(ClientMixin):
@@ -170,7 +173,6 @@ class OAuth2AuthorizationCodeMixin(AuthorizationCodeMixin):
     redirect_uri = Column(Text, default='')
     response_type = Column(Text, default='')
     scope = Column(Text, default='')
-    nonce = Column(Text)
     auth_time = Column(
         Integer, nullable=False,
         default=lambda: int(time.time())
@@ -185,11 +187,15 @@ class OAuth2AuthorizationCodeMixin(AuthorizationCodeMixin):
     def get_scope(self):
         return self.scope
 
-    def get_nonce(self):
-        return self.nonce
-
     def get_auth_time(self):
         return self.auth_time
+
+
+class OIDCAuthorizationCodeMixin(OAuth2AuthorizationCodeMixin, OIDCCodeMixin):
+    nonce = Column(Text)
+
+    def get_nonce(self):
+        return self.nonce
 
 
 class OAuth2TokenMixin(TokenMixin):

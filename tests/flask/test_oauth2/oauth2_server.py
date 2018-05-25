@@ -8,8 +8,8 @@ from authlib.common.security import generate_token
 from authlib.common.encoding import to_bytes, to_unicode
 from authlib.flask.oauth2.sqla import (
     OAuth2ClientMixin,
-    OAuth2AuthorizationCodeMixin,
     OAuth2TokenMixin,
+    OIDCAuthorizationCodeMixin,
     create_bearer_token_validator,
     create_query_client_func,
     create_save_token_func,
@@ -59,7 +59,7 @@ class Client(db.Model, OAuth2ClientMixin):
     user = db.relationship('User')
 
 
-class AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):
+class AuthorizationCode(db.Model, OIDCAuthorizationCodeMixin):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, nullable=False)
 
