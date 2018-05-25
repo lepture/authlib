@@ -216,6 +216,25 @@ class AuthorizationCodeTest(TestCase):
         self.assertIn('access_token', resp)
         self.assertIn('refresh_token', resp)
 
+    def test_token_generator(self):
+        m = 'tests.flask.test_oauth2.oauth2_server:token_generator'
+        self.app.config.update({'OAUTH2_ACCESS_TOKEN_GENERATOR': m})
+        self.prepare_data(False, token_endpoint_auth_method='none')
+
+        rv = self.client.post(self.authorize_url, data={'user_id': '1'})
+        self.assertIn('code=', rv.location)
+
+        params = dict(url_decode(urlparse.urlparse(rv.location).query))
+        code = params['code']
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': 'authorization_code',
+            'code': code,
+            'client_id': 'code-client',
+        })
+        resp = json.loads(rv.data)
+        self.assertIn('access_token', resp)
+        self.assertIn('c-authorization_code.1.', resp['access_token'])
+
 
 class CacheAuthorizationCodeTest(AuthorizationCodeTest):
     def register_grant(self, server):

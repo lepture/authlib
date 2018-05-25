@@ -166,3 +166,20 @@ class RefreshTokenTest(TestCase):
         }, headers=headers)
         resp = json.loads(rv.data)
         self.assertIn('access_token', resp)
+
+    def test_token_generator(self):
+        m = 'tests.flask.test_oauth2.oauth2_server:token_generator'
+        self.app.config.update({'OAUTH2_ACCESS_TOKEN_GENERATOR': m})
+
+        self.prepare_data()
+        self.create_token()
+        headers = self.create_basic_header(
+            'refresh-client', 'refresh-secret'
+        )
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': 'refresh_token',
+            'refresh_token': 'r1',
+        }, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertIn('access_token', resp)
+        self.assertIn('r-refresh_token.1.', resp['access_token'])

@@ -69,3 +69,10 @@ class ImplicitTest(TestCase):
         self.assertIn('access_token=', rv.location)
         self.assertIn('state=bar', rv.location)
         self.assertIn('scope=profile', rv.location)
+
+    def test_token_generator(self):
+        m = 'tests.flask.test_oauth2.oauth2_server:token_generator'
+        self.app.config.update({'OAUTH2_ACCESS_TOKEN_GENERATOR': m})
+        self.prepare_data()
+        rv = self.client.post(self.authorize_url, data={'user_id': '1'})
+        self.assertIn('access_token=i-implicit.1.', rv.location)

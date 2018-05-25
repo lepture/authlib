@@ -73,3 +73,19 @@ class JWTBearerGrantTest(TestCase):
         })
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'unauthorized_client')
+
+    def test_token_generator(self):
+        m = 'tests.flask.test_oauth2.oauth2_server:token_generator'
+        self.app.config.update({'OAUTH2_ACCESS_TOKEN_GENERATOR': m})
+        self.prepare_data()
+        assertion = JWTBearerGrant.sign(
+            'foo', issuer='jwt-client', audience='https://i.b/token',
+            subject='self', header={'alg': 'HS256', 'kid': '1'}
+        )
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': JWTBearerGrant.GRANT_TYPE,
+            'assertion': assertion
+        })
+        resp = json.loads(rv.data)
+        self.assertIn('access_token', resp)
+        self.assertIn('j-', resp['access_token'])

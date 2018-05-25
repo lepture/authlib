@@ -153,6 +153,13 @@ class JWTBearerGrant(_JWTBearerGrant):
         return keys[headers['kid']]
 
 
+def token_generator(client, grant_type, user=None, scope=None):
+    token = '{}-{}'.format(client.client_id[0], grant_type)
+    if user:
+        token = '{}.{}'.format(token, user.get_user_id())
+    return '{}.{}'.format(token, generate_token(32))
+
+
 def create_authorization_server(app):
     query_client = create_query_client_func(db.session, Client)
     save_token = create_save_token_func(db.session, Token)

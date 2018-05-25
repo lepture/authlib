@@ -74,3 +74,18 @@ class ClientCredentialsTest(TestCase):
         }, headers=headers)
         resp = json.loads(rv.data)
         self.assertIn('access_token', resp)
+
+    def test_token_generator(self):
+        m = 'tests.flask.test_oauth2.oauth2_server:token_generator'
+        self.app.config.update({'OAUTH2_ACCESS_TOKEN_GENERATOR': m})
+
+        self.prepare_data()
+        headers = self.create_basic_header(
+            'credential-client', 'credential-secret'
+        )
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': 'client_credentials',
+        }, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertIn('access_token', resp)
+        self.assertIn('c-client_credentials.', resp['access_token'])
