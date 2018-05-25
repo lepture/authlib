@@ -12,3 +12,11 @@ checks:
     enabled: true
     config:
       threshold: 35
+
+  file-lines:
+    config:
+      threshold: 460
+
+  return-statements:
+    config:
+      threshold: 6

@@ -24,11 +24,11 @@ from authlib.specs.rfc7517 import JWKAlgorithm
 from authlib.common.encoding import to_bytes, base64_to_int, int_to_base64
 
 invalid_strings = [
-            b'-----BEGIN PUBLIC KEY-----',
-            b'-----BEGIN CERTIFICATE-----',
-            b'-----BEGIN RSA PUBLIC KEY-----',
-            b'ssh-rsa'
-        ]
+    b'-----BEGIN PUBLIC KEY-----',
+    b'-----BEGIN CERTIFICATE-----',
+    b'-----BEGIN RSA PUBLIC KEY-----',
+    b'ssh-rsa'
+]
 
 
 class RSAAlgorithm(JWKAlgorithm):
@@ -52,12 +52,10 @@ class RSAAlgorithm(JWKAlgorithm):
         if any_props_found and not all(props_found):
             raise ValueError(
                 'RSA key must include all parameters '
-                'if any are present besides d'
-            )
+                'if any are present besides d')
 
         public_numbers = RSAPublicNumbers(
-            base64_to_int(obj['e']), base64_to_int(obj['n'])
-        )
+            base64_to_int(obj['e']), base64_to_int(obj['n']))
 
         if any_props_found:
             numbers = RSAPrivateNumbers(
@@ -67,13 +65,11 @@ class RSAAlgorithm(JWKAlgorithm):
                 dmp1=base64_to_int(obj['dp']),
                 dmq1=base64_to_int(obj['dq']),
                 iqmp=base64_to_int(obj['qi']),
-                public_numbers=public_numbers
-            )
+                public_numbers=public_numbers)
         else:
             d = base64_to_int(obj['d'])
             p, q = rsa_recover_prime_factors(
-                public_numbers.n, d, public_numbers.e
-            )
+                public_numbers.n, d, public_numbers.e)
             numbers = RSAPrivateNumbers(
                 d=d,
                 p=p,
@@ -81,8 +77,7 @@ class RSAAlgorithm(JWKAlgorithm):
                 dmp1=rsa_crt_dmp1(d, p),
                 dmq1=rsa_crt_dmq1(d, q),
                 iqmp=rsa_crt_iqmp(p, q),
-                public_numbers=public_numbers
-            )
+                public_numbers=public_numbers)
 
         return numbers.private_key(default_backend())
 
