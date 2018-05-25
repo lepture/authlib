@@ -12,7 +12,6 @@ def fread(filename):
 
 
 client_requires = ['requests']
-# TODO: other crypto backends
 crypto_requires = ['cryptography']
 
 
@@ -32,11 +31,7 @@ setup(
     platforms='any',
     long_description=fread('README.rst'),
     license='GNU AGPLv3+',
-    extras_require={
-        'full': client_requires + crypto_requires,
-        'client': client_requires,
-        'crypto': crypto_requires,
-    },
+    install_requires=client_requires + crypto_requires,
     project_urls={
         'Bug Tracker': 'https://github.com/lepture/authlib/issues',
         'Documentation': 'https://docs.authib.org/',

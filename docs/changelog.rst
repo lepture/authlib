@@ -15,9 +15,6 @@ Version 0.8
 - Improve JWT key handles, auto load JWK and JWK set.
 - Add JWTs for Client Authentication of :ref:`specs/rfc7523`.
 
-**Breaking Changes**:
-
-- Make all requirements optional, read more in :ref:`install`.
 
 Version 0.7: Honami
 -------------------
