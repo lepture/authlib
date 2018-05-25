@@ -39,3 +39,13 @@ Implementations
 - Flask OAuth 1.0 Server
 - Flask OAuth 2.0 Server
 - Flask OpenID Connect 1.0
+
+License
+-------
+
+Authlib is licensed under AGPLv3+. Please see LICENSE for licensing details.
+
+If this license does not fit your company, consider to purchase a commercial
+license. Find more information on `Authlib Plans`_.
+
+.. _`Authlib Plans`: https://authlib.org/plans

@@ -208,6 +208,4 @@ You can also find it at <https://keybase.io/lepture>.
 Authlib is licensed under AGPLv3+. Please see LICENSE for licensing details.
 
 If this license does not fit your company, consider to purchase a commercial
-license.
-
-Find more information on <https://authlib.org/support#commercial-license>
+license. Find more information on [Authlib Plans](https://authlib.org/plans).
