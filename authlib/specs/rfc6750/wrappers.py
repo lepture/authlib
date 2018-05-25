@@ -98,8 +98,13 @@ class BearerToken(object):
 
 
 def _gen_token(func, client, grant_type, user, scope):
-    spec = inspect.getfullargspec(func)
-    if not spec.args and not spec.varkw:
+    if hasattr(inspect, 'getfullargspec'):
+        spec = inspect.getfullargspec(func)
+        no_args = not spec.args and not spec.varkw
+    else:
+        spec = inspect.getargspec(func)
+        no_args = not spec.args and not spec.keywords
+    if no_args:
         deprecate('Token generator now accepts parameters', '0.11', 'vhL75', 'TG')
         return func()
 
