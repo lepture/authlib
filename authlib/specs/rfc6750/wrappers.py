@@ -51,7 +51,16 @@ class BearerToken(object):
     :param include_refresh_token: should refresh_token be included.
     :return: Token dict
     """
+
+    #: default expires_in value
     DEFAULT_EXPIRES_IN = 3600
+    #: default expires_in value differentiate by grant_type
+    GRANT_TYPES_EXPIRES_IN = {
+        'authorization_code': 864000,
+        'implicit': 3600,
+        'password': 864000,
+        'client_credentials': 864000
+    }
 
     def __init__(self, access_token_generator,
                  refresh_token_generator=None,
@@ -62,7 +71,8 @@ class BearerToken(object):
 
     def _get_expires_in(self, client, grant_type):
         if self.expires_generator is None:
-            expires_in = self.DEFAULT_EXPIRES_IN
+            expires_in = self.GRANT_TYPES_EXPIRES_IN.get(
+                grant_type, self.DEFAULT_EXPIRES_IN)
         elif callable(self.expires_generator):
             expires_in = self.expires_generator(client, grant_type)
         elif isinstance(self.expires_generator, int):
@@ -105,7 +115,7 @@ def _gen_token(func, client, grant_type, user, scope):
         spec = inspect.getargspec(func)
         no_args = not spec.args and not spec.keywords
     if no_args:
-        deprecate('Token generator now accepts parameters', '0.11', 'vhL75', 'TG')
+        deprecate('Token generator now accepts parameters', '0.11', 'vhL75', 'tg')
         return func()
 
     return func(

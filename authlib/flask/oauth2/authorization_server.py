@@ -116,21 +116,26 @@ class AuthorizationServer(_AuthorizationServer):
         if error_uris:
             return dict(error_uris)
 
-    def create_expires_generator(self, app):
+    def create_token_expires_in_generator(self, app):
         """Create a generator function for generating ``expires_in`` value.
         Developers can re-implement this method with a subclass if other means
         required. The default expires_in value is defined by ``grant_type``,
         different ``grant_type`` has different value. It can be configured
         with::
 
-            OAUTH2_EXPIRES_IN = {
+            OAUTH2_TOKEN_EXPIRES_IN = {
                 'authorization_code': 864000,
                 'urn:ietf:params:oauth:grant-type:jwt-bearer': 3600,
             }
         """
         expires_conf = {}
         expires_conf.update(GRANT_TYPES_EXPIRES)
-        expires_conf.update(app.config.get('OAUTH2_EXPIRES_IN', {}))
+
+        _old_expires = app.config.get('OAUTH2_EXPIRES_IN')
+        if _old_expires:
+            deprecate('Deprecate "OAUTH2_EXPIRES_IN".', '0.11', 'vhL75', 'ae')
+            expires_conf.update(_old_expires)
+        expires_conf.update(app.config.get('OAUTH2_TOKEN_EXPIRES_IN', {}))
 
         def expires_in(client, grant_type):
             conf_key = 'OAUTH2_EXPIRES_{}'.format(grant_type.upper())
@@ -168,7 +173,7 @@ class AuthorizationServer(_AuthorizationServer):
         elif not callable(refresh_token_generator):
             refresh_token_generator = None
 
-        expires_generator = self.create_expires_generator(app)
+        expires_generator = self.create_token_expires_in_generator(app)
         return BearerToken(
             access_token_generator,
             refresh_token_generator,

@@ -17,6 +17,14 @@ Version 0.8
 - Add ``require_oauth.acquire`` with statement.
 - Separate AuthorizationCodeMixin in ``authlib.flask.oauth2.sqla``.
 
+Deprecated Changes:
+
+- Rename config key ``OAUTH2_EXPIRES_IN`` to ``OAUTH2_TOKEN_EXPIRES_IN``.
+
+Breaking Changes:
+
+- Rename Flask OAuth 2.0 ``create_expires_generator`` to
+  ``create_token_expires_in_generator``
 
 Version 0.7: Honami
 -------------------
