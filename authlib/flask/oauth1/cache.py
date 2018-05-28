@@ -1,24 +1,4 @@
-from authlib.specs.rfc5849 import TemporaryCredentialMixin
-
-
-class TemporaryCredential(dict, TemporaryCredentialMixin):
-    def get_client_id(self):
-        return self.get('client_id')
-
-    def get_user_id(self):
-        return self.get('user_id')
-
-    def get_redirect_uri(self):
-        return self.get('oauth_callback')
-
-    def check_verifier(self, verifier):
-        return self.get('oauth_verifier') == verifier
-
-    def get_oauth_token(self):
-        return self.get('oauth_token')
-
-    def get_oauth_token_secret(self):
-        return self.get('oauth_token_secret')
+from authlib.specs.rfc5849 import TemporaryCredential
 
 
 def register_temporary_credential_hooks(
@@ -69,7 +49,7 @@ def register_temporary_credential_hooks(
         'create_authorization_verifier', create_authorization_verifier)
 
 
-def create_exists_nonce_func(cache, key_prefix='nonce:', expires=300):
+def create_exists_nonce_func(cache, key_prefix='nonce:', expires=86400):
     """Create an ``exists_nonce`` function that can be used in hooks and
     resource protector.
 
@@ -88,7 +68,7 @@ def create_exists_nonce_func(cache, key_prefix='nonce:', expires=300):
 
 
 def register_nonce_hooks(
-        authorization_server, cache, key_prefix='nonce:', expires=300):
+        authorization_server, cache, key_prefix='nonce:', expires=86400):
     """Register nonce related hooks to authorization server.
 
     :param authorization_server: AuthorizationServer instance

@@ -25,7 +25,8 @@ from .client import Client
 from .models import (
     ClientMixin,
     TemporaryCredentialMixin,
-    TokenCredentialMixin
+    TokenCredentialMixin,
+    TemporaryCredential,
 )
 from .authorization_server import AuthorizationServer
 from .resource_protector import ResourceProtector

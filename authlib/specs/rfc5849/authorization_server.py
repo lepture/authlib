@@ -27,6 +27,12 @@ class AuthorizationServer(BaseServer):
         request.client = client
         return client
 
+    def process_request(self, request):
+        raise NotImplementedError()
+
+    def handle_response(self, status_code, payload, headers):
+        raise NotImplementedError()
+
     def validate_temporary_credentials_request(self, request):
         """Validate HTTP request for temporary credentials."""
 
@@ -59,7 +65,7 @@ class AuthorizationServer(BaseServer):
         self.validate_oauth_signature(request)
         return request
 
-    def create_valid_temporary_credentials_response(self, request):
+    def create_temporary_credentials_response(self, request):
         """Validate temporary credentials token request and create response
         for temporary credentials token. Assume the endpoint of temporary
         credentials request is ``https://photos.example.net/initiate``:
@@ -90,10 +96,15 @@ class AuthorizationServer(BaseServer):
         :param request: OAuth1Request instance.
         :returns: (status_code, body, headers)
         """
+        request = self.process_request(request)
         try:
             self.validate_temporary_credentials_request(request)
         except OAuth1Error as error:
-            return error.status_code, error.get_body(), error.get_headers()
+            return self.handle_response(
+                error.status_code,
+                error.get_body(),
+                error.get_headers()
+            )
 
         credential = self.create_temporary_credential(request)
         payload = [
@@ -101,7 +112,7 @@ class AuthorizationServer(BaseServer):
             ('oauth_token_secret', credential.get_oauth_token_secret()),
             ('oauth_callback_confirmed', True)
         ]
-        return 200, payload, self.TOKEN_RESPONSE_HEADER
+        return self.handle_response(200, payload, self.TOKEN_RESPONSE_HEADER)
 
     def validate_authorization_request(self, request):
         """Validate the request for resource owner authorization."""
@@ -116,7 +127,7 @@ class AuthorizationServer(BaseServer):
         request.credential = credential
         return request
 
-    def create_valid_authorization_response(self, request, grant_user=None):
+    def create_authorization_response(self, request, grant_user=None):
         """Validate authorization request and create authorization response.
         Assume the endpoint for authorization request is
         ``https://photos.example.net/authorize``, the client redirects Jane's
@@ -138,6 +149,7 @@ class AuthorizationServer(BaseServer):
         :param grant_user: if granted, pass the grant user, otherwise None.
         :returns: (status_code, body, headers)
         """
+        request = self.process_request(request)
         # authorize endpoint should try catch this error
         self.validate_authorization_request(request)
 
@@ -151,7 +163,7 @@ class AuthorizationServer(BaseServer):
         if grant_user is None:
             error = AccessDeniedError()
             location = add_params_to_uri(redirect_uri, error.get_body())
-            return 302, '', [('Location', location)]
+            return self.handle_response(302, '', [('Location', location)])
 
         request.user = grant_user
         verifier = self.create_authorization_verifier(request)
@@ -161,7 +173,7 @@ class AuthorizationServer(BaseServer):
             ('oauth_verifier', verifier)
         ]
         location = add_params_to_uri(redirect_uri, params)
-        return 302, '', [('Location', location)]
+        return self.handle_response(302, '', [('Location', location)])
 
     def validate_token_request(self, request):
         """Validate request for issuing token."""
@@ -192,7 +204,7 @@ class AuthorizationServer(BaseServer):
         self.validate_oauth_signature(request)
         return request
 
-    def create_valid_token_response(self, request):
+    def create_token_response(self, request):
         """Validate token request and create token response. Assuming the
         endpoint of token request is ``https://photos.example.net/token``,
         the callback request informs the client that Jane completed the
@@ -226,11 +238,16 @@ class AuthorizationServer(BaseServer):
         :param request: OAuth1Request instance.
         :returns: (status_code, body, headers)
         """
+        request = self.process_request(request)
         try:
             self.validate_token_request(request)
         except OAuth1Error as error:
             self.delete_temporary_credential(request)
-            return error.status_code, error.get_body(), error.get_headers()
+            return self.handle_response(
+                error.status_code,
+                error.get_body(),
+                error.get_headers()
+            )
 
         credential = self.create_token_credential(request)
         payload = [
@@ -238,7 +255,7 @@ class AuthorizationServer(BaseServer):
             ('oauth_token_secret', credential.get_oauth_token_secret()),
         ]
         self.delete_temporary_credential(request)
-        return 200, payload, self.TOKEN_RESPONSE_HEADER
+        return self.handle_response(200, payload, self.TOKEN_RESPONSE_HEADER)
 
     def create_temporary_credential(self, request):
         """Generate and save a temporary credential into database or cache.

@@ -87,3 +87,23 @@ class TemporaryCredentialMixin(TokenCredentialMixin):
         :return: Boolean
         """
         raise NotImplementedError()
+
+
+class TemporaryCredential(dict, TemporaryCredentialMixin):
+    def get_client_id(self):
+        return self.get('client_id')
+
+    def get_user_id(self):
+        return self.get('user_id')
+
+    def get_redirect_uri(self):
+        return self.get('oauth_callback')
+
+    def check_verifier(self, verifier):
+        return self.get('oauth_verifier') == verifier
+
+    def get_oauth_token(self):
+        return self.get('oauth_token')
+
+    def get_oauth_token_secret(self):
+        return self.get('oauth_token_secret')

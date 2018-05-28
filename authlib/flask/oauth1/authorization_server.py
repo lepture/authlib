@@ -153,26 +153,39 @@ class AuthorizationServer(_AuthorizationServer):
             '"create_token_credential" hook is required.'
         )
 
+    def create_temporary_credentials_response(self, request=None):
+        return super(AuthorizationServer, self)\
+            .create_temporary_credentials_response(request)
+
     def create_temporary_credential_response(self):
-        req = _create_oauth1_request()
-        status, body, headers = self.create_valid_temporary_credentials_response(req)
-        return Response(url_encode(body), status=status, headers=headers)
+        # TODO: deprecate
+        return self.create_temporary_credentials_response()
 
     def check_authorization_request(self):
         req = _create_oauth1_request()
         self.validate_authorization_request(req)
         return req
 
-    def create_authorization_response(self, grant_user=None):
-        req = _create_oauth1_request()
-        status, body, headers = self.create_valid_authorization_response(
-            req, grant_user)
-        return Response(url_encode(body), status=status, headers=headers)
+    def create_authorization_response(self, request=None, grant_user=None):
+        # TODO: show deprecate messages
+        if request and not grant_user:
+            grant_user = request
+            request = None
+        return super(AuthorizationServer, self)\
+            .create_authorization_response(request, grant_user)
 
-    def create_token_response(self):
-        req = _create_oauth1_request()
-        status, body, headers = self.create_valid_token_response(req)
-        return Response(url_encode(body), status=status, headers=headers)
+    def create_token_response(self, request=None):
+        return super(AuthorizationServer, self).create_token_response(request)
+
+    def process_request(self, request):
+        return _create_oauth1_request()
+
+    def handle_response(self, status_code, payload, headers):
+        return Response(
+            url_encode(payload),
+            status=status_code,
+            headers=headers
+        )
 
 
 def _create_oauth1_request():
