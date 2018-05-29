@@ -33,6 +33,13 @@ class AuthorizationServer(BaseServer):
     def handle_response(self, status_code, payload, headers):
         raise NotImplementedError()
 
+    def handle_error(self, error):
+        return self.handle_response(
+            error.status_code,
+            error.get_body(),
+            error.get_headers()
+        )
+
     def validate_temporary_credentials_request(self, request):
         """Validate HTTP request for temporary credentials."""
 
@@ -96,15 +103,11 @@ class AuthorizationServer(BaseServer):
         :param request: OAuth1Request instance.
         :returns: (status_code, body, headers)
         """
-        request = self.process_request(request)
         try:
+            request = self.process_request(request)
             self.validate_temporary_credentials_request(request)
         except OAuth1Error as error:
-            return self.handle_response(
-                error.status_code,
-                error.get_body(),
-                error.get_headers()
-            )
+            return self.handle_error(error)
 
         credential = self.create_temporary_credential(request)
         payload = [
@@ -238,16 +241,16 @@ class AuthorizationServer(BaseServer):
         :param request: OAuth1Request instance.
         :returns: (status_code, body, headers)
         """
-        request = self.process_request(request)
+        try:
+            request = self.process_request(request)
+        except OAuth1Error as error:
+            return self.handle_error(error)
+
         try:
             self.validate_token_request(request)
         except OAuth1Error as error:
             self.delete_temporary_credential(request)
-            return self.handle_response(
-                error.status_code,
-                error.get_body(),
-                error.get_headers()
-            )
+            return self.handle_error(error)
 
         credential = self.create_token_credential(request)
         payload = [

@@ -88,7 +88,7 @@ def create_authorization_server(app, use_cache=False):
 
     @app.route('/oauth/initiate', methods=['GET', 'POST'])
     def initiate():
-        return server.create_temporary_credential_response()
+        return server.create_temporary_credentials_response()
 
     @app.route('/oauth/authorize', methods=['GET', 'POST'])
     def authorize():
@@ -104,7 +104,7 @@ def create_authorization_server(app, use_cache=False):
         else:
             grant_user = None
         try:
-            return server.create_authorization_response(grant_user)
+            return server.create_authorization_response(grant_user=grant_user)
         except OAuth1Error as error:
             return url_encode(error.get_body())
 

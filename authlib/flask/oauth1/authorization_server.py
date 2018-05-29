@@ -2,12 +2,12 @@ import logging
 from werkzeug.utils import import_string
 from flask import Response, request as _req
 from authlib.specs.rfc5849 import (
-    OAuth1Request, OAuth1Error,
+    OAuth1Request,
     AuthorizationServer as _AuthorizationServer,
 )
 from authlib.common.security import generate_token
 from authlib.common.urls import url_encode
-from ..error import raise_http_exception
+from authlib.deprecate import deprecate
 
 log = logging.getLogger(__name__)
 
@@ -157,8 +157,8 @@ class AuthorizationServer(_AuthorizationServer):
         return super(AuthorizationServer, self)\
             .create_temporary_credentials_response(request)
 
-    def create_temporary_credential_response(self):
-        # TODO: deprecate
+    def create_temporary_credential_response(self):  # pragma: no cover
+        deprecate('Use "create_temporary_credentials_response" instead', '0.11')
         return self.create_temporary_credentials_response()
 
     def check_authorization_request(self):
@@ -167,8 +167,8 @@ class AuthorizationServer(_AuthorizationServer):
         return req
 
     def create_authorization_response(self, request=None, grant_user=None):
-        # TODO: show deprecate messages
-        if request and not grant_user:
+        if request and not grant_user:  # pragma: no cover
+            deprecate('Use "create_authorization_response(grant_user=user)" instead', '0.11')
             grant_user = request
             request = None
         return super(AuthorizationServer, self)\
@@ -193,8 +193,4 @@ def _create_oauth1_request():
         body = _req.form.to_dict(flat=True)
     else:
         body = None
-    try:
-        return OAuth1Request(_req.method, _req.url, body, _req.headers)
-    except OAuth1Error as error:
-        body = url_encode(error.get_body())
-        raise_http_exception(error.status_code, body, error.get_headers())
+    return OAuth1Request(_req.method, _req.url, body, _req.headers)
