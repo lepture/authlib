@@ -1,0 +1,60 @@
+import functools
+from authlib.specs.rfc5849 import OAuth1Error
+from authlib.specs.rfc5849 import ResourceProtector as _ResourceProtector
+from django.http import JsonResponse
+from django.conf import settings
+from .nonce import exists_nonce_in_cache
+from ..helpers import parse_request_headers
+
+
+class ResourceProtector(_ResourceProtector):
+    def __init__(self, client_model, token_model):
+        self.client_model = client_model
+        self.token_model = token_model
+
+        config = getattr(settings, 'AUTHLIB_OAUTH1_PROVIDER', {})
+        methods = config.get('signature_methods', [])
+        if methods and isinstance(methods, (list, tuple)):
+            self.SUPPORTED_SIGNATURE_METHODS = methods
+
+        self._nonce_expires_in = config.get('nonce_expires_in', 86400)
+
+    def get_client_by_id(self, client_id):
+        return self.client_model.objects.get(client_id=client_id)
+
+    def get_token_credential(self, request):
+        return self.token_model.objects.get(
+            client_id=request.client_id,
+            oauth_token=request.token
+        )
+
+    def exists_nonce(self, nonce, request):
+        return exists_nonce_in_cache(nonce, request, self._nonce_expires_in)
+
+    def acquire_credential(self, request):
+        if request.method in ['POST', 'PUT']:
+            body = request.POST.dict()
+        else:
+            body = None
+
+        headers = parse_request_headers(request)
+        req = self.validate_request(
+            request.method, request.url, body, headers)
+        return req.credential
+
+    def __call__(self, realm=None):
+        def wrapper(f):
+            @functools.wraps(f)
+            def decorated(request, *args, **kwargs):
+                try:
+                    credential = self.acquire_credential(request)
+                    request.oauth1_credential = credential
+                except OAuth1Error as error:
+                    body = dict(error.get_body())
+                    resp = JsonResponse(body, status=error.status_code)
+                    resp['Cache-Control'] = 'no-store'
+                    resp['Pragma'] = 'no-cache'
+                    return resp
+                return f(*args, **kwargs)
+            return decorated
+        return wrapper

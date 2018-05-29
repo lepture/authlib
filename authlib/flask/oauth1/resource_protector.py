@@ -52,8 +52,8 @@ class ResourceProtector(_ResourceProtector):
         if app:
             self.init_app(app)
 
-    def init_app(self, app, query_client=None, cache=None,
-                 query_token=None, exists_nonce=None):
+    def init_app(self, app, query_client=None, query_token=None,
+                 exists_nonce=None):
         if query_client is not None:
             self.query_client = query_client
         if query_token is not None:
@@ -82,19 +82,23 @@ class ResourceProtector(_ResourceProtector):
         token = request.token
         return self._exists_nonce(nonce, timestamp, client_id, token)
 
+    def acquire_credential(self):
+        req = self.validate_request(
+            _req.method,
+            _req.url,
+            _req.form.to_dict(flat=True),
+            _req.headers
+        )
+        ctx = _app_ctx_stack.top
+        ctx.authlib_server_oauth1_credential = req.credential
+        return req.credential
+
     def __call__(self, scope=None):
         def wrapper(f):
             @functools.wraps(f)
             def decorated(*args, **kwargs):
                 try:
-                    req = self.validate_request(
-                        _req.method,
-                        _req.url,
-                        _req.form.to_dict(flat=True),
-                        _req.headers
-                    )
-                    ctx = _app_ctx_stack.top
-                    ctx.authlib_server_oauth1_credential = req.credential
+                    self.acquire_credential()
                 except OAuth1Error as error:
                     body = dict(error.get_body())
                     return Response(
