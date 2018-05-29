@@ -113,5 +113,5 @@ def _create_oauth1_request(request):
     else:
         body = None
 
-    headers = parse_request_headers(request.headers)
+    headers = parse_request_headers(request)
     return OAuth1Request(request.method, request.url, body, headers)
