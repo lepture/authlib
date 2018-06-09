@@ -24,6 +24,12 @@ class WSGIHeaderDict(DictMixin):
     def __getitem__(self, key):
         return _unicode_value(self.environ[self._ekey(key)])
 
+    def __delitem__(self, key):
+        raise ValueError('Can not delete item')
+
+    def __setitem__(self, key, value):
+        raise ValueError('Can not set item')
+
     def __iter__(self):
         for key in self.environ:
             if key[:5] == 'HTTP_':

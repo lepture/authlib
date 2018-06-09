@@ -1,10 +1,9 @@
 from __future__ import unicode_literals, print_function
 
 import mock
-from django.conf import settings
-from django.utils.module_loading import import_module
-from django.test import TestCase, RequestFactory, override_settings
+from django.test import override_settings
 from authlib.django.client import OAuth, RemoteApp
+from .base import TestCase
 from ..client_base import (
     mock_send_value,
     get_bearer_token
@@ -16,24 +15,7 @@ dev_client = {
 }
 
 
-class RequestClient(RequestFactory):
-    @property
-    def session(self):
-        engine = import_module(settings.SESSION_ENGINE)
-        cookie = self.cookies.get(settings.SESSION_COOKIE_NAME)
-        if cookie:
-            return engine.SessionStore(cookie.value)
-
-        session = engine.SessionStore()
-        session.save()
-        self.cookies[settings.SESSION_COOKIE_NAME] = session.session_key
-        return session
-
-
 class DjangoOAuthTest(TestCase):
-    def setUp(self):
-        self.factory = RequestClient()
-
     def test_register_remote_app(self):
         oauth = OAuth()
         self.assertRaises(AttributeError, lambda: oauth.dev)
