@@ -1,5 +1,7 @@
 import os
 import json
+from authlib.common.encoding import to_unicode
+from authlib.common.urls import url_decode
 
 ROOT = os.path.abspath(os.path.dirname(__file__))
 
@@ -13,3 +15,7 @@ def read_file_path(name):
         if name.endswith('.json'):
             return json.load(f)
         return f.read()
+
+
+def decode_response(data):
+    return dict(url_decode(to_unicode(data)))

@@ -1,7 +1,6 @@
 from authlib.specs.rfc5849 import errors
-from authlib.common.encoding import to_unicode
-from authlib.common.urls import url_decode
 from django.test import override_settings
+from tests.util import decode_response
 from .models import User, Client
 from .oauth1_server import TestCase
 
@@ -45,7 +44,7 @@ class AuthorizationTest(TestCase):
             'oauth_signature': 'secret&'
         })
         resp = server.create_temporary_credentials_response(request)
-        data = dict(url_decode(to_unicode(resp.content)))
+        data = decode_response(resp.content)
         self.assertEqual(data['error'], 'invalid_client')
 
     @override_settings(
@@ -64,7 +63,7 @@ class AuthorizationTest(TestCase):
             'oauth_signature': 'secret&'
         })
         resp = server.create_temporary_credentials_response(request)
-        data = dict(url_decode(to_unicode(resp.content)))
+        data = decode_response(resp.content)
         self.assertIn('oauth_token', data)
 
         request = self.factory.post(authorize_url, data={
@@ -83,7 +82,7 @@ class AuthorizationTest(TestCase):
             'oauth_signature': 'secret&'
         })
         resp = server.create_temporary_credentials_response(request)
-        data = dict(url_decode(to_unicode(resp.content)))
+        data = decode_response(resp.content)
         self.assertIn('oauth_token', data)
         request = self.factory.post(authorize_url, data={
             'oauth_token': data['oauth_token']
@@ -110,7 +109,7 @@ class AuthorizationTest(TestCase):
             'oauth_signature': 'secret&'
         })
         resp = server.create_temporary_credentials_response(request)
-        data = dict(url_decode(to_unicode(resp.content)))
+        data = decode_response(resp.content)
         self.assertIn('oauth_token', data)
 
         request = self.factory.post(authorize_url, data={
@@ -130,7 +129,7 @@ class AuthorizationTest(TestCase):
             'oauth_signature': 'secret&'
         })
         resp = server.create_temporary_credentials_response(request)
-        data = dict(url_decode(to_unicode(resp.content)))
+        data = decode_response(resp.content)
         self.assertIn('oauth_token', data)
 
         request = self.factory.post(authorize_url, data={

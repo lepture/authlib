@@ -1,11 +1,10 @@
 import time
 from authlib.specs.rfc5849 import signature
-from tests.util import read_file_path
+from tests.util import read_file_path, decode_response
 from .oauth1_server import db, User, Client
 from .oauth1_server import (
     TestCase,
     create_authorization_server,
-    decode_response
 )
 
 

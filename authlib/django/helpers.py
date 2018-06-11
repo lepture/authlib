@@ -24,10 +24,10 @@ class WSGIHeaderDict(DictMixin):
     def __getitem__(self, key):
         return _unicode_value(self.environ[self._ekey(key)])
 
-    def __delitem__(self, key):
+    def __delitem__(self, key):  # pragma: no cover
         raise ValueError('Can not delete item')
 
-    def __setitem__(self, key, value):
+    def __setitem__(self, key, value):  # pragma: no cover
         raise ValueError('Can not set item')
 
     def __iter__(self):

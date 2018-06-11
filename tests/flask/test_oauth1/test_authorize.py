@@ -1,8 +1,8 @@
+from tests.util import decode_response
 from .oauth1_server import db, User, Client
 from .oauth1_server import (
     TestCase,
     create_authorization_server,
-    decode_response
 )
 
 

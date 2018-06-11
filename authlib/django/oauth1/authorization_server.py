@@ -49,9 +49,9 @@ class BaseServer(_AuthorizationServer):
         item = self.token_model(
             oauth_token=token['oauth_token'],
             oauth_token_secret=token['oauth_token_secret'],
+            user_id=temporary_credential.get_user_id(),
             client_id=temporary_credential.get_client_id()
         )
-        item.set_user_id(temporary_credential.get_user_id())
         item.save()
         return item
 

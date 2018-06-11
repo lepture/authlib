@@ -165,7 +165,3 @@ class TestCase(unittest.TestCase):
     def tearDown(self):
         db.drop_all()
         self._ctx.pop()
-
-
-def decode_response(data):
-    return dict(url_decode(to_unicode(data)))
