@@ -30,6 +30,9 @@ class BaseServer(_AuthorizationServer):
         self.token_generator = token_generator
         self._config = getattr(settings, 'AUTHLIB_OAUTH1_PROVIDER', {})
         self._nonce_expires_in = self._config.get('nonce_expires_in', 86400)
+        methods = self._config.get('supported_signature_methods')
+        if methods:
+            self.SUPPORTED_SIGNATURE_METHODS = methods
 
     def get_client_by_id(self, client_id):
         try:
@@ -113,9 +116,9 @@ class CacheAuthorizationServer(BaseServer):
         user = request.user
         key = key_prefix + credential.get_oauth_token()
         credential['oauth_verifier'] = verifier
-        credential['user_id'] = user.get_user_id()
+        credential['user_id'] = user.pk
         cache.set(key, credential, timeout=self._temporary_expires_in)
-        return credential
+        return verifier
 
 
 def _create_oauth1_request(request):

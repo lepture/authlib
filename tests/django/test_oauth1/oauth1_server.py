@@ -14,4 +14,3 @@ class TestCase(_TestCase):
 
     def setUp(self):
         super(TestCase, self).setUp()
-        self.server = self.create_server()
