@@ -20,13 +20,19 @@ class ResourceProtector(_ResourceProtector):
         self._nonce_expires_in = config.get('nonce_expires_in', 86400)
 
     def get_client_by_id(self, client_id):
-        return self.client_model.objects.get(client_id=client_id)
+        try:
+            return self.client_model.objects.get(client_id=client_id)
+        except self.client_model.DoesNotExist:
+            return None
 
     def get_token_credential(self, request):
-        return self.token_model.objects.get(
-            client_id=request.client_id,
-            oauth_token=request.token
-        )
+        try:
+            return self.token_model.objects.get(
+                client_id=request.client_id,
+                oauth_token=request.token
+            )
+        except self.token_model.DoesNotExist:
+            return None
 
     def exists_nonce(self, nonce, request):
         return exists_nonce_in_cache(nonce, request, self._nonce_expires_in)
@@ -38,8 +44,8 @@ class ResourceProtector(_ResourceProtector):
             body = None
 
         headers = parse_request_headers(request)
-        req = self.validate_request(
-            request.method, request.url, body, headers)
+        url = request.get_raw_uri()
+        req = self.validate_request(request.method, url, body, headers)
         return req.credential
 
     def __call__(self, realm=None):
@@ -55,6 +61,6 @@ class ResourceProtector(_ResourceProtector):
                     resp['Cache-Control'] = 'no-store'
                     resp['Pragma'] = 'no-cache'
                     return resp
-                return f(*args, **kwargs)
+                return f(request, *args, **kwargs)
             return decorated
         return wrapper

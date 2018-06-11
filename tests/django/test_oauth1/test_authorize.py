@@ -6,7 +6,7 @@ from .models import User, Client
 from .oauth1_server import TestCase
 
 
-class DjangoOAuthTest(TestCase):
+class AuthorizationTest(TestCase):
     def prepare_data(self):
         user = User(username='foo')
         user.save()
@@ -49,7 +49,7 @@ class DjangoOAuthTest(TestCase):
         self.assertEqual(data['error'], 'invalid_client')
 
     @override_settings(
-        AUTHLIB_OAUTH1_PROVIDER={'supported_signature_methods': 'PLAINTEXT'})
+        AUTHLIB_OAUTH1_PROVIDER={'signature_methods': ['PLAINTEXT']})
     def test_authorize_denied(self):
         self.prepare_data()
         server = self.create_server()
@@ -94,7 +94,7 @@ class DjangoOAuthTest(TestCase):
         self.assertIn('https://i.test', resp['Location'])
 
     @override_settings(
-        AUTHLIB_OAUTH1_PROVIDER={'supported_signature_methods': 'PLAINTEXT'})
+        AUTHLIB_OAUTH1_PROVIDER={'signature_methods': ['PLAINTEXT']})
     def test_authorize_granted(self):
         self.prepare_data()
         server = self.create_server()

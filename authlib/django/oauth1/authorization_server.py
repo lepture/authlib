@@ -30,7 +30,7 @@ class BaseServer(_AuthorizationServer):
         self.token_generator = token_generator
         self._config = getattr(settings, 'AUTHLIB_OAUTH1_PROVIDER', {})
         self._nonce_expires_in = self._config.get('nonce_expires_in', 86400)
-        methods = self._config.get('supported_signature_methods')
+        methods = self._config.get('signature_methods')
         if methods:
             self.SUPPORTED_SIGNATURE_METHODS = methods
 
