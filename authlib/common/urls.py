@@ -124,6 +124,10 @@ def unquote(s):
     return to_unicode(_unquote(s))
 
 
+def quote_url(s):
+    return quote(s, b'~@#$&()*!+=:;,.?/\'')
+
+
 def extract_params(raw):
     """Extract parameters and return them as a list of 2-tuples.
 

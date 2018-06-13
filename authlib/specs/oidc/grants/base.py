@@ -4,6 +4,7 @@ from authlib.specs.rfc6749 import InvalidRequestError
 from authlib.specs.rfc6749.util import scope_to_list
 from authlib.specs.rfc7519 import JWT
 from authlib.common.encoding import to_native
+from authlib.common.urls import add_params_to_uri, quote_url
 from ..claims import UserInfo
 from ..util import create_half_hash
 from ..errors import (
@@ -146,3 +147,30 @@ def wrap_openid_request(request):
         'response_mode', 'nonce', 'display', 'prompt', 'max_age',
         'ui_locales', 'id_token_hint', 'login_hint', 'acr_values'
     })
+
+
+def create_response_mode_response(redirect_uri, params, response_mode=None):
+    if response_mode is None:
+        response_mode = 'fragment'
+
+    if response_mode == 'form_post':
+        tpl = (
+            '<html><head><title>Authlib</title></head>'
+            '<body onload="javascript:document.forms[0].submit()">'
+            '<form method="post" action="{}">{}</form></body></html>'
+        )
+        inputs = ''.join([
+            '<input type="hidden" name="{}" value="{}"/>'.format(
+                quote_url(k), quote_url(v))
+            for k, v in params
+        ])
+        return tpl.format(quote_url(redirect_uri), inputs)
+
+    if response_mode == 'query':
+        uri = add_params_to_uri(redirect_uri, params, fragment=False)
+    elif response_mode == 'fragment':
+        uri = add_params_to_uri(redirect_uri, params, fragment=True)
+    else:
+        raise InvalidRequestError('Invalid "response_mode" value')
+
+    return 302, '', [('Location', uri)]
