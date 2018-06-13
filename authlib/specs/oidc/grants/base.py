@@ -164,7 +164,8 @@ def create_response_mode_response(redirect_uri, params, response_mode=None):
                 quote_url(k), quote_url(v))
             for k, v in params
         ])
-        return tpl.format(quote_url(redirect_uri), inputs)
+        body = tpl.format(quote_url(redirect_uri), inputs)
+        return 200, body, [('Content-Type', 'text/html; charset=utf-8')]
 
     if response_mode == 'query':
         uri = add_params_to_uri(redirect_uri, params, fragment=False)

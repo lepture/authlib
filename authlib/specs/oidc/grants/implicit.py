@@ -1,7 +1,6 @@
 import logging
 from authlib.specs.rfc6749.grants import ImplicitGrant
 from authlib.specs.rfc6749 import InvalidScopeError, AccessDeniedError
-from authlib.common.urls import add_params_to_uri
 from .base import is_openid_request, wrap_openid_request
 from .base import create_response_mode_response
 from .base import OpenIDMixin
@@ -53,14 +52,11 @@ class OpenIDImplicitGrant(OpenIDMixin, ImplicitGrant):
             params = error.get_body()
 
         # http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#ResponseModes
-        fragment = True
-        response_mode = self.request.response_mode
-        if response_mode and response_mode == 'query':
-            fragment = False
-
-        uri = add_params_to_uri(self.redirect_uri, params, fragment=fragment)
-        headers = [('Location', uri)]
-        return 302, '', headers
+        return create_response_mode_response(
+            redirect_uri=self.redirect_uri,
+            params=params,
+            response_mode=self.request.response_mode,
+        )
 
     def process_token(self, token, request):
         # OpenID Connect authorization code flow

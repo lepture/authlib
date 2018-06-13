@@ -1,7 +1,6 @@
 import logging
 from authlib.specs.rfc6749.grants import AuthorizationCodeGrant
 from authlib.specs.rfc6749 import InvalidScopeError, AccessDeniedError
-from authlib.common.urls import add_params_to_uri
 from .base import wrap_openid_request, is_openid_request
 from .base import create_response_mode_response
 from .base import OpenIDMixin
@@ -39,7 +38,7 @@ class OpenIDHybridGrant(OpenIDMixin, AuthorizationCodeGrant):
         return create_response_mode_response(
             redirect_uri=self.redirect_uri,
             params=params,
-            response_mode=self.request.response_mode or 'fragment'
+            response_mode=self.request.response_mode
         )
 
     def _create_granted_params(self, grant_user):
