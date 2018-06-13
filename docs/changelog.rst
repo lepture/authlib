@@ -16,6 +16,8 @@ Version 0.8
 - Add JWTs for Client Authentication of :ref:`specs/rfc7523`.
 - Add ``require_oauth.acquire`` with statement.
 - Separate AuthorizationCodeMixin in ``authlib.flask.oauth2.sqla``.
+- Add OpenID Connect ``response_mode=form_post``.
+- Add Django OAuth 1.0 server, alpha stage.
 
 Deprecated Changes:
 

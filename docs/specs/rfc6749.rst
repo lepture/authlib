@@ -7,16 +7,98 @@ The OAuth 2.0 Authorization Framework
     :description: API references of RFC6749 in Python implementation.
         Learn how to create an OAuth 2.0 provider in Python.
 
-This section contains the generic implementation of RFC6749_. Learn how to
-create an OAuth 2.0 provider in these frameworks:
+The OAuth 2.0 authorization framework enables a third-party application to
+obtain limited access to an HTTP service, either on behalf of a resource owner
+by orchestrating an approval interaction between the resource owner and the
+HTTP service, or by allowing the third-party application to obtain access on
+its own behalf.
+
+The title of RFC6749 is **The OAuth 2.0 Authorization Framework**. OAuth 2.0
+is a **framework** instead of a protocol(unlike OAuth 1.0). The concept of
+framework makes OAuth 2.0 very unique. Being a framework means people can
+create more RFCs upon it, can extend it with their own needs. With so many
+years passed, what you know about OAuth 2.0 MAY be wrong or not accurate.
+There are lots of RFCs should be taken into account in OAuth 2.0, which
+requires a very flexible design of an OAuth 2.0 library. And this is the
+principle design in Authlib_, Authlib is very flexible.
+
+.. figure:: https://i.typcdn.com/authlib/c2/AZZV8Lg2bPuF1IGe14EA.png
+    :alt: How OAuth 2.0 works
+
+Roles in OAuth 2.0
+------------------
+
+The above image shows how OAuth 2.0 works. There are four roles in the
+OAuth 2.0 flow. Which are:
+
+1. Resource Owner
+~~~~~~~~~~~~~~~~~
+
+Usually, they are the customers on the website, e.g. users on Facebook are
+resource owners. Why it is called resource owner? The websites like Facebook
+are platforms, content are created by the users on the platform, which means
+the resources are belong to the users on that platform.
+
+2. Client
+~~~~~~~~~
+
+A client is created by a developer which can obtain a resource owner's access
+token under resource owner's approval. Later, it can access the resource
+owner's information or post something for the resource owner. For instance,
+the mobile Facebook App is a client, the Google logins on some websites are
+clients too.
+
+For your information, the developer who created a client is also a resource
+owner.
+
+3. Authorization Server
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The authorization server is used by clients to obtain access tokens, which
+means the authorization server can issue tokens. It may also have a login
+page so that resource owners can login.
+
+The main purpose of the authorization server is issuing tokens, login feature
+can be optional if you have another account server.
+
+4. Resource Servers
+~~~~~~~~~~~~~~~~~~~
+
+The resource servers (or server) are the APIs that a client can fetch or post
+something with the given access token issued by authorization server. Note
+that you may combine resource servers and authorization server into one big
+server. But it gets bigger and bigger, you will need to separate them.
+
+For instance, it was ``https://example.com/oauth/token`` and
+``https://example.com/api/xxx`` but later it will become something like
+``https://account.example.com`` and ``https://api.example.com``.
+
+Obtain an Access Token
+----------------------
+
+
+Client Authentication Methods
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+Grant Types
+~~~~~~~~~~~
+
+
+.. _Authlib: https://authlib.org/
+
+
+API References
+--------------
+
+Here are the API references for developers. For framework level interfaces,
+check:
 
 1. Flask: :ref:`flask_oauth2_server`.
 2. Django: not ready yet.
 
-.. _RFC6749: https://tools.ietf.org/html/rfc6749
-
 Servers
--------
+~~~~~~~
 
 .. module:: authlib.specs.rfc6749
 
@@ -27,7 +109,7 @@ Servers
     :members:
 
 Client Model
-------------
+~~~~~~~~~~~~
 
 .. autoclass:: ClientMixin
     :members:
@@ -35,7 +117,7 @@ Client Model
 .. _specs/rfc6949-errors:
 
 Errors
-------
+~~~~~~
 
 .. autoclass:: OAuth2Error
     :members:
@@ -59,8 +141,8 @@ Errors
 
 .. autoclass:: AccessDeniedError
 
-Grants
-------
+Grant Types
+~~~~~~~~~~~
 
 .. module:: authlib.specs.rfc6749.grants
 
@@ -79,9 +161,6 @@ Grants
 .. autoclass:: ClientCredentialsGrant
     :member-order: bysource
     :members:
-
-Refresh Token
--------------
 
 .. autoclass:: RefreshTokenGrant
     :member-order: bysource
