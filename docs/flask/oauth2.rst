@@ -15,20 +15,11 @@ technical details in an OAuth 2.0 provider.
 If you need a quick example, here are the official tutorial guide and examples
 on GitHub:
 
-1. Example of OAuth 2.0 server <https://github.com/authlib/example-oauth2-server>`_
+1. `Example of OAuth 2.0 server <https://github.com/authlib/example-oauth2-server>`_
 2. Example of OpenID Connect server (not ready)
 
-At the very beginning, we need to know that OAuth 2.0 provider contains two
-type of servers:
-
-- Authorization Server: to issue access tokens
-- Resources Servers: to serve your users' resources
-
-They can be the same server, or different servers. For instance, if you are
-a big company, your account system may be separated from other servers. The
-authorization server is some sort of the account system, and you may have
-many resources servers, each resource server serves a certain type of resources,
-like users' photos, posts and etc.
+At the very beginning, we need to have some basic understanding of the OAuth 2.0
+specification. Read :ref:`specs/rfc6749` at first.
 
 .. important::
 
@@ -230,72 +221,6 @@ grants for them.
 .. _`authlib/playground`: https://github.com/authlib/playground
 
 
-Token Endpoint Auth Methods
----------------------------
-
-A token endpoint auth method is a certain method to authenticate a client at
-the token endpoint. For example:
-
-.. code:: http
-
-    POST /token HTTP/1.1
-    Host: server.example.com
-    Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
-    Content-Type: application/x-www-form-urlencoded
-
-    grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA
-    &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb
-
-That ``Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW`` is used to
-authenticate the client. Use of a Basic Authorization in header is called
-``client_secret_basic``.
-
-RFC6749 has no clarification for token endpoint client authentication methods,
-but there are some use cases in RFC6749, except that they have no names. The
-names are defined by RFC7591, which are:
-
-- **none**: The client is a public client which means it has no client_secret
-
-.. code:: http
-
-    POST /token HTTP/1.1
-    Host: server.example.com
-    Content-Type: application/x-www-form-urlencoded
-
-    grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA
-    &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb
-    &client_id=s6BhdRkqt3
-
-- **client_secret_post**: The client uses the HTTP POST parameters
-
-.. code:: http
-
-    POST /token HTTP/1.1
-    Host: server.example.com
-    Content-Type: application/x-www-form-urlencoded
-
-    grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA
-    &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb
-    &client_id=s6BhdRkqt3&client_secret=gX1fBat3bV
-
-- **client_secret_basic**: The client uses HTTP Basic Authorization
-
-.. code:: http
-
-    POST /token HTTP/1.1
-    Host: server.example.com
-    Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
-    Content-Type: application/x-www-form-urlencoded
-
-    grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA
-    &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb
-
-In the Client model, there is an attribute ``token_endpoint_auth_method``,
-it will set a limitation on the authentication methods of the client.
-
-It is also possible to add other client authentication methods, read more
-in :ref:`jwt_client_authentication`.
-
 Register Grants
 ---------------
 
@@ -362,11 +287,16 @@ Implement this grant by subclass :class:`AuthorizationCodeGrant`::
 
 .. note:: AuthorizationCodeGrant is the most complex grant.
 
-Default allowed client authentication methods::
+Default allowed :ref:`token_endpoint_auth_methods` are:
 
-    TOKEN_ENDPOINT_AUTH_METHODS = [
-        'client_secret_basic', 'client_secret_post', 'none'
-    ]
+1. client_secret_basic
+2. client_secret_post
+3. none
+
+You can change it in the subclass, e.g. remove the ``none`` authentication method::
+
+    class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
+        TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic', 'client_secret_post']
 
 Implicit Grant
 ~~~~~~~~~~~~~~
@@ -382,7 +312,7 @@ with::
     server.register_grant(grants.ImplicitGrant)
 
 Implicit Grant is used by **public** client which has no **client_secret**.
-Only allowed client authentication methods: ``none``.
+Only allowed :ref:`token_endpoint_auth_methods`: ``none``.
 
 Resource Owner Password Credentials Grant
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -403,7 +333,7 @@ it with a subclass of :class:`ResourceOwnerPasswordCredentialsGrant`::
     server.register_grant(PasswordGrant)
 
 
-Default allowed client authentication methods: ``client_secret_basic``.
+Default allowed :ref:`token_endpoint_auth_methods`: ``client_secret_basic``.
 You can add more in the subclass::
 
     class PasswordGrant(grants.ResourceOwnerPasswordCredentialsGrant):
@@ -423,7 +353,7 @@ grant type. It can be easily registered with::
     # register it to grant endpoint
     server.register_grant(grants.ClientCredentialsGrant)
 
-Default allowed client authentication methods: ``client_secret_basic``.
+Default allowed :ref:`token_endpoint_auth_methods`: ``client_secret_basic``.
 You can add more in the subclass::
 
     class ClientCredentialsGrant(grants.ClientCredentialsGrant):
@@ -453,7 +383,7 @@ provides it as a grant type, implement it with a subclass of
     # register it to grant endpoint
     server.register_grant(RefreshTokenGrant)
 
-Default allowed client authentication methods: ``client_secret_basic``.
+Default allowed :ref:`token_endpoint_auth_methods`: ``client_secret_basic``.
 You can add more in the subclass::
 
     class RefreshTokenGrant(grants.RefreshTokenGrant):
@@ -606,4 +536,6 @@ Creating a custom grant type with **BaseGrant**::
             # only needed if TOKEN_ENDPOINT = True
 
 For a better understanding, you can read the source code of the built-in
-grant types.
+grant types. And there are extended grant types defined by other specs:
+
+1. :ref:`jwt_grant_type`

@@ -76,14 +76,85 @@ For instance, it was ``https://example.com/oauth/token`` and
 Obtain an Access Token
 ----------------------
 
+Client can obtain an access token with the resource owner's approval. A common
+flow of obtaining an access token:
 
-Client Authentication Methods
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+1. client redirect user to authorization server
+2. user approve this authorization
+3. authorization server redirect back to client
+4. client use the code to obtain an access token from authorization server
 
+This is a very common authorization flow used by most OAuth 2.0 provider. It
+is called ``authorization_code`` grant type flow. Get more information on grant
+types below.
 
-Grant Types
-~~~~~~~~~~~
+No matter what grant type the client is using, when obtaining an access token,
+a client MUST authenticate itself.
 
+.. _token_endpoint_auth_methods:
+
+Token Endpoint Auth Methods
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+A token endpoint auth method is a certain method to authenticate a client at
+the token endpoint. For example:
+
+.. code:: http
+
+    POST /token HTTP/1.1
+    Host: server.example.com
+    Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
+    Content-Type: application/x-www-form-urlencoded
+
+    grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA
+    &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb
+
+That ``Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW`` is used to
+authenticate the client. Use of a Basic Authorization in header is called
+``client_secret_basic``.
+
+RFC6749 has no clarification for token endpoint client authentication methods,
+but there are some use cases in RFC6749, except that they have no names. The
+names are defined by RFC7591, which are:
+
+- **none**: The client is a public client which means it has no client_secret
+
+  .. code:: http
+
+    POST /token HTTP/1.1
+    Host: server.example.com
+    Content-Type: application/x-www-form-urlencoded
+
+    grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA
+    &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb
+    &client_id=s6BhdRkqt3
+
+- **client_secret_post**: The client uses the HTTP POST parameters
+
+  .. code:: http
+
+    POST /token HTTP/1.1
+    Host: server.example.com
+    Content-Type: application/x-www-form-urlencoded
+
+    grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA
+    &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb
+    &client_id=s6BhdRkqt3&client_secret=gX1fBat3bV
+
+- **client_secret_basic**: The client uses HTTP Basic Authorization
+
+  .. code:: http
+
+    POST /token HTTP/1.1
+    Host: server.example.com
+    Authorization: Basic czZCaGRSa3F0MzpnWDFmQmF0M2JW
+    Content-Type: application/x-www-form-urlencoded
+
+    grant_type=authorization_code&code=SplxlOBeZQQYbYS6WxSbIA
+    &redirect_uri=https%3A%2F%2Fclient%2Eexample%2Ecom%2Fcb
+
+It is also possible to add other client authentication methods, read more
+in :ref:`jwt_client_authentication`.
 
 .. _Authlib: https://authlib.org/
 

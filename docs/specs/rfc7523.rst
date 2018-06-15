@@ -16,6 +16,8 @@ This section contains the generic Python implementation of RFC7523_.
 .. module:: authlib.specs.rfc7523
 
 
+.. _jwt_grant_type:
+
 Using JWTs as Authorization Grants
 ----------------------------------
 

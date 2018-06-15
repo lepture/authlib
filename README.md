@@ -38,6 +38,8 @@ authorization_server.register_endpoint(IntrospectionEndpoint)
   </tr>
 </table>
 
+[**Become a sponsor via Patreon**](https://www.patreon.com/lepture).
+
 ## Useful Links
 
 1. Take a look at [Authlib Homepage](https://authlib.org/)
