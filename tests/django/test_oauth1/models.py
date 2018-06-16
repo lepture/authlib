@@ -26,9 +26,6 @@ class TokenCredential(Model):
     oauth_token = CharField(max_length=84, unique=True, db_index=True)
     oauth_token_secret = CharField(max_length=84)
 
-    def set_user_id(self, user_id):
-        self.user_id = user_id
-
     def get_oauth_token(self):
         return self.oauth_token
 
