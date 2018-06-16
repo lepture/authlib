@@ -60,7 +60,7 @@ Lovely features that Authlib has built-in:
 - [x] OAuth 1.0 Client for Flask
 - [x] OAuth 1.0 Client for Django
 - [x] OAuth 1.0 Server for Flask
-- [ ] OAuth 1.0 Server for Django
+- [x] OAuth 1.0 Server for Django
 </details>
 
 <details>

@@ -40,7 +40,7 @@ Framework integrations with current specification implementations:
 - :badge-green:`ready` :ref:`flask_oauth1_server`
 - :badge-green:`ready` :ref:`flask_oauth2_server`
 - :badge-blue:`beta` :ref:`flask_odic_server`
-- :badge-blue:`alpha` Django OAuth 1 Server
+- :badge-blue:`alpha` :ref:`django_oauth1_server`
 - :badge:`todo` Django OAuth 2 Server
 - :badge:`todo` Django OpenID Connect Server
 
