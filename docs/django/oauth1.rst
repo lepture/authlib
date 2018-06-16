@@ -99,7 +99,7 @@ Here is an example of how it looks in Django::
     from django.contrib.auth.models import User
     from authlib.specs.rfc5849 import TokenCredentialMixin
 
-    class TokenCredential(models.Model, TokenCredentialMixin):
+    class Token(models.Model, TokenCredentialMixin):
         user = models.ForeignKey(User, on_delete=CASCADE)
         client_id = models.CharField(max_length=48, db_index=True)
         oauth_token = models.CharField(max_length=84, unique=True, db_index=True)
@@ -176,6 +176,7 @@ server. Here is the way to protect your users' resources::
 
     from django.http import JsonResponse
     from authlib.django.oauth1 import ResourceProtector
+    require_oauth = ResourceProtector(Client, TokenCredential)
 
     @require_oauth()
     def user_api(request):

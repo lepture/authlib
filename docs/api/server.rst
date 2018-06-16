@@ -7,8 +7,8 @@ Server Reference
 This part of the documentation covers the interface of Authlib Server.
 
 
-Flask OAuth 1 Server
---------------------
+Flask OAuth 1.0 Server
+----------------------
 
 .. module:: authlib.flask.oauth1
 
@@ -53,8 +53,8 @@ SQLAlchemy Help Functions
 .. autofunction:: register_token_credential_hooks
 
 
-Flask OAuth 2 Server
---------------------
+Flask OAuth 2.0 Server
+----------------------
 
 .. module:: authlib.flask.oauth2
 
@@ -108,3 +108,16 @@ SQLAlchemy Helper Functions
 .. autofunction:: create_revocation_endpoint
 
 .. autofunction:: create_bearer_token_validator
+
+Django OAuth 1.0 Server
+-----------------------
+
+.. module:: authlib.django.oauth1
+
+.. autoclass:: CacheAuthorizationServer
+    :inherited-members:
+    :members:
+
+.. autoclass:: ResourceProtector
+    :member-order: bysource
+    :members:
