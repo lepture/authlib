@@ -10,9 +10,10 @@ class ClientMixin(object):
     """Implementation of OAuth 2 Client described in `Section 2`_ with
     some methods to help validation. A client has at least these information:
 
-    * client_type: Determine if a client is confidential or public.
     * client_id: A string represents client identifier.
     * client_secret: A string represents client password.
+    * token_endpoint_auth_method: A way to authenticate client at token
+                                  endpoint.
 
     .. _`Section 2`: https://tools.ietf.org/html/rfc6749#section-2
     """

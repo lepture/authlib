@@ -26,7 +26,7 @@ from cryptography.hazmat.backends import default_backend
 from cryptography.exceptions import InvalidSignature
 from authlib.specs.rfc7515 import JWSAlgorithm
 from authlib.common.encoding import to_bytes
-from ..utils import encode_int, decode_int
+from ..util import encode_int, decode_int
 
 
 class RSAAlgorithm(JWSAlgorithm):
