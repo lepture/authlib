@@ -34,20 +34,9 @@ class OpenIDMixin(object):
             # an error is returned
             raise InvalidRequestError('Invalid "prompt" parameter.')
 
-        if not end_user and 'login' in prompts:
-            self.prompt = 'login'
-            return self
-
-        if 'consent' in prompts:
-            if end_user:
-                self.prompt = 'consent'
-            else:
-                raise ConsentRequiredError()
-        elif 'select_account' in prompts:
-            if end_user:
-                self.prompt = 'select_account'
-            else:
-                raise AccountSelectionRequiredError()
+        prompt = _guess_prompt_value(end_user, prompts)
+        if prompt:
+            self.prompt = prompt
         return self
 
     def validate_authorization_redirect_uri(self, client):
@@ -85,6 +74,30 @@ class OpenIDMixin(object):
             user_info['sub'] = str(user.get_user_id())
         return user_info
 
+    def generate_id_token_payload(
+            self, alg, iss, aud, exp, nonce=None, auth_time=None,
+            code=None, access_token=None):
+        now = int(time.time())
+        if auth_time is None:
+            auth_time = now
+
+        payload = {
+            'iss': iss,
+            'aud': aud,
+            'iat': now,
+            'exp': now + exp,
+            'auth_time': auth_time,
+        }
+        if nonce:
+            payload['nonce'] = nonce
+
+        if code:
+            payload['c_hash'] = to_native(create_half_hash(code, alg))
+
+        if access_token:
+            payload['at_hash'] = to_native(create_half_hash(access_token, alg))
+        return payload
+
     def generate_id_token(self, token, request, nonce=None,
                           auth_time=None, code=None):
         scopes = scope_to_list(token['scope'])
@@ -94,46 +107,47 @@ class OpenIDMixin(object):
         # TODO: merge scopes and claims
         user_info = self.generate_user_info(request.user, scopes)
 
-        now = int(time.time())
-        if auth_time is None:
-            auth_time = now
-
         config = self.server.config
-        payload = {
-            'iss': config['jwt_iss'],
-            'aud': [request.client.client_id],
-            'iat': now,
-            'exp': now + config['jwt_exp'],
-            'auth_time': auth_time,
-        }
-        if nonce:
-            payload['nonce'] = nonce
-
-        # calculate at_hash
         alg = config['jwt_alg']
 
-        access_token = token.get('access_token')
-        if access_token:
-            payload['at_hash'] = to_native(create_half_hash(access_token, alg))
-
-        # calculate c_hash
-        if code:
-            payload['c_hash'] = to_native(create_half_hash(code, alg))
-
+        payload = self.generate_id_token_payload(
+            alg, config['jwt_iss'],
+            [request.client.client_id], config['jwt_exp'],
+            nonce=nonce, auth_time=auth_time, code=code,
+            access_token=token.get('access_token'),
+        )
         payload.update(user_info)
-        jwt = JWT(algorithms=alg)
-        header = {'alg': alg}
+        return _jwt_encode(alg, payload, config['jwt_key'])
 
-        key = config['jwt_key']
-        if isinstance(key, dict):
-            # JWK set format
-            if 'keys' in key:
-                key = random.choice(key['keys'])
-                header['kid'] = key['kid']
-            elif 'kid' in key:
-                header['kid'] = key['kid']
 
-        return to_native(jwt.encode(header, payload, key))
+def _guess_prompt_value(end_user, prompts):
+    # http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
+
+    if not end_user and 'login' in prompts:
+        return 'login'
+
+    if 'consent' in prompts:
+        if not end_user:
+            raise ConsentRequiredError()
+        return 'consent'
+    elif 'select_account' in prompts:
+        if not end_user:
+            raise AccountSelectionRequiredError()
+        return 'select_account'
+
+
+def _jwt_encode(alg, payload, key):
+    jwt = JWT(algorithms=alg)
+    header = {'alg': alg}
+    if isinstance(key, dict):
+        # JWK set format
+        if 'keys' in key:
+            key = random.choice(key['keys'])
+            header['kid'] = key['kid']
+        elif 'kid' in key:
+            header['kid'] = key['kid']
+
+    return to_native(jwt.encode(header, payload, key))
 
 
 def is_openid_request(request):
