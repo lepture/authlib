@@ -17,7 +17,7 @@ in OAuth 1 flow.
 .. note::
     This ``OAuth1Session`` is a customized ``requests.Session``. It shares
     the same API with requests. If you are using Flask or Django, you may
-    have interests in :ref:`client_frameworks`.
+    have interests in :ref:`flask_client` and :ref:`django_client`.
 
 
 There are three steps in OAuth 1 to obtain an access token. Initialize

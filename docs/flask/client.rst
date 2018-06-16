@@ -1,30 +1,25 @@
-.. _client_frameworks:
-
-Integrated Frameworks
-=====================
-
-.. meta::
-    :description: The built-in Flask and Django integrations for OAuth 1 and
-        OAuth 2 clients.
-
-Authlib has built-in integrated frameworks support, which makes it much easier
-to develop with your favorite framework. It is also suggested to take a look
-at loginpass_, which provides many ready to use social connections.
-
-.. _loginpass: https://github.com/authlib/loginpass
-
 .. _flask_client:
 
-Flask OAuth 1.0/2.0 Client
---------------------------
+Flask OAuth Client
+==================
+
+.. meta::
+    :description: The built-in Flask integrations for OAuth 1.0 and
+        OAuth 2.0 clients.
+
 
 .. module:: authlib.flask.client
 
-Looking for OAuth 2.0 provider? Check out :ref:`flask_oauth2_server`.
+Looking for OAuth providers?
 
-Flask OAuth client can handle OAuth 1 and OAuth 2 services.
-It shares a similar API with Flask-OAuthlib, you can
-transfer your code from Flask-OAuthlib to Authlib with ease.
+- :ref:`flask_oauth1_server`
+- :ref:`flask_oauth2_server`
+
+Flask OAuth client can handle OAuth 1 and OAuth 2 services. It shares a
+similar API with Flask-OAuthlib, you can transfer your code from
+Flask-OAuthlib to Authlib with ease. Here is how to
+`Migrate OAuth Client from Flask-OAuthlib to Authlib
+<https://blog.authlib.org/2018/migrate-flask-oauthlib-client-to-authlib>`_.
 
 Create a registry with :class:`OAuth` object::
 
@@ -38,7 +33,7 @@ You can initialize it later with :meth:`~OAuth.init_app` method::
     oauth.init_app(app)
 
 Configuration
-~~~~~~~~~~~~~
+-------------
 
 To register a remote application on OAuth registry, using the
 :meth:`~OAuth.register` method::
@@ -86,7 +81,7 @@ There are hooks for OAuthClient, and flask integration has registered them
 all for you.
 
 Database
-~~~~~~~~
+--------
 
 .. note:: If OAuth login is what you need ONLY, you don't need to configure
     a database with ``fetch_token`` method.
@@ -129,7 +124,7 @@ into database after ``authorize_access_token``. Then use the access token
 with ``fetch_token`` from database.
 
 OAuth 1 Request Token
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
 OAuth 1 requires a temporary request token for exchanging access token. There
 should be a place to store these temporary information. If a cache system is
@@ -175,7 +170,7 @@ saving request token::
     )
 
 Implement the Server
-~~~~~~~~~~~~~~~~~~~~
+--------------------
 
 Let's take Twitter as an example, we need to define routes for login and
 authorization::
@@ -288,7 +283,7 @@ With this common ``fetch_token`` in OAuth, you don't need to design the method
 for each services one by one.
 
 Auto Refresh Token
-~~~~~~~~~~~~~~~~~~
+------------------
 
 In OAuth 2, there is a concept of ``refresh_token``, Authlib can auto refresh
 access token when it is expired. If the services you are using don't issue any
@@ -321,144 +316,6 @@ remote app or sharing it in OAuth registry::
     # or init everything later
     oauth = OAuth()
     oauth.init_app(app, update_token=update_token)
-
-.. _django_client:
-
-Django OAuth 1.0/2.0 Client
----------------------------
-
-.. module:: authlib.django.client
-
-The Django client shares a similar API with Flask client. But there are
-differences, since Django has no request context, you need to pass ``request``
-argument yourself.
-
-Create a registry with :class:`OAuth` object::
-
-    from authlib.django.client import OAuth
-
-    oauth = OAuth()
-
-Configuration
-~~~~~~~~~~~~~
-
-To register a remote application on OAuth registry, using the
-:meth:`~OAuth.register` method::
-
-    oauth.register('twitter',
-        client_id='Twitter Consumer Key',
-        client_secret='Twitter Consumer Secret',
-        request_token_url='https://api.twitter.com/oauth/request_token',
-        request_token_params=None,
-        access_token_url='https://api.twitter.com/oauth/access_token',
-        access_token_params=None,
-        refresh_token_url=None,
-        authorize_url='https://api.twitter.com/oauth/authenticate',
-        api_base_url='https://api.twitter.com/1.1/',
-        client_kwargs=None,
-    )
-
-The first parameter in ``register`` method is the **name** of the remote
-application. You can access the remote application with::
-
-    oauth.twitter.get('account/verify_credentials.json')
-
-The second parameter in ``register`` method is configuration. Every key value
-pair can be omit. They can be configured from your Django settings::
-
-    AUTHLIB_OAUTH_CLIENTS = {
-        'twitter': {
-            'client_id': 'Twitter Consumer Key',
-            'client_secret': 'Twitter Consumer Secret',
-            'request_token_url': 'https://api.twitter.com/oauth/request_token',
-            'request_token_params': None,
-            'access_token_url': 'https://api.twitter.com/oauth/access_token',
-            'access_token_params': None,
-            'refresh_token_url': None,
-            'authorize_url': 'https://api.twitter.com/oauth/authenticate',
-            'api_base_url': 'https://api.twitter.com/1.1/',
-            'client_kwargs': None
-        }
-    }
-
-Sessions Middleware
-~~~~~~~~~~~~~~~~~~~
-
-In OAuth 1, Django client will save the request token in sessions. In this
-case, you need to configure Session Middleware in Django::
-
-    MIDDLEWARE = [
-        'django.contrib.sessions.middleware.SessionMiddleware'
-    ]
-
-Follow the official Django documentation to set a proper session. Either a
-database backend or a cache backend would work well.
-
-.. warning::
-
-    Be aware, using secure cookie as session backend will expose your request
-    token.
-
-
-Database Design
-~~~~~~~~~~~~~~~
-
-Authlib Django client has no built-in database model. You need to design the
-Token model by yourself. This is designed by intention.
-
-Here are some hints on how to design your schema::
-
-    class OAuth1Token(models.Model):
-        name = models.CharField(max_length=40)
-        oauth_token = models.CharField(max_length=200)
-        oauth_token_secret = models.CharField(max_length=200)
-        # ...
-
-        def to_token(self):
-            return dict(
-                oauth_token=self.access_token,
-                oauth_token_secret=self.alt_token,
-            )
-
-    class OAuth2Token(models.Model):
-        name = models.CharField(max_length=40)
-        token_type = models.CharField(max_length=20)
-        access_token = models.CharField(max_length=200)
-        refresh_token = models.CharField(max_length=200)
-        # oauth 2 expires time
-        expires_at = models.DateTimeField()
-        # ...
-
-        def to_token(self):
-            return dict(
-                access_token=self.access_token,
-                token_type=self.token_type,
-                refresh_token=self.refresh_token,
-                expires_at=self.expires_at,
-            )
-
-
-Implement the Server
-~~~~~~~~~~~~~~~~~~~~
-
-There are two views to be completed, no matter it is OAuth 1 or OAuth 2::
-
-    def login(request):
-        # build a full authorize callback uri
-        redirect_uri = request.build_absolute_uri('/authorize')
-        return oauth.twitter.authorize_redirect(request, redirect_uri)
-
-    def authorize(request):
-        token = oauth.twitter.authorize_access_token(request)
-        # save_token_to_db(token)
-        return '...'
-
-    def fetch_resource(request):
-        token = get_user_token_from_db(request.user)
-        # remember to assign user's token to the client
-        resp = oauth.twitter.get('account/verify_credentials.json', token=token)
-        profile = resp.json()
-        # ...
 
 
 Compliance Fix

@@ -15,8 +15,9 @@ This section is a guide on how to obtain an access token in OAuth 2 flow.
 
 .. note::
     This ``OAuth2Session`` is a customized ``requests.Session``. It shares
-    the same API with requests. If you are using Flask or Django, you may
-    have interests in :ref:`client_frameworks`.
+    the same API with requests. If you are using Flask, you may have interests
+    in :ref:`flask_client`. If you are using Django, please read
+    :ref:`django_client`.
 
 OAuth2Session for Authorization Code
 ------------------------------------
