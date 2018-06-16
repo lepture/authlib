@@ -74,7 +74,10 @@ class OAuth(object):
         compliance_fix = kwargs.pop('compliance_fix', None)
         client_cls = kwargs.pop('client_cls', RemoteApp)
 
-        kwargs = self._generate_client_kwargs(name, kwargs, overwrite)
+        # update kwargs from app.config
+        kwargs = self._update_config_kwargs(name, kwargs, overwrite)
+        # generate kwargs for OAuthClient
+        kwargs = self._generate_client_kwargs(name, kwargs)
         client = client_cls(name, **kwargs)
         if compliance_fix:
             client.compliance_fix = compliance_fix
@@ -101,7 +104,7 @@ class OAuth(object):
             return self.create_client(name)
         return LocalProxy(lambda: self.create_client(name))
 
-    def _generate_client_kwargs(self, name, kwargs, overwrite):
+    def _update_config_kwargs(self, name, kwargs, overwrite):
         for k in _CLIENT_KEYS:
             conf_key = '{}_{}'.format(name, k).upper()
             v = self.app.config.get(conf_key, None)
@@ -112,7 +115,9 @@ class OAuth(object):
                     kwargs[k].update(v)
                 else:
                     kwargs[k] = v
+        return kwargs
 
+    def _generate_client_kwargs(self, name, kwargs):
         fetch_token = kwargs.pop('fetch_token', None)
         if fetch_token is None and self.fetch_token:
             fetch_token = functools.partial(self.fetch_token, name=name)
