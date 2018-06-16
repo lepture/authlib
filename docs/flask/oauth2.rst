@@ -463,6 +463,15 @@ The ``current_token`` is a proxy to the Token model you have defined above.
 Since there is a ``user`` relationship on the Token model, we can access this
 ``user`` with ``current_token.user``.
 
+If decorator is not your favor, there is a ``with`` statement for you::
+
+    @app.route('/user')
+    def user_profile():
+        with require_oauth.acquire('profile') as token:
+            user = token.user
+            return jsonify(user)
+
+
 MethodView & Flask-Restful
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

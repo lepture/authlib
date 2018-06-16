@@ -9,22 +9,29 @@ Here you can see the full list of changes between each Authlib release.
 Version 0.8
 -----------
 
-**Release Date not Decided**
+**Release Date not Decided, Try Django**
 
-- Redesign error system. Add i18n support for error descriptions.
-- Improve JWT key handles, auto load JWK and JWK set.
-- Add JWTs for Client Authentication of :ref:`specs/rfc7523`.
-- Add ``require_oauth.acquire`` with statement.
+Authlib has tried to introduce Django OAuth server implementation in this
+version. It turns out that it is not that easy. In this version, only Django
+OAuth 1.0 server is provided.
+
+As always, there are also RFCs features added in this release, here is what's
+in version 0.8:
+
+- RFC7523: Add JWTs for Client Authentication of :ref:`specs/rfc7523`.
+- OIDC: Add ``response_mode=form_post`` support for OpenID Connect.
+
+**Improvement** in this release:
+
+- A new redesigned error system. All errors are subclasses of a ``AuthlibBaseError``.
+- I18N support for error descriptions. (documentation not ready).
 - Separate AuthorizationCodeMixin in ``authlib.flask.oauth2.sqla``.
-- Add OpenID Connect ``response_mode=form_post``.
-- Add Django OAuth 1.0 server, alpha stage.
+- Improve JWT key handles, auto load JWK and JWK set.
+- Add ``require_oauth.acquire`` with statement, get example on :ref:`flask_oauth2_server`.
 
-Deprecated Changes:
+**Deprecate Changes**: find how to solve the deprecate issues via https://git.io/vhL75
 
 - Rename config key ``OAUTH2_EXPIRES_IN`` to ``OAUTH2_TOKEN_EXPIRES_IN``.
-
-Breaking Changes:
-
 - Rename Flask OAuth 2.0 ``create_expires_generator`` to
   ``create_token_expires_in_generator``
 

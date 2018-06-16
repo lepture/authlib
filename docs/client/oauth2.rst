@@ -301,5 +301,6 @@ There is a ready to use ``GoogleServiceAccount`` in loginpass_. You can
 also read these posts:
 
 - `Access Google Analytics API <https://blog.authlib.org/2018/access-google-analytics-api>`_.
+- `Using Authlib with gspread <https://blog.authlib.org/2018/authlib-for-gspread>`_.
 
 .. _`Google Service Account`: https://developers.google.com/identity/protocols/OAuth2ServiceAccount

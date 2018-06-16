@@ -57,6 +57,7 @@ about Authlib, and installation of Authlib.
 
     intro
     install
+    community/licenses
 
 Client Guide
 ------------
@@ -150,3 +151,6 @@ Stay tuned with Authlib, here is a history of Authlib changes.
     :maxdepth: 2
 
     changelog
+
+Consider to follow `Authlib on Twitter <https://twitter.com/authlib>`_,
+and subscribe `Authlib Blog <https://blog.authlib.org/>`_.

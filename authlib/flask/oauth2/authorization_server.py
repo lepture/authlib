@@ -173,7 +173,11 @@ class AuthorizationServer(_AuthorizationServer):
         elif not callable(refresh_token_generator):
             refresh_token_generator = None
 
-        expires_generator = self.create_token_expires_in_generator(app)
+        if hasattr(self, 'create_expires_generator'):  # pragma: no cover
+            deprecate('Method `create_expires_generator` has been renamed', '0.10', 'vhL75', 'ceg')
+            expires_generator = self.create_expires_generator(app)
+        else:
+            expires_generator = self.create_token_expires_in_generator(app)
         return BearerToken(
             access_token_generator,
             refresh_token_generator,
