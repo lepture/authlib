@@ -24,8 +24,9 @@ in version 0.8:
 **Improvement** in this release:
 
 - A new redesigned error system. All errors are subclasses of a ``AuthlibBaseError``.
-- I18N support for error descriptions. (documentation not ready).
-- Separate AuthorizationCodeMixin in ``authlib.flask.oauth2.sqla``.
+- I18N support for error descriptions.
+- Separate AuthorizationCodeMixin in ``authlib.flask.oauth2.sqla`` via :gh:`issue#57`.
+- Add context information when generate token via :gh:`issue#58`.
 - Improve JWT key handles, auto load JWK and JWK set.
 - Add ``require_oauth.acquire`` with statement, get example on :ref:`flask_oauth2_server`.
 

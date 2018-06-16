@@ -160,15 +160,15 @@ It can also be initialized lazily with init_app::
 It works well without configuration. However, it can be configured with these
 settings:
 
-================================== ===============================================
+================================== ==================================================
 OAUTH2_TOKEN_EXPIRES_IN            A dict to define ``expires_in`` for each grant
-OAUTH2_ACCESS_TOKEN_GENERATOR      A string of module path for importing a
-                                   function to generate ``access_token``
-OAUTH2_REFRESH_TOKEN_GENERATOR     A string of module path for importing a
-                                   function to generate ``refresh_token``. It can
+OAUTH2_ACCESS_TOKEN_GENERATOR      A function or string of module path for importing
+                                   a function to generate ``access_token``
+OAUTH2_REFRESH_TOKEN_GENERATOR     A function or string of module path for importing
+                                   a function to generate ``refresh_token``. It can
                                    also be ``True/False``
 OAUTH2_ERROR_URIS                  A list of tuple for (``error``, ``error_uri``)
-================================== ===============================================
+================================== ==================================================
 
 .. hint::
 
@@ -180,6 +180,13 @@ OAUTH2_ERROR_URIS                  A list of tuple for (``error``, ``error_uri``
             'password': 864000,
             'client_credentials': 864000
         }
+
+    Here is an example of ``OAUTH2_ACCESS_TOKEN_GENERATOR``::
+
+        def gen_access_token(client, grant_type, user, scope):
+            return create_some_random_string()
+
+    ``OAUTH2_REFRESH_TOKEN_GENERATOR`` accepts the same parameters.
 
 Now define an endpoint for authorization. This endpoint is used by
 ``authorization_code`` and ``implicit`` grants::
@@ -463,7 +470,7 @@ The ``current_token`` is a proxy to the Token model you have defined above.
 Since there is a ``user`` relationship on the Token model, we can access this
 ``user`` with ``current_token.user``.
 
-If decorator is not your favor, there is a ``with`` statement for you::
+If decorator is not your favorite, there is a ``with`` statement for you::
 
     @app.route('/user')
     def user_profile():
@@ -510,6 +517,14 @@ configuration::
       # other error URIs
    ]
 
+If there is no ``OAUTH2_ERROR_URIS``, the error response will not contain any
+``error_uri`` data.
+
+I18N on Errors
+~~~~~~~~~~~~~~
+
+It is also possible to add i18n support to the ``error_description``. The
+feature has been implemented in version 0.8, but there are still work to do.
 
 .. _flask_oauth2_custom_grant_types:
 
