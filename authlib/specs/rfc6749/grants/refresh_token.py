@@ -105,10 +105,9 @@ class RefreshTokenGrant(BaseGrant):
 
             grant_type=refresh_token&refresh_token=tGzv3JOkF0XG5Qx2TlKWIA
         """
-        client = self._validate_request_client()
+        self.request.client = self._validate_request_client()
         token = self._validate_request_token()
         self._validate_token_scope(token)
-        self.request.client = client
         self.request.credential = token
 
     def create_token_response(self):
