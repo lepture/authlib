@@ -208,6 +208,12 @@ class HybridIDToken(ImplicitIDToken):
 
 
 class UserInfo(dict):
+    """The standard claims of a UserInfo object. Defined per `Section 5.1`_.
+
+    .. _`Section 5.1`: http://openid.net/specs/openid-connect-core-1_0.html#StandardClaims
+    """
+
+    #: registered claims that UserInfo supports
     REGISTERED_CLAIMS = [
         'sub', 'name', 'given_name', 'family_name', 'middle_name', 'nickname',
         'preferred_username', 'profile', 'picture', 'website', 'email',

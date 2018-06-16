@@ -59,16 +59,20 @@ class InvalidRequestURIError(OAuth2Error):
 
 
 class InvalidRequestObjectError(OAuth2Error):
+    """The request parameter contains an invalid Request Object."""
     error = 'invalid_request_object'
 
 
 class RequestNotSupportedError(OAuth2Error):
+    """The OP does not support use of the request parameter."""
     error = 'request_not_supported'
 
 
 class RequestURINotSupportedError(OAuth2Error):
+    """The OP does not support use of the request_uri parameter."""
     error = 'request_uri_not_supported'
 
 
 class RegistrationNotSupportedError(OAuth2Error):
+    """The OP does not support use of the registration parameter."""
     error = 'registration_not_supported'
