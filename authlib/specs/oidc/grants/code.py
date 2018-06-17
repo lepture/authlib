@@ -28,6 +28,9 @@ class OpenIDCodeGrant(OpenIDMixin, AuthorizationCodeGrant):
         super(OpenIDCodeGrant, self).validate_authorization_request()
         if not is_openid_request(self.request):
             return
+        self.validate_openid_authorization_request()
+
+    def validate_openid_authorization_request(self):
         wrap_openid_request(self.request)
         # validate openid request
         self.validate_nonce(required=False)

@@ -26,14 +26,20 @@ class AuthorizationCodeGrant(_CodeGrant):
     DEFAULT_CODE_CHALLENGE_METHOD = 'plain'
     SUPPORTED_CODE_CHALLENGE_METHOD = ['plain', 'S256']
 
-    CHALLENGE_METHODS = {
+    CODE_CHALLENGE_METHODS = {
         'plain': validate_plain_code_challenge,
         'S256': validate_s256_code_challenge,
     }
 
     def validate_authorization_request(self):
         super(AuthorizationCodeGrant, self).validate_authorization_request()
+        self.validate_code_challenge()
 
+    def validate_token_request(self):
+        super(AuthorizationCodeGrant, self).validate_token_request()
+        self.validate_code_verifier()
+
+    def validate_code_challenge(self):
         client = self.request.client
         challenge = self.request.data.get('code_challenge')
         if not client.has_client_secret() and not challenge:
@@ -44,9 +50,7 @@ class AuthorizationCodeGrant(_CodeGrant):
             raise InvalidRequestError(
                 description='Unsupported "code_challenge_method"')
 
-    def validate_token_request(self):
-        super(AuthorizationCodeGrant, self).validate_token_request()
-
+    def validate_code_verifier(self):
         verifier = self.request.data.get('code_verifier')
         client = self.request.client
 
@@ -69,7 +73,7 @@ class AuthorizationCodeGrant(_CodeGrant):
         if method is None:
             method = self.DEFAULT_CODE_CHALLENGE_METHOD
 
-        func = self.CHALLENGE_METHODS.get(method)
+        func = self.CODE_CHALLENGE_METHODS.get(method)
         if not func:
             raise RuntimeError('No verify method for "{}"'.format(method))
 
@@ -79,7 +83,23 @@ class AuthorizationCodeGrant(_CodeGrant):
             raise InvalidGrantError(description='Code challenge failed.')
 
     def get_authorization_code_challenge(self, authorization_code):
+        """Get "code_challenge" associated with this authorization code.
+        Developers MUST implement it in subclass, e.g.::
+
+            def get_authorization_code_challenge(self, authorization_code):
+                return authorization_code.code_challenge
+
+        :param authorization_code: the instance of authorization_code
+        """
         raise NotImplementedError()
 
     def get_authorization_code_challenge_method(self, authorization_code):
+        """Get "code_challenge_method" associated with this authorization code.
+        Developers MUST implement it in subclass, e.g.::
+
+            def get_authorization_code_challenge_method(self, authorization_code):
+                return authorization_code.code_challenge_method
+
+        :param authorization_code: the instance of authorization_code
+        """
         raise NotImplementedError()
