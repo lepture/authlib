@@ -64,6 +64,20 @@ class FlaskOAuthTest(TestCase):
         self.assertEqual(oauth.dev.client_id, 'dev')
         self.assertEqual(remote.client_id, 'dev')
 
+        self.assertIsNone(oauth.cache)
+        self.assertIsNone(oauth.fetch_token)
+        self.assertIsNone(oauth.update_token)
+
+    def test_init_app_params(self):
+        app = Flask(__name__)
+        oauth = OAuth()
+        oauth.init_app(app, SimpleCache())
+        self.assertIsNotNone(oauth.cache)
+        self.assertIsNone(oauth.update_token)
+
+        oauth.init_app(app, update_token=lambda o: o)
+        self.assertIsNotNone(oauth.update_token)
+
     def test_register_oauth1_remote_app(self):
         app = Flask(__name__)
         oauth = OAuth(app)
@@ -72,7 +86,7 @@ class FlaskOAuthTest(TestCase):
             client_id='dev',
             client_secret='dev',
             request_token_url='https://i.b/reqeust-token',
-            base_url='https://i.b/api',
+            api_base_url='https://i.b/api',
             access_token_url='https://i.b/token',
             authorize_url='https://i.b/authorize'
         )
@@ -88,7 +102,7 @@ class FlaskOAuthTest(TestCase):
             client_id='dev',
             client_secret='dev',
             request_token_url='https://i.b/reqeust-token',
-            base_url='https://i.b/api',
+            api_base_url='https://i.b/api',
             access_token_url='https://i.b/token',
             authorize_url='https://i.b/authorize'
         )
@@ -114,11 +128,11 @@ class FlaskOAuthTest(TestCase):
             'dev',
             client_id='dev',
             client_secret='dev',
-            base_url='https://i.b/api',
+            api_base_url='https://i.b/api',
             access_token_url='https://i.b/token',
             refresh_token_url='https://i.b/token',
             authorize_url='https://i.b/authorize',
-            update_token=lambda o: o
+            update_token=lambda name: 'hi'
         )
         self.assertEqual(oauth.dev.name, 'dev')
         session = oauth.dev._get_session()
@@ -132,7 +146,7 @@ class FlaskOAuthTest(TestCase):
             'dev',
             client_id='dev',
             client_secret='dev',
-            base_url='https://i.b/api',
+            api_base_url='https://i.b/api',
             access_token_url='https://i.b/token',
             authorize_url='https://i.b/authorize'
         )
@@ -166,7 +180,7 @@ class FlaskOAuthTest(TestCase):
             'dev',
             client_id='dev',
             client_secret='dev',
-            base_url='https://i.b/api',
+            api_base_url='https://i.b/api',
             access_token_url='https://i.b/token',
             authorize_url='https://i.b/authorize'
         )
@@ -177,3 +191,62 @@ class FlaskOAuthTest(TestCase):
                 send.return_value = mock_send_value(get_bearer_token())
                 token = client.authorize_access_token()
                 self.assertEqual(token['access_token'], 'a')
+
+    def test_access_token_with_fetch_token(self):
+        app = Flask(__name__)
+        app.secret_key = '!'
+        oauth = OAuth()
+
+        token = get_bearer_token()
+        oauth.init_app(app, fetch_token=lambda name: token)
+        client = oauth.register(
+            'dev',
+            client_id='dev',
+            client_secret='dev',
+            api_base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+            authorize_url='https://i.b/authorize'
+        )
+
+        def fake_send(sess, req, **kwargs):
+            auth = req.headers['Authorization']
+            self.assertEqual(auth, 'Bearer {}'.format(token['access_token']))
+            resp = mock.MagicMock()
+            resp.text = 'hi'
+            resp.status_code = 200
+            return resp
+
+        with app.test_request_context():
+            with mock.patch('requests.sessions.Session.send', fake_send):
+                resp = client.get('/api/user')
+                self.assertEqual(resp.text, 'hi')
+
+                # trigger ctx.authlib_client_oauth_token
+                resp = client.get('/api/user')
+                self.assertEqual(resp.text, 'hi')
+
+    def test_request_withhold_token(self):
+        app = Flask(__name__)
+        app.secret_key = '!'
+        oauth = OAuth(app)
+        client = oauth.register(
+            'dev',
+            client_id='dev',
+            client_secret='dev',
+            api_base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+            authorize_url='https://i.b/authorize'
+        )
+
+        def fake_send(sess, req, **kwargs):
+            auth = req.headers.get('Authorization')
+            self.assertIsNone(auth)
+            resp = mock.MagicMock()
+            resp.text = 'hi'
+            resp.status_code = 200
+            return resp
+
+        with app.test_request_context():
+            with mock.patch('requests.sessions.Session.send', fake_send):
+                resp = client.get('/api/user', withhold_token=True)
+                self.assertEqual(resp.text, 'hi')

@@ -14,7 +14,7 @@ class ResourceCacheTest(TestCase):
     USE_CACHE = True
 
     def prepare_data(self):
-        create_resource_server(self.app, self.USE_CACHE)
+        create_resource_server(self.app, self.USE_CACHE, self.USE_CACHE)
         user = User(username='foo')
         db.session.add(user)
         db.session.commit()

@@ -29,15 +29,15 @@ def token_generator(client, grant_type, user=None, scope=None):
     return '{}.{}'.format(token, generate_token(32))
 
 
-def create_authorization_server(app):
+def create_authorization_server(app, lazy=False):
     query_client = create_query_client_func(db.session, Client)
     save_token = create_save_token_func(db.session, Token)
 
-    server = AuthorizationServer(
-        app,
-        query_client=query_client,
-        save_token=save_token,
-    )
+    if lazy:
+        server = AuthorizationServer()
+        server.init_app(app, query_client, save_token)
+    else:
+        server = AuthorizationServer(app, query_client, save_token)
     server.register_hook('exists_nonce', exists_nonce)
 
     @app.route('/oauth/authorize', methods=['GET', 'POST'])

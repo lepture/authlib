@@ -5,6 +5,7 @@ from authlib.specs.rfc6749 import (
     OAuth2Request,
     AuthorizationServer as _AuthorizationServer,
 )
+from authlib.specs.rfc6749 import ClientAuthentication
 from authlib.specs.rfc6750 import BearerToken
 from authlib.common.security import generate_token
 from authlib.common.encoding import to_unicode
@@ -71,6 +72,7 @@ class AuthorizationServer(_AuthorizationServer):
         """Initialize later with Flask app instance."""
         if query_client is not None:
             self.query_client = query_client
+            self.authenticate_client = ClientAuthentication(query_client)
         if save_token is not None:
             self.save_token = save_token
 
@@ -132,7 +134,7 @@ class AuthorizationServer(_AuthorizationServer):
         expires_conf.update(GRANT_TYPES_EXPIRES)
 
         _old_expires = app.config.get('OAUTH2_EXPIRES_IN')
-        if _old_expires:
+        if _old_expires:  # pragma: no cover
             deprecate('Deprecate "OAUTH2_EXPIRES_IN".', '0.11', 'vhL75', 'ae')
             expires_conf.update(_old_expires)
         expires_conf.update(app.config.get('OAUTH2_TOKEN_EXPIRES_IN', {}))
@@ -140,7 +142,7 @@ class AuthorizationServer(_AuthorizationServer):
         def expires_in(client, grant_type):
             conf_key = 'OAUTH2_EXPIRES_{}'.format(grant_type.upper())
             expires = app.config.get(conf_key)
-            if expires:
+            if expires:  # pragma: no cover
                 deprecate('Deprecate "{}".'.format(conf_key), '0.10', 'vpCH5', 'as')
                 return expires
             return expires_conf.get(grant_type, BearerToken.DEFAULT_EXPIRES_IN)

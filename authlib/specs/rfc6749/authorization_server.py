@@ -17,7 +17,11 @@ class AuthorizationServer(object):
         self.generate_token = generate_token
         self.save_token = save_token
         self.config = config
-        self.authenticate_client = ClientAuthentication(query_client)
+        if query_client:
+            self.authenticate_client = ClientAuthentication(query_client)
+        else:
+            self.authenticate_client = None
+
         self._authorization_grants = []
         self._token_grants = []
         self._hooks = {}

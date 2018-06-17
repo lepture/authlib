@@ -70,9 +70,13 @@ class TimestampNonce(db.Model, OAuth1TimestampNonceMixin):
     id = db.Column(db.Integer, primary_key=True)
 
 
-def create_authorization_server(app, use_cache=False):
+def create_authorization_server(app, use_cache=False, lazy=False):
     query_client = create_query_client_func(db.session, Client)
-    server = AuthorizationServer(app, query_client=query_client)
+    if lazy:
+        server = AuthorizationServer()
+        server.init_app(app, query_client)
+    else:
+        server = AuthorizationServer(app, query_client=query_client)
     if use_cache:
         cache = SimpleCache()
         register_nonce_hooks(server, cache)
@@ -115,19 +119,22 @@ def create_authorization_server(app, use_cache=False):
     return server
 
 
-def create_resource_server(app, use_cache=False):
+def create_resource_server(app, use_cache=False, lazy=False):
     if use_cache:
         cache = SimpleCache()
         exists_nonce = create_cache_exists_nonce_func(cache)
     else:
         exists_nonce = create_db_exists_nonce_func(db.session, TimestampNonce)
 
-    require_oauth = ResourceProtector(
-        app,
-        query_client=create_query_client_func(db.session, Client),
-        query_token=create_query_token_func(db.session, TokenCredential),
-        exists_nonce=exists_nonce,
-    )
+    query_client = create_query_client_func(db.session, Client)
+    query_token = create_query_token_func(db.session, TokenCredential)
+
+    if lazy:
+        require_oauth = ResourceProtector()
+        require_oauth.init_app(app, query_client, query_token, exists_nonce)
+    else:
+        require_oauth = ResourceProtector(
+            app, query_client, query_token, exists_nonce)
 
     @app.route('/user')
     @require_oauth()

@@ -17,6 +17,8 @@ class AuthorizationCodeGrant(CodeGrantMixin, _AuthorizationCodeGrant):
 
 
 class AuthorizationCodeTest(TestCase):
+    LAZY_INIT = False
+
     def register_grant(self, server):
         server.register_grant(AuthorizationCodeGrant)
 
@@ -24,7 +26,7 @@ class AuthorizationCodeTest(TestCase):
             self, is_confidential=True,
             response_type='code', grant_type='authorization_code',
             token_endpoint_auth_method='client_secret_basic'):
-        server = create_authorization_server(self.app)
+        server = create_authorization_server(self.app, self.LAZY_INIT)
         self.register_grant(server)
 
         user = User(username='foo')
@@ -245,6 +247,8 @@ class AuthorizationCodeTest(TestCase):
 
 
 class CacheAuthorizationCodeTest(AuthorizationCodeTest):
+    LAZY_INIT = True
+
     def register_grant(self, server):
 
         def authenticate_user(authorization_code):
