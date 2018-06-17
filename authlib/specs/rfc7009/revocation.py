@@ -8,9 +8,6 @@ class RevocationEndpoint(TokenEndpoint):
     """Implementation of revocation endpoint which is described in
     `RFC7009`_.
 
-    :param request: OAuth2Request instance
-    :param server: Authorization Server instance
-
     .. _RFC7009: https://tools.ietf.org/html/rfc7009
     """
     #: Endpoint name to be registered

@@ -11,9 +11,6 @@ class IntrospectionEndpoint(TokenEndpoint):
     """Implementation of introspection endpoint which is described in
     `RFC7662`_.
 
-    :param request: OAuth2Request instance
-    :param server: Authorization Server instance
-
     .. _RFC7662: https://tools.ietf.org/html/rfc7662
     """
     #: Endpoint name to be registered

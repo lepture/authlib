@@ -6,16 +6,16 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
-Version 0.8
------------
+Version 0.8: Arutoria
+---------------------
 
-**Release Date not Decided, Try Django**
+**Released on Jun 17, 2018. Try Django.**
 
 Authlib has tried to introduce Django OAuth server implementation in this
 version. It turns out that it is not that easy. In this version, only Django
 OAuth 1.0 server is provided.
 
-As always, there are also RFCs features added in this release, here is what's
+As always, there are also RFC features added in this release, here is what's
 in version 0.8:
 
 - RFC7523: Add JWTs for Client Authentication of :ref:`specs/rfc7523`.
@@ -39,7 +39,7 @@ in version 0.8:
 Version 0.7: Honami
 -------------------
 
-**Apr 28, 2018. Better Beta.**
+**Released on Apr 28, 2018. Better Beta.**
 
 Authlib has changed its license from LGPL to AGPL. This is not a huge release
 like v0.6, but it still contains some deprecate changes, the good news is
