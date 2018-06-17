@@ -36,6 +36,8 @@ class Client(db.Model, OAuth2ClientMixin):
 class AuthorizationCode(db.Model, OIDCAuthorizationCodeMixin):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, nullable=False)
+    code_challenge = db.Column(db.String(80))
+    code_challenge_method = db.Column(db.String(10))
 
     @property
     def user(self):

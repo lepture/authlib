@@ -61,11 +61,11 @@ class AuthorizationCodeTest(TestCase):
         self.prepare_data()
         url = '/oauth/authorize?response_type=code'
         rv = self.client.get(url)
-        self.assertEqual(rv.data, b'invalid_client')
+        self.assertIn(b'invalid_client', rv.data)
 
         url = '/oauth/authorize?response_type=code&client_id=invalid'
         rv = self.client.get(url)
-        self.assertEqual(rv.data, b'invalid_client')
+        self.assertIn(b'invalid_client', rv.data)
 
     def test_invalid_authorize(self):
         self.prepare_data()
@@ -79,7 +79,7 @@ class AuthorizationCodeTest(TestCase):
     def test_unauthorized_client(self):
         self.prepare_data(True, 'token')
         rv = self.client.get(self.authorize_url)
-        self.assertEqual(rv.data, b'unauthorized_client')
+        self.assertIn(b'unauthorized_client', rv.data)
 
     def test_invalid_client(self):
         self.prepare_data()

@@ -4,6 +4,7 @@ import unittest
 from flask import Flask, request, jsonify
 from authlib.common.security import generate_token
 from authlib.common.encoding import to_bytes, to_unicode
+from authlib.common.urls import url_encode
 from authlib.flask.oauth2.sqla import (
     create_bearer_token_validator,
     create_query_client_func,
@@ -51,7 +52,7 @@ def create_authorization_server(app):
                 grant = server.validate_consent_request(end_user=end_user)
                 return grant.prompt or 'ok'
             except OAuth2Error as error:
-                return error.error
+                return url_encode(error.get_body())
         user_id = request.form.get('user_id')
         if user_id:
             grant_user = User.query.get(int(user_id))
