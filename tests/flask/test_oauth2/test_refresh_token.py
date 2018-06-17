@@ -1,8 +1,20 @@
 from flask import json
-from .oauth2_server import db, User, Client, Token
+from authlib.specs.rfc6749.grants import (
+    RefreshTokenGrant as _RefreshTokenGrant,
+)
+from .models import db, User, Client, Token
 from .oauth2_server import TestCase
-from .oauth2_server import RefreshTokenGrant
 from .oauth2_server import create_authorization_server
+
+
+class RefreshTokenGrant(_RefreshTokenGrant):
+    def authenticate_refresh_token(self, refresh_token):
+        item = Token.query.filter_by(refresh_token=refresh_token).first()
+        if item and not item.is_refresh_token_expired():
+            return item
+
+    def authenticate_user(self, credential):
+        return User.query.get(credential.user_id)
 
 
 class RefreshTokenTest(TestCase):

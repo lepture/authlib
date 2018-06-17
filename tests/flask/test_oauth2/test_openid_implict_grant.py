@@ -2,7 +2,7 @@ from authlib.specs.rfc7519 import JWT
 from authlib.specs.oidc import ImplicitIDToken
 from authlib.specs.oidc.grants import OpenIDImplicitGrant
 from authlib.common.urls import urlparse, url_decode
-from .oauth2_server import db, User, Client
+from .models import db, User, Client
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
 

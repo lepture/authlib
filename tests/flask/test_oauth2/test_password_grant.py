@@ -1,14 +1,22 @@
 from flask import json
-from .oauth2_server import db, User, Client
+from authlib.specs.rfc6749.grants import (
+    ResourceOwnerPasswordCredentialsGrant as _PasswordGrant,
+)
+from .models import db, User, Client
 from .oauth2_server import TestCase
-from .oauth2_server import AuthorizationCodeGrant, PasswordGrant
 from .oauth2_server import create_authorization_server
+
+
+class PasswordGrant(_PasswordGrant):
+    def authenticate_user(self, username, password):
+        user = User.query.filter_by(username=username).first()
+        if user.check_password(password):
+            return user
 
 
 class PasswordTest(TestCase):
     def prepare_data(self, grant_type='password'):
         server = create_authorization_server(self.app)
-        server.register_grant(AuthorizationCodeGrant)
         server.register_grant(PasswordGrant)
 
         user = User(username='foo')

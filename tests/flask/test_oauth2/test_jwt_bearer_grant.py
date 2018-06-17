@@ -1,8 +1,21 @@
 from flask import json
-from .oauth2_server import db, User, Client
+from authlib.specs.rfc7523 import JWTBearerGrant as _JWTBearerGrant
+from .models import db, User, Client
 from .oauth2_server import TestCase
-from .oauth2_server import JWTBearerGrant
 from .oauth2_server import create_authorization_server
+
+
+class JWTBearerGrant(_JWTBearerGrant):
+    def authenticate_user(self, claims):
+        return None
+
+    def authenticate_client(self, claims):
+        iss = claims['iss']
+        return Client.query.filter_by(client_id=iss).first()
+
+    def resolve_public_key(self, headers, payload):
+        keys = {'1': 'foo', '2': 'bar'}
+        return keys[headers['kid']]
 
 
 class JWTBearerGrantTest(TestCase):

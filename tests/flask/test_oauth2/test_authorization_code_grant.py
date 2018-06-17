@@ -1,11 +1,19 @@
 from flask import json
 from authlib.common.urls import urlparse, url_decode
 from authlib.flask.oauth2 import register_cache_authorization_code
-from .oauth2_server import db, User, Client, AuthorizationCode
+from authlib.specs.rfc6749.grants import (
+    AuthorizationCodeGrant as _AuthorizationCodeGrant,
+)
+from .models import db, User, Client, AuthorizationCode
+from .models import CodeGrantMixin, generate_authorization_code
 from .oauth2_server import TestCase
-from .oauth2_server import AuthorizationCodeGrant, OpenIDCodeGrant
 from .oauth2_server import create_authorization_server
 from ..cache import SimpleCache
+
+
+class AuthorizationCodeGrant(CodeGrantMixin, _AuthorizationCodeGrant):
+    def create_authorization_code(self, client, grant_user, request):
+        return generate_authorization_code(client, grant_user, request)
 
 
 class AuthorizationCodeTest(TestCase):
@@ -244,8 +252,3 @@ class CacheAuthorizationCodeTest(AuthorizationCodeTest):
 
         cache = SimpleCache()
         register_cache_authorization_code(cache, server, authenticate_user)
-
-
-class OpenIDCodeTest(TestCase):
-    def register_grant(self, server):
-        server.register_grant(OpenIDCodeGrant)

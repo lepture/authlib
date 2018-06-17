@@ -1,7 +1,7 @@
 from flask import json
 from authlib.flask.oauth2.sqla import create_query_token_func
 from authlib.specs.rfc7662 import IntrospectionEndpoint
-from .oauth2_server import db, User, Client, Token
+from .models import db, User, Client, Token
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
 

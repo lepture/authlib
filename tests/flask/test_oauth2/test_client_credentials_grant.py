@@ -1,6 +1,6 @@
 from flask import json
 from authlib.specs.rfc6749.grants import ClientCredentialsGrant
-from .oauth2_server import db, User, Client
+from .models import db, User, Client
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
 

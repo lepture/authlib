@@ -2,11 +2,21 @@ from flask import json
 from authlib.common.urls import urlparse, url_decode, url_encode
 from authlib.specs.rfc7519 import JWT
 from authlib.specs.oidc import CodeIDToken
+from authlib.specs.oidc.grants import (
+    OpenIDCodeGrant as _OpenIDCodeGrant,
+)
 from tests.util import get_file_path
-from .oauth2_server import db, User, Client
+from .models import db, User, Client
+from .models import CodeGrantMixin, generate_authorization_code
 from .oauth2_server import TestCase
-from .oauth2_server import OpenIDCodeGrant
 from .oauth2_server import create_authorization_server
+
+
+class OpenIDCodeGrant(CodeGrantMixin, _OpenIDCodeGrant):
+    def create_authorization_code(self, client, grant_user, request):
+        nonce = request.data.get('nonce')
+        return generate_authorization_code(
+            client, grant_user, request, nonce=nonce)
 
 
 class BaseTestCase(TestCase):

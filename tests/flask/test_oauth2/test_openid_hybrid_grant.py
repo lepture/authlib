@@ -2,10 +2,20 @@ from flask import json
 from authlib.common.urls import urlparse, url_decode
 from authlib.specs.rfc7519 import JWT
 from authlib.specs.oidc import HybridIDToken
-from .oauth2_server import db, User, Client
+from authlib.specs.oidc.grants import (
+    OpenIDHybridGrant as _OpenIDHybridGrant,
+)
+from .models import db, User, Client
+from .models import CodeGrantMixin, generate_authorization_code
 from .oauth2_server import TestCase
-from .oauth2_server import OpenIDHybridGrant
 from .oauth2_server import create_authorization_server
+
+
+class OpenIDHybridGrant(CodeGrantMixin, _OpenIDHybridGrant):
+    def create_authorization_code(self, client, grant_user, request):
+        nonce = request.data.get('nonce')
+        return generate_authorization_code(
+            client, grant_user, request, nonce=nonce)
 
 
 class OpenIDCodeTest(TestCase):
