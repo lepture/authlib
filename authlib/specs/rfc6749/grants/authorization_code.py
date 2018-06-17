@@ -335,6 +335,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
                 return code
 
         :param client: the client that requesting the token.
+        :param grant_user: the resource owner that grant the permission.
         :param request: OAuth2Request instance.
         :return: code string
         """
