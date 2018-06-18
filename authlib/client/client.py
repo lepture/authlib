@@ -8,23 +8,33 @@ from .errors import (
 from ..common.urls import urlparse
 from ..consts import default_user_agent
 
-__all__ = ['OAuthClient']
+__all__ = ['OAUTH_CLIENT_PARAMS', 'OAuthClient']
 
 log = logging.getLogger(__name__)
+
+OAUTH_CLIENT_PARAMS = (
+    'client_id', 'client_secret',
+    'request_token_url', 'request_token_params',
+    'access_token_url', 'access_token_params',
+    'refresh_token_url', 'refresh_token_params',
+    'authorize_url', 'authorize_params',
+    'api_base_url', 'client_kwargs',
+)
 
 
 class OAuthClient(object):
     """A mixed OAuth client for OAuth 1 and OAuth 2.
 
-    :param client_id: Consumer key of OAuth 1, or Client ID of OAuth 2
-    :param client_secret: Consumer secret of OAuth 2, or Client Secret of OAuth 2
+    :param client_id: Client key of OAuth 1, or Client ID of OAuth 2
+    :param client_secret: Client secret of OAuth 2, or Client Secret of OAuth 2
     :param request_token_url: Request Token endpoint for OAuth 1
     :param request_token_params: Extra parameters for Request Token endpoint
     :param access_token_url: Access Token endpoint for OAuth 1 and OAuth 2
     :param access_token_params: Extra parameters for Access Token endpoint
     :param refresh_token_url: Refresh Token endpoint for OAuth 2 (if any)
-    :param refresh_token_params: Extra paramters for Refresh Token endpoint
+    :param refresh_token_params: Extra parameters for Refresh Token endpoint
     :param authorize_url: Endpoint for user authorization of OAuth 1 ro OAuth 2
+    :param authorize_params: Extra parameters for Authorization Endpoint.
     :param api_base_url: A base URL endpoint to make requests simple
     :param client_kwargs: Extra keyword arguments for session
     :param kwargs: Extra keyword arguments
@@ -56,8 +66,9 @@ class OAuthClient(object):
                  request_token_url=None, request_token_params=None,
                  access_token_url=None, access_token_params=None,
                  refresh_token_url=None, refresh_token_params=None,
-                 authorize_url=None, api_base_url=None,
-                 client_kwargs=None, compliance_fix=None, **kwargs):
+                 authorize_url=None, authorize_params=None,
+                 api_base_url=None, client_kwargs=None,
+                 compliance_fix=None, **kwargs):
         self.client_id = client_id
         self.client_secret = client_secret
         self.request_token_url = request_token_url
@@ -67,6 +78,7 @@ class OAuthClient(object):
         self.refresh_token_url = refresh_token_url
         self.refresh_token_params = refresh_token_params
         self.authorize_url = authorize_url
+        self.authorize_params = authorize_params
         self.api_base_url = api_base_url
         self.client_kwargs = client_kwargs or {}
         self.compliance_fix = compliance_fix
@@ -84,6 +96,9 @@ class OAuthClient(object):
         """
         if not self.authorize_url:
             raise RuntimeError('Missing "authorize_url" value')
+
+        if self.authorize_params:
+            kwargs.update(self.authorize_params)
 
         with self._get_session() as session:
             if self.request_token_url:

@@ -80,6 +80,21 @@ The remote app that :meth:`OAuth.register` configured, is a subclass of
 There are hooks for OAuthClient, and flask integration has registered them
 all for you.
 
+Here is a full list of the configuration keys:
+
+- ``{name}_CLIENT_ID``: Client key of OAuth 1, or Client ID of OAuth 2
+- ``{name}_CLIENT_SECRET``: Client secret of OAuth 2, or Client Secret of OAuth 2
+- ``{name}_REQUEST_TOKEN_URL``: Request Token endpoint for OAuth 1
+- ``{name}_REQUEST_TOKEN_PARAMS``: Extra parameters for Request Token endpoint
+- ``{name}_ACCESS_TOKEN_URL``: Access Token endpoint for OAuth 1 and OAuth 2
+- ``{name}_ACCESS_TOKEN_PARAMS``: Extra parameters for Access Token endpoint
+- ``{name}_REFRESH_TOKEN_URL``: Refresh Token endpoint for OAuth 2 (if any)
+- ``{name}_REFRESH_TOKEN_PARAMS``: Extra parameters for Refresh Token endpoint
+- ``{name}_AUTHORIZE_URL``: Endpoint for user authorization of OAuth 1 ro OAuth 2
+- ``{name}_AUTHORIZE_PARAMS``: Extra parameters for Authorization Endpoint.
+- ``{name}_API_BASE_URL``: A base URL endpoint to make requests simple
+- ``{name}_CLIENT_KWARGS``: Extra keyword arguments for OAuth1Session or OAuth2Session
+
 Database
 --------
 

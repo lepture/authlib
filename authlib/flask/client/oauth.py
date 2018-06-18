@@ -4,17 +4,9 @@ from flask import request, redirect, session
 from flask import _app_ctx_stack
 from werkzeug.local import LocalProxy
 from authlib.client.errors import MismatchingStateError
-from authlib.client.client import OAuthClient
+from authlib.client.client import OAuthClient, OAUTH_CLIENT_PARAMS
 
 __all__ = ['OAuth', 'RemoteApp']
-
-_CLIENT_KEYS = (
-    'client_id', 'client_secret',
-    'request_token_url', 'request_token_params',
-    'access_token_url', 'access_token_params',
-    'refresh_token_url', 'refresh_token_params',
-    'authorize_url', 'api_base_url', 'client_kwargs',
-)
 
 
 class OAuth(object):
@@ -105,7 +97,7 @@ class OAuth(object):
         return LocalProxy(lambda: self.create_client(name))
 
     def _update_config_kwargs(self, name, kwargs, overwrite):
-        for k in _CLIENT_KEYS:
+        for k in OAUTH_CLIENT_PARAMS:
             conf_key = '{}_{}'.format(name, k).upper()
             v = self.app.config.get(conf_key, None)
             if k not in kwargs:
@@ -133,7 +125,7 @@ class OAuth(object):
         cache = self.cache
         if not kwargs.get('fetch_request_token') and cache:
             def fetch_request_token():
-                key = '_{}_req_token_'.format(name)
+                key = '_{}_authlib_req_token_'.format(name)
                 sid = session.pop(key, None)
                 if not sid:
                     return None
@@ -146,7 +138,7 @@ class OAuth(object):
 
         if not kwargs.get('save_request_token') and cache:
             def save_request_token(token):
-                key = '_{}_req_token_'.format(name)
+                key = '_{}_authlib_req_token_'.format(name)
                 sid = uuid.uuid4().hex
                 session[key] = sid
                 cache.set(sid, token, timeout=600)
@@ -219,7 +211,7 @@ class RemoteApp(OAuthClient):
         :return: A HTTP redirect response.
         """
         if redirect_uri:
-            key = '_{}_callback_'.format(self.name)
+            key = '_{}_authlib_callback_'.format(self.name)
             session[key] = redirect_uri
 
         if self.request_token_url:
@@ -233,7 +225,7 @@ class RemoteApp(OAuthClient):
             **kwargs
         )
         if state:
-            key = '_{}_state_'.format(self.name)
+            key = '_{}_authlib_state_'.format(self.name)
             session[key] = state
         return redirect(uri)
 
@@ -251,7 +243,7 @@ class RemoteApp(OAuthClient):
                 params = {'code': request.form['code']}
                 request_state = request.form.get('state')
             # verify state
-            state_key = '_{}_state_'.format(self.name)
+            state_key = '_{}_authlib_state_'.format(self.name)
             state = session.pop(state_key, None)
             if state != request_state:
                 raise MismatchingStateError()
@@ -259,7 +251,7 @@ class RemoteApp(OAuthClient):
             if state:
                 params['state'] = state
 
-        cb_key = '_{}_callback_'.format(self.name)
+        cb_key = '_{}_authlib_callback_'.format(self.name)
         redirect_uri = session.pop(cb_key, None)
         params.update(kwargs)
         token = self.fetch_access_token(redirect_uri, request_token, **params)

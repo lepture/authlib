@@ -1,19 +1,12 @@
 from django.conf import settings
 from django.dispatch import Signal
 from django.http import HttpResponseRedirect
-from authlib.client.client import OAuthClient
+from authlib.client.client import OAuthClient, OAUTH_CLIENT_PARAMS
 from authlib.client.errors import MismatchingStateError
 
 __all__ = ['token_update', 'OAuth', 'RemoteApp']
 
 token_update = Signal(providing_args=['name', 'token'])
-_CLIENT_KEYS = (
-    'client_id', 'client_secret',
-    'request_token_url', 'request_token_params',
-    'access_token_url', 'access_token_params',
-    'refresh_token_url', 'refresh_token_params',
-    'authorize_url', 'api_base_url', 'client_kwargs',
-)
 
 
 class OAuth(object):
@@ -88,12 +81,12 @@ class RemoteApp(OAuthClient):
         :return: A HTTP redirect response.
         """
         if redirect_uri:
-            key = '_{}_callback_'.format(self.name)
+            key = '_{}_authlib_callback_'.format(self.name)
             request.session[key] = redirect_uri
 
         if self.request_token_url:
             def save_request_token(token):
-                k = '_{}_req_token_'.format(self.name)
+                k = '_{}_authlib_req_token_'.format(self.name)
                 request.session[k] = token
         else:
             save_request_token = None
@@ -104,7 +97,7 @@ class RemoteApp(OAuthClient):
             **kwargs
         )
         if state:
-            key = '_{}_state_'.format(self.name)
+            key = '_{}_authlib_state_'.format(self.name)
             request.session[key] = state
         return HttpResponseRedirect(uri)
 
@@ -115,7 +108,7 @@ class RemoteApp(OAuthClient):
         :return: A token dict.
         """
         if self.request_token_url:
-            key = '_{}_req_token_'.format(self.name)
+            key = '_{}_authlib_req_token_'.format(self.name)
             request_token = request.session.pop(key, None)
             params = request.GET.dict()
         else:
@@ -126,14 +119,14 @@ class RemoteApp(OAuthClient):
             else:
                 params = {'code': request.POST.get('code')}
                 request_state = request.POST.get('state')
-            key = '_{}_state_'.format(self.name)
+            key = '_{}_authlib_state_'.format(self.name)
             state = request.session.pop(key, None)
             if state != request_state:
                 raise MismatchingStateError()
             if state:
                 params['state'] = state
 
-        key = '_{}_callback_'.format(self.name)
+        key = '_{}_authlib_callback_'.format(self.name)
         redirect_uri = request.session.get(key, None)
         params.update(kwargs)
         return self.fetch_access_token(
@@ -150,7 +143,7 @@ def _get_conf(name):
 
 
 def _config_client(config, kwargs, overwrite):
-    for k in _CLIENT_KEYS:
+    for k in OAUTH_CLIENT_PARAMS:
         v = config.get(k, None)
         if k not in kwargs:
             kwargs[k] = v
