@@ -1,24 +1,9 @@
-import hashlib
-from authlib.common.encoding import to_bytes, to_unicode, urlsafe_b64encode
 from ..rfc6749.grants import AuthorizationCodeGrant as _CodeGrant
 from ..rfc6749.errors import InvalidRequestError, InvalidGrantError
-
-
-def create_s256_code_challenge(code_verifier):
-    """Create S256 code_challenge with the given code_verifier."""
-    data = hashlib.sha256(to_bytes(code_verifier, 'ascii')).digest()
-    return to_unicode(urlsafe_b64encode(data))
-
-
-def validate_plain_code_challenge(code_verifier, code_challenge):
-    # If the "code_challenge_method" from Section 4.3 was "plain",
-    # they are compared directly
-    return code_verifier == code_challenge
-
-
-def validate_s256_code_challenge(code_verifier, code_challenge):
-    # BASE64URL-ENCODE(SHA256(ASCII(code_verifier))) == code_challenge
-    return create_s256_code_challenge(code_verifier) == code_challenge
+from .challenge import (
+    compare_plain_code_challenge,
+    compare_s256_code_challenge
+)
 
 
 class AuthorizationCodeGrant(_CodeGrant):
@@ -27,8 +12,8 @@ class AuthorizationCodeGrant(_CodeGrant):
     SUPPORTED_CODE_CHALLENGE_METHOD = ['plain', 'S256']
 
     CODE_CHALLENGE_METHODS = {
-        'plain': validate_plain_code_challenge,
-        'S256': validate_s256_code_challenge,
+        'plain': compare_plain_code_challenge,
+        'S256': compare_s256_code_challenge,
     }
 
     def validate_authorization_request(self):
