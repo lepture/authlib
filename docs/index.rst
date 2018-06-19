@@ -28,6 +28,7 @@ Generic specification implementations that Authlib has built-in:
 - :badge-blue:`part` RFC7518: :ref:`specs/rfc7518`
 - :badge:`done` RFC7519: :ref:`specs/rfc7519`
 - :badge:`done` RFC7523: :ref:`specs/rfc7523`
+- :badge:`beta` RFC7636: :ref:`specs/rfc7636`
 - :badge:`done` RFC7662: :ref:`specs/rfc7662`
 - :badge:`done` OIDC: :ref:`specs/oidc`
 
@@ -112,6 +113,7 @@ works.
     specs/rfc7518
     specs/rfc7519
     specs/rfc7523
+    specs/rfc7636
     specs/rfc7662
     specs/oidc
 
