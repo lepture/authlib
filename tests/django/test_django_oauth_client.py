@@ -101,13 +101,13 @@ class DjangoOAuthTest(TestCase):
         self.assertEqual(rv.status_code, 302)
         url = rv.get('Location')
         self.assertIn('state=', url)
-        state = request.session['_dev_state_']
+        state = request.session['_dev_authlib_state_']
 
         with mock.patch('requests.sessions.Session.send') as send:
             send.return_value = mock_send_value(get_bearer_token())
             request = self.factory.get('/authorize?state={}'.format(state))
             request.session = self.factory.session
-            request.session['_dev_state_'] = state
+            request.session['_dev_authlib_state_'] = state
 
             token = client.authorize_access_token(request)
             self.assertEqual(token['access_token'], 'a')
@@ -127,6 +127,6 @@ class DjangoOAuthTest(TestCase):
             send.return_value = mock_send_value(get_bearer_token())
             request = self.factory.post('/token', data=payload)
             request.session = self.factory.session
-            request.session['_dev_state_'] = 'b'
+            request.session['_dev_authlib_state_'] = 'b'
             token = client.authorize_access_token(request)
             self.assertEqual(token['access_token'], 'a')

@@ -114,7 +114,7 @@ class FlaskOAuthTest(TestCase):
                 self.assertEqual(resp.status_code, 302)
                 url = resp.headers.get('Location')
                 self.assertIn('oauth_token=foo', url)
-                self.assertIsNotNone(session.get('_dev_req_token_'))
+                self.assertIsNotNone(session.get('_dev_authlib_req_token_'))
 
             with mock.patch('requests.sessions.Session.send') as send:
                 send.return_value = mock_send_value('oauth_token=a&oauth_token_secret=b')
@@ -156,13 +156,13 @@ class FlaskOAuthTest(TestCase):
             self.assertEqual(resp.status_code, 302)
             url = resp.headers.get('Location')
             self.assertIn('state=', url)
-            state = session['_dev_state_']
+            state = session['_dev_authlib_state_']
             self.assertIsNotNone(state)
 
         with app.test_request_context(path='/?code=a&state={}'.format(state)):
             self.assertRaises(OAuthError, client.authorize_access_token)
             # session is cleared in tests
-            session['_dev_state_'] = state
+            session['_dev_authlib_state_'] = state
 
             with mock.patch('requests.sessions.Session.send') as send:
                 send.return_value = mock_send_value(get_bearer_token())
@@ -186,7 +186,7 @@ class FlaskOAuthTest(TestCase):
         )
         payload = {'code': 'a', 'state': 'b'}
         with app.test_request_context(data=payload, method='POST'):
-            session['_dev_state_'] = 'b'
+            session['_dev_authlib_state_'] = 'b'
             with mock.patch('requests.sessions.Session.send') as send:
                 send.return_value = mock_send_value(get_bearer_token())
                 token = client.authorize_access_token()
