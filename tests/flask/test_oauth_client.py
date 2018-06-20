@@ -172,6 +172,44 @@ class FlaskOAuthTest(TestCase):
         with app.test_request_context():
             self.assertEqual(client.token, None)
 
+    def test_oauth2_authorize_code_challenge(self):
+        app = Flask(__name__)
+        app.secret_key = '!'
+        oauth = OAuth(app)
+        client = oauth.register(
+            'dev',
+            client_id='dev',
+            api_base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+            authorize_url='https://i.b/authorize',
+            code_challenge_method='S256',
+        )
+
+        with app.test_request_context():
+            resp = client.authorize_redirect('https://b.com/bar')
+            self.assertEqual(resp.status_code, 302)
+            url = resp.headers.get('Location')
+            self.assertIn('code_challenge=', url)
+            self.assertIn('code_challenge_method=S256', url)
+            state = session['_dev_authlib_state_']
+            self.assertIsNotNone(state)
+            verifier = session['_dev_authlib_code_verifier_']
+            self.assertIsNotNone(verifier)
+
+        def fake_send(sess, req, **kwargs):
+            self.assertIn('code_verifier={}'.format(verifier), req.body)
+            return mock_send_value(get_bearer_token())
+
+        path = '/?code=a&state={}'.format(state)
+        with app.test_request_context(path=path):
+            # session is cleared in tests
+            session['_dev_authlib_state_'] = state
+            session['_dev_authlib_code_verifier_'] = verifier
+
+            with mock.patch('requests.sessions.Session.send', fake_send):
+                token = client.authorize_access_token()
+                self.assertEqual(token['access_token'], 'a')
+
     def test_oauth2_access_token_with_post(self):
         app = Flask(__name__)
         app.secret_key = '!'

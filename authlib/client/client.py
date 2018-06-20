@@ -5,7 +5,9 @@ from .errors import (
     MissingRequestTokenError,
     MissingTokenError,
 )
+from ..specs.rfc7636 import create_s256_code_challenge
 from ..common.urls import urlparse
+from ..common.security import generate_token
 from ..consts import default_user_agent
 
 __all__ = ['OAUTH_CLIENT_PARAMS', 'OAuthClient']
@@ -174,6 +176,19 @@ class OAuthClient(object):
 
         session.headers['User-Agent'] = self.DEFAULT_USER_AGENT
         return session
+
+    def add_code_challenge(self, save_code_verifier, kwargs):
+        code_challenge_method = self._kwargs.get('code_challenge_method')
+        # only support S256
+        if code_challenge_method == 'S256':
+            verifier = kwargs.get('code_verifier')
+            if not verifier:
+                verifier = generate_token(20)
+
+            save_code_verifier(verifier)
+            kwargs['code_challenge'] = create_s256_code_challenge(verifier)
+            kwargs['code_challenge_method'] = code_challenge_method
+        return kwargs
 
     def request(self, method, url, token=None, **kwargs):
         if self.api_base_url and not url.startswith(('https://', 'http://')):

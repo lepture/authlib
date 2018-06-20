@@ -44,7 +44,7 @@ class OAuth2Session(Session):
                           :class:`OAuth2Token` as parameter.
     """
     def __init__(self, client_id=None, client_secret=None,
-                 token_endpoint_auth_method='client_secret_basic',
+                 token_endpoint_auth_method=None,
                  refresh_token_url=None, refresh_token_params=None,
                  scope=None, redirect_uri=None,
                  token=None, token_placement='header',
@@ -52,6 +52,12 @@ class OAuth2Session(Session):
         super(OAuth2Session, self).__init__()
 
         self.client_id = client_id
+
+        if token_endpoint_auth_method is None:
+            if client_secret:
+                token_endpoint_auth_method = 'client_secret_basic'
+            else:
+                token_endpoint_auth_method = 'none'
 
         self._token_auth = OAuth2Auth(token, token_placement)
         self._client_auth = OAuth2ClientAuth(

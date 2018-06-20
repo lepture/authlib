@@ -112,6 +112,39 @@ class DjangoOAuthTest(TestCase):
             token = client.authorize_access_token(request)
             self.assertEqual(token['access_token'], 'a')
 
+    def test_oauth2_authorize_code_challenge(self):
+        request = self.factory.get('/login')
+        request.session = self.factory.session
+
+        client = RemoteApp(
+            'dev',
+            client_id='dev',
+            base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+            authorize_url='https://i.b/authorize',
+            code_challenge_method='S256',
+        )
+        rv = client.authorize_redirect(request, 'https://a.b/c')
+        self.assertEqual(rv.status_code, 302)
+        url = rv.get('Location')
+        self.assertIn('state=', url)
+        self.assertIn('code_challenge=', url)
+        state = request.session['_dev_authlib_state_']
+        verifier = request.session['_dev_authlib_code_verifier_']
+
+        def fake_send(sess, req, **kwargs):
+            self.assertIn('code_verifier={}'.format(verifier), req.body)
+            return mock_send_value(get_bearer_token())
+
+        with mock.patch('requests.sessions.Session.send', fake_send):
+            request = self.factory.get('/authorize?state={}'.format(state))
+            request.session = self.factory.session
+            request.session['_dev_authlib_state_'] = state
+            request.session['_dev_authlib_code_verifier_'] = verifier
+
+            token = client.authorize_access_token(request)
+            self.assertEqual(token['access_token'], 'a')
+
     def test_oauth2_access_token_with_post(self):
         client = RemoteApp(
             'dev',
