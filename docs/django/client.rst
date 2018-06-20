@@ -146,6 +146,24 @@ There are two views to be completed, no matter it is OAuth 1 or OAuth 2::
         # ...
 
 
+Code Challenge
+--------------
+
+Adding ``code_challenge`` provided by :ref:`specs/rfc7636` is simple. You
+register your remote app with a ``code_challenge_method``::
+
+    oauth.register('example',
+        client_id='Example Client ID',
+        client_secret='Example Client Secret',
+        access_token_url='https://example.com/oauth/access_token',
+        authorize_url='https://example.com/oauth/authorize',
+        api_base_url='https://api.example.com/',
+        client_kwargs=None,
+        code_challenge_method='S256',
+    )
+
+Note, the only supportted ``code_challenge_method`` is ``S256``.
+
 Compliance Fix
 --------------
 
