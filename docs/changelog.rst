@@ -6,6 +6,15 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 0.9
+-----------
+
+**Release Date not Decided.**
+
+RFC implementations in this release:
+
+- RFC7636: client and server implementation of :ref:`specs/rfc7636`.
+
 Version 0.8: Arutoria
 ---------------------
 

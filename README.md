@@ -149,8 +149,10 @@ Lovely features that Authlib has built-in:
 </details>
 
 <details>
-  <summary>⏳ RFC7636: Proof Key for Code Exchange by OAuth Public Clients</summary>
-  <p>RFC7636 implementation is in plan.</p>
+<summary>🎉  RFC7636: Proof Key for Code Exchange by OAuth Public Clients</summary>
+
+- [x] Flask/Django client integrations
+- [x] Server side grant implementation
 </details>
 
 <details>
