@@ -132,11 +132,37 @@ alg, in this case, you can also alter ``CLIENT_AUTH_METHOD = 'client_secret_jwt'
 
 .. _ClientAuthentication: http://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication
 
+.. _jwt_oauth2session:
 
 Using JWTs Client Assertion in OAuth2Session
 --------------------------------------------
 
+Authlib RFC7523 has provided you a helper function to register client assertion
+authentication method easily to ``OAuth2Session``. Take ``client_secret_jwt``
+as an example::
 
+    from authlib.specs.rfc7523 import register_session_client_auth_method
+    from authlib.client import OAuth2Session
+
+    session = OAuth2Session(
+        'your-client-id', 'your-client-secret',
+        token_endpoint_auth_method='client_secret_jwt'
+    )
+    # just one hook here
+    register_session_client_auth_method(session)
+    session.fetch_access_token('https://example.com/oauth/token')
+
+How about ``private_key_jwt``? It is the same as ``client_secret_jwt``::
+
+    with open('your-private-key.pem', 'rb') as f:
+        private_key = f.read()
+
+    session = OAuth2Session(
+        'your-client-id', private_key,
+        token_endpoint_auth_method='private_key_jwt'  # NOTICE HERE
+    )
+    register_session_client_auth_method(session)
+    session.fetch_access_token('https://example.com/oauth/token')
 
 API Reference
 -------------
@@ -148,3 +174,5 @@ API Reference
 .. autoclass:: JWTBearerClientAssertion
     :member-order: bysource
     :members:
+
+.. autofunction:: register_session_client_auth_method

@@ -14,6 +14,7 @@ Version 0.9
 RFC implementations in this release:
 
 - RFC7636: client and server implementation of :ref:`specs/rfc7636`.
+- RFC7523: easy integration of :ref:`jwt_oauth2session`.
 
 Version 0.8: Arutoria
 ---------------------
