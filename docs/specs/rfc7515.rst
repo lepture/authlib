@@ -98,7 +98,7 @@ Generate a JWS compact serialization would be easy with
     # alg is a required parameter name
     header = {'alg': 'HS256'}
     payload = b'example'
-    secret = 'secret'
+    secret = b'secret'
     jws.serialize_compact(header, payload, secret)
 
 There are other ``alg`` that you could use. Here is a full list of available
@@ -114,14 +114,16 @@ For example, a JWS with RS256 requires a private PEM key to sign the JWS::
     jws = JWS(algorithms=JWS_ALGORITHMS)
     header = {'alg': 'RS256'}
     payload = b'example'
-    secret = read_file('private.pem')
+    with open('private.pem', 'rb') as f:
+        secret = f.read()
     jws.serialize_compact(header, payload, secret)
 
 To deserialize a JWS Compact Serialization, use
 :meth:`JWS.deserialize_compact`::
 
     # if it is a RS256, we use public RSA key
-    key = read_file('public.pem')
+    with open('public.pem', 'rb') as f:
+        key = f.read()
     jws.deserialize_compact(s, key)
 
 A ``key`` can be dynamically loaded, if you don't know which key to be used::
@@ -131,6 +133,8 @@ A ``key`` can be dynamically loaded, if you don't know which key to be used::
         return get_key_by_kid(kid)
 
     jws.deserialize_compact(s, load_key)
+
+Using **JWK** for keys? Find how to use JWK with :ref:`jwk_guide`.
 
 JSON Serialize and Deserialize
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -142,7 +146,7 @@ difference is the "header"::
 
     # Flattened JSON serialization header syntax
     header = {'protected': {'alg': 'HS256'}, 'header': {'cty': 'JWT'}}
-    key = 'secret'
+    key = b'secret'
     payload = b'example'
     jws.serialize_json(header, payload, key)
 
@@ -173,6 +177,8 @@ can use its own key, in this case the dynamical key would be useful::
 Actually, there is a :meth:`JWS.serialize` and :meth:`JWS.deserialize`,
 which can automatically serialize and deserialize Compact and JSON
 Serializations.
+
+Using **JWK** for keys? Find how to use JWK with :ref:`jwk_guide`.
 
 Header Parameter Names
 ~~~~~~~~~~~~~~~~~~~~~~

@@ -15,8 +15,9 @@ Algorithms for JWS
 ------------------
 
 The interface for JWS Algorithms are all inherit from
-:class:`authlib.specs.rfc7515.JWSAlgorithm`. Find how to use them in
-:ref:`jws_guide`.
+:class:`authlib.specs.rfc7515.JWSAlgorithm`.
+
+Find how to use them in :ref:`jws_guide`.
 
 HMAC with SHA-2 Functions
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -74,7 +75,7 @@ Algorithms for JWK
 ------------------
 
 This section defines the parameters for keys using the algorithms via
-RFC7518 `Section 6`_. The interface for JWK Algorithms are all inherit from
+RFC7518 `Section 6`_. The interface for JWK Algorithms are all inherited from
 :class:`authlib.specs.rfc7517.JWKAlgorithm`. The available values of ``kty``:
 
 1. EC: Elliptic Curve (requires extra crypto backends)
