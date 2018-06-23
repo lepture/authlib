@@ -7,7 +7,6 @@
 
     .. _`Section 5`: https://tools.ietf.org/html/rfc7518#section-5
 """
-import os
 import hmac
 import hashlib
 from cryptography.hazmat.backends import default_backend
@@ -21,6 +20,10 @@ from ..util import encode_int
 
 
 class CBCHS2ContentAlgorithm(JWEContentAlgorithm):
+    # The IV used is a 128-bit value generated randomly or
+    # pseudo-randomly for use in the cipher.
+    IV_SIZE = 128
+
     def __init__(self, key_size, hash_type):
         self.key_size = key_size
         self.key_bytes_length = key_size // 8
@@ -35,18 +38,23 @@ class CBCHS2ContentAlgorithm(JWEContentAlgorithm):
         d = hmac.new(key, msg, self.hash_alg).digest()
         return d[:self.key_bytes_length]
 
-    def encrypt(self, msg, aad, key):
+    def encrypt(self, msg, aad, iv, key):
         """Key Encryption with AES_CBC_HMAC_SHA2.
 
         :param msg: text to be encrypt in bytes
         :param aad: additional authenticated data in bytes
+        :param iv: initialization vector in bytes
         :param key: encrypted key in bytes
         :return: (ciphertext, iv, tag)
         """
         hkey = key[:self.key_bytes_length]
         ekey = key[self.key_bytes_length:]
 
-        iv = os.urandom(AES.block_size // 8)
+        if iv is None:
+            iv = self.generate_iv()
+        else:
+            self.check_iv(iv)
+
         pad = PKCS7(AES.block_size).padder()
         padded_data = pad.update(msg) + pad.finalize()
 
@@ -66,6 +74,7 @@ class CBCHS2ContentAlgorithm(JWEContentAlgorithm):
         :param key: encrypted key in bytes
         :return: message
         """
+        self.check_iv(iv)
         hkey = key[:self.key_bytes_length]
         dkey = key[self.key_bytes_length:]
 
@@ -81,22 +90,29 @@ class CBCHS2ContentAlgorithm(JWEContentAlgorithm):
 
 
 class GCMContentAlgorithm(JWEContentAlgorithm):
+    # Use of an IV of size 96 bits is REQUIRED with this algorithm.
+    # https://tools.ietf.org/html/rfc7518#section-5.3
+    IV_SIZE = 96
+
     def __init__(self, key_size):
         self.name = 'A{}GCM'.format(self.key_size)
         self.key_size = key_size
         self.wrap_key_size = key_size
 
-    def encrypt(self, msg, aad, key):
+    def encrypt(self, msg, aad, iv, key):
         """Key Encryption with AES GCM
 
         :param msg: text to be encrypt in bytes
         :param aad: additional authenticated data in bytes
+        :param iv: initialization vector in bytes
         :param key: encrypted key in bytes
         :return: (ciphertext, iv, tag)
         """
-        # 96-bit IV: 12 * 8 = 96
-        # https://tools.ietf.org/html/rfc7518#section-4.7.1.1
-        iv = os.urandom(12)
+        if iv is None:
+            iv = self.generate_iv()
+        else:
+            self.check_iv(iv)
+
         cipher = Cipher(AES(key), GCM(iv), backend=default_backend())
         enc = cipher.encryptor()
         enc.authenticate_additional_data(aad)
@@ -113,6 +129,7 @@ class GCMContentAlgorithm(JWEContentAlgorithm):
         :param key: encrypted key in bytes
         :return: message
         """
+        self.check_iv(iv)
         cipher = Cipher(AES(key), GCM(iv, tag), backend=default_backend())
         d = cipher.decryptor()
         d.authenticate_additional_data(aad)

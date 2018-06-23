@@ -1,3 +1,6 @@
+import os
+
+
 class JWEAlgorithm(object):
     """Interface for JWE algorithm. JWA specification (RFC7518) SHOULD
     implement the algorithms for JWE with this base implementation.
@@ -16,11 +19,21 @@ class JWEAlgorithm(object):
 
 
 class JWEContentAlgorithm(object):
-    def encrypt(self, msg, aad, key):
+    IV_SIZE = 96
+
+    def generate_iv(self):
+        return os.urandom(self.IV_SIZE // 8)
+
+    def check_iv(self, iv):
+        if len(iv) * 8 != self.IV_SIZE:
+            raise ValueError('Invalid "iv" size')
+
+    def encrypt(self, msg, aad, iv, key):
         """Encrypt the given "msg" text.
 
         :param msg: text to be encrypt in bytes
         :param aad: additional authenticated data in bytes
+        :param iv: initialization vector in bytes
         :param key: encrypted key in bytes
         :return: (ciphertext, iv, tag)
         """
