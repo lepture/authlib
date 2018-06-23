@@ -18,11 +18,11 @@ class JWSAlgorithm(object):
     """Interface for JWS algorithm. JWA specification (RFC7518) SHOULD
     implement the algorithms for JWS with this base implementation.
     """
-    def prepare_sign_key(self, key):
+    def prepare_private_key(self, key):
         """Prepare key for sign signature."""
         raise NotImplementedError
 
-    def prepare_verify_key(self, key):
+    def prepare_public_key(self, key):
         """Prepare key for verify signature."""
         raise NotImplementedError
 
@@ -93,7 +93,7 @@ class JWS(object):
             }
 
         algorithm, key = self._prepare_algorithm_key(header, payload, key)
-        key = algorithm.prepare_verify_key(key)
+        key = algorithm.prepare_public_key(key)
         if algorithm.verify(signing_input, key, signature):
             return {'header': header, 'payload': payload}
         raise BadSignatureError()
@@ -291,7 +291,7 @@ class JWS(object):
             return header
 
         algorithm, key = self._prepare_algorithm_key(header, payload, key)
-        key = algorithm.prepare_verify_key(key)
+        key = algorithm.prepare_public_key(key)
         signing_input = b'.'.join([protected, payload_segment])
         signature = _extract_signature(to_bytes(signature_segment))
         if algorithm.verify(signing_input, key, signature):
@@ -302,7 +302,7 @@ class JWS(object):
     def _sign_signature(self, header, payload, key, payload_segment=None):
         self._validate_header(header)
         algorithm, key = self._prepare_algorithm_key(header, payload, key)
-        key = algorithm.prepare_sign_key(key)
+        key = algorithm.prepare_private_key(key)
 
         protected = _b64encode_json(header)
         if payload_segment is None:
@@ -317,7 +317,7 @@ class JWS(object):
 
         header, payload = rv['header'], rv['payload']
         algorithm, key = self._prepare_algorithm_key(header, payload, key)
-        key = algorithm.prepare_verify_key(key)
+        key = algorithm.prepare_public_key(key)
 
         signing_input, signature = rv['signing_input'], rv['signature']
         verified = algorithm.verify(signing_input, key, signature)

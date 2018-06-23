@@ -9,27 +9,18 @@
 """
 
 from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.serialization import (
-    load_pem_private_key, load_pem_public_key, load_ssh_public_key
-)
-from cryptography.hazmat.primitives.asymmetric.rsa import (
-    RSAPrivateKey, RSAPublicKey
-)
-from cryptography.hazmat.primitives.asymmetric.ec import (
-    EllipticCurvePrivateKey, EllipticCurvePublicKey, ECDSA
-)
 from cryptography.hazmat.primitives.asymmetric.utils import (
     decode_dss_signature, encode_dss_signature
 )
+from cryptography.hazmat.primitives.asymmetric.ec import ECDSA
 from cryptography.hazmat.primitives.asymmetric import padding
-from cryptography.hazmat.backends import default_backend
 from cryptography.exceptions import InvalidSignature
 from authlib.specs.rfc7515 import JWSAlgorithm
-from authlib.common.encoding import to_bytes
+from ._key_cryptography import RSAKey, ECKey
 from ..util import encode_int, decode_int
 
 
-class RSAAlgorithm(JWSAlgorithm):
+class RSAAlgorithm(RSAKey, JWSAlgorithm):
     """RSA using SHA algorithms for JWS. Available algorithms:
 
     - RS256: RSASSA-PKCS1-v1_5 using SHA-256
@@ -43,21 +34,6 @@ class RSAAlgorithm(JWSAlgorithm):
     def __init__(self, hash_alg):
         self.hash_alg = hash_alg
 
-    def prepare_sign_key(self, key):
-        if isinstance(key, RSAPrivateKey):
-            return key
-        key = to_bytes(key)
-        return load_pem_private_key(key, password=None, backend=default_backend())
-
-    def prepare_verify_key(self, key):
-        if isinstance(key, RSAPublicKey):
-            return key
-        key = to_bytes(key)
-        if key.startswith(b'ssh-rsa'):
-            return load_ssh_public_key(key, backend=default_backend())
-        else:
-            return load_pem_public_key(key, backend=default_backend())
-
     def sign(self, msg, key):
         return key.sign(msg, padding.PKCS1v15(), self.hash_alg())
 
@@ -69,7 +45,7 @@ class RSAAlgorithm(JWSAlgorithm):
             return False
 
 
-class ECAlgorithm(JWSAlgorithm):
+class ECAlgorithm(ECKey, JWSAlgorithm):
     """ECDSA using SHA algorithms for JWS. Available algorithms:
 
     - ES256: ECDSA using P-256 and SHA-256
@@ -82,19 +58,6 @@ class ECAlgorithm(JWSAlgorithm):
 
     def __init__(self, hash_alg):
         self.hash_alg = hash_alg
-
-    def prepare_sign_key(self, key):
-        if isinstance(key, EllipticCurvePrivateKey):
-            return key
-        key = to_bytes(key)
-        return load_pem_private_key(key, password=None, backend=default_backend())
-
-    def prepare_verify_key(self, key):
-        if isinstance(key, EllipticCurvePublicKey):
-            return key
-        if key.startswith(b'ecdsa-sha2-'):
-            return load_ssh_public_key(key, backend=default_backend())
-        return load_pem_public_key(key, backend=default_backend())
 
     def sign(self, msg, key):
         der_sig = key.sign(msg, ECDSA(self.hash_alg()))

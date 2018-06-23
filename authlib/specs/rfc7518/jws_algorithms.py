@@ -16,10 +16,10 @@ from ._backends import JWS_ALGORITHMS
 
 
 class NoneAlgorithm(JWSAlgorithm):
-    def prepare_sign_key(self, key):
+    def prepare_private_key(self, key):
         return None
 
-    def prepare_verify_key(self, key):
+    def prepare_public_key(self, key):
         return None
 
     def sign(self, msg, key):
@@ -43,10 +43,10 @@ class HMACAlgorithm(JWSAlgorithm):
     def __init__(self, hash_alg):
         self.hash_alg = hash_alg
 
-    def prepare_sign_key(self, key):
+    def prepare_private_key(self, key):
         return to_bytes(key)
 
-    def prepare_verify_key(self, key):
+    def prepare_public_key(self, key):
         key = to_bytes(key)
         return key
 
