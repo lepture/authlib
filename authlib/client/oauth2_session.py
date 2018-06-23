@@ -52,6 +52,7 @@ class OAuth2Session(Session):
         super(OAuth2Session, self).__init__()
 
         self.client_id = client_id
+        self._token_auth = OAuth2Auth(token, token_placement)
 
         if token_endpoint_auth_method is None:
             if client_secret:
@@ -59,7 +60,7 @@ class OAuth2Session(Session):
             else:
                 token_endpoint_auth_method = 'none'
 
-        self._token_auth = OAuth2Auth(token, token_placement)
+        self.token_endpoint_auth_method = token_endpoint_auth_method
         self._client_auth = OAuth2ClientAuth(
             client_id, client_secret,
             auth_method=token_endpoint_auth_method)
@@ -84,13 +85,12 @@ class OAuth2Session(Session):
             'revoke_token_request': set(),
         }
 
-    def register_client_auth_method(self, method, func):
+    def register_client_auth_method(self, func):
         """Extend client authenticate for token endpoint.
 
-        :param method: name of the ``token_endpoint_auth_method``
         :param func: a function to sign the request
         """
-        self._client_auth.register(method, func)
+        self._client_auth.register(self.token_endpoint_auth_method, func)
 
     @property
     def token(self):

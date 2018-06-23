@@ -10,6 +10,8 @@ from authlib.client.errors import OAuthError
 from authlib.specs.rfc6749 import (
     MismatchingStateException,
 )
+from authlib.specs.rfc7523 import register_session_client_auth_method
+from ..util import read_file_path
 from ..client_base import mock_json_response
 
 
@@ -334,8 +336,56 @@ class OAuth2SessionTest(TestCase):
             'revoke_token_request',
             revoke_token_request,
         )
-        resp = sess.revoke_token(
+        sess.revoke_token(
             'https://i.b/token', 'hi',
             body='',
             token_type_hint='access_token'
         )
+
+    def test_invalid_register_client_auth_method(self):
+        sess = OAuth2Session(
+            'id', 'secret',
+            token_endpoint_auth_method='invalid_auth_method'
+        )
+        self.assertRaises(
+            ValueError,
+            register_session_client_auth_method,
+            sess
+        )
+
+    def test_client_secret_jwt(self):
+        sess = OAuth2Session(
+            'id', 'secret',
+            token_endpoint_auth_method='client_secret_jwt'
+        )
+        register_session_client_auth_method(sess)
+
+        def fake_send(r, **kwargs):
+            self.assertIn('client_assertion=', r.body)
+            self.assertIn('client_assertion_type=', r.body)
+            resp = mock.MagicMock()
+            resp.json = lambda: self.token
+            return resp
+
+        sess.send = fake_send
+        token = sess.fetch_access_token('https://i.b/token')
+        self.assertEqual(token, self.token)
+
+    def test_private_key_jwt(self):
+        client_secret = read_file_path('rsa_private.pem')
+        sess = OAuth2Session(
+            'id', client_secret,
+            token_endpoint_auth_method='private_key_jwt'
+        )
+        register_session_client_auth_method(sess)
+
+        def fake_send(r, **kwargs):
+            self.assertIn('client_assertion=', r.body)
+            self.assertIn('client_assertion_type=', r.body)
+            resp = mock.MagicMock()
+            resp.json = lambda: self.token
+            return resp
+
+        sess.send = fake_send
+        token = sess.fetch_access_token('https://i.b/token')
+        self.assertEqual(token, self.token)
