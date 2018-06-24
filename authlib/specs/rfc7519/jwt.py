@@ -31,17 +31,6 @@ class JWT(JWS):
             algorithms = {algorithms: JWS_ALGORITHMS[algorithms]}
         super(JWT, self).__init__(algorithms, private_headers)
 
-    def extract_payload(self, payload_segment):
-        """Extract payload into JSON dict format."""
-        bytes_payload = super(JWT, self).extract_payload(payload_segment)
-        try:
-            payload = json.loads(to_unicode(bytes_payload))
-        except ValueError:
-            raise DecodeError('Invalid payload value')
-        if not isinstance(payload, dict):
-            raise DecodeError('Invalid payload type')
-        return payload
-
     def check_sensitive_data(self, payload):
         """Check if payload contains sensitive information."""
         for k in payload:
@@ -93,8 +82,9 @@ class JWT(JWS):
             claims_cls = JWTClaims
 
         data = self.deserialize_compact(s, _wrap_key(key))
+        payload = _decode_payload(data['payload'])
         return claims_cls(
-            data['payload'], data['header'],
+            payload, data['header'],
             options=claims_options,
             params=claims_params,
         )
@@ -124,3 +114,13 @@ def _wrap_key(key):
         def key_func(header, payload):
             return _load_jwk(key, header)
     return key_func
+
+
+def _decode_payload(bytes_payload):
+    try:
+        payload = json.loads(to_unicode(bytes_payload))
+    except ValueError:
+        raise DecodeError('Invalid payload value')
+    if not isinstance(payload, dict):
+        raise DecodeError('Invalid payload type')
+    return payload

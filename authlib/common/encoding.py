@@ -1,4 +1,5 @@
 import sys
+import json
 import base64
 import struct
 
@@ -71,3 +72,9 @@ def int_to_base64(num):
         buf.reverse()
         s = struct.pack('%sB' % len(buf), *buf)
     return to_unicode(urlsafe_b64encode(s))
+
+
+def json_b64encode(text):
+    if isinstance(text, dict):
+        text = json.dumps(text, separators=(',', ':'))
+    return urlsafe_b64encode(to_bytes(text))

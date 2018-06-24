@@ -1,16 +1,21 @@
-import binascii
 import json
 from authlib.common.encoding import (
-    to_bytes, to_unicode,
-    urlsafe_b64encode, urlsafe_b64decode
+    to_bytes,
+    to_unicode,
+    urlsafe_b64encode,
+    json_b64encode
 )
-from authlib.deprecate import deprecate
 from .errors import (
     DecodeError,
     MissingAlgorithmError,
     UnsupportedAlgorithmError,
     BadSignatureError,
     InvalidHeaderParameterName,
+)
+from .util import (
+    prepare_algorithm_key,
+    extract_header,
+    extract_segment,
 )
 
 
@@ -80,7 +85,7 @@ class JWS(object):
 
         # extract header, payload, signature
         header = _extract_header(header_segment)
-        payload = self.extract_payload(payload_segment)
+        payload = _extract_payload(payload_segment)
         signature = _extract_signature(signature_segment)
 
         self._validate_header(header)
@@ -92,8 +97,8 @@ class JWS(object):
                 'signing_input': signing_input,
             }
 
-        algorithm, key = self._prepare_algorithm_key(header, payload, key)
-        key = algorithm.prepare_public_key(key)
+        algorithm, key = prepare_algorithm_key(
+            self._algorithms, header, payload, key)
         if algorithm.verify(signing_input, key, signature):
             return {'header': header, 'payload': payload}
         raise BadSignatureError()
@@ -117,7 +122,7 @@ class JWS(object):
             raise DecodeError('Missing "payload" value')
 
         payload_segment = to_bytes(payload_segment)
-        payload = self.extract_payload(payload_segment)
+        payload = _extract_payload(payload_segment)
         if key:
             if 'signatures' not in s:
                 # flattened JSON JWS
@@ -199,7 +204,7 @@ class JWS(object):
         Pass a dict to generate flattened JSON Serialization, pass a list of
         header dict to generate standard JSON Serialization.
         """
-        payload_segment = _b64encode_json(payload)
+        payload_segment = json_b64encode(payload)
 
         def _sign(h):
             protected, _, signature = self._sign_signature(
@@ -241,12 +246,6 @@ class JWS(object):
             return self.serialize_json(header, payload, key)
         return self.serialize_compact(header, payload, key)
 
-    def extract_payload(self, payload_segment):
-        try:
-            return urlsafe_b64decode(payload_segment)
-        except (TypeError, binascii.Error):
-            raise DecodeError('Invalid payload padding')
-
     def _validate_header(self, header):
         if 'alg' not in header:
             raise MissingAlgorithmError()
@@ -262,12 +261,6 @@ class JWS(object):
         for k in header:
             if k not in names:
                 raise InvalidHeaderParameterName(k)
-
-    def _prepare_algorithm_key(self, header, payload, key):
-        algorithm = self._algorithms[header['alg']]
-        if callable(key):
-            key = key(header, payload)
-        return algorithm, key
 
     def _validate_json_jws(self, payload_segment, payload, header_obj, key):
         protected = header_obj.get('protected')
@@ -290,8 +283,8 @@ class JWS(object):
         if not key:
             return header
 
-        algorithm, key = self._prepare_algorithm_key(header, payload, key)
-        key = algorithm.prepare_public_key(key)
+        algorithm, key = prepare_algorithm_key(
+            self._algorithms, header, payload, key)
         signing_input = b'.'.join([protected, payload_segment])
         signature = _extract_signature(to_bytes(signature_segment))
         if algorithm.verify(signing_input, key, signature):
@@ -301,70 +294,27 @@ class JWS(object):
 
     def _sign_signature(self, header, payload, key, payload_segment=None):
         self._validate_header(header)
-        algorithm, key = self._prepare_algorithm_key(header, payload, key)
-        key = algorithm.prepare_private_key(key)
+        algorithm, key = prepare_algorithm_key(
+            self._algorithms, header, payload, key, private=True)
 
-        protected = _b64encode_json(header)
+        protected = json_b64encode(header)
         if payload_segment is None:
-            payload_segment = _b64encode_json(payload)
+            payload_segment = json_b64encode(payload)
         signing_input = b'.'.join([protected, payload_segment])
         signature = urlsafe_b64encode(algorithm.sign(signing_input, key))
         return protected, payload_segment, signature
 
-    def verify(self, s, key):  # pragma: no cover
-        deprecate('Method "verify" is deprecated. Use "deserialize" instead.', '0.9')
-        rv = self.deserialize_compact(s, None)
-
-        header, payload = rv['header'], rv['payload']
-        algorithm, key = self._prepare_algorithm_key(header, payload, key)
-        key = algorithm.prepare_public_key(key)
-
-        signing_input, signature = rv['signing_input'], rv['signature']
-        verified = algorithm.verify(signing_input, key, signature)
-
-        # Note that the payload can be any content and need not
-        # be a representation of a JSON object
-        return header, payload, verified
-
-    def decode(self, s, key):  # pragma: no cover
-        deprecate('Method "decode" is deprecated. Use "deserialize" instead.',
-                  '0.9', 'vpCH5', 'jws')
-        rv = self.deserialize_compact(s, key)
-        return rv['header'], rv['payload']
-
-    def encode(self, header, payload, key):  # pragma: no cover
-        deprecate('Method "encode" is deprecated. Use "serialize" instead.',
-                  '0.9', 'vpCH5', 'jws')
-        return self.serialize_compact(header, payload, key)
-
 
 def _extract_header(header_segment):
-    try:
-        header_data = urlsafe_b64decode(header_segment)
-    except (TypeError, binascii.Error):
-        raise DecodeError('Invalid header padding')
-
-    try:
-        header = json.loads(header_data.decode('utf-8'))
-    except ValueError as e:
-        raise DecodeError('Invalid header string: {}'.format(e))
-
-    if not isinstance(header, dict):
-        raise DecodeError('Header must be a json object')
-    return header
+    return extract_header(header_segment, DecodeError)
 
 
 def _extract_signature(signature_segment):
-    try:
-        return urlsafe_b64decode(signature_segment)
-    except (TypeError, binascii.Error):
-        raise DecodeError('Invalid signature')
+    return extract_segment(signature_segment, DecodeError, 'signature')
 
 
-def _b64encode_json(text):
-    if isinstance(text, dict):
-        text = json.dumps(text, separators=(',', ':'))
-    return urlsafe_b64encode(to_bytes(text))
+def _extract_payload(payload_segment):
+    return extract_segment(payload_segment, DecodeError, 'payload')
 
 
 def _ensure_dict(s):
