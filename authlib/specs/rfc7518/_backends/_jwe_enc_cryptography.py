@@ -15,11 +15,11 @@ from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import GCM, CBC
 from cryptography.hazmat.primitives.padding import PKCS7
 from cryptography.exceptions import InvalidTag
-from authlib.specs.rfc7516 import JWEContentAlgorithm
+from authlib.specs.rfc7516 import JWEEncAlgorithm
 from ..util import encode_int
 
 
-class CBCHS2ContentAlgorithm(JWEContentAlgorithm):
+class CBCHS2EncAlgorithm(JWEEncAlgorithm):
     # The IV used is a 128-bit value generated randomly or
     # pseudo-randomly for use in the cipher.
     IV_SIZE = 128
@@ -89,7 +89,7 @@ class CBCHS2ContentAlgorithm(JWEContentAlgorithm):
         return unpad.update(data) + unpad.finalize()
 
 
-class GCMContentAlgorithm(JWEContentAlgorithm):
+class GCMEncAlgorithm(JWEEncAlgorithm):
     # Use of an IV of size 96 bits is REQUIRED with this algorithm.
     # https://tools.ietf.org/html/rfc7518#section-5.3
     IV_SIZE = 96
@@ -137,10 +137,10 @@ class GCMContentAlgorithm(JWEContentAlgorithm):
 
 
 JWE_ENCRYPTS = {
-    'A128CBC-HS256': CBCHS2ContentAlgorithm(128, 256),
-    'A192CBC-HS384': CBCHS2ContentAlgorithm(192, 384),
-    'A256CBC-HS512': CBCHS2ContentAlgorithm(256, 512),
-    'A128GCM': GCMContentAlgorithm(128),
-    'A192GCM': GCMContentAlgorithm(192),
-    'A256GCM': GCMContentAlgorithm(256),
+    'A128CBC-HS256': CBCHS2EncAlgorithm(128, 256),
+    'A192CBC-HS384': CBCHS2EncAlgorithm(192, 384),
+    'A256CBC-HS512': CBCHS2EncAlgorithm(256, 512),
+    'A128GCM': GCMEncAlgorithm(128),
+    'A192GCM': GCMEncAlgorithm(192),
+    'A256GCM': GCMEncAlgorithm(256),
 }

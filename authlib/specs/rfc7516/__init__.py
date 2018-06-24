@@ -8,4 +8,4 @@
     https://tools.ietf.org/html/rfc7516
 """
 
-from .jwe import JWEAlgorithm, JWEContentAlgorithm
+from .jwe import JWEAlgorithm, JWEEncAlgorithm
