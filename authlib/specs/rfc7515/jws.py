@@ -208,7 +208,7 @@ class JWS(object):
                 'protected': to_unicode(protected),
                 'signature': to_unicode(signature)
             }
-            if 'header' in header:
+            if 'header' in h:
                 rv['header'] = h['header']
             return rv
 
