@@ -50,11 +50,6 @@ class JWSTest(unittest.TestCase):
         self.assertEqual(header['alg'], 'HS256')
         self.assertNotIn('signature', data)
 
-        # no key
-        data = jws.deserialize(s, None)
-        self.assertIn('signature', data)
-        self.assertIn('signing_input', data)
-
     def test_compact_rsa(self):
         jws = JWS(algorithms=JWS_ALGORITHMS)
         s = jws.serialize(
@@ -79,9 +74,6 @@ class JWSTest(unittest.TestCase):
         self.assertEqual(header['alg'], 'HS256')
         self.assertNotIn('protected', data)
 
-        data = jws.deserialize(s, None)
-        self.assertIn('protected', data)
-
     def test_nested_json_jws(self):
         jws = JWS(algorithms=JWS_ALGORITHMS)
         protected = {'alg': 'HS256'}
@@ -95,9 +87,6 @@ class JWSTest(unittest.TestCase):
         self.assertEqual(payload, b'hello')
         self.assertEqual(header[0]['alg'], 'HS256')
         self.assertNotIn('signatures', data)
-
-        data = jws.deserialize(s, None)
-        self.assertIn('signatures', data)
 
         # test bad signature
         self.assertRaises(errors.BadSignatureError, jws.deserialize, s, 'f')

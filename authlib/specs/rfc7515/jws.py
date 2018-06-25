@@ -17,38 +17,7 @@ from .util import (
     extract_header,
     extract_segment,
 )
-
-
-class JWSAlgorithm(object):
-    """Interface for JWS algorithm. JWA specification (RFC7518) SHOULD
-    implement the algorithms for JWS with this base implementation.
-    """
-    def prepare_private_key(self, key):
-        """Prepare key for sign signature."""
-        raise NotImplementedError
-
-    def prepare_public_key(self, key):
-        """Prepare key for verify signature."""
-        raise NotImplementedError
-
-    def sign(self, msg, key):
-        """Sign the text msg with a private/sign key.
-
-        :param msg: message bytes to be signed
-        :param key: private key to sign the message
-        :return: bytes
-        """
-        raise NotImplementedError
-
-    def verify(self, msg, key, sig):
-        """Verify the signature of text msg with a public/verify key.
-
-        :param msg: message bytes to be signed
-        :param key: public key to verify the signature
-        :param sig: result signature to be compared
-        :return: boolean
-        """
-        raise NotImplementedError
+from .models import JWSHeader
 
 
 class JWS(object):
@@ -79,71 +48,68 @@ class JWS(object):
         try:
             s = to_bytes(s)
             signing_input, signature_segment = s.rsplit(b'.', 1)
-            header_segment, payload_segment = signing_input.split(b'.', 1)
+            protected_segment, payload_segment = signing_input.split(b'.', 1)
         except ValueError:
             raise DecodeError('Not enough segments')
 
-        # extract header, payload, signature
-        header = _extract_header(header_segment)
+        protected = _extract_header(protected_segment)
+        jws_header = JWSHeader(protected, None)
+
         payload = _extract_payload(payload_segment)
         signature = _extract_signature(signature_segment)
 
-        self._validate_header(header)
-        if not key:
-            return {
-                'header': header,
-                'payload': payload,
-                'signature': signature,
-                'signing_input': signing_input,
-            }
+        self._validate_header(jws_header)
 
+        rv = {'header': jws_header, 'payload': payload}
         algorithm, key = prepare_algorithm_key(
-            self._algorithms, header, payload, key)
+            self._algorithms, jws_header, payload, key)
         if algorithm.verify(signing_input, key, signature):
-            return {'header': header, 'payload': payload}
-        raise BadSignatureError()
+            return rv
+        raise BadSignatureError(rv)
 
-    def deserialize_json(self, s, key):
+    def deserialize_json(self, obj, key):
         """Exact JWS JSON Serialization, and validate with the given key.
         If key is not provided, it will return a dict without signature
         verification. Header will still be validated. Via `Section 7.2`_.
 
-        :param s: text of JWS JSON Serialization
+        :param obj: text of JWS JSON Serialization
         :param key: key used to verify the signature
         :return: dict
         :raise: BadSignatureError
 
         .. _`Section 7.2`: https://tools.ietf.org/html/rfc7515#section-7.2
         """
-        s = _ensure_dict(s)
+        obj = _ensure_dict(obj)
 
-        payload_segment = s.get('payload')
+        payload_segment = obj.get('payload')
         if not payload_segment:
             raise DecodeError('Missing "payload" value')
 
         payload_segment = to_bytes(payload_segment)
         payload = _extract_payload(payload_segment)
-        if key:
-            if 'signatures' not in s:
-                # flattened JSON JWS
-                header = self._validate_json_jws(
-                    payload_segment, payload, s, key)
-                return {'header': header, 'payload': payload}
+        if 'signatures' not in obj:
+            # flattened JSON JWS
+            header, valid = self._validate_json_jws(
+                payload_segment, payload, obj, key)
+            rv = {'header': header, 'payload': payload}
+            if valid:
+                return rv
+            raise BadSignatureError(rv)
 
-            header = [
-                self._validate_json_jws(
-                    payload_segment, payload, segments, key)
-                for segments in s['signatures']
-            ]
-            return {'header': header, 'payload': payload}
+        headers = []
+        is_valid = True
+        for header_obj in obj['signatures']:
+            header, valid = self._validate_json_jws(
+                payload_segment, payload, header_obj, key)
+            headers.append(header)
+            if not valid:
+                is_valid = False
 
-        if 'signatures' in s:
-            for segments in s['signatures']:
-                self._validate_json_jws(
-                    payload_segment, payload, segments, None)
-        else:
-            self._validate_json_jws(payload_segment, payload, s, None)
-        return s
+        # TODO: rename it to headers?
+        rv = {'header': headers, 'payload': payload}
+        if is_valid:
+            return rv
+        raise BadSignatureError(rv)
 
     def deserialize(self, s, key):
         """Deserialize JWS Serialization, both compact and JSON format.
@@ -164,7 +130,7 @@ class JWS(object):
             return self.deserialize_json(s, key)
         return self.deserialize_compact(s, key)
 
-    def serialize_compact(self, header, payload, key):
+    def serialize_compact(self, protected, payload, key):
         """Generate a JWS Compact Serialization. The JWS Compact Serialization
         represents digitally signed or MACed content as a compact, URL-safe
         string, per `Section 7.1`_.
@@ -180,21 +146,22 @@ class JWS(object):
         :param key: Private key used to generate signature
         :return: byte
         """
-        protected, payload_segment, signature = self._sign_signature(
-            header, payload, key)
-        return b'.'.join([protected, payload_segment, signature])
+        jws_header = JWSHeader(protected, None)
+        protected_segment, payload_segment, signature = self._sign_signature(
+            jws_header, payload, key)
+        return b'.'.join([protected_segment, payload_segment, signature])
 
-    def serialize_json(self, header, payload, key):
+    def serialize_json(self, header_obj, payload, key):
         """Generate a JWS JSON Serialization. The JWS JSON Serialization
         represents digitally signed or MACed content as a JSON object,
         per `Section 7.2`_.
 
-        :param header: A dict/list of header
+        :param header_obj: A dict/list of header
         :param payload: A string/dict of payload
         :param key: Private key used to generate signature
         :return: dict
 
-        Example header of JWS JSON Serialization::
+        Example ``header_obj`` of JWS JSON Serialization::
 
             {
                 "protected: {"alg": "HS256"},
@@ -206,23 +173,23 @@ class JWS(object):
         """
         payload_segment = json_b64encode(payload)
 
-        def _sign(h):
-            protected, _, signature = self._sign_signature(
-                h['protected'], payload, key, payload_segment)
+        def _sign(jws_header):
+            protected_segment, _, signature = self._sign_signature(
+                jws_header, payload, key, payload_segment)
             rv = {
-                'protected': to_unicode(protected),
+                'protected': to_unicode(protected_segment),
                 'signature': to_unicode(signature)
             }
-            if 'header' in header:
-                rv['header'] = h['header']
+            if jws_header.header is not None:
+                rv['header'] = jws_header.header
             return rv
 
-        if isinstance(header, dict):
-            data = _sign(header)
+        if isinstance(header_obj, dict):
+            data = _sign(JWSHeader.from_dict(header_obj))
             data['payload'] = to_unicode(payload_segment)
             return data
 
-        signatures = [_sign(h) for h in header]
+        signatures = [_sign(JWSHeader.from_dict(h)) for h in header_obj]
         return {
             'payload': to_unicode(payload_segment),
             'signatures': signatures
@@ -263,46 +230,42 @@ class JWS(object):
                 raise InvalidHeaderParameterName(k)
 
     def _validate_json_jws(self, payload_segment, payload, header_obj, key):
-        protected = header_obj.get('protected')
-        if not protected:
+        protected_segment = header_obj.get('protected')
+        if not protected_segment:
             raise DecodeError('Missing "protected" value')
 
         signature_segment = header_obj.get('signature')
         if not signature_segment:
             raise DecodeError('Missing "signature" value')
 
-        protected = to_bytes(protected)
-        header = _extract_header(protected)
-        pub_header = header_obj.get('header')
-        if pub_header:
-            if not isinstance(pub_header, dict):
-                raise DecodeError('Invalid "header" value')
-            header.update(pub_header)
+        protected_segment = to_bytes(protected_segment)
+        protected = _extract_header(protected_segment)
+        header = header_obj.get('header')
+        if header and not isinstance(header, dict):
+            raise DecodeError('Invalid "header" value')
+        jws_header = JWSHeader(protected, header)
 
-        self._validate_header(header)
-        if not key:
-            return header
+        self._validate_header(jws_header)
 
         algorithm, key = prepare_algorithm_key(
-            self._algorithms, header, payload, key)
-        signing_input = b'.'.join([protected, payload_segment])
+            self._algorithms, jws_header, payload, key)
+        signing_input = b'.'.join([protected_segment, payload_segment])
         signature = _extract_signature(to_bytes(signature_segment))
         if algorithm.verify(signing_input, key, signature):
-            return header
+            return jws_header, True
+        return jws_header, False
 
-        raise BadSignatureError()
-
-    def _sign_signature(self, header, payload, key, payload_segment=None):
-        self._validate_header(header)
+    def _sign_signature(self, jws_header, payload, key, payload_segment=None):
+        self._validate_header(jws_header)
         algorithm, key = prepare_algorithm_key(
-            self._algorithms, header, payload, key, private=True)
+            self._algorithms, jws_header, payload, key, private=True)
 
-        protected = json_b64encode(header)
+        protected_segment = json_b64encode(jws_header.protected)
         if payload_segment is None:
             payload_segment = json_b64encode(payload)
-        signing_input = b'.'.join([protected, payload_segment])
+        signing_input = b'.'.join([protected_segment, payload_segment])
         signature = urlsafe_b64encode(algorithm.sign(signing_input, key))
-        return protected, payload_segment, signature
+        return protected_segment, payload_segment, signature
 
 
 def _extract_header(header_segment):

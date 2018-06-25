@@ -7,7 +7,8 @@ __all__ = [
 ]
 
 
-JWSError = AuthlibBaseError
+class JWSError(AuthlibBaseError):
+    pass
 
 
 class DecodeError(JWSError):
@@ -24,6 +25,9 @@ class UnsupportedAlgorithmError(JWSError):
 
 class BadSignatureError(JWSError):
     error = 'bad_signature'
+
+    def __init__(self, result):
+        self.result = result
 
 
 class InvalidHeaderParameterName(JWSError):
