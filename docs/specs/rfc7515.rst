@@ -96,10 +96,10 @@ Generate a JWS compact serialization would be easy with
 
     jws = JWS(algorithms=JWS_ALGORITHMS)
     # alg is a required parameter name
-    header = {'alg': 'HS256'}
+    protected = {'alg': 'HS256'}
     payload = b'example'
     secret = b'secret'
-    jws.serialize_compact(header, payload, secret)
+    jws.serialize_compact(protected, payload, secret)
 
 There are other ``alg`` that you could use. Here is a full list of available
 algorithms:
@@ -112,11 +112,11 @@ algorithms:
 For example, a JWS with RS256 requires a private PEM key to sign the JWS::
 
     jws = JWS(algorithms=JWS_ALGORITHMS)
-    header = {'alg': 'RS256'}
+    protected = {'alg': 'RS256'}
     payload = b'example'
     with open('private.pem', 'rb') as f:
         secret = f.read()
-    jws.serialize_compact(header, payload, secret)
+    jws.serialize_compact(protected, payload, secret)
 
 To deserialize a JWS Compact Serialization, use
 :meth:`JWS.deserialize_compact`::
@@ -124,7 +124,9 @@ To deserialize a JWS Compact Serialization, use
     # if it is a RS256, we use public RSA key
     with open('public.pem', 'rb') as f:
         key = f.read()
-    jws.deserialize_compact(s, key)
+    data = jws.deserialize_compact(s, key)
+    jws_header = data['header']
+    payload = data['payload']
 
 A ``key`` can be dynamically loaded, if you don't know which key to be used::
 
@@ -133,6 +135,9 @@ A ``key`` can be dynamically loaded, if you don't know which key to be used::
         return get_key_by_kid(kid)
 
     jws.deserialize_compact(s, load_key)
+
+The result of the ``deserialize_compact`` is a dict, which contains ``header``
+and ``payload``. The value of the ``header`` is a :class:`JWSHeader`.
 
 Using **JWK** for keys? Find how to use JWK with :ref:`jwk_guide`.
 
@@ -178,6 +183,9 @@ Actually, there is a :meth:`JWS.serialize` and :meth:`JWS.deserialize`,
 which can automatically serialize and deserialize Compact and JSON
 Serializations.
 
+The result of the ``deserialize_json`` is a dict, which contains ``header``
+and ``payload``. The value of the ``header`` is a :class:`JWSHeader`.
+
 Using **JWK** for keys? Find how to use JWK with :ref:`jwk_guide`.
 
 Header Parameter Names
@@ -202,6 +210,8 @@ API Reference
     :member-order: bysource
     :members:
 
+
+.. autoclass:: JWSHeader
 
 .. autoclass:: JWSAlgorithm
     :member-order: bysource

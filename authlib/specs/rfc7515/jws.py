@@ -141,7 +141,7 @@ class JWS(object):
             BASE64URL(JWS Payload) || '.' ||
             BASE64URL(JWS Signature)
 
-        :param header: A dict of header
+        :param protected: A dict of protected header
         :param payload: A string/dict of payload
         :param key: Private key used to generate signature
         :return: byte

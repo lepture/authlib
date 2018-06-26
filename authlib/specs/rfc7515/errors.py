@@ -27,6 +27,7 @@ class BadSignatureError(JWSError):
     error = 'bad_signature'
 
     def __init__(self, result):
+        super(BadSignatureError, self).__init__()
         self.result = result
 
 
