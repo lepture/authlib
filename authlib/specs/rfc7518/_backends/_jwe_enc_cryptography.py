@@ -27,7 +27,7 @@ class CBCHS2EncAlgorithm(JWEEncAlgorithm):
     def __init__(self, key_size, hash_type):
         self.key_size = key_size
         self.key_bytes_length = key_size // 8
-        self.wrap_key_size = key_size * 2
+        self.CEK_SIZE = key_size * 2
         self.hash_alg = getattr(hashlib, 'sha{}'.format(hash_type))
 
         self.name = 'A{}CBC-HS{}'.format(self.key_size, hash_type)
@@ -47,13 +47,9 @@ class CBCHS2EncAlgorithm(JWEEncAlgorithm):
         :param key: encrypted key in bytes
         :return: (ciphertext, iv, tag)
         """
+        self.check_iv(iv)
         hkey = key[:self.key_bytes_length]
         ekey = key[self.key_bytes_length:]
-
-        if iv is None:
-            iv = self.generate_iv()
-        else:
-            self.check_iv(iv)
 
         pad = PKCS7(AES.block_size).padder()
         padded_data = pad.update(msg) + pad.finalize()
@@ -62,7 +58,7 @@ class CBCHS2EncAlgorithm(JWEEncAlgorithm):
         enc = cipher.encryptor()
         ciphertext = enc.update(padded_data) + enc.finalize()
         tag = self._hmac(ciphertext, aad, iv, hkey)
-        return ciphertext, iv, tag
+        return ciphertext, tag
 
     def decrypt(self, ciphertext, aad, iv, tag, key):
         """Key Decryption with AES AES_CBC_HMAC_SHA2.
@@ -97,7 +93,7 @@ class GCMEncAlgorithm(JWEEncAlgorithm):
     def __init__(self, key_size):
         self.name = 'A{}GCM'.format(self.key_size)
         self.key_size = key_size
-        self.wrap_key_size = key_size
+        self.CEK_SIZE = key_size
 
     def encrypt(self, msg, aad, iv, key):
         """Key Encryption with AES GCM
@@ -108,16 +104,12 @@ class GCMEncAlgorithm(JWEEncAlgorithm):
         :param key: encrypted key in bytes
         :return: (ciphertext, iv, tag)
         """
-        if iv is None:
-            iv = self.generate_iv()
-        else:
-            self.check_iv(iv)
-
+        self.check_iv(iv)
         cipher = Cipher(AES(key), GCM(iv), backend=default_backend())
         enc = cipher.encryptor()
         enc.authenticate_additional_data(aad)
         ciphertext = enc.update(msg) + enc.finalize()
-        return ciphertext, iv, enc.tag
+        return ciphertext, enc.tag
 
     def decrypt(self, ciphertext, aad, iv, tag, key):
         """Key Decryption with AES GCM

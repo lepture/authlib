@@ -10,18 +10,14 @@ class RSAAlgorithm(RSAKey, JWEAlgorithm):
         self.name = name
         self.padding = padding
 
-    def wrap(self, key, bit_size, cek, headers):
+    def wrap(self, cek, headers, key):
         if key.key_size < self.key_size:
             raise ValueError('TODO')
-        if not cek:
-            cek = os.urandom(bit_size // 8)
         ek = key.encrypt(cek, self.padding)
-        return {'cek': cek, 'ek': ek}
+        return ek
 
-    def unwrap(self, key, bit_size, ek, headers):
+    def unwrap(self, ek, headers, key):
         cek = key.decrypt(ek, self.padding)
-        if len(cek) * 8 != bit_size:
-            raise ValueError('TODO')
         return cek
 
 

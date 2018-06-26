@@ -1,10 +1,10 @@
-import os
 from authlib.common.encoding import (
-    to_bytes,
+    to_bytes, urlsafe_b64encode, json_b64encode
 )
 from ..rfc7515.util import (
     extract_header,
     extract_segment,
+    prepare_algorithm_key,
 )
 from .errors import (
     DecodeError,
@@ -15,65 +15,6 @@ from .errors import (
     UnsupportedCompressionAlgorithmError,
     InvalidHeaderParameterName,
 )
-
-
-class JWEAlgorithm(object):
-    """Interface for JWE algorithm. JWA specification (RFC7518) SHOULD
-    implement the algorithms for JWE with this base implementation.
-    """
-    def prepare_private_key(self, key):
-        raise NotImplementedError
-
-    def prepare_public_key(self, key):
-        raise NotImplementedError
-
-    def wrap(self, key, bit_size, cek, headers):
-        raise NotImplementedError
-
-    def unwrap(self, key, bit_size, ek, headers):
-        raise NotImplementedError
-
-
-class JWEEncAlgorithm(object):
-    IV_SIZE = 96
-
-    def generate_iv(self):
-        return os.urandom(self.IV_SIZE // 8)
-
-    def check_iv(self, iv):
-        if len(iv) * 8 != self.IV_SIZE:
-            raise ValueError('Invalid "iv" size')
-
-    def encrypt(self, msg, aad, iv, key):
-        """Encrypt the given "msg" text.
-
-        :param msg: text to be encrypt in bytes
-        :param aad: additional authenticated data in bytes
-        :param iv: initialization vector in bytes
-        :param key: encrypted key in bytes
-        :return: (ciphertext, iv, tag)
-        """
-        raise NotImplementedError
-
-    def decrypt(self, ciphertext, aad, iv, tag, key):
-        """Decrypt the given cipher text.
-
-        :param ciphertext: ciphertext in bytes
-        :param aad: additional authenticated data in bytes
-        :param iv: initialization vector in bytes
-        :param tag: authentication tag in bytes
-        :param key: encrypted key in bytes
-        :return: message
-        """
-        raise NotImplementedError
-
-
-class JWEZipAlgorithm(object):
-    def compress(self, plaintext):
-        raise NotImplementedError
-
-    def decompress(self, s):
-        raise NotImplementedError
 
 
 class JWE(object):
@@ -91,19 +32,60 @@ class JWE(object):
         self._zip_algorithms = zip_algorithms
         self._private_headers = private_headers
 
+    def serialize_compact(self, protected, msg, key):
+        self._validate_header(protected)
+        algorithm, enc_alg, key = self._prepare_alg_enc_key(protected, key)
+
+        # step 1: Encoding JWE Protected Header
+        protected_segment = json_b64encode(protected)
+
+        # step 2: Generate a random Content Encryption Key (CEK)
+        cek = enc_alg.generate_cek()
+
+        # step 3: Encrypt the CEK with the recipient's public key
+        ek = algorithm.wrap(cek, protected, key)
+
+        # step 4: Generate a random JWE Initialization Vector
+        iv = enc_alg.generate_iv()
+
+        # step 5: Let the Additional Authenticated Data encryption parameter
+        # be ASCII(BASE64URL(UTF8(JWE Protected Header)))
+        aad = to_bytes(protected_segment, 'ascii')
+
+        # step 6: perform encryption
+        msg = self._compress_text(msg, protected)
+        ciphertext, tag = enc_alg.encrypt(self, msg, aad, iv, cek)
+        return b'.'.join([
+            protected_segment,
+            urlsafe_b64encode(ek),
+            urlsafe_b64encode(iv),
+            urlsafe_b64encode(ciphertext),
+            urlsafe_b64encode(tag)
+        ])
+
     def deserialize_compact(self, s, key):
         try:
             s = to_bytes(s)
-            header_s, enc_key_s, iv_s, ciphertext_s, tag_s = s.rsplit(b'.')
+            protected_s, ek_s, iv_s, ciphertext_s, tag_s = s.rsplit(b'.')
         except ValueError:
             raise DecodeError('Not enough segments')
 
-        header = extract_header(header_s, DecodeError)
-        enc_key = extract_segment(enc_key_s, DecodeError, 'encryption key')
+        protected = extract_header(protected_s, DecodeError)
+        ek = extract_segment(ek_s, DecodeError, 'encryption key')
         iv = extract_segment(iv_s, DecodeError, 'initialization vector')
         ciphertext = extract_segment(ciphertext_s, DecodeError, 'ciphertext')
         tag = extract_segment(tag_s, DecodeError, 'authentication tag')
-        self._validate_header(header)
+
+        self._validate_header(protected)
+
+        algorithm, enc_alg, key = self._prepare_alg_enc_key(
+            protected, key, private=True)
+
+        cek = algorithm.unwrap(ek, protected, key)
+        aad = to_bytes(protected_s, 'ascii')
+        msg = enc_alg.decrypt(ciphertext, aad, iv, tag, cek)
+        msg = self._decompress_text(msg, protected)
+        return {'header': protected, 'payload': msg}
 
     def deserialize_json(self, s, key):
         pass
@@ -112,10 +94,22 @@ class JWE(object):
         pass
 
     def _compress_text(self, s, header):
-        pass
+        if 'zip' in header:
+            zip_alg = self._zip_algorithms[header['zip']]
+            return zip_alg.compress(to_bytes(s))
+        return to_bytes(s)
 
     def _decompress_text(self, s, header):
-        pass
+        if 'zip' in header:
+            zip_alg = self._zip_algorithms[header['zip']]
+            return zip_alg.decompress(to_bytes(s))
+        return s
+
+    def _prepare_alg_enc_key(self, header, key, private=False):
+        algorithm, key = prepare_algorithm_key(
+            self._algorithms, header, None, key, private=private)
+        enc_alg = self._enc_algorithms[header['enc']]
+        return algorithm, enc_alg, key
 
     def _validate_header(self, header):
         if 'alg' not in header:
