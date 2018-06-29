@@ -1,4 +1,5 @@
 import logging
+
 from .oauth1_session import OAuth1Session
 from .oauth2_session import OAuth2Session
 from .errors import (
@@ -218,6 +219,15 @@ class OAuthClient(object):
             client.post('timeline', json={'text': 'Hi'})
         """
         return self.request('POST', url, **kwargs)
+    
+    def patch(self, url, **kwargs):
+        """Invoke PATCH http request.
+
+        If ``api_base_url`` configured, shortcut is available::
+
+            client.patch('profile', json={'name': 'Hsiaoming Yang'})
+        """
+        return self.request('PATCH', url, **kwargs)
 
     def put(self, url, **kwargs):
         """Invoke PUT http request.
