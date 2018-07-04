@@ -57,7 +57,10 @@ class JWEEncAlgorithm(object):
 
 
 class JWEZipAlgorithm(object):
-    def compress(self, plaintext):
+    name = None
+    description = None
+
+    def compress(self, b):
         raise NotImplementedError
 
     def decompress(self, s):

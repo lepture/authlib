@@ -128,7 +128,7 @@ class GCMEncAlgorithm(JWEEncAlgorithm):
         return d.update(ciphertext) + d.finalize()
 
 
-JWE_ENCRYPTS = {
+JWE_ENC_ALGORITHMS = {
     'A128CBC-HS256': CBCHS2EncAlgorithm(128, 256),
     'A192CBC-HS384': CBCHS2EncAlgorithm(192, 384),
     'A256CBC-HS512': CBCHS2EncAlgorithm(256, 512),
