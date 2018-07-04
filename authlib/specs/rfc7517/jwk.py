@@ -2,6 +2,8 @@ from ._backends import EC_TYPES, RSA_TYPES
 
 
 class JWKAlgorithm(object):
+    name = None
+
     """Interface for JWK algorithm. JWA specification (RFC7518) SHOULD
     implement the algorithms for JWK with this base implementation.
     """
@@ -20,7 +22,10 @@ class JWKAlgorithm(object):
 
 class JWK(object):
     def __init__(self, algorithms):
-        self._algorithms = algorithms
+        self._algorithms = {}
+
+        for alg in algorithms:
+            self._algorithms[alg.name] = alg
 
     def _load_obj(self, obj):
         kty = obj['kty']

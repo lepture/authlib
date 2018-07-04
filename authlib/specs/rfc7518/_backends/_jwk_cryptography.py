@@ -32,6 +32,8 @@ invalid_strings = [
 
 
 class RSAAlgorithm(JWKAlgorithm):
+    name = 'RSA'
+
     def loads_other_primes_info(self, obj):
         raise NotImplementedError()
 
@@ -128,6 +130,7 @@ class RSAAlgorithm(JWKAlgorithm):
 
 
 class ECAlgorithm(JWKAlgorithm):
+    name = 'EC'
     # http://tools.ietf.org/html/rfc4492#appendix-A
     # https://tools.ietf.org/html/rfc7518#section-6.2.1.1
     DSS_CURVES = {
@@ -210,7 +213,4 @@ def _load_key(key, ssh_type):
         return load_pem_public_key(key, backend=default_backend())
 
 
-JWK_ALGORITHMS = {
-    'RSA': RSAAlgorithm(),
-    'EC': ECAlgorithm(),
-}
+JWK_ALGORITHMS = [RSAAlgorithm(), ECAlgorithm()]

@@ -12,10 +12,12 @@ import hmac
 import hashlib
 from authlib.specs.rfc7515 import JWSAlgorithm
 from authlib.common.encoding import to_bytes
-from ._backends import JWS_ALGORITHMS
+from ._backends import JWS_ALGORITHMS as _ALGORITHMS
 
 
 class NoneAlgorithm(JWSAlgorithm):
+    name = 'none'
+
     def prepare_private_key(self, key):
         return None
 
@@ -40,8 +42,9 @@ class HMACAlgorithm(JWSAlgorithm):
     SHA384 = hashlib.sha384
     SHA512 = hashlib.sha512
 
-    def __init__(self, hash_alg):
-        self.hash_alg = hash_alg
+    def __init__(self, sha_type):
+        self.name = 'HS{}'.format(sha_type)
+        self.hash_alg = getattr(self, 'SHA{}'.format(sha_type))
 
     def prepare_private_key(self, key):
         return to_bytes(key)
@@ -58,9 +61,9 @@ class HMACAlgorithm(JWSAlgorithm):
         return hmac.compare_digest(sig, self.sign(msg, key))
 
 
-JWS_ALGORITHMS.update({
-    'none': NoneAlgorithm(),
-    'HS256': HMACAlgorithm(HMACAlgorithm.SHA256),
-    'HS384': HMACAlgorithm(HMACAlgorithm.SHA384),
-    'HS512': HMACAlgorithm(HMACAlgorithm.SHA512),
-})
+JWS_ALGORITHMS = _ALGORITHMS + [
+    NoneAlgorithm(),
+    HMACAlgorithm(256),
+    HMACAlgorithm(384),
+    HMACAlgorithm(512),
+]

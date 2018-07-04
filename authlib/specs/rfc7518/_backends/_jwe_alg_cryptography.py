@@ -10,7 +10,7 @@ class RSAAlgorithm(RSAKey, JWEAlgorithm):
     key_size = 2048
 
     def __init__(self, name, pad_fn):
-        self.name = name
+        super(RSAAlgorithm, self).__init__(name)
         self.padding = pad_fn
 
     def wrap(self, cek, headers, key):
@@ -23,26 +23,27 @@ class RSAAlgorithm(RSAKey, JWEAlgorithm):
         return key.decrypt(ek, self.padding)
 
 
-JWE_ALGORITHMS = {
-    'RSA1_5': RSAAlgorithm('RSA1_5', padding.PKCS1v15()),
-    'RSA-OAEP': RSAAlgorithm(
+JWE_ALG_ALGORITHMS = [
+    RSAAlgorithm('RSA1_5', padding.PKCS1v15()),
+    RSAAlgorithm(
         'RSA-OAEP',
         padding.OAEP(padding.MGF1(hashes.SHA1()), hashes.SHA1(), None)),
-    'RSA-OAEP-256': RSAAlgorithm(
+    RSAAlgorithm(
         'RSA-OAEP-256',
         padding.OAEP(padding.MGF1(hashes.SHA256()), hashes.SHA256(), None)),
-    # 'A128KW': '',
-    # 'A192KW': '',
-    # 'A256KW': '',
-    # 'dir': '',
-    # 'ECDH-ES': '',
-    # 'ECDH-ES+A128KW': '',
-    # 'ECDH-ES+A192KW': '',
-    # 'ECDH-ES+A256KW': '',
-    # 'A128GCMKW': '',
-    # 'A192GCMKW': '',
-    # 'A256GCMKW': '',
-    # 'PBES2-HS256+A128KW': '',
-    # 'PBES2-HS384+A192KW': '',
-    # 'PBES2-HS512+A256KW': '',
-}
+]
+
+# 'A128KW': '',
+# 'A192KW': '',
+# 'A256KW': '',
+# 'dir': '',
+# 'ECDH-ES': '',
+# 'ECDH-ES+A128KW': '',
+# 'ECDH-ES+A192KW': '',
+# 'ECDH-ES+A256KW': '',
+# 'A128GCMKW': '',
+# 'A192GCMKW': '',
+# 'A256GCMKW': '',
+# 'PBES2-HS256+A128KW': '',
+# 'PBES2-HS384+A192KW': '',
+# 'PBES2-HS512+A256KW': '',

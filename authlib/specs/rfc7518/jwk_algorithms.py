@@ -13,10 +13,12 @@ from authlib.common.encoding import (
     to_bytes, to_unicode,
     urlsafe_b64encode, urlsafe_b64decode,
 )
-from ._backends import JWK_ALGORITHMS
+from ._backends import JWK_ALGORITHMS as _ALGORITHMS
 
 
 class OCTAlgorithm(JWKAlgorithm):
+    name = 'oct'
+
     def prepare_key(self, key):
         return to_bytes(key)
 
@@ -30,4 +32,4 @@ class OCTAlgorithm(JWKAlgorithm):
         }
 
 
-JWK_ALGORITHMS['oct'] = OCTAlgorithm()
+JWK_ALGORITHMS = _ALGORITHMS + [OCTAlgorithm()]

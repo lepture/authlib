@@ -30,8 +30,21 @@ class JWS(object):
     ])
 
     def __init__(self, algorithms, private_headers=None):
-        self._algorithms = algorithms
+        self._algorithms = {}
         self._private_headers = private_headers
+
+        if isinstance(algorithms, dict):
+            # TODO: deprecated
+            self._algorithms = algorithms
+        elif isinstance(algorithms, list):
+            for algorithm in algorithms:
+                self.register_algorithm(algorithm)
+
+    def register_algorithm(self, algorithm):
+        if algorithm.TYPE != 'JWS':
+            raise ValueError(
+                'Invalid algorithm for JWS, {!r}'.format(algorithm))
+        self._algorithms[algorithm.name] = algorithm
 
     def deserialize_compact(self, s, key):
         """Exact JWS Compact Serialization, and validate with the given key.

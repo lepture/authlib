@@ -25,12 +25,11 @@ class CBCHS2EncAlgorithm(JWEEncAlgorithm):
     IV_SIZE = 128
 
     def __init__(self, key_size, hash_type):
+        self.name = 'A{}CBC-HS{}'.format(key_size, hash_type)
         self.key_size = key_size
         self.key_bytes_length = key_size // 8
         self.CEK_SIZE = key_size * 2
         self.hash_alg = getattr(hashlib, 'sha{}'.format(hash_type))
-
-        self.name = 'A{}CBC-HS{}'.format(self.key_size, hash_type)
 
     def _hmac(self, ciphertext, aad, iv, key):
         al = encode_int(len(aad) * 8, 64)
@@ -91,7 +90,7 @@ class GCMEncAlgorithm(JWEEncAlgorithm):
     IV_SIZE = 96
 
     def __init__(self, key_size):
-        self.name = 'A{}GCM'.format(self.key_size)
+        self.name = 'A{}GCM'.format(key_size)
         self.key_size = key_size
         self.CEK_SIZE = key_size
 
@@ -128,11 +127,11 @@ class GCMEncAlgorithm(JWEEncAlgorithm):
         return d.update(ciphertext) + d.finalize()
 
 
-JWE_ENC_ALGORITHMS = {
-    'A128CBC-HS256': CBCHS2EncAlgorithm(128, 256),
-    'A192CBC-HS384': CBCHS2EncAlgorithm(192, 384),
-    'A256CBC-HS512': CBCHS2EncAlgorithm(256, 512),
-    'A128GCM': GCMEncAlgorithm(128),
-    'A192GCM': GCMEncAlgorithm(192),
-    'A256GCM': GCMEncAlgorithm(256),
-}
+JWE_ENC_ALGORITHMS = [
+    CBCHS2EncAlgorithm(128, 256),
+    CBCHS2EncAlgorithm(192, 384),
+    CBCHS2EncAlgorithm(256, 512),
+    GCMEncAlgorithm(128),
+    GCMEncAlgorithm(192),
+    GCMEncAlgorithm(256),
+]

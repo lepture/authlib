@@ -26,11 +26,26 @@ class JWE(object):
         'typ', 'cty', 'crit'
     ])
 
-    def __init__(self, algorithms, enc_algorithms, zip_algorithms, private_headers=None):
-        self._algorithms = algorithms
-        self._enc_algorithms = enc_algorithms
-        self._zip_algorithms = zip_algorithms
+    def __init__(self, algorithms, private_headers=None):
+        self._alg_algorithms = {}
+        self._enc_algorithms = {}
+        self._zip_algorithms = {}
         self._private_headers = private_headers
+
+        for algorithm in algorithms:
+            self.register_algorithm(algorithm)
+
+    def register_algorithm(self, algorithm):
+        if algorithm.TYPE != 'JWE':
+            raise ValueError(
+                'Invalid algorithm for JWE, {!r}'.format(algorithm))
+
+        if algorithm.HEADER_KEY == 'alg':
+            self._alg_algorithms[algorithm.name] = algorithm
+        elif algorithm.HEADER_KEY == 'enc':
+            self._enc_algorithms[algorithm.name] = algorithm
+        elif algorithm.HEADER_KEY == 'zip':
+            self._zip_algorithms[algorithm.name] = algorithm
 
     def serialize_compact(self, protected, msg, key):
         self._validate_header(protected)
@@ -101,7 +116,7 @@ class JWE(object):
 
     def _prepare_alg_enc_key(self, header, key, private=False):
         algorithm, key = prepare_algorithm_key(
-            self._algorithms, header, None, key, private=private)
+            self._alg_algorithms, header, None, key, private=private)
         enc_alg = self._enc_algorithms[header['enc']]
         return algorithm, enc_alg, key
 
@@ -110,7 +125,7 @@ class JWE(object):
             raise MissingAlgorithmError()
 
         alg = header['alg']
-        if alg not in self._algorithms:
+        if alg not in self._alg_algorithms:
             raise UnsupportedAlgorithmError()
 
         if 'enc' not in header:

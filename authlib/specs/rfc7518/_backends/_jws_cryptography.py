@@ -31,8 +31,9 @@ class RSAAlgorithm(RSAKey, JWSAlgorithm):
     SHA384 = hashes.SHA384
     SHA512 = hashes.SHA512
 
-    def __init__(self, hash_alg):
-        self.hash_alg = hash_alg
+    def __init__(self, sha_type):
+        self.name = 'RS{}'.format(sha_type)
+        self.hash_alg = getattr(self, 'SHA{}'.format(sha_type))
 
     def sign(self, msg, key):
         return key.sign(msg, padding.PKCS1v15(), self.hash_alg())
@@ -56,8 +57,9 @@ class ECAlgorithm(ECKey, JWSAlgorithm):
     SHA384 = hashes.SHA384
     SHA512 = hashes.SHA512
 
-    def __init__(self, hash_alg):
-        self.hash_alg = hash_alg
+    def __init__(self, sha_type):
+        self.name = 'ES{}'.format(sha_type)
+        self.hash_alg = getattr(self, 'SHA{}'.format(sha_type))
 
     def sign(self, msg, key):
         der_sig = key.sign(msg, ECDSA(self.hash_alg()))
@@ -83,13 +85,21 @@ class ECAlgorithm(ECKey, JWSAlgorithm):
             return False
 
 
-class RSAPSSAlgorithm(RSAAlgorithm):
+class RSAPSSAlgorithm(RSAKey, JWSAlgorithm):
     """RSASSA-PSS using SHA algorithms for JWS. Available algorithms:
 
     - PS256: RSASSA-PSS using SHA-256 and MGF1 with SHA-256
     - PS384: RSASSA-PSS using SHA-384 and MGF1 with SHA-384
     - PS512: RSASSA-PSS using SHA-512 and MGF1 with SHA-512
     """
+    SHA256 = hashes.SHA256
+    SHA384 = hashes.SHA384
+    SHA512 = hashes.SHA512
+
+    def __init__(self, sha_type):
+        self.name = 'PS{}'.format(sha_type)
+        self.hash_alg = getattr(self, 'SHA{}'.format(sha_type))
+
     def sign(self, msg, key):
         return key.sign(
             msg,
@@ -116,14 +126,14 @@ class RSAPSSAlgorithm(RSAAlgorithm):
             return False
 
 
-JWS_ALGORITHMS = {
-    'RS256': RSAAlgorithm(RSAAlgorithm.SHA256),
-    'RS384': RSAAlgorithm(RSAAlgorithm.SHA384),
-    'RS512': RSAAlgorithm(RSAAlgorithm.SHA512),
-    'ES256': ECAlgorithm(ECAlgorithm.SHA256),
-    'ES384': ECAlgorithm(ECAlgorithm.SHA384),
-    'ES512': ECAlgorithm(ECAlgorithm.SHA512),
-    'PS256': RSAPSSAlgorithm(RSAPSSAlgorithm.SHA256),
-    'PS384': RSAPSSAlgorithm(RSAPSSAlgorithm.SHA384),
-    'PS512': RSAPSSAlgorithm(RSAPSSAlgorithm.SHA512)
-}
+JWS_ALGORITHMS = [
+    RSAAlgorithm(256),
+    RSAAlgorithm(384),
+    RSAAlgorithm(512),
+    ECAlgorithm(256),
+    ECAlgorithm(384),
+    ECAlgorithm(512),
+    RSAPSSAlgorithm(256),
+    RSAPSSAlgorithm(384),
+    RSAPSSAlgorithm(512),
+]

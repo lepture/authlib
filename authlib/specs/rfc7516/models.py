@@ -5,6 +5,12 @@ class JWEAlgorithm(object):
     """Interface for JWE algorithm. JWA specification (RFC7518) SHOULD
     implement the algorithms for JWE with this base implementation.
     """
+    TYPE = 'JWE'
+    HEADER_KEY = 'alg'
+
+    def __init__(self, name):
+        self.name = name
+
     def prepare_private_key(self, key):
         raise NotImplementedError
 
@@ -19,6 +25,9 @@ class JWEAlgorithm(object):
 
 
 class JWEEncAlgorithm(object):
+    TYPE = 'JWE'
+    HEADER_KEY = 'enc'
+
     IV_SIZE = None
     CEK_SIZE = None
 
@@ -57,6 +66,9 @@ class JWEEncAlgorithm(object):
 
 
 class JWEZipAlgorithm(object):
+    TYPE = 'JWE'
+    HEADER_KEY = 'zip'
+
     name = None
     description = None
 

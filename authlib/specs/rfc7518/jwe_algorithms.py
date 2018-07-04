@@ -1,9 +1,9 @@
 import zlib
-from ._backends import JWE_ALGORITHMS, JWE_ENC_ALGORITHMS
+from ._backends import JWE_ALG_ALGORITHMS, JWE_ENC_ALGORITHMS
 from ..rfc7516 import JWEZipAlgorithm
 
 
-__all__ = ['JWE_ALGORITHMS', 'JWE_ENC_ALGORITHMS', 'JWE_ZIP_ALGORITHMS']
+__all__ = ['JWE_ALGORITHMS']
 
 
 class DeflateZipAlgorithm(JWEZipAlgorithm):
@@ -17,6 +17,5 @@ class DeflateZipAlgorithm(JWEZipAlgorithm):
         return zlib.decompress(s, -zlib.MAX_WBITS)
 
 
-JWE_ZIP_ALGORITHMS = {
-    DeflateZipAlgorithm.name: DeflateZipAlgorithm,
-}
+JWE_ZIP_ALGORITHMS = [DeflateZipAlgorithm]
+JWE_ALGORITHMS = JWE_ALG_ALGORITHMS + JWE_ENC_ALGORITHMS + JWE_ZIP_ALGORITHMS
