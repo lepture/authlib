@@ -117,7 +117,7 @@ class OAuth(object):
     def _generate_client_kwargs(self, name, kwargs):
         fetch_token = kwargs.pop('fetch_token', None)
         if fetch_token is None and self.fetch_token:
-            fetch_token = functools.partial(self.fetch_token, name=name)
+            fetch_token = functools.partial(self.fetch_token, name)
         if fetch_token:
             kwargs['fetch_token'] = fetch_token
 
@@ -154,7 +154,7 @@ class OAuth(object):
     def _generate_oauth2_client_kwargs(self, name, kwargs):
         update_token = kwargs.pop('update_token', None)
         if update_token is None and self.update_token:
-            update_token = functools.partial(self.update_token, name=name)
+            update_token = functools.partial(self.update_token, name)
         if update_token:
             kwargs['update_token'] = update_token
         return kwargs
