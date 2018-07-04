@@ -87,12 +87,6 @@ class JWE(object):
         msg = self._decompress_text(msg, protected)
         return {'header': protected, 'payload': msg}
 
-    def deserialize_json(self, s, key):
-        pass
-
-    def deserialize(self, s, key):
-        pass
-
     def _compress_text(self, s, header):
         if 'zip' in header:
             zip_alg = self._zip_algorithms[header['zip']]
