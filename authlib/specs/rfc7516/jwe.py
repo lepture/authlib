@@ -1,7 +1,8 @@
+import json
 from authlib.common.encoding import (
     to_bytes, urlsafe_b64encode, json_b64encode
 )
-from ..rfc7515.util import (
+from authlib.specs.rfc7515.util import (
     extract_header,
     extract_segment,
     prepare_algorithm_key,
@@ -36,6 +37,7 @@ class JWE(object):
             self.register_algorithm(algorithm)
 
     def register_algorithm(self, algorithm):
+        """Register an algorithm for ``alg`` or ``enc`` or ``zip`` of JWE."""
         if algorithm.TYPE != 'JWE':
             raise ValueError(
                 'Invalid algorithm for JWE, {!r}'.format(algorithm))
@@ -47,9 +49,28 @@ class JWE(object):
         elif algorithm.HEADER_KEY == 'zip':
             self._zip_algorithms[algorithm.name] = algorithm
 
-    def serialize_compact(self, protected, msg, key):
+    def serialize_compact(self, protected, payload, key):
+        """Generate a JWE Compact Serialization. The JWE Compact Serialization
+        represents encrypted content as a compact, URL-safe string.  This
+        string is:
+
+            BASE64URL(UTF8(JWE Protected Header)) || '.' ||
+            BASE64URL(JWE Encrypted Key) || '.' ||
+            BASE64URL(JWE Initialization Vector) || '.' ||
+            BASE64URL(JWE Ciphertext) || '.' ||
+            BASE64URL(JWE Authentication Tag)
+
+        Only one recipient is supported by the JWE Compact Serialization and
+        it provides no syntax to represent JWE Shared Unprotected Header, JWE
+        Per-Recipient Unprotected Header, or JWE AAD values.
+
+        :param protected: A dict of protected header
+        :param payload: A string/dict of payload
+        :param key: Private key used to generate signature
+        :return: byte
+        """
         self._validate_header(protected)
-        algorithm, enc_alg, key = self._prepare_alg_enc_key(protected, key)
+        alg, enc_alg, key = self._prepare_alg_enc_key(protected, key)
 
         # step 1: Encoding JWE Protected Header
         protected_segment = json_b64encode(protected)
@@ -58,7 +79,7 @@ class JWE(object):
         cek = enc_alg.generate_cek()
 
         # step 3: Encrypt the CEK with the recipient's public key
-        ek = algorithm.wrap(cek, protected, key)
+        ek = alg.wrap(cek, protected, key)
 
         # step 4: Generate a random JWE Initialization Vector
         iv = enc_alg.generate_iv()
@@ -67,9 +88,11 @@ class JWE(object):
         # be ASCII(BASE64URL(UTF8(JWE Protected Header)))
         aad = to_bytes(protected_segment, 'ascii')
 
-        # step 6: perform encryption
-        msg = self._compress_text(msg, protected)
-        ciphertext, tag = enc_alg.encrypt(self, msg, aad, iv, cek)
+        # step 6: compress message if required
+        msg = self._zip_compress(payload, protected)
+
+        # step 7: perform encryption
+        ciphertext, tag = enc_alg.encrypt(msg, aad, iv, cek)
         return b'.'.join([
             protected_segment,
             urlsafe_b64encode(ek),
@@ -79,6 +102,12 @@ class JWE(object):
         ])
 
     def deserialize_compact(self, s, key):
+        """Exact JWS Compact Serialization, and validate with the given key.
+
+        :param s: text of JWS Compact Serialization
+        :param key: key used to verify the signature
+        :return: dict
+        """
         try:
             s = to_bytes(s)
             protected_s, ek_s, iv_s, ciphertext_s, tag_s = s.rsplit(b'.')
@@ -99,16 +128,18 @@ class JWE(object):
         cek = algorithm.unwrap(ek, protected, key)
         aad = to_bytes(protected_s, 'ascii')
         msg = enc_alg.decrypt(ciphertext, aad, iv, tag, cek)
-        msg = self._decompress_text(msg, protected)
-        return {'header': protected, 'payload': msg}
+        payload = self._zip_decompress(msg, protected)
+        return {'header': protected, 'payload': payload}
 
-    def _compress_text(self, s, header):
+    def _zip_compress(self, s, header):
         if 'zip' in header:
             zip_alg = self._zip_algorithms[header['zip']]
             return zip_alg.compress(to_bytes(s))
         return to_bytes(s)
 
-    def _decompress_text(self, s, header):
+    def _zip_decompress(self, s, header):
+        if isinstance(s, dict):
+            s = json.dumps(s, separators=(',', ':'))
         if 'zip' in header:
             zip_alg = self._zip_algorithms[header['zip']]
             return zip_alg.decompress(to_bytes(s))
