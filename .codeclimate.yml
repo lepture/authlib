@@ -20,3 +20,7 @@ checks:
   return-statements:
     config:
       threshold: 6
+
+  similar-code:
+    config:
+      threshold: 5
