@@ -2,11 +2,19 @@ import unittest
 import json
 from authlib.specs.rfc7515 import JWS
 from authlib.specs.rfc7515 import errors
-from authlib.specs.rfc7518 import JWS_ALGORITHMS
+from authlib.specs.rfc7518 import JWS_ALGORITHMS, JWE_ALGORITHMS
 from tests.util import read_file_path
 
 
 class JWSTest(unittest.TestCase):
+    def test_register_invalid_algorithms(self):
+        jws = JWS(algorithms=[])
+        self.assertRaises(
+            ValueError,
+            jws.register_algorithm,
+            JWE_ALGORITHMS[0]
+        )
+
     def test_invalid_input(self):
         jws = JWS(algorithms=JWS_ALGORITHMS)
         self.assertRaises(errors.DecodeError, jws.deserialize, 'a', 'k')

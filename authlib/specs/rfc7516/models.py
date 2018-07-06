@@ -72,7 +72,7 @@ class JWEZipAlgorithm(object):
     name = None
     description = None
 
-    def compress(self, b):
+    def compress(self, s):
         raise NotImplementedError
 
     def decompress(self, s):

@@ -20,6 +20,7 @@ class RSAAlgorithm(RSAKey, JWEAlgorithm):
         return ek
 
     def unwrap(self, ek, headers, key):
+        # it will raise ValueError if failed
         return key.decrypt(ek, self.padding)
 
 

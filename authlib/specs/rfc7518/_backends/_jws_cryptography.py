@@ -34,13 +34,14 @@ class RSAAlgorithm(RSAKey, JWSAlgorithm):
     def __init__(self, sha_type):
         self.name = 'RS{}'.format(sha_type)
         self.hash_alg = getattr(self, 'SHA{}'.format(sha_type))
+        self.padding = padding.PKCS1v15()
 
     def sign(self, msg, key):
-        return key.sign(msg, padding.PKCS1v15(), self.hash_alg())
+        return key.sign(msg, self.padding, self.hash_alg())
 
     def verify(self, msg, key, sig):
         try:
-            key.verify(sig, msg, padding.PKCS1v15(), self.hash_alg())
+            key.verify(sig, msg, self.padding, self.hash_alg())
             return True
         except InvalidSignature:
             return False

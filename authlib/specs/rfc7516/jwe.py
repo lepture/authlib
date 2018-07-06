@@ -132,14 +132,16 @@ class JWE(object):
         return {'header': protected, 'payload': payload}
 
     def _zip_compress(self, s, header):
-        if 'zip' in header:
-            zip_alg = self._zip_algorithms[header['zip']]
-            return zip_alg.compress(to_bytes(s))
-        return to_bytes(s)
-
-    def _zip_decompress(self, s, header):
         if isinstance(s, dict):
             s = json.dumps(s, separators=(',', ':'))
+
+        s = to_bytes(s)
+        if 'zip' in header:
+            zip_alg = self._zip_algorithms[header['zip']]
+            return zip_alg.compress(s)
+        return s
+
+    def _zip_decompress(self, s, header):
         if 'zip' in header:
             zip_alg = self._zip_algorithms[header['zip']]
             return zip_alg.decompress(to_bytes(s))
