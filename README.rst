@@ -21,6 +21,7 @@ Specifications
 - RFC6750: The OAuth 2.0 Authorization Framework: Bearer Token Usage
 - RFC7009: OAuth 2.0 Token Revocation
 - RFC7515: JSON Web Signature
+- RFC7516: JSON Web Encryption
 - RFC7517: JSON Web Key
 - RFC7518: JSON Web Algorithms
 - RFC7519: JSON Web Token

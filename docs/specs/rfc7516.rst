@@ -1,0 +1,42 @@
+.. _specs/rfc7516:
+
+JSON Web Encryption
+===================
+
+.. meta::
+    :description: API references on RFC7516 JSON Web Encryption (JWE) Python
+        implementation. Guide on JWE serialization and deserialization.
+
+This section contains the generic implementation of RFC7516_.
+
+.. _RFC7516: https://tools.ietf.org/html/rfc7516
+
+.. module:: authlib.specs.rfc7516
+
+
+.. _jwe_guide:
+
+
+Guide on JWE
+------------
+
+
+API Reference
+-------------
+
+.. autoclass:: JWE
+    :member-order: bysource
+    :members:
+
+
+.. autoclass:: JWEAlgorithm
+    :member-order: bysource
+    :members:
+
+.. autoclass:: JWEEncAlgorithm
+    :member-order: bysource
+    :members:
+
+.. autoclass:: JWEZipAlgorithm
+    :member-order: bysource
+    :members:

@@ -2,11 +2,19 @@ import unittest
 import json
 from authlib.specs.rfc7515 import JWS
 from authlib.specs.rfc7515 import errors
-from authlib.specs.rfc7518 import JWS_ALGORITHMS
+from authlib.specs.rfc7518 import JWS_ALGORITHMS, JWE_ALGORITHMS
 from tests.util import read_file_path
 
 
 class JWSTest(unittest.TestCase):
+    def test_register_invalid_algorithms(self):
+        jws = JWS(algorithms=[])
+        self.assertRaises(
+            ValueError,
+            jws.register_algorithm,
+            JWE_ALGORITHMS[0]
+        )
+
     def test_invalid_input(self):
         jws = JWS(algorithms=JWS_ALGORITHMS)
         self.assertRaises(errors.DecodeError, jws.deserialize, 'a', 'k')
@@ -50,11 +58,6 @@ class JWSTest(unittest.TestCase):
         self.assertEqual(header['alg'], 'HS256')
         self.assertNotIn('signature', data)
 
-        # no key
-        data = jws.deserialize(s, None)
-        self.assertIn('signature', data)
-        self.assertIn('signing_input', data)
-
     def test_compact_rsa(self):
         jws = JWS(algorithms=JWS_ALGORITHMS)
         s = jws.serialize(
@@ -79,9 +82,6 @@ class JWSTest(unittest.TestCase):
         self.assertEqual(header['alg'], 'HS256')
         self.assertNotIn('protected', data)
 
-        data = jws.deserialize(s, None)
-        self.assertIn('protected', data)
-
     def test_nested_json_jws(self):
         jws = JWS(algorithms=JWS_ALGORITHMS)
         protected = {'alg': 'HS256'}
@@ -95,9 +95,6 @@ class JWSTest(unittest.TestCase):
         self.assertEqual(payload, b'hello')
         self.assertEqual(header[0]['alg'], 'HS256')
         self.assertNotIn('signatures', data)
-
-        data = jws.deserialize(s, None)
-        self.assertIn('signatures', data)
 
         # test bad signature
         self.assertRaises(errors.BadSignatureError, jws.deserialize, s, 'f')

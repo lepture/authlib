@@ -2,15 +2,25 @@ import re
 import json
 import datetime
 import calendar
-from authlib.specs.rfc7515 import JWS, DecodeError
-from authlib.specs.rfc7517 import JWK
-from authlib.specs.rfc7518 import JWS_ALGORITHMS, JWK_ALGORITHMS
-from authlib.common.encoding import text_types, to_unicode
-from .errors import InsecureClaimError
+from authlib.specs.rfc7515 import JWS
+from authlib.specs.rfc7516 import JWE
+from authlib.specs.rfc7518 import JWS_ALGORITHMS, JWE_ALGORITHMS
+from authlib.common.encoding import text_types, to_bytes
+from .errors import DecodeError, InsecureClaimError
 from .claims import JWTClaims
+from .util import create_key_func, decode_payload
 
 
-class JWT(JWS):
+_AVAILABLE_ALGORITHMS = {}
+_AVAILABLE_ALGORITHMS.update(
+    {alg.name: alg for alg in JWS_ALGORITHMS}
+)
+_AVAILABLE_ALGORITHMS.update(
+    {alg.name: alg for alg in JWE_ALGORITHMS}
+)
+
+
+class JWT(object):
     SENSITIVE_NAMES = ('password', 'token', 'secret', 'secret_key')
     # Thanks to sentry SensitiveDataFilter
     SENSITIVE_VALUES = re.compile(r'|'.join([
@@ -24,23 +34,26 @@ class JWT(JWS):
 
     def __init__(self, algorithms=None, private_headers=None):
         if algorithms is None:
-            algorithms = JWS_ALGORITHMS
-        elif isinstance(algorithms, (tuple, list)):
-            algorithms = {k: JWS_ALGORITHMS[k] for k in algorithms}
-        elif isinstance(algorithms, text_types):
-            algorithms = {algorithms: JWS_ALGORITHMS[algorithms]}
-        super(JWT, self).__init__(algorithms, private_headers)
+            self._jws = JWS(JWS_ALGORITHMS, private_headers)
+            self._jwe = JWE(JWE_ALGORITHMS, private_headers)
+        else:
+            self._jws = JWS(None, private_headers)
+            self._jwe = JWE(None, private_headers)
 
-    def extract_payload(self, payload_segment):
-        """Extract payload into JSON dict format."""
-        bytes_payload = super(JWT, self).extract_payload(payload_segment)
-        try:
-            payload = json.loads(to_unicode(bytes_payload))
-        except ValueError:
-            raise DecodeError('Invalid payload value')
-        if not isinstance(payload, dict):
-            raise DecodeError('Invalid payload type')
-        return payload
+            if isinstance(algorithms, (tuple, list)):
+                for algorithm in algorithms:
+                    self.register_algorithm(algorithm)
+            elif isinstance(algorithms, text_types):
+                self.register_algorithm(algorithms)
+
+    def register_algorithm(self, algorithm):
+        if isinstance(algorithm, text_types):
+            algorithm = _AVAILABLE_ALGORITHMS.get(algorithm)
+
+        if algorithm.TYPE == 'JWS':
+            self._jws.register_algorithm(algorithm)
+        elif algorithm.TYPE == 'JWE':
+            self._jwe.register_algorithm(algorithm)
 
     def check_sensitive_data(self, payload):
         """Check if payload contains sensitive information."""
@@ -73,7 +86,14 @@ class JWT(JWS):
 
         if check:
             self.check_sensitive_data(payload)
-        return self.serialize_compact(header, payload, _wrap_key(key))
+
+        key_func = create_key_func(key)
+
+        text = to_bytes(json.dumps(payload, separators=(',', ':')))
+        if 'enc' in header:
+            return self._jwe.serialize_compact(header, text, key_func)
+        else:
+            return self._jws.serialize_compact(header, text, key_func)
 
     def decode(self, s, key, claims_cls=None,
                claims_options=None, claims_params=None):
@@ -92,35 +112,19 @@ class JWT(JWS):
         if claims_cls is None:
             claims_cls = JWTClaims
 
-        data = self.deserialize_compact(s, _wrap_key(key))
+        key_func = create_key_func(key)
+
+        s = to_bytes(s)
+        dot_count = s.count(b'.')
+        if dot_count == 2:
+            data = self._jws.deserialize_compact(s, key_func)
+        elif dot_count == 4:
+            data = self._jwe.deserialize_compact(s, key_func)
+        else:
+            raise DecodeError('Invalid input segments length')
+        payload = decode_payload(data['payload'])
         return claims_cls(
-            data['payload'], data['header'],
+            payload, data['header'],
             options=claims_options,
             params=claims_params,
         )
-
-
-jwk = JWK(algorithms=JWK_ALGORITHMS)
-jwt = JWT()
-
-
-def _load_jwk(key, header):
-    if not key and 'jwk' in header:
-        key = header['jwk']
-    if isinstance(key, (tuple, list, dict)):
-        return jwk.loads(key, header.get('kid'))
-    if isinstance(key, text_types) and \
-            key.startswith('{') and key.endswith('}'):
-        return jwk.loads(json.loads(key), header.get('kid'))
-    return key
-
-
-def _wrap_key(key):
-    if callable(key):
-        def key_func(header, payload):
-            v = key(header, payload)
-            return _load_jwk(v, header)
-    else:
-        def key_func(header, payload):
-            return _load_jwk(key, header)
-    return key_func

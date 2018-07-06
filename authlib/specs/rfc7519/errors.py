@@ -1,12 +1,12 @@
-from authlib.common.errors import AuthlibBaseError
+from authlib.specs.rfc7515.errors import JWSError, DecodeError
 
 __all__ = [
-    'JWTError', 'InvalidClaimError',
+    'JWTError', 'DecodeError', 'InvalidClaimError',
     'MissingClaimError', 'InsecureClaimError',
     'ExpiredTokenError', 'InvalidTokenError',
 ]
 
-JWTError = AuthlibBaseError
+JWTError = JWSError
 
 
 class InvalidClaimError(JWTError):

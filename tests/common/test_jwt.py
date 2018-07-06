@@ -3,6 +3,7 @@ import datetime
 from authlib.specs.rfc7515 import UnsupportedAlgorithmError
 from authlib.specs.rfc7519 import JWT, JWTClaims, jwt
 from authlib.specs.rfc7519 import errors
+from tests.util import read_file_path
 
 
 class JWTTest(unittest.TestCase):
@@ -152,3 +153,26 @@ class JWTTest(unittest.TestCase):
             errors.InvalidClaimError,
             claims.validate
         )
+
+    def test_use_jws(self):
+        payload = {'name': 'hi'}
+        private_key = read_file_path('rsa_private.pem')
+        pub_key = read_file_path('rsa_public.pem')
+        data = jwt.encode({'alg': 'RS256'}, payload, private_key)
+        self.assertEqual(data.count(b'.'), 2)
+
+        claims = jwt.decode(data, pub_key)
+        self.assertEqual(claims['name'], 'hi')
+
+    def test_use_jwe(self):
+        payload = {'name': 'hi'}
+        private_key = read_file_path('rsa_private.pem')
+        pub_key = read_file_path('rsa_public.pem')
+        data = jwt.encode(
+            {'alg': 'RSA-OAEP', 'enc': 'A256GCM'},
+            payload, pub_key
+        )
+        self.assertEqual(data.count(b'.'), 4)
+
+        claims = jwt.decode(data, private_key)
+        self.assertEqual(claims['name'], 'hi')

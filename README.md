@@ -96,8 +96,10 @@ Lovely features that Authlib has built-in:
 </details>
 
 <details>
-  <summary>⏳ RFC7516: JSON Web Encryption (JWE)</summary>
-  <p>JWE implementation is in plan now.</p>
+<summary>🎉 RFC7516: JSON Web Encryption (JWE)</summary>
+
+- [x] Compact serialize and deserialize
+- [ ] JSON serialize and deserialize
 </details>
 
 <details>
@@ -112,13 +114,16 @@ Lovely features that Authlib has built-in:
 <summary>🎉 RFC7518: JSON Web Algorithms (JWA)</summary>
 
 - [x] Algorithms for JWS
-- [ ] Algorithms for JWE
+- [x] Algorithms for JWE (some of them)
 - [x] Algorithms for JWK
 </details>
 
 <details>
-  <summary>🎉 RFC7519: JSON Web Token (JWT)</summary>
-  <p>JWT shares the same interface with JWS. Besides that, JWT has payload claims validation.</p>
+<summary>🎉 RFC7519: JSON Web Token (JWT)</summary>
+
+- [x] Use JWS for JWT
+- [x] Use JWE for JWT
+- [x] Payload claims validation
 </details>
 
 <details>
