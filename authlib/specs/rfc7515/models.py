@@ -66,10 +66,11 @@ class JWSHeader(dict):
 
 
 class JWSObject(dict):
+    """A dict instance to represent a JWS object."""
     def __init__(self, header, payload, type='compact'):
         super(JWSObject, self).__init__(
             header=header,
-            payload=payload
+            payload=payload,
         )
         self.header = header
         self.payload = payload
@@ -77,5 +78,6 @@ class JWSObject(dict):
 
     @property
     def headers(self):
+        """Alias of ``header`` for JSON typed JWS."""
         if self.type == 'json':
             return self['header']

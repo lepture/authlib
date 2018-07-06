@@ -23,7 +23,7 @@ from .models import JWSHeader, JWSObject
 
 class JWS(object):
 
-    #: Registered Header Parameter Names defined by `Section 4.1`_
+    #: Registered Header Parameter Names defined by Section 4.1
     REGISTERED_HEADER_PARAMETER_NAMES = frozenset([
         'alg', 'jku', 'jwk', 'kid',
         'x5u', 'x5c', 'x5t', 'x5t#S256',
@@ -83,7 +83,7 @@ class JWS(object):
 
         :param s: text of JWS Compact Serialization
         :param key: key used to verify the signature
-        :return: dict
+        :return: JWSObject
         :raise: BadSignatureError
 
         .. _`Section 7.1`: https://tools.ietf.org/html/rfc7515#section-7.1
@@ -118,7 +118,7 @@ class JWS(object):
         :param header_obj: A dict/list of header
         :param payload: A string/dict of payload
         :param key: Private key used to generate signature
-        :return: dict
+        :return: JWSObject
 
         Example ``header_obj`` of JWS JSON Serialization::
 

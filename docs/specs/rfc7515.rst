@@ -213,6 +213,8 @@ API Reference
 
 .. autoclass:: JWSHeader
 
+.. autoclass:: JWSObject
+
 .. autoclass:: JWSAlgorithm
     :member-order: bysource
     :members:
