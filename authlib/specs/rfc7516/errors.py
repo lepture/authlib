@@ -1,22 +1,18 @@
-from authlib.common.errors import AuthlibBaseError
+from authlib.specs.rfc7515.errors import JWSError
+from authlib.specs.rfc7515.errors import (
+    DecodeError, MissingAlgorithmError, UnsupportedAlgorithmError,
+    BadSignatureError, InvalidHeaderParameterName
+)
 
+__all__ = [
+    'JWEError', 'DecodeError', 'MissingAlgorithmError',
+    'UnsupportedAlgorithmError', 'BadSignatureError',
+    'InvalidHeaderParameterName', 'MissingEncryptionAlgorithmError',
+    'UnsupportedEncryptionAlgorithmError',
+    'UnsupportedCompressionAlgorithmError',
+]
 
-class JWEError(AuthlibBaseError):
-    pass
-
-
-class DecodeError(JWEError):
-    error = 'decode_error'
-
-
-class MissingAlgorithmError(JWEError):
-    error = 'missing_algorithm'
-    description = 'Missing "alg" in header'
-
-
-class UnsupportedAlgorithmError(JWEError):
-    error = 'unsupported_algorithm'
-    description = 'Unsupported "alg" value in header'
+JWEError = JWSError
 
 
 class MissingEncryptionAlgorithmError(JWEError):
@@ -32,16 +28,3 @@ class UnsupportedEncryptionAlgorithmError(JWEError):
 class UnsupportedCompressionAlgorithmError(JWEError):
     error = 'unsupported_compression_algorithm'
     description = 'Unsupported "zip" value in header'
-
-
-class BadSignatureError(JWEError):
-    error = 'bad_signature'
-
-
-class InvalidHeaderParameterName(JWEError):
-    error = 'invalid_header_parameter_name'
-
-    def __init__(self, name):
-        description = 'Invalid Header Parameter Names: {}'.format(name)
-        super(InvalidHeaderParameterName, self).__init__(
-            description=description)

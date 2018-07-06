@@ -2,16 +2,21 @@ import re
 import datetime
 import calendar
 from authlib.specs.rfc7515 import JWS
-from authlib.specs.rfc7518 import JWS_ALGORITHMS
-from authlib.common.encoding import text_types
-from .errors import InsecureClaimError
+from authlib.specs.rfc7516 import JWE
+from authlib.specs.rfc7518 import JWS_ALGORITHMS, JWE_ALGORITHMS
+from authlib.common.encoding import text_types, to_bytes
+from .errors import DecodeError, InsecureClaimError
 from .claims import JWTClaims
 from .util import create_key_func, decode_payload
 
 
-_AVAILABLE_ALGORITHMS = {
-    alg.name: alg for alg in JWS_ALGORITHMS
-}
+_AVAILABLE_ALGORITHMS = {}
+_AVAILABLE_ALGORITHMS.update(
+    {alg.name: alg for alg in JWS_ALGORITHMS}
+)
+_AVAILABLE_ALGORITHMS.update(
+    {alg.name: alg for alg in JWE_ALGORITHMS}
+)
 
 
 class JWT(object):
@@ -29,8 +34,10 @@ class JWT(object):
     def __init__(self, algorithms=None, private_headers=None):
         if algorithms is None:
             self._jws = JWS(JWS_ALGORITHMS, private_headers)
+            self._jwe = JWE(JWE_ALGORITHMS, private_headers)
         else:
             self._jws = JWS(None, private_headers)
+            self._jwe = JWE(None, private_headers)
 
             if isinstance(algorithms, (tuple, list)):
                 for algorithm in algorithms:
@@ -44,6 +51,8 @@ class JWT(object):
 
         if algorithm.TYPE == 'JWS':
             self._jws.register_algorithm(algorithm)
+        elif algorithm.TYPE == 'JWE':
+            self._jwe.register_algorithm(algorithm)
 
     def check_sensitive_data(self, payload):
         """Check if payload contains sensitive information."""
@@ -78,7 +87,10 @@ class JWT(object):
             self.check_sensitive_data(payload)
 
         key_func = create_key_func(key)
-        return self._jws.serialize_compact(header, payload, key_func)
+        if 'enc' in header:
+            return self._jwe.serialize_compact(header, payload, key_func)
+        else:
+            return self._jws.serialize_compact(header, payload, key_func)
 
     def decode(self, s, key, claims_cls=None,
                claims_options=None, claims_params=None):
@@ -98,7 +110,15 @@ class JWT(object):
             claims_cls = JWTClaims
 
         key_func = create_key_func(key)
-        data = self._jws.deserialize_compact(s, key_func)
+
+        s = to_bytes(s)
+        dot_count = s.count(b'.')
+        if dot_count == 2:
+            data = self._jws.deserialize_compact(s, key_func)
+        elif dot_count == 4:
+            data = self._jwe.deserialize_compact(s, key_func)
+        else:
+            raise DecodeError('Invalid input segments length')
         payload = decode_payload(data['payload'])
         return claims_cls(
             payload, data['header'],

@@ -1,8 +1,8 @@
 import json
 from authlib.common.encoding import text_types, to_unicode
-from authlib.specs.rfc7515.errors import DecodeError
 from authlib.specs.rfc7517 import JWK
 from authlib.specs.rfc7518 import JWK_ALGORITHMS
+from .errors import DecodeError
 
 jwk = JWK(algorithms=JWK_ALGORITHMS)
 

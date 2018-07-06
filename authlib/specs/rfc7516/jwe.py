@@ -33,8 +33,9 @@ class JWE(object):
         self._zip_algorithms = {}
         self._private_headers = private_headers
 
-        for algorithm in algorithms:
-            self.register_algorithm(algorithm)
+        if algorithms:
+            for algorithm in algorithms:
+                self.register_algorithm(algorithm)
 
     def register_algorithm(self, algorithm):
         """Register an algorithm for ``alg`` or ``enc`` or ``zip`` of JWE."""
