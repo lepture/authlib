@@ -1,4 +1,5 @@
 import re
+import json
 import datetime
 import calendar
 from authlib.specs.rfc7515 import JWS
@@ -87,10 +88,12 @@ class JWT(object):
             self.check_sensitive_data(payload)
 
         key_func = create_key_func(key)
+
+        text = to_bytes(json.dumps(payload, separators=(',', ':')))
         if 'enc' in header:
-            return self._jwe.serialize_compact(header, payload, key_func)
+            return self._jwe.serialize_compact(header, text, key_func)
         else:
-            return self._jws.serialize_compact(header, payload, key_func)
+            return self._jws.serialize_compact(header, text, key_func)
 
     def decode(self, s, key, claims_cls=None,
                claims_options=None, claims_params=None):

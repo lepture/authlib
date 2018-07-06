@@ -67,7 +67,7 @@ class JWS(object):
         self._validate_header(jws_header)
 
         protected_segment = json_b64encode(jws_header.protected)
-        payload_segment = json_b64encode(payload)
+        payload_segment = urlsafe_b64encode(to_bytes(payload))
 
         # calculate signature
         signing_input = b'.'.join([protected_segment, payload_segment])

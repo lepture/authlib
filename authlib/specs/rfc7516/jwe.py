@@ -1,4 +1,3 @@
-import json
 from authlib.common.encoding import (
     to_bytes, urlsafe_b64encode, json_b64encode
 )
@@ -133,9 +132,6 @@ class JWE(object):
         return {'header': protected, 'payload': payload}
 
     def _zip_compress(self, s, header):
-        if isinstance(s, dict):
-            s = json.dumps(s, separators=(',', ':'))
-
         s = to_bytes(s)
         if 'zip' in header:
             zip_alg = self._zip_algorithms[header['zip']]

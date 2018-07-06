@@ -38,12 +38,12 @@ class JWETest(unittest.TestCase):
         jwe = JWE(algorithms=JWE_ALGORITHMS)
         s = jwe.serialize_compact(
             {'alg': 'RSA-OAEP', 'enc': 'A128CBC-HS256', 'zip': 'DEF'},
-            {'foo': 'bar'},
+            'hello',
             read_file_path('rsa_public.pem')
         )
         data = jwe.deserialize_compact(s, read_file_path('rsa_private.pem'))
         header, payload = data['header'], data['payload']
-        self.assertEqual(payload, b'{"foo":"bar"}')
+        self.assertEqual(payload, b'hello')
         self.assertEqual(header['alg'], 'RSA-OAEP')
 
     def test_rsa_alg(self):
