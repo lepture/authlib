@@ -9,7 +9,7 @@
 """
 
 from .jws import JWS
-from .models import JWSAlgorithm, JWSHeader
+from .models import JWSAlgorithm, JWSHeader, JWSObject
 from .errors import *
 
-__all__ = ['JWS', 'JWSAlgorithm', 'JWSHeader']
+__all__ = ['JWS', 'JWSAlgorithm', 'JWSHeader', 'JWSObject']

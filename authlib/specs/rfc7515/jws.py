@@ -18,7 +18,7 @@ from .util import (
     extract_header,
     extract_segment,
 )
-from .models import JWSHeader
+from .models import JWSHeader, JWSObject
 
 
 class JWS(object):
@@ -74,7 +74,7 @@ class JWS(object):
 
         self._validate_header(jws_header)
 
-        rv = {'header': jws_header, 'payload': payload}
+        rv = JWSObject(jws_header, payload, 'compact')
         algorithm, key = prepare_algorithm_key(
             self._algorithms, jws_header, payload, key)
         if algorithm.verify(signing_input, key, signature):
@@ -103,9 +103,10 @@ class JWS(object):
         payload = _extract_payload(payload_segment)
         if 'signatures' not in obj:
             # flattened JSON JWS
-            header, valid = self._validate_json_jws(
+            jws_header, valid = self._validate_json_jws(
                 payload_segment, payload, obj, key)
-            rv = {'header': header, 'payload': payload}
+
+            rv = JWSObject(jws_header, payload, 'flat')
             if valid:
                 return rv
             raise BadSignatureError(rv)
@@ -113,14 +114,13 @@ class JWS(object):
         headers = []
         is_valid = True
         for header_obj in obj['signatures']:
-            header, valid = self._validate_json_jws(
+            jws_header, valid = self._validate_json_jws(
                 payload_segment, payload, header_obj, key)
-            headers.append(header)
+            headers.append(jws_header)
             if not valid:
                 is_valid = False
 
-        # TODO: rename it to headers?
-        rv = {'header': headers, 'payload': payload}
+        rv = JWSObject(headers, payload, 'json')
         if is_valid:
             return rv
         raise BadSignatureError(rv)

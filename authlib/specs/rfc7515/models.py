@@ -63,3 +63,19 @@ class JWSHeader(dict):
         if isinstance(obj, cls):
             return obj
         return cls(obj.get('protected'), obj.get('header'))
+
+
+class JWSObject(dict):
+    def __init__(self, header, payload, type='compact'):
+        super(JWSObject, self).__init__(
+            header=header,
+            payload=payload
+        )
+        self.header = header
+        self.payload = payload
+        self.type = type
+
+    @property
+    def headers(self):
+        if self.type == 'json':
+            return self['header']
