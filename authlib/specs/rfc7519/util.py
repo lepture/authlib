@@ -18,14 +18,15 @@ def _load_jwk(key, header):
     return key
 
 
-def create_key_func(key):
+def load_key(key, header, payload):
     if callable(key):
-        def key_func(header, payload):
-            v = key(header, payload)
-            return _load_jwk(v, header)
-    else:
-        def key_func(header, payload):
-            return _load_jwk(key, header)
+        key = key(header, payload)
+    return _load_jwk(key, header)
+
+
+def create_key_func(key):
+    def key_func(header, payload):
+        return load_key(key, header, payload)
     return key_func
 
 

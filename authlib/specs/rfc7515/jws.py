@@ -59,7 +59,7 @@ class JWS(object):
             BASE64URL(JWS Signature)
 
         :param protected: A dict of protected header
-        :param payload: A string/dict of payload
+        :param payload: A bytes/string of payload
         :param key: Private key used to generate signature
         :return: byte
         """
@@ -76,13 +76,14 @@ class JWS(object):
         signature = urlsafe_b64encode(algorithm.sign(signing_input, key))
         return b'.'.join([protected_segment, payload_segment, signature])
 
-    def deserialize_compact(self, s, key):
+    def deserialize_compact(self, s, key, decode=None):
         """Exact JWS Compact Serialization, and validate with the given key.
         If key is not provided, the returned dict will contain the signature,
         and signing input values. Via `Section 7.1`_.
 
         :param s: text of JWS Compact Serialization
         :param key: key used to verify the signature
+        :param decode: a function to decode payload data
         :return: JWSObject
         :raise: BadSignatureError
 
@@ -99,6 +100,9 @@ class JWS(object):
         jws_header = JWSHeader(protected, None)
 
         payload = _extract_payload(payload_segment)
+        if decode:
+            payload = decode(payload)
+
         signature = _extract_signature(signature_segment)
 
         self._validate_header(jws_header)
@@ -160,14 +164,15 @@ class JWS(object):
             'signatures': signatures
         }
 
-    def deserialize_json(self, obj, key):
+    def deserialize_json(self, obj, key, decode=None):
         """Exact JWS JSON Serialization, and validate with the given key.
         If key is not provided, it will return a dict without signature
         verification. Header will still be validated. Via `Section 7.2`_.
 
         :param obj: text of JWS JSON Serialization
         :param key: key used to verify the signature
-        :return: dict
+        :param decode: a function to decode payload data
+        :return: JWSObject
         :raise: BadSignatureError
 
         .. _`Section 7.2`: https://tools.ietf.org/html/rfc7515#section-7.2
@@ -180,6 +185,9 @@ class JWS(object):
 
         payload_segment = to_bytes(payload_segment)
         payload = _extract_payload(payload_segment)
+        if decode:
+            payload = decode(payload)
+
         if 'signatures' not in obj:
             # flattened JSON JWS
             jws_header, valid = self._validate_json_jws(
@@ -222,12 +230,13 @@ class JWS(object):
             return self.serialize_json(header, payload, key)
         return self.serialize_compact(header, payload, key)
 
-    def deserialize(self, s, key):
+    def deserialize(self, s, key, decode=None):
         """Deserialize JWS Serialization, both compact and JSON format.
         It will automatically deserialize depending on the given JWS.
 
         :param s: text of JWS Compact/JSON Serialization
         :param key: key used to verify the signature
+        :param decode: a function to decode payload data
         :return: dict
         :raise: BadSignatureError
 
@@ -235,11 +244,12 @@ class JWS(object):
         without verification.
         """
         if isinstance(s, dict):
-            return self.deserialize_json(s, key)
+            return self.deserialize_json(s, key, decode)
+
         s = to_bytes(s)
         if s.startswith(b'{') and s.endswith(b'}'):
-            return self.deserialize_json(s, key)
-        return self.deserialize_compact(s, key)
+            return self.deserialize_json(s, key, decode)
+        return self.deserialize_compact(s, key, decode)
 
     def _validate_header(self, header):
         if 'alg' not in header:

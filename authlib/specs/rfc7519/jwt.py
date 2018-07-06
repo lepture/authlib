@@ -8,7 +8,7 @@ from authlib.specs.rfc7518 import JWS_ALGORITHMS, JWE_ALGORITHMS
 from authlib.common.encoding import text_types, to_bytes
 from .errors import DecodeError, InsecureClaimError
 from .claims import JWTClaims
-from .util import create_key_func, decode_payload
+from .util import load_key, create_key_func, decode_payload
 
 
 _AVAILABLE_ALGORITHMS = {}
@@ -87,13 +87,12 @@ class JWT(object):
         if check:
             self.check_sensitive_data(payload)
 
-        key_func = create_key_func(key)
-
+        key = load_key(key, header, payload)
         text = to_bytes(json.dumps(payload, separators=(',', ':')))
         if 'enc' in header:
-            return self._jwe.serialize_compact(header, text, key_func)
+            return self._jwe.serialize_compact(header, text, key)
         else:
-            return self._jws.serialize_compact(header, text, key_func)
+            return self._jws.serialize_compact(header, text, key)
 
     def decode(self, s, key, claims_cls=None,
                claims_options=None, claims_params=None):
@@ -117,14 +116,13 @@ class JWT(object):
         s = to_bytes(s)
         dot_count = s.count(b'.')
         if dot_count == 2:
-            data = self._jws.deserialize_compact(s, key_func)
+            data = self._jws.deserialize_compact(s, key_func, decode_payload)
         elif dot_count == 4:
-            data = self._jwe.deserialize_compact(s, key_func)
+            data = self._jwe.deserialize_compact(s, key_func, decode_payload)
         else:
             raise DecodeError('Invalid input segments length')
-        payload = decode_payload(data['payload'])
         return claims_cls(
-            payload, data['header'],
+            data['payload'], data['header'],
             options=claims_options,
             params=claims_params,
         )

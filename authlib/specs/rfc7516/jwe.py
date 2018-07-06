@@ -101,11 +101,12 @@ class JWE(object):
             urlsafe_b64encode(tag)
         ])
 
-    def deserialize_compact(self, s, key):
+    def deserialize_compact(self, s, key, decode=None):
         """Exact JWS Compact Serialization, and validate with the given key.
 
         :param s: text of JWS Compact Serialization
         :param key: key used to verify the signature
+        :param decode: a function to decode plaintext data
         :return: dict
         """
         try:
@@ -128,7 +129,10 @@ class JWE(object):
         cek = algorithm.unwrap(ek, protected, key)
         aad = to_bytes(protected_s, 'ascii')
         msg = enc_alg.decrypt(ciphertext, aad, iv, tag, cek)
+
         payload = self._zip_decompress(msg, protected)
+        if decode:
+            payload = decode(payload)
         return {'header': protected, 'payload': payload}
 
     def _zip_compress(self, s, header):
