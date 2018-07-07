@@ -15,6 +15,13 @@ RFC implementations in this release:
 
 - RFC7636: client and server implementation of :ref:`specs/rfc7636`.
 - RFC7523: easy integration of :ref:`jwt_oauth2session`.
+- RFC7516: JWE compact serialization and deserialization.
+- RFC7519: JWT with JWE encode and decode.
+
+**Deprecate Changes**:
+
+- Removed ``authlib.client.apps`.
+
 
 Version 0.8: Arutoria
 ---------------------

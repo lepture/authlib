@@ -69,7 +69,25 @@ This section is defined by RFC7518 `Section 3.5`_.
 Algorithms for JWE
 ------------------
 
-This section is not implemented yet.
+This section contains algorithms for JWE ``alg`` and ``enc`` header. For
+``alg`` the interface are all inherited from
+:class:`authlib.specs.rfc7516.JWEAlgorithm`. For ``enc``, the interface are
+inherited from :class:`authlib.specs.rfc7516.JWEEncAlgorithm`.
+
+Current available algorithms for ``alg``:
+
+1. RSA1_5: RSAES-PKCS1-v1_5
+2. RSA-OAEP: RSAES OAEP using default parameters
+3. RSA-OAEP-256: RSAES OAEP using SHA-256 and MGF1 with SHA-256
+
+Current available algorithms for ``enc``:
+
+1. A128CBC-HS256
+2. A192CBC-HS384
+3. A256CBC-HS512
+4. A128GCM
+5. A192GCM
+6. A256GCM
 
 Algorithms for JWK
 ------------------
