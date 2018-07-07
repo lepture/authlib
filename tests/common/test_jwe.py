@@ -1,3 +1,4 @@
+import os
 import unittest
 from authlib.specs.rfc7516 import JWE, errors
 from authlib.specs.rfc7518 import JWE_ALGORITHMS, JWS_ALGORITHMS
@@ -45,6 +46,31 @@ class JWETest(unittest.TestCase):
         header, payload = data['header'], data['payload']
         self.assertEqual(payload, b'hello')
         self.assertEqual(header['alg'], 'RSA-OAEP')
+
+    def test_aes_jwe(self):
+        jwe = JWE(algorithms=JWE_ALGORITHMS)
+        sizes = [128, 192, 256]
+        _enc_choices = [
+            'A128CBC-HS256', 'A192CBC-HS384', 'A256CBC-HS512',
+            'A128GCM', 'A192GCM', 'A256GCM'
+        ]
+        for s in sizes:
+            alg = 'A{}KW'.format(s)
+            key = os.urandom(s // 8)
+            for enc in _enc_choices:
+                protected = {'alg': alg, 'enc': enc}
+                data = jwe.serialize_compact(protected, b'hello', key)
+                rv = jwe.deserialize_compact(data, key)
+                self.assertEqual(rv['payload'], b'hello')
+
+    def test_ase_jwe_invalid_key(self):
+        jwe = JWE(algorithms=JWE_ALGORITHMS)
+        protected = {'alg': 'A128KW', 'enc': 'A128GCM'}
+        self.assertRaises(
+            ValueError,
+            jwe.serialize_compact,
+            protected, b'hello', b'invalid-key'
+        )
 
     def test_rsa_alg(self):
         alg = _find_alg('RSA-OAEP')
