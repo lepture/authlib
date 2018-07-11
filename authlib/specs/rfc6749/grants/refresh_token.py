@@ -36,9 +36,6 @@ class RefreshTokenGrant(BaseGrant):
         client = self.authenticate_token_endpoint_client()
         log.debug('Validate token request of {!r}'.format(client))
 
-        if not client.has_client_secret():
-            raise UnauthorizedClientError()
-
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError()
 
