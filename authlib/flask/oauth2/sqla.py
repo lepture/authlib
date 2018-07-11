@@ -14,7 +14,7 @@ from authlib.specs.oidc import (
 
 class OAuth2ClientMixin(ClientMixin):
     client_id = Column(String(48), index=True)
-    client_secret = Column(String(120), nullable=False)
+    client_secret = Column(String(120))
     issued_at = Column(
         Integer, nullable=False,
         default=lambda: int(time.time())
