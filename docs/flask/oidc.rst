@@ -150,7 +150,7 @@ OpenID Connect request has a scope of "openid":
     Host: server.example.com
 
 :class:`OpenIDCodeGrant` can handle the standard code flow too. You **MUST NOT**
-use use them together.
+use them together.
 
 .. important::
 
