@@ -228,10 +228,6 @@ class AuthorizationServer(_AuthorizationServer):
                     grant_user = None
                 return server.create_authorization_response(grant_user=grant_user)
         """
-        if request and not grant_user:  # pragma: no cover
-            grant_user = request
-            request = None
-
         status, body, headers = self.create_valid_authorization_response(
             _create_oauth2_request(request),
             grant_user=grant_user
