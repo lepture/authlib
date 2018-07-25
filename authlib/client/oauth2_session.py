@@ -169,13 +169,11 @@ class OAuth2Session(Session):
                 code, authorization_response, body, **kwargs)
         elif username and password:
             body = prepare_token_request(
-                'password', body,
-                username=username, password=password,
-                client_id=self.client_id, **kwargs)
+                'password', body, username=username,
+                password=password, **kwargs)
         else:
             grant_type = kwargs.pop('grant_type', 'client_credentials')
-            body = prepare_token_request(
-                grant_type, body, client_id=self.client_id, **kwargs)
+            body = prepare_token_request(grant_type, body, **kwargs)
 
         if auth is None:
             auth = self._client_auth
@@ -345,6 +343,4 @@ class OAuth2Session(Session):
             kwargs['redirect_uri'] = self.redirect_uri
         return prepare_token_request(
             'authorization_code', body=body,
-            client_id=self.client_id,
-            code=code, state=state,
-            **kwargs)
+            code=code, state=state, **kwargs)

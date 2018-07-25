@@ -219,7 +219,7 @@ class OAuthClient(object):
             client.post('timeline', json={'text': 'Hi'})
         """
         return self.request('POST', url, **kwargs)
-    
+
     def patch(self, url, **kwargs):
         """Invoke PATCH http request.
 
