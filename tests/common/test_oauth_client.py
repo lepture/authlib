@@ -119,3 +119,13 @@ class OAuthClientTest(unittest.TestCase):
             client.api_base_url = 'https://i.b'
             resp = client.get('user', token=token)
             self.assertEqual(resp.json()['name'], 'a')
+
+    @mock.patch('authlib.client.client.get_oid_provider_meta')
+    def test_oidc_configuration(self, get_oid_provider_meta):
+        get_oid_provider_meta.return_value = {
+            'authorization_endpoint': 'authep',
+            'token_endpoint': 'tokenep'
+        }
+        client = OAuthClient(oid_discovery_url='https://example.com')
+        self.assertEqual(client.authorize_url, 'authep')
+        self.assertEqual(client.access_token_url, 'tokenep')

@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import patch
+
 from authlib.specs.rfc7519 import MissingClaimError, InvalidClaimError
 from authlib.specs.oidc import CodeIDToken, ImplicitIDToken, HybridIDToken
 from authlib.specs.oidc import UserInfo, get_claim_cls_by_response_type
