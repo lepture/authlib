@@ -15,7 +15,7 @@ def get_oid_provider_meta(oid_discovery_url):
 
     This method gathers the OIDC configuration and checks for the
     required keys as defined in:
-    https://openid.net/specs/openid-connect-discovery-1_0.htm://openid.net/specs/openid-connect-discovery-1_0.html
+    https://openid.net/specs/openid-connect-discovery-1_0.html
 
     :param oid_discovery_url: OpenID Connect disovery url. If it does
                               not end with
