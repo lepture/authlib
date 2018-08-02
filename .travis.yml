@@ -10,6 +10,8 @@ matrix:
     env: TOXENV=py35,flask,py35-django
   - python: 3.6
     env: TOXENV=py36,flask,py36-django
+  - python: 3.7
+    env: TOXENV=py37,flask,py37-django
 
 install:
   - pip install -U setuptools
