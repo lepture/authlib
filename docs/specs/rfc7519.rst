@@ -18,10 +18,10 @@ This section contains the generic Python implementation of RFC7519_.
 Guide on JWT
 ------------
 
-JSON Web Token (JWT) is structured by JSON Web Signature (JWS) with certain
-payload claims. The JWT implementation in Authlib has all built-in algorithms
-via :ref:`specs/rfc7518`, it can also load private/public keys of
-:ref:`specs/rfc7517`::
+JSON Web Token (JWT) is structured by :ref:`specs/rfc7515` or :`specs/rfc7516`
+with certain payload claims. The JWT implementation in Authlib has all
+built-in algorithms via :ref:`specs/rfc7518`, it can also load private/public
+keys of :ref:`specs/rfc7517`::
 
     >>> from authlib.specs.rfc7519 import jwt
     >>> header = {'alg': 'RS256'}
@@ -35,19 +35,19 @@ via :ref:`specs/rfc7518`, it can also load private/public keys of
     {'alg': 'RS256', 'typ': 'JWT'}
     >>> claims.validate()
 
-.. note::
-    JWE is not ready yet, current JWT is based on JWS compact serialization.
-
 The imported ``jwt`` is a instance of :class:`JWT`. It has all supported JWS
 algorithms, and it can handle JWK automatically. When :meth:`JWT.encode` a
 payload, JWT will check payload claims for security, if you really want to
 expose them, you can always turn if off via ``check=False``.
 
 .. important::
-    JWT payload is not encrypted, it is just signed. Anyone can extract the
-    payload without any private or public keys. Adding sensitive data like
-    passwords, social security numbers in JWT payload is not safe if you are
-    going to send them in a non-secure connection.
+    JWT payload with JWS is not encrypted, it is just signed. Anyone can
+    extract the payload without any private or public keys. Adding sensitive
+    data like passwords, social security numbers in JWT payload is not safe
+    if you are going to send them in a non-secure connection.
+
+    You can also use JWT with JWE which is encrypted. But this feature is not
+    mature, documentation is not provided yet.
 
 JWT Payload Claims Validation
 -----------------------------

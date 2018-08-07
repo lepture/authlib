@@ -52,7 +52,7 @@ html_theme_options = {
     ],
     'description': (
         'The ultimate Python library in building OAuth and OpenID Connect '
-        'servers. JWS, JWK, JWA, JWT are included.'
+        'servers. JWS, JWE, JWK, JWA, JWT are included.'
     ),
     'github_user': 'lepture',
     'github_repo': 'authlib',

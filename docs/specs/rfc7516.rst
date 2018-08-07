@@ -20,6 +20,16 @@ This section contains the generic implementation of RFC7516_.
 Guide on JWE
 ------------
 
+JSON Web Encryption (JWE) represents encrypted content using
+JSON-based data structures.
+
+There are two types of JWE Serializations:
+
+1. JWE Compact Serialization
+2. JWE JSON Serialization
+
+Authlib has only implemented the **Compact Serialization**. This feature
+is not mature yet, use at your own risk.
 
 API Reference
 -------------
