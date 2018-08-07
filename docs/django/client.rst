@@ -66,6 +66,28 @@ pair can be omit. They can be configured from your Django settings::
         }
     }
 
+client_kwargs
+~~~~~~~~~~~~~
+
+The ``client_kwargs`` is a dict configuration to pass extra parameters to
+``OAuth1Session`` or ``OAuth2Session.
+
+For OAuth 1.0, you can pass extra parameters like::
+
+    client_kwargs = {
+        'signature_method': 'HMAC-SHA1',
+        'signature_type': 'HEADER',
+        'rsa_key': 'Your-RSA-Key'
+    }
+
+For OAuth 2.0, you can pass extra parameters like::
+
+    client_kwargs = {
+        'scope': 'profile',
+        'token_endpoint_auth_method': 'client_secret_basic',
+        'token_placement': 'header',
+    }
+
 Sessions Middleware
 -------------------
 

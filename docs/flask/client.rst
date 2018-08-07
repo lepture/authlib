@@ -95,6 +95,29 @@ Here is a full list of the configuration keys:
 - ``{name}_API_BASE_URL``: A base URL endpoint to make requests simple
 - ``{name}_CLIENT_KWARGS``: Extra keyword arguments for OAuth1Session or OAuth2Session
 
+
+CLIENT_KWARGS
+~~~~~~~~~~~~~
+
+The ``{name}_CLIENT_KWARGS`` is a dict configuration to pass extra parameters to
+``OAuth1Session`` or ``OAuth2Session.
+
+For OAuth 1.0, you can pass extra parameters like::
+
+    EXAMPLE_CLIENT_KWARGS = {
+        'signature_method': 'HMAC-SHA1',
+        'signature_type': 'HEADER',
+        'rsa_key': 'Your-RSA-Key'
+    }
+
+For OAuth 2.0, you can pass extra parameters like::
+
+    EXAMPLE_CLIENT_KWARGS = {
+        'scope': 'profile',
+        'token_endpoint_auth_method': 'client_secret_basic',
+        'token_placement': 'header',
+    }
+
 Database
 --------
 
