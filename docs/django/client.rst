@@ -70,7 +70,7 @@ client_kwargs
 ~~~~~~~~~~~~~
 
 The ``client_kwargs`` is a dict configuration to pass extra parameters to
-``OAuth1Session`` or ``OAuth2Session.
+``OAuth1Session`` or ``OAuth2Session``.
 
 For OAuth 1.0, you can pass extra parameters like::
 

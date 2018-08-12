@@ -23,12 +23,12 @@ Generic specification implementations that Authlib has built-in:
 - :badge:`done` RFC6750: :ref:`specs/rfc6750`
 - :badge:`done` RFC7009: :ref:`specs/rfc7009`
 - :badge:`done` RFC7515: :ref:`specs/rfc7515`
-- :badge-blue:`doing` RFC7516: :ref:`specs/rfc7516`
+- :badge-blue:`beta` RFC7516: :ref:`specs/rfc7516`
 - :badge:`done` RFC7517: :ref:`specs/rfc7517`
 - :badge:`done` RFC7518: :ref:`specs/rfc7518`
 - :badge:`done` RFC7519: :ref:`specs/rfc7519`
 - :badge:`done` RFC7523: :ref:`specs/rfc7523`
-- :badge:`beta` RFC7636: :ref:`specs/rfc7636`
+- :badge-blue:`beta` RFC7636: :ref:`specs/rfc7636`
 - :badge:`done` RFC7662: :ref:`specs/rfc7662`
 - :badge:`done` OIDC: :ref:`specs/oidc`
 

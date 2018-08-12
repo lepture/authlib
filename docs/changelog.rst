@@ -6,10 +6,14 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
-Version 0.9
------------
+Version 0.9: Ponyo
+------------------
 
-**Release Date not Decided.**
+**Released on Aug 12, 2018. Fun Dive.**
+
+There is no big break changes in this version. The very great improvement is
+adding JWE support. But the JWA parts of JWE are not finished yet, use with
+caution.
 
 RFC implementations in this release:
 
@@ -18,9 +22,10 @@ RFC implementations in this release:
 - RFC7516: JWE compact serialization and deserialization.
 - RFC7519: JWT with JWE encode and decode.
 
-**Deprecate Changes**:
+**Other Changes**:
 
-- Removed ``authlib.client.apps`.
+- Fixed the lazy initialization of Flask OAuth 2.0 provider.
+- Deprecated ``authlib.client.apps`` from v0.7 has been dropped.
 
 
 Version 0.8: Arutoria
