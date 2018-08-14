@@ -57,6 +57,15 @@ class AuthorizationServer(object):
     def get_error_uris(self):
         return None
 
+    def send_signal(self, name, *args, **kwargs):
+        raise NotImplementedError()
+
+    def process_request(self, request):
+        raise NotImplementedError()
+
+    def handle_response(self, status, body, headers):
+        raise NotImplementedError()
+
     def register_grant(self, grant_cls):
         """Register a grant class into the endpoint registry. Developers
         can implement the grants in ``authlib.specs.rfc6749.grants`` and
@@ -112,61 +121,61 @@ class AuthorizationServer(object):
                     return grant_cls(request, self)
         raise InvalidGrantError()
 
-    def create_endpoint_response(self, name, request):
+    def create_endpoint_response(self, name, request=None):
         if name not in self._endpoints:
             raise RuntimeError('There is no "{}" endpoint.'.format(name))
+        request = self.process_request(request)
         endpoint_cls = self._endpoints[name]
         endpoint = endpoint_cls(request, self)
-        return endpoint()
+        return self.handle_response(*endpoint())
 
-    def create_valid_authorization_response(self, request, grant_user):
+    def create_authorization_response(self, request=None, grant_user=None):
         """Validate authorization request and create authorization response.
 
         :param request: OAuth2Request instance.
         :param grant_user: if granted, it is resource owner. If denied,
             it is None.
-        :returns: (status_code, body, headers)
+        :returns: Response
         """
-        # TODO: rename it to `create_authorization_response` in v0.8
+        request = self.process_request(request)
         try:
             grant = self.get_authorization_grant(request)
         except InvalidGrantError as error:
-            return error(
-                translations=self.get_translations(),
-                error_uris=self.get_error_uris()
-            )
+            return self._handle_error_response(error)
 
         try:
             grant.validate_authorization_request()
-            return grant.create_authorization_response(grant_user)
+            args = grant.create_authorization_response(grant_user)
+            return self.handle_response(*args)
+
         except OAuth2Error as error:
             if grant.redirect_uri:
                 params = error.get_body()
                 loc = add_params_to_uri(grant.redirect_uri, params)
                 headers = [('Location', loc)]
-                return 302, '', headers
-            return error(
-                translations=self.get_translations(),
-                error_uris=self.get_error_uris()
-            )
+                return self.handle_response(302, '', headers)
+            return self._handle_error_response(error)
 
-    def create_token_response(self, request):
+    def create_token_response(self, request=None):
         """Validate token request and create token response.
 
         :param request: OAuth2Request instance
         """
+        request = self.process_request(request)
         try:
             grant = self.get_token_grant(request)
         except InvalidGrantError as error:
-            return error(
-                translations=self.get_translations(),
-                error_uris=self.get_error_uris()
-            )
+            return self._handle_error_response(error)
+
         try:
             grant.validate_token_request()
-            return grant.create_token_response()
+            args = grant.create_token_response()
+            return self.handle_response(*args)
         except OAuth2Error as error:
-            return error(
-                translations=self.get_translations(),
-                error_uris=self.get_error_uris()
-            )
+            return self._handle_error_response(error)
+
+    def _handle_error_response(self, error):
+        return self.handle_response(*error(
+            translations=self.get_translations(),
+            error_uris=self.get_error_uris()
+        ))

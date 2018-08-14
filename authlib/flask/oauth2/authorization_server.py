@@ -50,20 +50,6 @@ class AuthorizationServer(_AuthorizationServer):
     def __init__(self, app=None, query_client=None, save_token=None, **config):
         super(AuthorizationServer, self).__init__(
             query_client, None, save_token, **config)
-
-        # register hooks
-        def after_authenticate_client(client, grant):
-            client_authenticated.send(self, client=client, grant=grant)
-
-        def after_revoke_token(token, client):
-            token_revoked.send(self, token=token, client=client)
-
-        self.register_hook(
-            'after_authenticate_client',
-            after_authenticate_client
-        )
-        self.register_hook('after_revoke_token', after_revoke_token)
-
         self.app = app
         if app is not None:
             self.init_app(app)
@@ -109,6 +95,27 @@ class AuthorizationServer(_AuthorizationServer):
         self.config.setdefault('jwt_alg', jwt_alg)
         self.config.setdefault('jwt_exp', jwt_exp)
 
+    def process_request(self, request):
+        if isinstance(request, OAuth2Request):
+            return request
+
+        q = request or flask_req
+        if q.method == 'POST':
+            body = q.form.to_dict(flat=True)
+        else:
+            body = None
+        return OAuth2Request(
+            q.method,
+            q.url,
+            body,
+            q.headers
+        )
+
+    def handle_response(self, status_code, payload, headers):
+        if isinstance(payload, dict):
+            payload = json.dumps(payload)
+        return Response(payload, status=status_code, headers=headers)
+
     def get_translations(self):
         # TODO: try Flask-Babel and Flask-Babelex
         return None
@@ -117,6 +124,12 @@ class AuthorizationServer(_AuthorizationServer):
         error_uris = self.app.config.get('OAUTH2_ERROR_URIS')
         if error_uris:
             return dict(error_uris)
+
+    def send_signal(self, name, *args, **kwargs):
+        if name == 'after_authenticate_client':
+            client_authenticated.send(self, *args, **kwargs)
+        elif name == 'after_revoke_token':
+            token_revoked.send(self, *args, **kwargs)
 
     def create_token_expires_in_generator(self, app):
         """Create a generator function for generating ``expires_in`` value.
@@ -205,7 +218,7 @@ class AuthorizationServer(_AuthorizationServer):
                         error=error
                     )
         """
-        req = _create_oauth2_request(request)
+        req = self.process_request(request)
         grant = self.get_authorization_grant(req)
         grant.validate_authorization_request()
         if hasattr(grant, 'validate_prompt'):
@@ -214,62 +227,3 @@ class AuthorizationServer(_AuthorizationServer):
         if not hasattr(grant, 'prompt'):
             grant.prompt = None
         return grant
-
-    def create_authorization_response(self, request=None, grant_user=None):
-        """Create the HTTP response for authorization. If resource owner
-        granted the authorization, pass the resource owner as the user
-        parameter, otherwise None::
-
-            @app.route('/authorize', methods=['POST'])
-            def confirm_authorize():
-                if request.form['confirm'] == 'ok':
-                    grant_user = current_user
-                else:
-                    grant_user = None
-                return server.create_authorization_response(grant_user=grant_user)
-        """
-        if request and not grant_user:  # pragma: no cover
-            grant_user = request
-            request = None
-
-        status, body, headers = self.create_valid_authorization_response(
-            _create_oauth2_request(request),
-            grant_user=grant_user
-        )
-        if isinstance(body, dict):
-            body = json.dumps(body)
-        return Response(body, status=status, headers=headers)
-
-    def create_token_response(self, request=None):
-        """Create the HTTP response for token endpoint. It is ready to use, as
-        simple as::
-
-            @app.route('/token', methods=['POST'])
-            def issue_token():
-                return server.create_token_response()
-        """
-        req = _create_oauth2_request(request)
-        status, body, headers = super(
-            AuthorizationServer, self).create_token_response(req)
-        return Response(json.dumps(body), status=status, headers=headers)
-
-    def create_endpoint_response(self, name, request=None):
-        req = _create_oauth2_request(request)
-        status, body, headers = super(
-            AuthorizationServer, self).create_endpoint_response(name, req)
-        return Response(json.dumps(body), status=status, headers=headers)
-
-
-def _create_oauth2_request(request):
-    q = request or flask_req
-    if q.method == 'POST':
-        body = q.form.to_dict(flat=True)
-    else:
-        body = None
-
-    return OAuth2Request(
-        q.method,
-        q.url,
-        body,
-        q.headers
-    )

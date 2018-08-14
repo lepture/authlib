@@ -73,12 +73,10 @@ class BaseGrant(object):
         """
         client = self.server.authenticate_client(
             self.request,
-            self.TOKEN_ENDPOINT_AUTH_METHODS
-        )
-        try:
-            self.server.execute_hook('after_authenticate_client', client, self)
-        except RuntimeError:  # pragma: no cover
-            pass
+            self.TOKEN_ENDPOINT_AUTH_METHODS)
+        self.server.send_signal(
+            'after_authenticate_client',
+            client=client, grant=self)
         return client
 
     def validate_requested_scope(self, client):

@@ -63,14 +63,11 @@ class RevocationEndpoint(TokenEndpoint):
             self.validate_endpoint_request()
             # the authorization server invalidates the token
             self.revoke_token(self.request.credential)
-            try:
-                self.server.execute_hook(
-                    'after_revoke_token',
-                    self.request.credential,
-                    self.request.client
-                )
-            except RuntimeError:  # pragma: no cover
-                pass
+            self.server.send_signal(
+                'after_revoke_token',
+                token=self.request.credential,
+                client=self.request.client,
+            )
             status = 200
             body = {}
             headers = [
