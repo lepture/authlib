@@ -66,7 +66,7 @@ class AuthorizationServer(object):
     def handle_response(self, status, body, headers):
         raise NotImplementedError()
 
-    def register_grant(self, grant_cls):
+    def register_grant(self, grant_cls, extensions=None):
         """Register a grant class into the endpoint registry. Developers
         can implement the grants in ``authlib.specs.rfc6749.grants`` and
         register with this method::
@@ -78,11 +78,12 @@ class AuthorizationServer(object):
             authorization_server.register_grant(AuthorizationCodeGrant)
 
         :param grant_cls: a grant class.
+        :param extensions: extensions for the grant class.
         """
         if grant_cls.AUTHORIZATION_ENDPOINT:
-            self._authorization_grants.append(grant_cls)
+            self._authorization_grants.append((grant_cls, extensions))
         if grant_cls.TOKEN_ENDPOINT:
-            self._token_grants.append(grant_cls)
+            self._token_grants.append((grant_cls, extensions))
 
     def register_endpoint(self, endpoint_cls):
         self._endpoints[endpoint_cls.ENDPOINT_NAME] = endpoint_cls
@@ -104,9 +105,9 @@ class AuthorizationServer(object):
         :param request: OAuth2Request instance.
         :return: grant instance
         """
-        for grant_cls in self._authorization_grants:
+        for (grant_cls, extensions) in self._authorization_grants:
             if grant_cls.check_authorization_endpoint(request):
-                return grant_cls(request, self)
+                return _create_grant(grant_cls, extensions, request, self)
         raise InvalidGrantError()
 
     def get_token_grant(self, request):
@@ -115,10 +116,10 @@ class AuthorizationServer(object):
         :param request: OAuth2Request instance.
         :return: grant instance
         """
-        for grant_cls in self._token_grants:
-            if grant_cls.check_token_endpoint(request):
-                if request.method in grant_cls.TOKEN_ENDPOINT_HTTP_METHODS:
-                    return grant_cls(request, self)
+        for (grant_cls, extensions) in self._token_grants:
+            if grant_cls.check_token_endpoint(request) and \
+                    request.method in grant_cls.TOKEN_ENDPOINT_HTTP_METHODS:
+                return _create_grant(grant_cls, extensions, request, self)
         raise InvalidGrantError()
 
     def create_endpoint_response(self, name, request=None):
@@ -179,3 +180,11 @@ class AuthorizationServer(object):
             translations=self.get_translations(),
             error_uris=self.get_error_uris()
         ))
+
+
+def _create_grant(grant_cls, extensions, request, server):
+    grant = grant_cls(request, server)
+    if extensions:
+        for ext in extensions:
+            ext(grant)
+    return grant

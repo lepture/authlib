@@ -32,6 +32,10 @@ class BaseGrant(object):
         self.request = request
         self.redirect_uri = request.redirect_uri
         self.server = server
+        self._hooks = {
+            'after_validate_authorization_request': set(),
+            'after_validate_token_request': set(),
+        }
 
     @classmethod
     def check_token_endpoint(cls, request):
@@ -83,6 +87,12 @@ class BaseGrant(object):
         scopes = scope_to_list(self.request.scope)
         if scopes and not client.check_requested_scopes(set(scopes)):
             raise InvalidScopeError(state=self.request.state)
+
+    def register_hook(self, hook_type, hook):
+        if hook_type not in self._hooks:
+            raise ValueError('Hook type %s is not in %s.',
+                             hook_type, self._hooks)
+        self._hooks[hook_type].add(hook)
 
     def process_token(self, token, request):
         return token

@@ -131,6 +131,9 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         self.validate_requested_scope(client)
         self.request.client = client
 
+        for hook in self._hooks['after_validate_authorization_request']:
+            hook(self)
+
     def create_authorization_response(self, grant_user):
         """If the resource owner grants the access request, the authorization
         server issues an authorization code and delivers it to the client by
@@ -264,6 +267,9 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         # save for create_token_response
         self.request.client = client
         self.request.credential = authorization_code
+
+        for hook in self._hooks['after_validate_token_request']:
+            hook(self)
 
     def create_token_response(self):
         """If the access token request is valid and authorized, the
