@@ -9,5 +9,5 @@
     https://tools.ietf.org/html/rfc7636
 """
 
-from .grant import AuthorizationCodeGrant
+from .grant import AuthorizationCodeGrant, CodeChallenge
 from .challenge import create_s256_code_challenge

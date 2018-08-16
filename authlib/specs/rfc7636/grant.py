@@ -7,6 +7,29 @@ from .challenge import (
 
 
 class AuthorizationCodeGrant(_CodeGrant):
+    def __init__(self, *args, **kwargs):
+        super(AuthorizationCodeGrant, self).__init__(*args, **kwargs)
+        challenge = CodeChallenge(required=True)
+        challenge.get_authorization_code_challenge = self.get_authorization_code_challenge
+        challenge.get_authorization_code_challenge_method = self.get_authorization_code_challenge_method
+        self.challenge = challenge
+
+    def validate_authorization_request(self):
+        super(AuthorizationCodeGrant, self).validate_authorization_request()
+        self.challenge.validate_code_challenge(self)
+
+    def validate_token_request(self):
+        super(AuthorizationCodeGrant, self).validate_token_request()
+        self.challenge.validate_code_verifier(self)
+
+    def get_authorization_code_challenge(self, authorization_code):
+        raise NotImplementedError()
+
+    def get_authorization_code_challenge_method(self, authorization_code):
+        raise NotImplementedError()
+
+
+class CodeChallenge(object):
     #: defaults to "plain" if not present in the request
     DEFAULT_CODE_CHALLENGE_METHOD = 'plain'
     SUPPORTED_CODE_CHALLENGE_METHOD = ['plain', 'S256']
@@ -16,34 +39,42 @@ class AuthorizationCodeGrant(_CodeGrant):
         'S256': compare_s256_code_challenge,
     }
 
-    def validate_authorization_request(self):
-        super(AuthorizationCodeGrant, self).validate_authorization_request()
-        self.validate_code_challenge()
+    def __init__(self, required=False):
+        self.required = required
 
-    def validate_token_request(self):
-        super(AuthorizationCodeGrant, self).validate_token_request()
-        self.validate_code_verifier()
+    def __call__(self, grant):
+        grant.register_hook(
+            'after_validate_authorization_request',
+            self.validate_code_challenge,
+        )
+        grant.register_hook(
+            'after_validate_token_request',
+            self.validate_code_verifier,
+        )
 
-    def validate_code_challenge(self):
-        client = self.request.client
-        challenge = self.request.data.get('code_challenge')
+    def validate_code_challenge(self, grant):
+        challenge = grant.request.data.get('code_challenge')
+        method = grant.request.data.get('code_challenge_method')
+        if not self.required and not challenge and not method:
+            return
+
+        client = grant.request.client
         if not client.has_client_secret() and not challenge:
             raise InvalidRequestError('Missing "code_challenge"')
 
-        method = self.request.data.get('code_challenge_method')
         if method and method not in self.SUPPORTED_CODE_CHALLENGE_METHOD:
             raise InvalidRequestError(
                 description='Unsupported "code_challenge_method"')
 
-    def validate_code_verifier(self):
-        verifier = self.request.data.get('code_verifier')
-        client = self.request.client
+    def validate_code_verifier(self, grant):
+        verifier = grant.request.data.get('code_verifier')
+        client = grant.request.client
 
         # public client MUST verify code challenge
-        if not client.has_client_secret() and not verifier:
+        if self.required and not client.has_client_secret() and not verifier:
             raise InvalidRequestError('Missing "code_verifier"')
 
-        authorization_code = self.request.credential
+        authorization_code = grant.request.credential
         challenge = self.get_authorization_code_challenge(authorization_code)
 
         # ignore, it is the normal RFC6749 authorization_code request

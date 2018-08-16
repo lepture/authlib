@@ -1,7 +1,9 @@
 from flask import json
 from authlib.common.urls import urlparse, url_decode
+from authlib.specs.rfc6749 import grants
 from authlib.specs.rfc7636 import (
     AuthorizationCodeGrant as _AuthorizationCodeGrant,
+    CodeChallenge as _CodeChallenge,
     create_s256_code_challenge,
 )
 from .models import db, User, Client
@@ -10,9 +12,28 @@ from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
 
 
-class AuthorizationCodeGrant(CodeGrantMixin, _AuthorizationCodeGrant):
+class AuthorizationCodeGrant(CodeGrantMixin, grants.AuthorizationCodeGrant):
+    def create_authorization_code(self, client, grant_user, request):
+        code_challenge = request.data.get('code_challenge')
+        code_challenge_method = request.data.get('code_challenge_method')
+        return generate_authorization_code(
+            client, grant_user, request,
+            code_challenge=code_challenge,
+            code_challenge_method=code_challenge_method,
+        )
+
+
+class CodeChallenge(_CodeChallenge):
     SUPPORTED_CODE_CHALLENGE_METHOD = ['plain', 'S256', 'S128']
 
+    def get_authorization_code_challenge(self, authorization_code):
+        return authorization_code.code_challenge
+
+    def get_authorization_code_challenge_method(self, authorization_code):
+        return authorization_code.code_challenge_method
+
+
+class CodeChallengeGrant(CodeGrantMixin, _AuthorizationCodeGrant):
     def create_authorization_code(self, client, grant_user, request):
         code_challenge = request.data.get('code_challenge')
         code_challenge_method = request.data.get('code_challenge_method')
@@ -33,7 +54,7 @@ class AuthorizationCodeTest(TestCase):
     def prepare_data(self, token_endpoint_auth_method='none'):
 
         server = create_authorization_server(self.app)
-        server.register_grant(AuthorizationCodeGrant)
+        server.register_grant(CodeChallengeGrant)
 
         user = User(username='foo')
         db.session.add(user)
@@ -186,6 +207,40 @@ class AuthorizationCodeTest(TestCase):
         })
         resp = json.loads(rv.data)
         self.assertIn('access_token', resp)
+
+
+class CodeChallengeTest(AuthorizationCodeTest):
+    def prepare_data(self, token_endpoint_auth_method='none'):
+        server = create_authorization_server(self.app)
+        server.register_grant(
+            AuthorizationCodeGrant,
+            [CodeChallenge(required=True)]
+        )
+
+        user = User(username='foo')
+        db.session.add(user)
+        db.session.commit()
+
+        client_secret = ''
+        if token_endpoint_auth_method != 'none':
+            client_secret = 'code-secret'
+
+        client = Client(
+            user_id=user.id,
+            client_id='code-client',
+            client_secret=client_secret,
+            redirect_uri='https://a.b',
+            scope='profile address',
+            token_endpoint_auth_method=token_endpoint_auth_method,
+            response_type='code',
+            grant_type='authorization_code',
+        )
+        self.authorize_url = (
+            '/oauth/authorize?response_type=code'
+            '&client_id=code-client'
+        )
+        db.session.add(client)
+        db.session.commit()
 
     def test_not_implemented_code_challenge_method(self):
         self.prepare_data()
