@@ -6,7 +6,7 @@ from authlib.specs.oidc.grants import (
     OpenIDCodeGrant as _OpenIDCodeGrant,
 )
 from tests.util import get_file_path
-from .models import db, User, Client
+from .models import db, User, Client, exists_nonce
 from .models import CodeGrantMixin, generate_authorization_code
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
@@ -17,6 +17,9 @@ class OpenIDCodeGrant(CodeGrantMixin, _OpenIDCodeGrant):
         nonce = request.data.get('nonce')
         return generate_authorization_code(
             client, grant_user, request, nonce=nonce)
+
+    def exists_nonce(self, nonce, request):
+        return exists_nonce(nonce, request)
 
 
 class BaseTestCase(TestCase):

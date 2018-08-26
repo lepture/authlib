@@ -26,7 +26,7 @@ class OpenIDImplicitGrant(ImplicitGrant):
         super(OpenIDImplicitGrant, self).validate_authorization_request()
         validate_nonce(self.request, self.exists_nonce, required=True)
 
-    def exists_nonce(self, nonce, request):
+    def exists_nonce(self, nonce, request):  # pragma: no cover
         return self.server.execute_hook('exists_nonce', nonce, request)
 
     def validate_consent_request(self):

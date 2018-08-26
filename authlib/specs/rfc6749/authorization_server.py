@@ -1,4 +1,5 @@
 from authlib.common.urls import add_params_to_uri
+from authlib.deprecate import deprecate
 from .authenticate_client import ClientAuthentication
 from .errors import InvalidGrantError, OAuth2Error
 
@@ -88,12 +89,14 @@ class AuthorizationServer(object):
     def register_endpoint(self, endpoint_cls):
         self._endpoints[endpoint_cls.ENDPOINT_NAME] = endpoint_cls
 
-    def register_hook(self, name, func):
+    def register_hook(self, name, func):  # pragma: no cover
+        deprecate('.register_hook is deprecated', '0.12', 'fAmW1', 'OC')
         if name in self._hooks:
             raise ValueError('"{}" is already in hooks'.format(name))
         self._hooks[name] = func
 
-    def execute_hook(self, name, *args, **kwargs):
+    def execute_hook(self, name, *args, **kwargs):  # pragma: no cover
+        deprecate('.execute_hook is deprecated', '0.12', 'fAmW1', 'OC')
         if name not in self._hooks:
             raise RuntimeError('"{}" hook is not registered.'.format(name))
         func = self._hooks[name]

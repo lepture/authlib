@@ -1,10 +1,17 @@
 from authlib.specs.rfc7519 import JWT
 from authlib.specs.oidc import ImplicitIDToken
-from authlib.specs.oidc.grants import OpenIDImplicitGrant
+from authlib.specs.oidc.grants import (
+    OpenIDImplicitGrant as _OpenIDImplicitGrant
+)
 from authlib.common.urls import urlparse, url_decode
-from .models import db, User, Client
+from .models import db, User, Client, exists_nonce
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
+
+
+class OpenIDImplicitGrant(_OpenIDImplicitGrant):
+    def exists_nonce(self, nonce, request):
+        return exists_nonce(nonce, request)
 
 
 class ImplicitTest(TestCase):

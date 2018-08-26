@@ -38,7 +38,7 @@ class OpenIDHybridGrant(AuthorizationCodeGrant):
             raise InvalidScopeError('Missing "openid" scope')
         super(OpenIDHybridGrant, self).validate_authorization_request()
 
-    def exists_nonce(self, nonce, request):
+    def exists_nonce(self, nonce, request):  # pragma: no cover
         return self.server.execute_hook('exists_nonce', nonce, request)
 
     def create_authorization_response(self, grant_user):

@@ -5,7 +5,7 @@ from authlib.specs.oidc import HybridIDToken
 from authlib.specs.oidc.grants import (
     OpenIDHybridGrant as _OpenIDHybridGrant,
 )
-from .models import db, User, Client
+from .models import db, User, Client, exists_nonce
 from .models import CodeGrantMixin, generate_authorization_code
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
@@ -16,6 +16,9 @@ class OpenIDHybridGrant(CodeGrantMixin, _OpenIDHybridGrant):
         nonce = request.data.get('nonce')
         return generate_authorization_code(
             client, grant_user, request, nonce=nonce)
+
+    def exists_nonce(self, nonce, request):
+        return exists_nonce(nonce, request)
 
 
 class OpenIDCodeTest(TestCase):

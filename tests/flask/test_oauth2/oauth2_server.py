@@ -17,7 +17,6 @@ from authlib.flask.oauth2 import (
 )
 from authlib.specs.rfc6749 import OAuth2Error
 from .models import db, User, Client, Token
-from .models import exists_nonce
 
 os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
 
@@ -38,7 +37,6 @@ def create_authorization_server(app, lazy=False):
         server.init_app(app, query_client, save_token)
     else:
         server = AuthorizationServer(app, query_client, save_token)
-    server.register_hook('exists_nonce', exists_nonce)
 
     @app.route('/oauth/authorize', methods=['GET', 'POST'])
     def authorize():

@@ -78,5 +78,5 @@ class OpenIDCodeGrant(AuthorizationCodeGrant):
         )
         extension(self)
 
-    def exists_nonce(self, nonce, request):
+    def exists_nonce(self, nonce, request):  # pragma: no cover
         return self.server.execute_hook('exists_nonce', nonce, request)
