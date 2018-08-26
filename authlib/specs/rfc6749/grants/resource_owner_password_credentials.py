@@ -149,7 +149,7 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
         )
         log.debug('Issue token {!r} to {!r}'.format(token, client))
         self.server.save_token(token, self.request)
-        token = self.process_token(token, self.request)
+        self.execute_hook('process_token', token=token)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_user(self, username, password):

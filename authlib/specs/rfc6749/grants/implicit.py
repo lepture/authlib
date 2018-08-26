@@ -131,6 +131,11 @@ class ImplicitGrant(RedirectAuthGrant):
         self.validate_authorization_redirect_uri(client)
         self.validate_requested_scope(client)
         self.request.client = client
+        self.execute_hook('after_validate_authorization_request')
+
+    def validate_consent_request(self):
+        self.validate_authorization_request()
+        self.execute_hook('after_validate_consent_request')
 
     def create_authorization_response(self, grant_user):
         """If the resource owner grants the access request, the authorization
@@ -200,8 +205,7 @@ class ImplicitGrant(RedirectAuthGrant):
             log.debug('Grant token {!r} to {!r}'.format(token, client))
 
             self.server.save_token(token, self.request)
-            token = self.process_token(token, self.request)
-
+            self.execute_hook('process_token', token=token)
             params = [(k, token[k]) for k in token]
             if state:
                 params.append(('state', state))

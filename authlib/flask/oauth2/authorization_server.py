@@ -219,11 +219,10 @@ class AuthorizationServer(_AuthorizationServer):
                     )
         """
         req = self.process_request(request)
+        req.user = end_user
+
         grant = self.get_authorization_grant(req)
-        grant.validate_authorization_request()
-        if hasattr(grant, 'validate_prompt'):
-            # prompt is designed for OpenID Connect
-            grant.validate_prompt(end_user=end_user)
+        grant.validate_consent_request()
         if not hasattr(grant, 'prompt'):
             grant.prompt = None
         return grant

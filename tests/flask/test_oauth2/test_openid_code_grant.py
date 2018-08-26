@@ -51,18 +51,6 @@ class BaseTestCase(TestCase):
 
 
 class OpenIDCodeTest(BaseTestCase):
-    def test_missing_redirect_uri(self):
-        self.prepare_data()
-        rv = self.client.post('/oauth/authorize', data={
-            'response_type': 'code',
-            'client_id': 'code-client',
-            'state': 'bar',
-            'scope': 'openid profile',
-            'user_id': '1'
-        })
-        resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_request')
-
     def test_authorize_token(self):
         self.prepare_data()
         rv = self.client.post('/oauth/authorize', data={

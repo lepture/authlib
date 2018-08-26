@@ -130,9 +130,11 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         self.validate_authorization_redirect_uri(client)
         self.validate_requested_scope(client)
         self.request.client = client
+        self.execute_hook('after_validate_authorization_request')
 
-        for hook in self._hooks['after_validate_authorization_request']:
-            hook(self)
+    def validate_consent_request(self):
+        self.validate_authorization_request()
+        self.execute_hook('after_validate_consent_request')
 
     def create_authorization_response(self, grant_user):
         """If the resource owner grants the access request, the authorization
@@ -318,7 +320,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
 
         self.request.user = user
         self.server.save_token(token, self.request)
-        token = self.process_token(token, self.request)
+        self.execute_hook('process_token', token=token)
         self.delete_authorization_code(authorization_code)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 

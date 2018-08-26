@@ -34,7 +34,9 @@ class BaseGrant(object):
         self.server = server
         self._hooks = {
             'after_validate_authorization_request': set(),
+            'after_validate_consent_request': set(),
             'after_validate_token_request': set(),
+            'process_token': set(),
         }
 
     @classmethod
@@ -94,8 +96,9 @@ class BaseGrant(object):
                              hook_type, self._hooks)
         self._hooks[hook_type].add(hook)
 
-    def process_token(self, token, request):
-        return token
+    def execute_hook(self, hook_type, *args, **kwargs):
+        for hook in self._hooks[hook_type]:
+            hook(self, *args, **kwargs)
 
 
 class RedirectAuthGrant(BaseGrant):
