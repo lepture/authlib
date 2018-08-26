@@ -50,16 +50,16 @@ class OAuth2Request(object):
         #: authorization_code or token model instance
         self.credential = None
         self.client = None
-        self._data_keys = {
+
+    def __getattr__(self, key):
+        keys = {
             'client_id', 'code', 'redirect_uri', 'scope', 'state',
             'response_type', 'grant_type'
         }
-
-    def __getattr__(self, key):
         try:
             return object.__getattribute__(self, key)
         except AttributeError as error:
-            if key in self._data_keys:
+            if key in keys:
                 return self.data.get(key)
             raise error
 

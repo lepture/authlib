@@ -133,10 +133,6 @@ class ImplicitGrant(RedirectAuthGrant):
         self.request.client = client
         self.execute_hook('after_validate_authorization_request')
 
-    def validate_consent_request(self):
-        self.validate_authorization_request()
-        self.execute_hook('after_validate_consent_request')
-
     def create_authorization_response(self, grant_user):
         """If the resource owner grants the access request, the authorization
         server issues an access token and delivers it to the client by adding

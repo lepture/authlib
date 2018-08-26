@@ -1,5 +1,10 @@
-from .code import OpenIDCodeGrant
+from .code import OpenIDCode, OpenIDCodeGrant
 from .implicit import OpenIDImplicitGrant
 from .hybrid import OpenIDHybridGrant
 
-__all__ = ['OpenIDCodeGrant', 'OpenIDImplicitGrant', 'OpenIDHybridGrant']
+__all__ = [
+    'OpenIDCode',
+    'OpenIDCodeGrant',
+    'OpenIDImplicitGrant',
+    'OpenIDHybridGrant',
+]

@@ -106,6 +106,13 @@ class RedirectAuthGrant(BaseGrant):
     def check_authorization_endpoint(cls, request):
         return request.response_type == cls.RESPONSE_TYPE
 
+    def validate_authorization_request(self):
+        raise NotImplementedError()
+
+    def validate_consent_request(self):
+        self.validate_authorization_request()
+        self.execute_hook('after_validate_consent_request')
+
     def validate_authorization_redirect_uri(self, client):
         if self.redirect_uri:
             if not client.check_redirect_uri(self.redirect_uri):
