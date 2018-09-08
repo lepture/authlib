@@ -201,7 +201,7 @@ class RemoteApp(OAuthClient):
     @token.setter
     def token(self, token):
         ctx = _app_ctx_stack.top
-        attr = 'authlib_client_oauth_token_{}'.format(self.name)
+        attr = 'authlib_oauth_token_{}'.format(self.name)
         setattr(ctx, attr, token)
 
     def request(self, method, url, token=None, **kwargs):
