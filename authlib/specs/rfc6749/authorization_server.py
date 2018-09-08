@@ -52,10 +52,10 @@ class AuthorizationServer(object):
         """
         self.authenticate_client.register(method, func)
 
-    def get_translations(self):
+    def get_translations(self, request):
         return None
 
-    def get_error_uris(self):
+    def get_error_uris(self, request):
         return None
 
     def send_signal(self, name, *args, **kwargs):
@@ -87,20 +87,14 @@ class AuthorizationServer(object):
             self._token_grants.append((grant_cls, extensions))
 
     def register_endpoint(self, endpoint_cls):
+        """Add token endpoint to authorization server. e.g.
+        RevocationEndpoint::
+
+            authorization_server.register_endpoint(RevocationEndpoint)
+
+        :param endpoint_cls: A token endpoint class
+        """
         self._endpoints[endpoint_cls.ENDPOINT_NAME] = endpoint_cls
-
-    def register_hook(self, name, func):  # pragma: no cover
-        deprecate('.register_hook is deprecated', '0.12', 'fAmW1', 'OC')
-        if name in self._hooks:
-            raise ValueError('"{}" is already in hooks'.format(name))
-        self._hooks[name] = func
-
-    def execute_hook(self, name, *args, **kwargs):  # pragma: no cover
-        deprecate('.execute_hook is deprecated', '0.12', 'fAmW1', 'OC')
-        if name not in self._hooks:
-            raise RuntimeError('"{}" hook is not registered.'.format(name))
-        func = self._hooks[name]
-        return func(*args, **kwargs)
 
     def get_authorization_grant(self, request):
         """Find the authorization grant for current request.
@@ -145,7 +139,7 @@ class AuthorizationServer(object):
         try:
             grant = self.get_authorization_grant(request)
         except InvalidGrantError as error:
-            return self._handle_error_response(error)
+            return self._handle_error_response(request, error)
 
         try:
             grant.validate_authorization_request()
@@ -158,7 +152,7 @@ class AuthorizationServer(object):
                 loc = add_params_to_uri(grant.redirect_uri, params)
                 headers = [('Location', loc)]
                 return self.handle_response(302, '', headers)
-            return self._handle_error_response(error)
+            return self._handle_error_response(request, error)
 
     def create_token_response(self, request=None):
         """Validate token request and create token response.
@@ -169,20 +163,33 @@ class AuthorizationServer(object):
         try:
             grant = self.get_token_grant(request)
         except InvalidGrantError as error:
-            return self._handle_error_response(error)
+            return self._handle_error_response(request, error)
 
         try:
             grant.validate_token_request()
             args = grant.create_token_response()
             return self.handle_response(*args)
         except OAuth2Error as error:
-            return self._handle_error_response(error)
+            return self._handle_error_response(request, error)
 
-    def _handle_error_response(self, error):
+    def _handle_error_response(self, request, error):
         return self.handle_response(*error(
-            translations=self.get_translations(),
-            error_uris=self.get_error_uris()
+            translations=self.get_translations(request),
+            error_uris=self.get_error_uris(request)
         ))
+
+    def register_hook(self, name, func):  # pragma: no cover
+        deprecate('.register_hook is deprecated', '0.12', 'fAmW1', 'OC')
+        if name in self._hooks:
+            raise ValueError('"{}" is already in hooks'.format(name))
+        self._hooks[name] = func
+
+    def execute_hook(self, name, *args, **kwargs):  # pragma: no cover
+        deprecate('.execute_hook is deprecated', '0.12', 'fAmW1', 'OC')
+        if name not in self._hooks:
+            raise RuntimeError('"{}" hook is not registered.'.format(name))
+        func = self._hooks[name]
+        return func(*args, **kwargs)
 
 
 def _create_grant(grant_cls, extensions, request, server):

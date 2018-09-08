@@ -116,11 +116,11 @@ class AuthorizationServer(_AuthorizationServer):
             payload = json.dumps(payload)
         return Response(payload, status=status_code, headers=headers)
 
-    def get_translations(self):
+    def get_translations(self, request):
         # TODO: try Flask-Babel and Flask-Babelex
         return None
 
-    def get_error_uris(self):
+    def get_error_uris(self, request):
         error_uris = self.app.config.get('OAUTH2_ERROR_URIS')
         if error_uris:
             return dict(error_uris)
