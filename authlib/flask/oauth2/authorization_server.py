@@ -153,11 +153,6 @@ class AuthorizationServer(_AuthorizationServer):
         expires_conf.update(app.config.get('OAUTH2_TOKEN_EXPIRES_IN', {}))
 
         def expires_in(client, grant_type):
-            conf_key = 'OAUTH2_EXPIRES_{}'.format(grant_type.upper())
-            expires = app.config.get(conf_key)
-            if expires:  # pragma: no cover
-                deprecate('Deprecate "{}".'.format(conf_key), '0.10', 'vpCH5', 'as')
-                return expires
             return expires_conf.get(grant_type, BearerToken.DEFAULT_EXPIRES_IN)
 
         return expires_in
@@ -188,11 +183,7 @@ class AuthorizationServer(_AuthorizationServer):
         elif not callable(refresh_token_generator):
             refresh_token_generator = None
 
-        if hasattr(self, 'create_expires_generator'):  # pragma: no cover
-            deprecate('Method `create_expires_generator` has been renamed', '0.10', 'vhL75', 'ceg')
-            expires_generator = self.create_expires_generator(app)
-        else:
-            expires_generator = self.create_token_expires_in_generator(app)
+        expires_generator = self.create_token_expires_in_generator(app)
         return BearerToken(
             access_token_generator,
             refresh_token_generator,

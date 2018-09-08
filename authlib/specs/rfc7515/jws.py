@@ -5,7 +5,6 @@ from authlib.common.encoding import (
     urlsafe_b64encode,
     json_b64encode
 )
-from authlib.deprecate import deprecate
 from .errors import (
     DecodeError,
     MissingAlgorithmError,
@@ -34,10 +33,7 @@ class JWS(object):
         self._algorithms = {}
         self._private_headers = private_headers
 
-        if isinstance(algorithms, dict):  # pragma: no cover
-            deprecate('Pass list of algorithms to JWS instead', '0.10')
-            self._algorithms = algorithms
-        elif isinstance(algorithms, list):
+        if isinstance(algorithms, list):
             for algorithm in algorithms:
                 self.register_algorithm(algorithm)
 

@@ -32,10 +32,9 @@
 """
 from authlib.common.errors import AuthlibHTTPError
 from authlib.common.security import is_secure_transport
-from authlib.deprecate import deprecate
 
 __all__ = [
-    'register_error_uri', 'OAuth2Error',
+    'OAuth2Error',
     'InsecureTransportError', 'InvalidRequestError',
     'InvalidClientError', 'InvalidGrantError',
     'UnauthorizedClientError', 'UnsupportedGrantTypeError',
@@ -46,28 +45,9 @@ __all__ = [
 ]
 
 
-_error_uris = {}
-
-
-def register_error_uri(error, error_uri):
-    """Register ``error_uri`` for each error code. When raise an OAuth2Error
-    without ``error_uri``, it will use the URI in this registry::
-
-        register_error_uri('invalid_client', 'https://example.com/errors#invalid-client')
-
-    :param error: OAuth 2 error code.
-    :param error_uri: A human-readable web page with information about the error.
-    """
-    global _error_uris
-    _error_uris[error] = error_uri
-    deprecate('This function is deprecated.', version='0.10')
-
-
 class OAuth2Error(AuthlibHTTPError):
     def __init__(self, description=None, uri=None,
                  status_code=None, state=None):
-        if uri is None:
-            uri = _error_uris.get(self.error)
         super(OAuth2Error, self).__init__(None, description, uri, status_code)
         self.state = state
 
