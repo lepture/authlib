@@ -86,6 +86,7 @@ class OAuthClient(object):
         self.client_kwargs = client_kwargs or {}
         self.compliance_fix = compliance_fix
 
+        self._fetch_token = None
         self._kwargs = kwargs
 
     def generate_authorize_redirect(
@@ -197,8 +198,13 @@ class OAuthClient(object):
         with self._get_session() as session:
             if kwargs.get('withhold_token'):
                 return session.request(method, url, **kwargs)
+
+            request = kwargs.pop('request', None)
+            if token is None and self._fetch_token and request:
+                token = self._fetch_token(request)
             if token is None:
                 raise MissingTokenError()
+
             session.token = token
             return session.request(method, url, **kwargs)
 

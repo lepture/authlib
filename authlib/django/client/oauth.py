@@ -1,3 +1,4 @@
+import functools
 from django.conf import settings
 from django.dispatch import Signal
 from django.http import HttpResponseRedirect
@@ -21,8 +22,9 @@ class OAuth(object):
         oauth = OAuth()
     """
 
-    def __init__(self):
+    def __init__(self, fetch_token=None):
         self._clients = {}
+        self.fetch_token = fetch_token
 
     def register(self, name, overwrite=False, **kwargs):
         """Registers a new remote application.
@@ -39,7 +41,18 @@ class OAuth(object):
             oauth.twitter.get('timeline')
         """
         client_cls = kwargs.pop('client_cls', RemoteApp)
-        client = client_cls(name, overwrite=overwrite, **kwargs)
+        fetch_token = kwargs.pop('fetch_token', None)
+        if not fetch_token and self.fetch_token:
+            fetch_token = functools.partial(self.fetch_token, name)
+        config = _get_conf(name)
+        if config:
+            kwargs = _config_client(config, kwargs, overwrite)
+
+        compliance_fix = kwargs.pop('compliance_fix', None)
+        client = client_cls(name, fetch_token=fetch_token, **kwargs)
+        if compliance_fix:
+            client.compliance_fix = compliance_fix
+
         self._clients[name] = client
         return client
 
@@ -56,16 +69,11 @@ class RemoteApp(OAuthClient):
     """Django integrated RemoteApp of :class:`~authlib.client.OAuthClient`.
     It has built-in hooks for OAuthClient.
     """
-    def __init__(self, name, overwrite=False, **kwargs):
-        self.name = name
-
-        compliance_fix = kwargs.pop('compliance_fix', None)
-        config = _get_conf(name)
-        if config:
-            kwargs = _config_client(config, kwargs, overwrite)
+    def __init__(self, name, fetch_token=None, **kwargs):
         super(RemoteApp, self).__init__(**kwargs)
 
-        self.compliance_fix = compliance_fix
+        self.name = name
+        self._fetch_token = fetch_token
         if self.client_kwargs.get('refresh_token_url'):
             self.client_kwargs['token_updater'] = self._send_token_update
 

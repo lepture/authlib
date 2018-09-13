@@ -25,7 +25,7 @@ class DjangoOAuthTest(TestCase):
             client_id='dev',
             client_secret='dev',
             request_token_url='https://i.b/reqeust-token',
-            base_url='https://i.b/api',
+            api_base_url='https://i.b/api',
             access_token_url='https://i.b/token',
             authorize_url='https://i.b/authorize'
         )
@@ -40,7 +40,7 @@ class DjangoOAuthTest(TestCase):
             client_id='dev',
             client_secret='dev',
             request_token_url='https://i.b/reqeust-token',
-            base_url='https://i.b/api',
+            api_base_url='https://i.b/api',
             access_token_url='https://i.b/token',
             access_token_params={
                 'foo': 'foo'
@@ -67,7 +67,7 @@ class DjangoOAuthTest(TestCase):
             client_id='dev',
             client_secret='dev',
             request_token_url='https://i.b/reqeust-token',
-            base_url='https://i.b/api',
+            api_base_url='https://i.b/api',
             access_token_url='https://i.b/token',
             authorize_url='https://i.b/authorize',
         )
@@ -93,7 +93,7 @@ class DjangoOAuthTest(TestCase):
             'dev',
             client_id='dev',
             client_secret='dev',
-            base_url='https://i.b/api',
+            api_base_url='https://i.b/api',
             access_token_url='https://i.b/token',
             authorize_url='https://i.b/authorize',
         )
@@ -119,7 +119,7 @@ class DjangoOAuthTest(TestCase):
         client = RemoteApp(
             'dev',
             client_id='dev',
-            base_url='https://i.b/api',
+            api_base_url='https://i.b/api',
             access_token_url='https://i.b/token',
             authorize_url='https://i.b/authorize',
             code_challenge_method='S256',
@@ -150,7 +150,7 @@ class DjangoOAuthTest(TestCase):
             'dev',
             client_id='dev',
             client_secret='dev',
-            base_url='https://i.b/api',
+            api_base_url='https://i.b/api',
             access_token_url='https://i.b/token',
             authorize_url='https://i.b/authorize',
         )
@@ -163,3 +163,48 @@ class DjangoOAuthTest(TestCase):
             request.session['_dev_authlib_state_'] = 'b'
             token = client.authorize_access_token(request)
             self.assertEqual(token['access_token'], 'a')
+
+    def test_with_fetch_token_in_oauth(self):
+        def fetch_token(name, request):
+            return {'access_token': name, 'token_type': 'bearer'}
+
+        oauth = OAuth(fetch_token)
+        client = oauth.register(
+            'dev',
+            client_id='dev',
+            client_secret='dev',
+            api_base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+            authorize_url='https://i.b/authorize'
+        )
+
+        def fake_send(sess, req, **kwargs):
+            self.assertEqual(sess.token['access_token'], 'dev')
+            return mock_send_value(get_bearer_token())
+
+        with mock.patch('requests.sessions.Session.send', fake_send):
+            request = self.factory.get('/login')
+            client.get('/user', request=request)
+
+    def test_with_fetch_token_in_register(self):
+        def fetch_token(request):
+            return {'access_token': 'dev', 'token_type': 'bearer'}
+
+        oauth = OAuth()
+        client = oauth.register(
+            'dev',
+            client_id='dev',
+            client_secret='dev',
+            api_base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+            authorize_url='https://i.b/authorize',
+            fetch_token=fetch_token,
+        )
+
+        def fake_send(sess, req, **kwargs):
+            self.assertEqual(sess.token['access_token'], 'dev')
+            return mock_send_value(get_bearer_token())
+
+        with mock.patch('requests.sessions.Session.send', fake_send):
+            request = self.factory.get('/login')
+            client.get('/user', request=request)

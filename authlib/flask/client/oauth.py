@@ -176,12 +176,12 @@ class RemoteApp(OAuthClient):
 
     def __init__(self, name, fetch_token=None, update_token=None,
                  fetch_request_token=None, save_request_token=None, **kwargs):
+        super(RemoteApp, self).__init__(**kwargs)
+
         self.name = name
         self._fetch_token = fetch_token
         self._fetch_request_token = fetch_request_token
         self._save_request_token = save_request_token
-
-        super(RemoteApp, self).__init__(**kwargs)
 
         if kwargs.get('refresh_token_url'):
             self.client_kwargs['token_updater'] = update_token
