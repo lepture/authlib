@@ -6,6 +6,16 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 0.10
+------------
+
+**Release Date not Decided**
+
+- Export ``save_authorize_state`` method
+- Add grant extensions (requires documentation)
+- Add ``fetch_token`` to Django OAuth client
+- Fix two OAuth clients in the same Flask route :gh:`PR#85`
+
 Version 0.9: Ponyo
 ------------------
 
