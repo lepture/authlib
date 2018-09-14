@@ -26,12 +26,6 @@ class AuthorizationCodeGrant(CodeGrantMixin, grants.AuthorizationCodeGrant):
 class CodeChallenge(_CodeChallenge):
     SUPPORTED_CODE_CHALLENGE_METHOD = ['plain', 'S256', 'S128']
 
-    def get_authorization_code_challenge(self, authorization_code):
-        return authorization_code.code_challenge
-
-    def get_authorization_code_challenge_method(self, authorization_code):
-        return authorization_code.code_challenge_method
-
 
 class CodeChallengeGrant(CodeGrantMixin, _AuthorizationCodeGrant):
     def create_authorization_code(self, client, grant_user, request):

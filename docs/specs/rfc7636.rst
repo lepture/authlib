@@ -14,28 +14,28 @@ to the authorization server.
 
 .. _RFC7636: https://tools.ietf.org/html/rfc7636
 
-Using RFC7636 Grant in Server
------------------------------
+.. module:: authlib.specs.rfc7636
 
-In order to apply proof key for code exchange, you need to replace the
-original ``AuthorizationCodeGrant`` in RFC6749 with the one in RFC7636::
 
-    from authlib.specs.rfc6749.grants import AuthorizationCodeGrant
-    # use the one below
-    from authlib.specs.rfc7636 import AuthorizationCodeGrant
+Using RFC7636 in Authorization Code Grant
+-----------------------------------------
 
-It requires two more methods to be implemented. But before that, we need to
-re-design our AuthorizationCode database. If you are using Flask, check the
-section :ref:`flask_oauth2_code_grant`.
+.. versionadded:: v0.10
 
-The new database could contain two more columns:
+In order to apply proof key for code exchange, you need to register the
+:class:`CodeChallenge` extension to ``AuthorizationCodeGrant``. But before
+that, we need to re-design our AuthorizationCode database. If you are using
+Flask, check the section :ref:`flask_oauth2_code_grant`.
+
+The new database SHOULD contain two more columns:
 
 1. code_challenge: A VARCHAR
 2. code_challenge_method: A VARCHAR
 
-The new ``AuthorizationCodeGrant`` implementation should be something like::
+And the ``AuthorizationCodeGrant`` should record the ``code_challenge`` and
+``code_challenge_method`` into database in ``create_authorization_code``
+method::
 
-    from authlib.specs.rfc7636 import AuthorizationCodeGrant
 
     class MyAuthorizationCodeGrant(AuthorizationCodeGrant):
         def create_authorization_code(self, client, grant_user, request):
@@ -57,29 +57,15 @@ The new ``AuthorizationCodeGrant`` implementation should be something like::
             db.session.commit()
             return code
 
-        def parse_authorization_code(self, code, client):
-            item = AuthorizationCode.query.filter_by(
-                code=code, client_id=client.client_id).first()
-            if item and not item.is_expired():
-                return item
 
-        def delete_authorization_code(self, authorization_code):
-            db.session.delete(authorization_code)
-            db.session.commit()
+Now you can register your ``AuthorizationCodeGrant`` with the extension::
 
-        def authenticate_user(self, authorization_code):
-            return User.query.get(authorization_code.user_id)
+    from authlib.specs.rfc7636 import CodeChallenge
+    server.register_grant(MyAuthorizationCodeGrant, [CodeChallenge(required=True)])
 
-        # NOTICE BELOW
-        def get_authorization_code_challenge(self, authorization_code):
-            return authorization_code.code_challenge
-
-        def get_authorization_code_challenge_method(self, authorization_code):
-            return authorization_code.code_challenge_method
-
-    server.register_grant(MyAuthorizationCodeGrant)
-
-You can also save ``code_challenge`` and ``code_challenge_method`` elsewhere.
+If ``required=True``, code challenge is required for authorization code flow.
+If ``required=False``, it is optional, it will only valid the code challenge
+when clients send these parameters.
 
 Using ``code_challenge`` in Client
 ----------------------------------
@@ -109,8 +95,6 @@ to do is:
 API Reference
 -------------
 
-.. module:: authlib.specs.rfc7636
-
-.. autoclass:: AuthorizationCodeGrant
+.. autoclass:: CodeChallenge
     :member-order: bysource
     :members:

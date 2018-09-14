@@ -30,8 +30,23 @@ class AuthorizationCodeGrant(_CodeGrant):
 
 
 class CodeChallenge(object):
+    """CodeChallenge extension to Authorization Code Grant. It is used to
+    improve the security of Authorization Code flow for public clients by
+    sending extra "code_challenge" and "code_verifier" to the authorization
+    server.
+
+    The AuthorizationCodeGrant SHOULD save the code_challenge and
+    code_challenge_method into database when create_authorization_code. Then
+    register this extension via::
+
+        server.register_grant(
+            AuthorizationCodeGrant,
+            [CodeChallenge(required=True)]
+        )
+    """
     #: defaults to "plain" if not present in the request
     DEFAULT_CODE_CHALLENGE_METHOD = 'plain'
+    #: supported ``code_challenge_method``
     SUPPORTED_CODE_CHALLENGE_METHOD = ['plain', 'S256']
 
     CODE_CHALLENGE_METHODS = {
@@ -100,22 +115,22 @@ class CodeChallenge(object):
 
     def get_authorization_code_challenge(self, authorization_code):
         """Get "code_challenge" associated with this authorization code.
-        Developers MUST implement it in subclass, e.g.::
+        Developers CAN re-implement it in subclass, the default logic::
 
             def get_authorization_code_challenge(self, authorization_code):
                 return authorization_code.code_challenge
 
         :param authorization_code: the instance of authorization_code
         """
-        raise NotImplementedError()
+        return authorization_code.code_challenge
 
     def get_authorization_code_challenge_method(self, authorization_code):
         """Get "code_challenge_method" associated with this authorization code.
-        Developers MUST implement it in subclass, e.g.::
+        Developers CAN re-implement it in subclass, the default logic::
 
             def get_authorization_code_challenge_method(self, authorization_code):
                 return authorization_code.code_challenge_method
 
         :param authorization_code: the instance of authorization_code
         """
-        raise NotImplementedError()
+        return authorization_code.code_challenge_method
