@@ -193,8 +193,6 @@ Errors
 .. autoclass:: OAuth2Error
     :members:
 
-.. autofunction:: register_error_uri
-
 .. autoclass:: InsecureTransportError
     :members:
 

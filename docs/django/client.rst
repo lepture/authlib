@@ -167,6 +167,61 @@ There are two views to be completed, no matter it is OAuth 1 or OAuth 2::
         profile = resp.json()
         # ...
 
+.. versionadded:: v0.10
+
+When using the oauth client to make HTTP requests, developers will always need
+to get the ``token`` and pass the ``token`` into the requests. Here is an improved
+way to handle this issue with ``fetch_token`` feature::
+
+    def fetch_twitter_token(request):
+        item = OAuth1Token.objects.get(
+            name='twitter',
+            user=request.user
+        )
+        return item.to_token()
+
+    # we can registry this ``fetch_token`` with oauth.register
+    oauth.register(
+        'twitter',
+        client_id='Twitter Consumer Key',
+        client_secret='Twitter Consumer Secret',
+        request_token_url='https://api.twitter.com/oauth/request_token',
+        request_token_params=None,
+        access_token_url='https://api.twitter.com/oauth/access_token',
+        access_token_params=None,
+        refresh_token_url=None,
+        authorize_url='https://api.twitter.com/oauth/authenticate',
+        api_base_url='https://api.twitter.com/1.1/',
+        client_kwargs=None,
+        # NOTICE HERE
+        fetch_token=fetch_twitter_token,
+    )
+
+Developers can also pass the ``fetch_token`` to ``OAuth`` registry so that
+they don't have to pass a ``fetch_token`` for each remote app. In this case,
+the ``fetch_token`` will accept two parameters::
+
+    def fetch_token(name, request):
+        if name in OAUTH1_SERVICES:
+            model = OAuth1Token
+        else:
+            model = OAuth2Token
+
+        item = model.objects.get(
+            name=name,
+            user=request.user
+        )
+        return item.to_token()
+
+    oauth = OAuth(fetch_token=fetch_token)
+
+Now, developers don't have to pass a ``token`` in the HTTP requests,
+instead, they can pass the ``request``::
+
+    def fetch_resource(request):
+        resp = oauth.twitter.get('account/verify_credentials.json', request=request)
+        profile = resp.json()
+        # ...
 
 Code Challenge
 --------------
@@ -174,7 +229,8 @@ Code Challenge
 Adding ``code_challenge`` provided by :ref:`specs/rfc7636` is simple. You
 register your remote app with a ``code_challenge_method``::
 
-    oauth.register('example',
+    oauth.register(
+        'example',
         client_id='Example Client ID',
         client_secret='Example Client Secret',
         access_token_url='https://example.com/oauth/access_token',
