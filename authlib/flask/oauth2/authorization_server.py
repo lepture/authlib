@@ -104,12 +104,13 @@ class AuthorizationServer(_AuthorizationServer):
             body = q.form.to_dict(flat=True)
         else:
             body = None
-        return OAuth2Request(
-            q.method,
-            q.url,
-            body,
-            q.headers
-        )
+
+        # query string in werkzeug Request.url is very weird
+        # scope=profile%20email will be scope=profile email
+        url = q.base_url
+        if q.query_string:
+            url = url + '?' + to_unicode(q.query_string)
+        return OAuth2Request(q.method, url, body, q.headers)
 
     def handle_response(self, status_code, payload, headers):
         if isinstance(payload, dict):

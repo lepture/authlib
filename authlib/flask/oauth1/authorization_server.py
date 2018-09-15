@@ -5,6 +5,7 @@ from authlib.specs.rfc5849 import (
     OAuth1Request,
     AuthorizationServer as _AuthorizationServer,
 )
+from authlib.common.encoding import to_unicode
 from authlib.common.security import generate_token
 from authlib.common.urls import url_encode
 from authlib.deprecate import deprecate
@@ -193,4 +194,8 @@ def _create_oauth1_request():
         body = _req.form.to_dict(flat=True)
     else:
         body = None
-    return OAuth1Request(_req.method, _req.url, body, _req.headers)
+
+    url = _req.base_url
+    if _req.query_string:
+        url = url + '?' + to_unicode(_req.query_string)
+    return OAuth1Request(_req.method, url, body, _req.headers)
