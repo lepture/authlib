@@ -1,3 +1,4 @@
+from authlib.deprecate import deprecate
 from ..rfc6749.grants import AuthorizationCodeGrant as _CodeGrant
 from ..rfc6749.errors import InvalidRequestError, InvalidGrantError
 from .challenge import (
@@ -9,6 +10,7 @@ from .challenge import (
 class AuthorizationCodeGrant(_CodeGrant):
     def __init__(self, *args, **kwargs):
         super(AuthorizationCodeGrant, self).__init__(*args, **kwargs)
+        deprecate('Use CodeChallenge as an extension instead.', '0.12', 'fAmW1', 'CC')
         challenge = CodeChallenge(required=True)
         challenge.get_authorization_code_challenge = self.get_authorization_code_challenge
         challenge.get_authorization_code_challenge_method = self.get_authorization_code_challenge_method
@@ -23,10 +25,10 @@ class AuthorizationCodeGrant(_CodeGrant):
         self.challenge.validate_code_verifier(self)
 
     def get_authorization_code_challenge(self, authorization_code):
-        raise NotImplementedError()
+        return authorization_code.code_challenge
 
     def get_authorization_code_challenge_method(self, authorization_code):
-        raise NotImplementedError()
+        return authorization_code.code_challenge_method
 
 
 class CodeChallenge(object):

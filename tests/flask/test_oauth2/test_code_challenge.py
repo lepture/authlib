@@ -37,12 +37,6 @@ class CodeChallengeGrant(CodeGrantMixin, _AuthorizationCodeGrant):
             code_challenge_method=code_challenge_method,
         )
 
-    def get_authorization_code_challenge(self, authorization_code):
-        return authorization_code.code_challenge
-
-    def get_authorization_code_challenge_method(self, authorization_code):
-        return authorization_code.code_challenge_method
-
 
 class AuthorizationCodeTest(TestCase):
     def prepare_data(self, token_endpoint_auth_method='none'):
