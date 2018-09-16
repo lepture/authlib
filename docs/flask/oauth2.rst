@@ -305,6 +305,15 @@ You can change it in the subclass, e.g. remove the ``none`` authentication metho
     class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
         TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic', 'client_secret_post']
 
+.. versionadded:: 0.10
+    It is better to add CodeChallenge extension to AuthorizationCode Grant.
+
+    .. code-block:: python
+
+        server.register_grant(AuthorizationCodeGrant, [CodeChallenge(required=True)])
+
+    Learn more at :ref:`specs/rfc7636`.
+
 Implicit Grant
 ~~~~~~~~~~~~~~
 
