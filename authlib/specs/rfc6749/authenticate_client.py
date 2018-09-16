@@ -101,7 +101,7 @@ def authenticate_none(query_client, request):
     if client_id and 'client_secret' not in request.data:
         client = _validate_client(query_client, client_id, request.state)
         if client.check_token_endpoint_auth_method('none') \
-                and not client.check_client_type('public'):
+                and client.check_client_type('public'):
             log.debug(
                 'Authenticate {} via "none" '
                 'success'.format(client_id)
