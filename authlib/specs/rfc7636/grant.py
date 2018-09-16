@@ -76,7 +76,7 @@ class CodeChallenge(object):
             return
 
         client = grant.request.client
-        if not client.has_client_secret() and not challenge:
+        if client.check_client_type('public') and not challenge:
             raise InvalidRequestError('Missing "code_challenge"')
 
         if method and method not in self.SUPPORTED_CODE_CHALLENGE_METHOD:
@@ -88,7 +88,7 @@ class CodeChallenge(object):
         client = grant.request.client
 
         # public client MUST verify code challenge
-        if self.required and not client.has_client_secret() and not verifier:
+        if self.required and client.check_client_type('public') and not verifier:
             raise InvalidRequestError('Missing "code_verifier"')
 
         authorization_code = grant.request.credential

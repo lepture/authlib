@@ -310,7 +310,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
             self.GRANT_TYPE,
             user=user,
             scope=scope,
-            include_refresh_token=client.has_client_secret(),
+            include_refresh_token=client.check_client_type('confidential'),
         )
         log.debug('Issue token {!r} to {!r}'.format(token, client))
 
