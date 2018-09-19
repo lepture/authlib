@@ -180,6 +180,7 @@ class AccessDeniedError(OAuth2Error):
 
 class MissingAuthorizationError(OAuth2Error):
     error = 'missing_authorization'
+    status_code = 401
 
     def get_error_description(self):
         return self.gettext('Missing "Authorization" in headers.')
@@ -187,6 +188,7 @@ class MissingAuthorizationError(OAuth2Error):
 
 class UnsupportedTokenTypeError(OAuth2Error):
     error = 'unsupported_token_type'
+    status_code = 401
 
 
 # -- exceptions for clients -- #
