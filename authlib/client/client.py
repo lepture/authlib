@@ -7,6 +7,7 @@ from .errors import (
     MissingTokenError,
 )
 from ..specs.rfc7636 import create_s256_code_challenge
+from ..specs.oidc.discovery import get_oid_provider_meta
 from ..common.urls import urlparse
 from ..common.security import generate_token
 from ..consts import default_user_agent
@@ -30,6 +31,10 @@ class OAuthClient(object):
 
     :param client_id: Client key of OAuth 1, or Client ID of OAuth 2
     :param client_secret: Client secret of OAuth 2, or Client Secret of OAuth 2
+    :param oid_discovery_url: Try to get Client configuration from
+                              OpenID Connect Discovery enpoint
+                              (overwrites any configuration that have
+                              not been set)
     :param request_token_url: Request Token endpoint for OAuth 1
     :param request_token_params: Extra parameters for Request Token endpoint
     :param access_token_url: Access Token endpoint for OAuth 1 and OAuth 2
@@ -62,6 +67,11 @@ class OAuthClient(object):
             authorize_url='https://github.com/login/oauth/authorize',
             client_kwargs={'scope': 'user:email'},
         )
+
+    If ``oid_discovery_url`` is provided OauthClient will gather the
+    configuration from the discovery endpoint. You can still overwrite
+    the values by providing them directly during initialisation of the
+    object.
     """
     DEFAULT_USER_AGENT = default_user_agent
 
@@ -71,7 +81,19 @@ class OAuthClient(object):
                  refresh_token_url=None, refresh_token_params=None,
                  authorize_url=None, authorize_params=None,
                  api_base_url=None, client_kwargs=None,
-                 compliance_fix=None, **kwargs):
+                 compliance_fix=None,
+                 oid_discovery_url=None,
+                 **kwargs):
+
+        if oid_discovery_url is not None:
+            provider_conf = get_oid_provider_meta(oid_discovery_url)
+            # overwrite parameters that have not been set with
+            # configutration provided by discovery
+            if authorize_url is None:
+                authorize_url = provider_conf['authorization_endpoint']
+            if access_token_url is None:
+                access_token_url = provider_conf.get('token_endpoint')
+
         self.client_id = client_id
         self.client_secret = client_secret
         self.request_token_url = request_token_url

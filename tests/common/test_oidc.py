@@ -1,7 +1,11 @@
 import unittest
+
+from mock import patch
+
 from authlib.specs.rfc7519 import MissingClaimError, InvalidClaimError
 from authlib.specs.oidc import CodeIDToken, ImplicitIDToken, HybridIDToken
 from authlib.specs.oidc import UserInfo, get_claim_cls_by_response_type
+from authlib.specs.oidc.discovery import get_oid_provider_meta
 
 
 class IDTokenTest(unittest.TestCase):
@@ -143,3 +147,14 @@ class UserInfoTest(unittest.TestCase):
         self.assertEqual(user.sub, '1')
         self.assertIsNone(user.email, None)
         self.assertRaises(AttributeError, lambda: user.invalid)
+
+
+class OICDDiscoveryTest(unittest.TestCase):
+    @patch('authlib.specs.oidc.discovery.requests')
+    def test_get_oid_provider_meta(self, requests):
+        with self.assertRaises(ValueError):
+            # value error is raised since we don't get anything back
+            # from this call so the REQUIRED values in the JSON response
+            # are missing
+            get_oid_provider_meta('https://example.com')
+        requests.get.assert_called_with('https://example.com/.well-known/openid-configuration')
