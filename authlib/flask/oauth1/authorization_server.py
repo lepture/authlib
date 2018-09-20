@@ -178,7 +178,7 @@ class AuthorizationServer(_AuthorizationServer):
     def create_token_response(self, request=None):
         return super(AuthorizationServer, self).create_token_response(request)
 
-    def process_request(self, request):
+    def create_oauth1_request(self, request):
         return _create_oauth1_request()
 
     def handle_response(self, status_code, payload, headers):

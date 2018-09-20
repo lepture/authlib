@@ -95,7 +95,7 @@ class AuthorizationServer(_AuthorizationServer):
         self.config.setdefault('jwt_alg', jwt_alg)
         self.config.setdefault('jwt_exp', jwt_exp)
 
-    def process_request(self, request):
+    def create_oauth2_request(self, request):
         if isinstance(request, OAuth2Request):
             return request
 
@@ -210,7 +210,7 @@ class AuthorizationServer(_AuthorizationServer):
                         error=error
                     )
         """
-        req = self.process_request(request)
+        req = self.create_oauth2_request(request)
         req.user = end_user
 
         grant = self.get_authorization_grant(req)

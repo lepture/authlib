@@ -27,13 +27,13 @@ class AuthorizationServer(BaseServer):
         request.client = client
         return client
 
-    def process_request(self, request):
+    def create_oauth1_request(self, request):
         raise NotImplementedError()
 
     def handle_response(self, status_code, payload, headers):
         raise NotImplementedError()
 
-    def handle_error(self, error):
+    def handle_error_response(self, error):
         return self.handle_response(
             error.status_code,
             error.get_body(),
@@ -104,10 +104,10 @@ class AuthorizationServer(BaseServer):
         :returns: (status_code, body, headers)
         """
         try:
-            request = self.process_request(request)
+            request = self.create_oauth1_request(request)
             self.validate_temporary_credentials_request(request)
         except OAuth1Error as error:
-            return self.handle_error(error)
+            return self.handle_error_response(error)
 
         credential = self.create_temporary_credential(request)
         payload = [
@@ -152,7 +152,7 @@ class AuthorizationServer(BaseServer):
         :param grant_user: if granted, pass the grant user, otherwise None.
         :returns: (status_code, body, headers)
         """
-        request = self.process_request(request)
+        request = self.create_oauth1_request(request)
         # authorize endpoint should try catch this error
         self.validate_authorization_request(request)
 
@@ -242,15 +242,15 @@ class AuthorizationServer(BaseServer):
         :returns: (status_code, body, headers)
         """
         try:
-            request = self.process_request(request)
+            request = self.create_oauth1_request(request)
         except OAuth1Error as error:
-            return self.handle_error(error)
+            return self.handle_error_response(error)
 
         try:
             self.validate_token_request(request)
         except OAuth1Error as error:
             self.delete_temporary_credential(request)
-            return self.handle_error(error)
+            return self.handle_error_response(error)
 
         credential = self.create_token_credential(request)
         payload = [

@@ -53,15 +53,23 @@ class AuthorizationServer(object):
         self.authenticate_client.register(method, func)
 
     def get_translations(self, request):
+        """Return a translations instance used for i18n error messages."""
         return None
 
     def get_error_uris(self, request):
+        """Return registered error URIs."""
         return None
 
     def send_signal(self, name, *args, **kwargs):
         raise NotImplementedError()
 
-    def process_request(self, request):
+    def create_oauth2_request(self, request):
+        """This method MUST be implemented in framework integrations. It is
+        used to create an OAuth2Request instance.
+
+        :param request: the "request" instance in framework
+        :return: OAuth2Request instance
+        """
         raise NotImplementedError()
 
     def handle_response(self, status, body, headers):
@@ -122,7 +130,8 @@ class AuthorizationServer(object):
     def create_endpoint_response(self, name, request=None):
         if name not in self._endpoints:
             raise RuntimeError('There is no "{}" endpoint.'.format(name))
-        request = self.process_request(request)
+
+        request = self.create_oauth2_request(request)
         endpoint_cls = self._endpoints[name]
         endpoint = endpoint_cls(request, self)
         return self.handle_response(*endpoint())
@@ -135,11 +144,11 @@ class AuthorizationServer(object):
             it is None.
         :returns: Response
         """
-        request = self.process_request(request)
+        request = self.create_oauth2_request(request)
         try:
             grant = self.get_authorization_grant(request)
         except InvalidGrantError as error:
-            return self._handle_error_response(request, error)
+            return self.handle_error_response(request, error)
 
         try:
             grant.validate_authorization_request()
@@ -152,27 +161,27 @@ class AuthorizationServer(object):
                 loc = add_params_to_uri(grant.redirect_uri, params)
                 headers = [('Location', loc)]
                 return self.handle_response(302, '', headers)
-            return self._handle_error_response(request, error)
+            return self.handle_error_response(request, error)
 
     def create_token_response(self, request=None):
         """Validate token request and create token response.
 
         :param request: OAuth2Request instance
         """
-        request = self.process_request(request)
+        request = self.create_oauth2_request(request)
         try:
             grant = self.get_token_grant(request)
         except InvalidGrantError as error:
-            return self._handle_error_response(request, error)
+            return self.handle_error_response(request, error)
 
         try:
             grant.validate_token_request()
             args = grant.create_token_response()
             return self.handle_response(*args)
         except OAuth2Error as error:
-            return self._handle_error_response(request, error)
+            return self.handle_error_response(request, error)
 
-    def _handle_error_response(self, request, error):
+    def handle_error_response(self, request, error):
         return self.handle_response(*error(
             translations=self.get_translations(request),
             error_uris=self.get_error_uris(request)

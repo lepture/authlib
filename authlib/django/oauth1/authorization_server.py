@@ -60,7 +60,7 @@ class BaseServer(_AuthorizationServer):
         self.validate_authorization_request(req)
         return req
 
-    def process_request(self, request):
+    def create_oauth1_request(self, request):
         return _create_oauth1_request(request)
 
     def handle_response(self, status_code, payload, headers):
