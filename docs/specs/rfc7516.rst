@@ -1,7 +1,7 @@
 .. _specs/rfc7516:
 
-JSON Web Encryption
-===================
+RFC7516: JSON Web Encryption
+============================
 
 .. meta::
     :description: API references on RFC7516 JSON Web Encryption (JWE) Python

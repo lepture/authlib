@@ -1,7 +1,7 @@
 .. _specs/rfc7523:
 
-JWT Profile for OAuth 2.0 Client Authentication and Authorization Grants
-========================================================================
+RFC7523: JWT Profile for OAuth 2.0 Client Authentication and Authorization Grants
+=================================================================================
 
 .. meta::
     :description: API references on RFC7523 JWT Bearer Grant of Python

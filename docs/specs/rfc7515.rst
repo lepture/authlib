@@ -1,7 +1,7 @@
 .. _specs/rfc7515:
 
-JSON Web Signature
-==================
+RFC7515: JSON Web Signature
+===========================
 
 .. meta::
     :description: API references on RFC7515 JSON Web Signature (JWS) Authlib implementation.

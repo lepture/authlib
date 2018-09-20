@@ -1,7 +1,7 @@
 .. _specs/rfc7519:
 
-JSON Web Token
-==============
+RFC7519: JSON Web Token
+=======================
 
 .. meta::
     :description: API references on RFC7519 JSON Web Token (JWT) Python

@@ -1,7 +1,7 @@
 .. _specs/rfc7636:
 
-Proof Key for Code Exchange by OAuth Public Clients
-===================================================
+RFC7636: Proof Key for Code Exchange by OAuth Public Clients
+============================================================
 
 .. meta::
     :description: API references on RFC76736 Proof Key for Code Exchange

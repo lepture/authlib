@@ -1,7 +1,7 @@
 .. _specs/rfc7517:
 
-JSON Web Key
-============
+RFC7517: JSON Web Key
+=====================
 
 .. meta::
     :description: API references on RFC7517 JSON Web Key (JWK) Authlib implementation.

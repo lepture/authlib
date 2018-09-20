@@ -1,7 +1,7 @@
 .. _specs/rfc7662:
 
-OAuth 2.0 Token Introspection
-=============================
+RFC7662: OAuth 2.0 Token Introspection
+======================================
 
 .. meta::
     :description: API references on RFC7009 Authlib implementation.

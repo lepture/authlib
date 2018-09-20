@@ -1,7 +1,7 @@
 .. _specs/rfc5849:
 
-The OAuth 1.0 Protocol
-======================
+RFC5849: The OAuth 1.0 Protocol
+===============================
 
 .. meta::
     :description: API references of RFC5849 in Python implementation.

@@ -11,7 +11,7 @@ There are built-in configuration for famous services. Import them and register
 them to frameworks registry.
 
 .. deprecated:: v0.7
-    Please use loginpass_ instead. This module will be removed in v0.9.
+    Please use loginpass_ instead. This module was removed in v0.9.
 
 .. _loginpass: https://github.com/authlib/loginpass
 

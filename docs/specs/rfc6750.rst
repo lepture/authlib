@@ -1,7 +1,7 @@
 .. _specs/rfc6750:
 
-The OAuth 2.0 Authorization Framework: Bearer Token Usage
-=========================================================
+RFC6750: The OAuth 2.0 Authorization Framework: Bearer Token Usage
+==================================================================
 
 .. meta::
     :description: API references of RFC6750 in Python implementation.
