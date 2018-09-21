@@ -74,6 +74,9 @@ class AuthorizationServerMetadata(dict):
         if not url:
             raise ValueError('"token_endpoint" is required')
 
+        if not url.startswith('https://'):
+            raise ValueError('"token_endpoint" MUST use "https" scheme')
+
     def validate_jwks_uri(self):
         """OPTIONAL.  URL of the authorization server's JWK Set [JWK]
         document.  The referenced document contains the signing key(s) the
