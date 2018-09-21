@@ -20,7 +20,10 @@ for you, some of them even don't require code writing:
 Sponsor the Project
 -------------------
 
-We are not ready for company sponsorship right now. Stay tuned.
+Authlib is accepting sponsorships via Patreon_. You are welcome to become a
+support, a backer or a company sponsor.
+
+.. _Patreon: https://www.patreon.com/lepture
 
 Commercial License
 ------------------

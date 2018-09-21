@@ -38,7 +38,7 @@ authorization_server.register_endpoint(IntrospectionEndpoint)
   </tr>
 </table>
 
-[**Become a sponsor via Patreon**](https://www.patreon.com/lepture).
+[**Become a backer via Patreon**](https://www.patreon.com/lepture).
 
 ## Useful Links
 
