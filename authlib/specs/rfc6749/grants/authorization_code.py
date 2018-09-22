@@ -120,10 +120,12 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
             raise InvalidClientError(
                 state=self.request.state,
             )
-        if not client.check_response_type(self.request.response_type):
+
+        response_type = self.request.response_type
+        if not client.check_response_type(response_type):
             raise UnauthorizedClientError(
-                'The client is not authorized to request an authorization '
-                'code using this method',
+                'The client is not authorized to use '
+                '"response_type={}"'.format(response_type),
                 state=self.request.state,
             )
 
@@ -239,18 +241,14 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
 
         code = self.request.code
         if code is None:
-            raise InvalidRequestError(
-                'Missing "code" in request.',
-            )
+            raise InvalidRequestError('Missing "code" in request.')
 
         # ensure that the authorization code was issued to the authenticated
         # confidential client, or if the client is public, ensure that the
         # code was issued to "client_id" in the request
         authorization_code = self.parse_authorization_code(code, client)
         if not authorization_code:
-            raise InvalidRequestError(
-                'Invalid "code" in request.',
-            )
+            raise InvalidRequestError('Invalid "code" in request.')
 
         # validate redirect_uri parameter
         log.debug('Validate token redirect_uri of {!r}'.format(client))
@@ -258,9 +256,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         _redirect_uri = authorization_code.get_redirect_uri()
         original_redirect_uri = _redirect_uri or None
         if redirect_uri != original_redirect_uri:
-            raise InvalidRequestError(
-                'Invalid "redirect_uri" in request.',
-            )
+            raise InvalidRequestError('Invalid "redirect_uri" in request.')
 
         # save for create_token_response
         self.request.client = client

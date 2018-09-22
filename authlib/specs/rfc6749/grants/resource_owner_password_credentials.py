@@ -94,13 +94,9 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
 
         params = self.request.data
         if 'username' not in params:
-            raise InvalidRequestError(
-                'Missing "username" in request.',
-            )
+            raise InvalidRequestError('Missing "username" in request.')
         if 'password' not in params:
-            raise InvalidRequestError(
-                'Missing "password" in request.',
-            )
+            raise InvalidRequestError('Missing "password" in request.')
 
         log.debug('Authenticate user of {!r}'.format(params['username']))
         user = self.authenticate_user(

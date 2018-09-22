@@ -124,7 +124,8 @@ class ImplicitGrant(RedirectAuthGrant):
         response_type = self.request.response_type
         if not client.check_response_type(response_type):
             raise UnauthorizedClientError(
-                'The client is not authorized to use "{}"'.format(response_type),
+                'The client is not authorized to use '
+                '"response_type={}"'.format(response_type),
                 state=self.request.state,
             )
 
