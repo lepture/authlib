@@ -442,16 +442,16 @@ server. Here is the way to protect your users' resources::
         def token_revoked(self, token):
             return token.revoked
 
+    require_oauth = ResourceProtector()
+
     # only bearer token is supported currently
-    ResourceProtector.register_token_validator(MyBearerTokenValidator())
+    require_oauth.register_token_validator(MyBearerTokenValidator())
 
     # you can also create BearerTokenValidator with shortcut
     from authlib.flask.oauth2.sqla import create_bearer_token_validator
 
     BearerTokenValidator = create_bearer_token_validator(db.session, Token)
-    ResourceProtector.register_token_validator(BearerTokenValidator())
-
-    require_oauth = ResourceProtector()
+    require_oauth.register_token_validator(BearerTokenValidator())
 
     @app.route('/user')
     @require_oauth('profile')
