@@ -53,7 +53,7 @@ class ResourceProtector(_ResourceProtector):
         status = error.status_code
         body = json.dumps(dict(error.get_body()))
         headers = error.get_headers()
-        return raise_http_exception(status, body, headers)
+        raise_http_exception(status, body, headers)
 
     def acquire_token(self, scope=None):
         """A method to acquire current valid token with the given scope.
