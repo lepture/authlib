@@ -1,4 +1,3 @@
-from flask import json
 from werkzeug.exceptions import HTTPException
 
 
@@ -19,10 +18,3 @@ class _HTTPException(HTTPException):
 
 def raise_http_exception(status, body, headers):
     raise _HTTPException(status, body, headers)
-
-
-def raise_oauth2_error(error):
-    status = error.status_code
-    body = json.dumps(dict(error.get_body()))
-    headers = error.get_headers()
-    return raise_http_exception(status, body, headers)

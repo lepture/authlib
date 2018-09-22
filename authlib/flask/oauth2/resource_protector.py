@@ -1,12 +1,13 @@
 import functools
 from contextlib import contextmanager
+from flask import json
 from flask import request as _req
 from flask import _app_ctx_stack
 from werkzeug.local import LocalProxy
 from authlib.specs.rfc6749 import OAuth2Error, TokenRequest
 from authlib.specs.rfc6749 import ResourceProtector as _ResourceProtector
 from .signals import token_authenticated
-from ..error import raise_oauth2_error
+from ..error import raise_http_exception
 
 
 class ResourceProtector(_ResourceProtector):
@@ -31,7 +32,7 @@ class ResourceProtector(_ResourceProtector):
             def token_revoked(self, token):
                 return False
 
-        ResourceProtector.register_token_validator(MyBearerTokenValidator())
+        require_oauth.register_token_validator(MyBearerTokenValidator())
 
         # protect resource with require_oauth
 
@@ -42,6 +43,18 @@ class ResourceProtector(_ResourceProtector):
             return jsonify(user.to_dict())
 
     """
+    def raise_error_response(self, error):
+        """Raise HTTPException for OAuth2Error. Developers can re-implement
+        this method to customize the error response.
+
+        :param error: OAuth2Error
+        :raise: HTTPException
+        """
+        status = error.status_code
+        body = json.dumps(dict(error.get_body()))
+        headers = error.get_headers()
+        return raise_http_exception(status, body, headers)
+
     def acquire_token(self, scope=None):
         """A method to acquire current valid token with the given scope.
 
@@ -74,7 +87,7 @@ class ResourceProtector(_ResourceProtector):
         try:
             yield self.acquire_token(scope)
         except OAuth2Error as error:
-            raise_oauth2_error(error)
+            self.raise_error_response(error)
 
     def __call__(self, scope=None):
         def wrapper(f):
@@ -83,7 +96,7 @@ class ResourceProtector(_ResourceProtector):
                 try:
                     self.acquire_token(scope)
                 except OAuth2Error as error:
-                    raise_oauth2_error(error)
+                    self.raise_error_response(error)
                 return f(*args, **kwargs)
             return decorated
         return wrapper
