@@ -27,6 +27,7 @@ Specifications
 - RFC7519: JSON Web Token
 - RFC7523: JSON Web Token (JWT) Profile for OAuth 2.0 Client Authentication and Authorization Grants
 - RFC7662: OAuth 2.0 Token Introspection
+- RFC8414: OAuth 2.0 Authorization Server Metadata
 - OpenID Connect 1.0
 
 Implementations

@@ -22,6 +22,7 @@ OAUTH_CLIENT_PARAMS = (
     'refresh_token_url', 'refresh_token_params',
     'authorize_url', 'authorize_params',
     'api_base_url', 'client_kwargs',
+    'server_metadata_url',
 )
 
 
@@ -37,9 +38,10 @@ class OAuthClient(object):
     :param refresh_token_url: Refresh Token endpoint for OAuth 2 (if any)
     :param refresh_token_params: Extra parameters for Refresh Token endpoint
     :param authorize_url: Endpoint for user authorization of OAuth 1 ro OAuth 2
-    :param authorize_params: Extra parameters for Authorization Endpoint.
+    :param authorize_params: Extra parameters for Authorization Endpoint
     :param api_base_url: The base API endpoint to make requests simple
     :param client_kwargs: Extra keyword arguments for session
+    :param server_metadata_url: Discover server metadata from this URL
     :param kwargs: Extra keyword arguments
 
     Create an instance of OAuthClient. If ``request_token_url`` is configured,

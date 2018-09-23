@@ -168,6 +168,13 @@ Lovely features that Authlib has built-in:
 </details>
 
 <details>
+<summary>🎉 RFC8414: OAuth 2.0 Authorization Server Metadata</summary>
+
+- [x] Authorization Server Metadata Model
+- [ ] Framework integrations
+</details>
+
+<details>
 <summary>🎉 OpenID Connect 1.0</summary>
 
 - [x] OpenID Claims validation
