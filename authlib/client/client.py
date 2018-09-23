@@ -38,7 +38,7 @@ class OAuthClient(object):
     :param refresh_token_params: Extra parameters for Refresh Token endpoint
     :param authorize_url: Endpoint for user authorization of OAuth 1 ro OAuth 2
     :param authorize_params: Extra parameters for Authorization Endpoint.
-    :param api_base_url: A base URL endpoint to make requests simple
+    :param api_base_url: The base API endpoint to make requests simple
     :param client_kwargs: Extra keyword arguments for session
     :param kwargs: Extra keyword arguments
 
@@ -65,13 +65,16 @@ class OAuthClient(object):
     """
     DEFAULT_USER_AGENT = default_user_agent
 
-    def __init__(self, client_id=None, client_secret=None,
-                 request_token_url=None, request_token_params=None,
-                 access_token_url=None, access_token_params=None,
-                 refresh_token_url=None, refresh_token_params=None,
-                 authorize_url=None, authorize_params=None,
-                 api_base_url=None, client_kwargs=None,
-                 compliance_fix=None, **kwargs):
+    def __init__(
+            self, client_id=None, client_secret=None,
+            request_token_url=None, request_token_params=None,
+            access_token_url=None, access_token_params=None,
+            refresh_token_url=None, refresh_token_params=None,
+            authorize_url=None, authorize_params=None,
+            api_base_url=None, client_kwargs=None,
+            server_metadata_url=None,
+            compliance_fix=None, **kwargs):
+
         self.client_id = client_id
         self.client_secret = client_secret
         self.request_token_url = request_token_url
@@ -83,22 +86,32 @@ class OAuthClient(object):
         self.authorize_url = authorize_url
         self.authorize_params = authorize_params
         self.api_base_url = api_base_url
+
         self.client_kwargs = client_kwargs or {}
         self.compliance_fix = compliance_fix
+
+        self.server_metadata = {}
 
         self._fetch_token = None
         self._kwargs = kwargs
 
+        if server_metadata_url:
+            self._fetch_server_metadata(server_metadata_url)
+
     def generate_authorize_redirect(
             self, redirect_uri=None, save_request_token=None, **kwargs):
-        """Generate the authorize redirect.
+        """Generate the authorization url and state for HTTP redirect.
 
         :param redirect_uri: Callback or redirect URI for authorization.
         :param save_request_token: A function to save request token.
         :param kwargs: Extra parameters to include.
         :return: (url, state)
         """
-        if not self.authorize_url:
+        authorization_endpoint = self.authorize_url
+        if not authorization_endpoint and not self.request_token_url:
+            authorization_endpoint = self.server_metadata.get('authorization_endpoint')
+
+        if not authorization_endpoint:
             raise RuntimeError('Missing "authorize_url" value')
 
         if self.authorize_params:
@@ -115,14 +128,13 @@ class OAuthClient(object):
                 )
                 # remember oauth_token, oauth_token_secret
                 save_request_token(token)
-                url = session.authorization_url(
-                    self.authorize_url,  **kwargs)
-                state = None
-            else:
-                session.redirect_uri = redirect_uri
-                url, state = session.authorization_url(
-                    self.authorize_url, **kwargs)
-            return url, state
+                url = session.create_authorization_url(
+                    authorization_endpoint,  **kwargs)
+                return url, None
+
+            session.redirect_uri = redirect_uri
+            return session.create_authorization_url(
+                authorization_endpoint, **kwargs)
 
     def fetch_access_token(self, redirect_uri=None, request_token=None,
                            **params):
@@ -134,6 +146,10 @@ class OAuthClient(object):
         :param params: Extra parameters to fetch access token.
         :return: A token dict.
         """
+        token_endpoint = self.access_token_url
+        if not token_endpoint and not self.request_token_url:
+            token_endpoint = self.server_metadata.get('token_endpoint')
+
         with self._get_session() as session:
             if self.request_token_url:
                 session.redirect_uri = redirect_uri
@@ -145,8 +161,7 @@ class OAuthClient(object):
                 token.update(params)
                 session.token = token
                 kwargs = self.access_token_params or {}
-                token = session.fetch_access_token(
-                    self.access_token_url, **kwargs)
+                token = session.fetch_access_token(token_endpoint, **kwargs)
                 session.redirect_uri = None
             else:
                 session.redirect_uri = redirect_uri
@@ -154,8 +169,7 @@ class OAuthClient(object):
                 if self.access_token_params:
                     kwargs.update(self.access_token_params)
                 kwargs.update(params)
-                token = session.fetch_access_token(
-                    self.access_token_url, **kwargs)
+                token = session.fetch_access_token(token_endpoint, **kwargs)
             return token
 
     def _get_session(self):
@@ -252,3 +266,8 @@ class OAuthClient(object):
             client.delete('posts/123')
         """
         return self.request('DELETE', url, **kwargs)
+
+    def _fetch_server_metadata(self, url):
+        resp = self.get(url, withhold_token=True)
+        data = resp.json()
+        self.server_metadata = data

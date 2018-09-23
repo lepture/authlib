@@ -41,12 +41,12 @@ Unlike OAuth 1, there is no request token. The first step is to jump to
 the remote authorization server::
 
     >>> authorize_url = 'https://github.com/login/oauth/authorize'
-    >>> uri, state = session.authorization_url(authorize_url)
+    >>> uri, state = session.create_authorization_url(authorize_url)
     >>> print(uri)
     https://github.com/login/oauth/authorize?response_type=code&client_id=c..id&scope=user%3Aemail&state=d..t
 
-The :meth:`OAuth2Session.authorization_url` returns a tuple of ``(uri, state)``,
-in real project, you should save the state for later use.
+The :meth:`OAuth2Session.create_authorization_url` returns a tuple of
+``(uri, state)``, in real project, you should save the state for later use.
 
 Now head over to the generated authorization url, and grant the authorization.
 
@@ -90,7 +90,7 @@ OAuth2Session for Implicit
 OAuth2Session supports implicit grant type. It can fetch the access token with
 the ``response_type`` of ``token``::
 
-    >>> uri, state = session.authorization_url(authorize_url, response_type='token')
+    >>> uri, state = session.create_authorization_url(authorize_url, response_type='token')
     >>> print(uri)
     https://some-service.com/oauth/authorize?response_type=token&client_id=be..4d&...
 
@@ -227,12 +227,12 @@ the authorization server will return a value of ``id_token`` in response::
 
 The remote server may require other parameters for OpenID Connect requests, for
 instance, it may require a ``nonce`` parameter, in thise case, you need to
-generate it yourself, and pass it to ``authorization_url``::
+generate it yourself, and pass it to ``create_authorization_url``::
 
     >>> from authlib.common.security import generate_token
     >>> # remember to save this nonce for verification
     >>> nonce = generate_token()
-    >>> session.authorization_url(url, redirect_uri='xxx', nonce=nonce, ...)
+    >>> session.create_authorization_url(url, redirect_uri='xxx', nonce=nonce, ...)
 
 At the last step of ``session.fetch_access_token``, the return value contains
 a ``id_token``::

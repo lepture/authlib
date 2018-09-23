@@ -151,15 +151,15 @@ class OAuth1SessionTest(TestCase):
         self.assertIsNone(sess.token['oauth_token_secret'])
         self.assertIsNone(sess.token['oauth_verifier'])
 
-    def test_authorization_url(self):
+    def test_create_authorization_url(self):
         auth = OAuth1Session('foo')
         url = 'https://example.comm/authorize'
         token = 'asluif023sf'
-        auth_url = auth.authorization_url(url, request_token=token)
+        auth_url = auth.create_authorization_url(url, request_token=token)
         self.assertEqual(auth_url, url + '?oauth_token=' + token)
         redirect_uri = 'https://c.b'
         auth = OAuth1Session('foo', redirect_uri=redirect_uri)
-        auth_url = auth.authorization_url(url, request_token=token)
+        auth_url = auth.create_authorization_url(url, request_token=token)
         self.assertIn(escape(redirect_uri), auth_url)
 
     def test_parse_response_url(self):

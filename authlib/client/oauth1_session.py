@@ -16,6 +16,7 @@ from ..specs.rfc5849 import (
     SIGNATURE_TYPE_HEADER,
 )
 from .oauth1_auth import OAuth1Auth
+from ..deprecate import deprecate
 
 
 class OAuth1Session(Session):
@@ -114,7 +115,7 @@ class OAuth1Session(Session):
             msg = 'oauth_token is missing: {!r}'.format(token)
             raise MissingTokenError(description=msg)
 
-    def authorization_url(self, url, request_token=None, **kwargs):
+    def create_authorization_url(self, url, request_token=None, **kwargs):
         """Create an authorization URL by appending request_token and optional
         kwargs to url.
 
@@ -132,6 +133,10 @@ class OAuth1Session(Session):
         if self._client.redirect_uri:
             kwargs['oauth_callback'] = self._client.redirect_uri
         return add_params_to_uri(url, kwargs.items())
+
+    def authorization_url(self, url, request_token=None, **kwargs):  # pragma: no cover
+        deprecate('Use "create_authorization_url" instead', '0.12')
+        return self.create_authorization_url(url, request_token, **kwargs)
 
     def fetch_request_token(self, url, realm=None, **kwargs):
         """Method for fetching an access token from the token endpoint.

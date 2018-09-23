@@ -55,15 +55,15 @@ Redirect to Authorization Endpoint
 The second step is to generate the authorization URL::
 
     >>> authenticate_url = 'https://api.twitter.com/oauth/authenticate'
-    >>> session.authorization_url(authenticate_url, request_token['oauth_token'])
+    >>> session.create_authorization_url(authenticate_url, request_token['oauth_token'])
     'https://api.twitter.com/oauth/authenticate?oauth_token=gA..H'
 
 Actually, the second parameter ``request_token`` can be omitted, since session
 is re-used::
 
-    >>> session.authorization_url(authenticate_url)
+    >>> session.create_authorization_url(authenticate_url)
 
-Now visit the authorization url that :meth:`OAuth1Session.authorization_url`
+Now visit the authorization url that :meth:`OAuth1Session.create_authorization_url`
 generated, and grant the authorization.
 
 .. _fetch_oauth1_access_token:

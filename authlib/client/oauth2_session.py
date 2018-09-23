@@ -13,6 +13,7 @@ from ..specs.rfc6749 import InsecureTransportError
 from ..specs.rfc7009 import prepare_revoke_token_request
 from .errors import OAuthError, TokenExpiredError
 from .oauth2_auth import OAuth2Auth, OAuth2ClientAuth
+from ..deprecate import deprecate
 
 __all__ = ['OAuth2Session']
 
@@ -100,8 +101,8 @@ class OAuth2Session(Session):
     def token(self, token):
         self._token_auth.token = OAuth2Token.from_dict(token)
 
-    def authorization_url(self, url, state=None, **kwargs):
-        """Generate an authorization URL.
+    def create_authorization_url(self, url, state=None, **kwargs):
+        """Generate an authorization URL and state.
 
         :param url: Authorization endpoint url, must be HTTPS.
         :param state: An optional state string for CSRF protection. If not
@@ -130,6 +131,10 @@ class OAuth2Session(Session):
             url, client_id=self.client_id, response_type=response_type,
             state=state, **kwargs)
         return uri, state
+
+    def authorization_url(self, url, state=None, **kwargs):  # pragma: no cover
+        deprecate('Use "create_authorization_url" instead', '0.12')
+        return self.create_authorization_url(url, state, **kwargs)
 
     def fetch_access_token(
             self, url=None, code=None, authorization_response=None,

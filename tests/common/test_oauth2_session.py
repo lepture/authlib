@@ -68,17 +68,17 @@ class OAuth2SessionTest(TestCase):
         sess.send = verifier
         sess.get('https://i.b')
 
-    def test_authorization_url(self):
+    def test_create_authorization_url(self):
         url = 'https://example.com/authorize?foo=bar'
 
         sess = OAuth2Session(client_id=self.client_id)
-        auth_url, state = sess.authorization_url(url)
+        auth_url, state = sess.create_authorization_url(url)
         self.assertIn(state, auth_url)
         self.assertIn(self.client_id, auth_url)
         self.assertIn('response_type=code', auth_url)
 
         sess = OAuth2Session(client_id=self.client_id, prompt='none')
-        auth_url, state = sess.authorization_url(
+        auth_url, state = sess.create_authorization_url(
             url, state='foo', redirect_uri='https://i.b', scope='profile')
         self.assertEqual(state, 'foo')
         self.assertIn('i.b', auth_url)
