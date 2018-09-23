@@ -10,7 +10,7 @@ from django.core.cache import cache
 from django.conf import settings
 from django.http import HttpResponse
 from .nonce import exists_nonce_in_cache
-from ..helpers import parse_request_headers
+from ..helpers import create_oauth_request
 
 log = logging.getLogger(__name__)
 
@@ -56,12 +56,12 @@ class BaseServer(_AuthorizationServer):
         return item
 
     def check_authorization_request(self, request):
-        req = _create_oauth1_request(request)
+        req = self.create_oauth1_request(request)
         self.validate_authorization_request(req)
         return req
 
     def create_oauth1_request(self, request):
-        return _create_oauth1_request(request)
+        return create_oauth_request(request, OAuth1Request)
 
     def handle_response(self, status_code, payload, headers):
         resp = HttpResponse(url_encode(payload), status=status_code)
@@ -119,14 +119,3 @@ class CacheAuthorizationServer(BaseServer):
         credential['user_id'] = user.pk
         cache.set(key, credential, timeout=self._temporary_expires_in)
         return verifier
-
-
-def _create_oauth1_request(request):
-    if request.method == 'POST':
-        body = request.POST.dict()
-    else:
-        body = None
-
-    headers = parse_request_headers(request)
-    url = request.get_raw_uri()
-    return OAuth1Request(request.method, url, body, headers)

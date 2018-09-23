@@ -2,6 +2,20 @@ from collections import MutableMapping as DictMixin
 from authlib.common.encoding import to_unicode
 
 
+def create_oauth_request(request, request_cls):
+    if isinstance(request, request_cls):
+        return request
+
+    if request.method == 'POST':
+        body = request.POST.dict()
+    else:
+        body = None
+
+    headers = parse_request_headers(request)
+    url = request.get_raw_uri()
+    return request_cls(request.method, url, body, headers)
+
+
 def parse_request_headers(request):
     return WSGIHeaderDict(request.META)
 
