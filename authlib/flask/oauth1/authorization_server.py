@@ -1,14 +1,14 @@
 import logging
 from werkzeug.utils import import_string
-from flask import Response, request as _req
+from flask import Response
 from authlib.specs.rfc5849 import (
     OAuth1Request,
     AuthorizationServer as _AuthorizationServer,
 )
-from authlib.common.encoding import to_unicode
 from authlib.common.security import generate_token
 from authlib.common.urls import url_encode
 from authlib.deprecate import deprecate
+from ..helpers import create_oauth_request
 
 log = logging.getLogger(__name__)
 
@@ -163,7 +163,7 @@ class AuthorizationServer(_AuthorizationServer):
         return self.create_temporary_credentials_response()
 
     def check_authorization_request(self):
-        req = _create_oauth1_request()
+        req = self.create_oauth1_request(None)
         self.validate_authorization_request(req)
         return req
 
@@ -179,7 +179,7 @@ class AuthorizationServer(_AuthorizationServer):
         return super(AuthorizationServer, self).create_token_response(request)
 
     def create_oauth1_request(self, request):
-        return _create_oauth1_request()
+        return create_oauth_request(request, OAuth1Request)
 
     def handle_response(self, status_code, payload, headers):
         return Response(
@@ -187,15 +187,3 @@ class AuthorizationServer(_AuthorizationServer):
             status=status_code,
             headers=headers
         )
-
-
-def _create_oauth1_request():
-    if _req.method == 'POST':
-        body = _req.form.to_dict(flat=True)
-    else:
-        body = None
-
-    url = _req.base_url
-    if _req.query_string:
-        url = url + '?' + to_unicode(_req.query_string)
-    return OAuth1Request(_req.method, url, body, _req.headers)

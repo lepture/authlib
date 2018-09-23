@@ -1,6 +1,5 @@
 from werkzeug.utils import import_string
 from flask import Response, json
-from flask import request as flask_req
 from authlib.specs.rfc6749 import (
     OAuth2Request,
     AuthorizationServer as _AuthorizationServer,
@@ -11,6 +10,7 @@ from authlib.common.security import generate_token
 from authlib.common.encoding import to_unicode
 from authlib.deprecate import deprecate
 from .signals import client_authenticated, token_revoked
+from ..helpers import create_oauth_request
 
 GRANT_TYPES_EXPIRES = {
     'authorization_code': 864000,
@@ -96,21 +96,7 @@ class AuthorizationServer(_AuthorizationServer):
         self.config.setdefault('jwt_exp', jwt_exp)
 
     def create_oauth2_request(self, request):
-        if isinstance(request, OAuth2Request):
-            return request
-
-        q = request or flask_req
-        if q.method == 'POST':
-            body = q.form.to_dict(flat=True)
-        else:
-            body = None
-
-        # query string in werkzeug Request.url is very weird
-        # scope=profile%20email will be scope=profile email
-        url = q.base_url
-        if q.query_string:
-            url = url + '?' + to_unicode(q.query_string)
-        return OAuth2Request(q.method, url, body, q.headers)
+        return create_oauth_request(request, OAuth2Request)
 
     def handle_response(self, status_code, payload, headers):
         if isinstance(payload, dict):
