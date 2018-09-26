@@ -1,6 +1,6 @@
 import functools
 from contextlib import contextmanager
-from flask import json
+from flask import current_app, json
 from flask import request as _req
 from flask import _app_ctx_stack
 from werkzeug.local import LocalProxy
@@ -89,14 +89,17 @@ class ResourceProtector(_ResourceProtector):
         except OAuth2Error as error:
             self.raise_error_response(error)
 
-    def __call__(self, scope=None):
+    def __call__(self, scope=None, optional=False):
         def wrapper(f):
             @functools.wraps(f)
             def decorated(*args, **kwargs):
                 try:
                     self.acquire_token(scope)
                 except OAuth2Error as error:
-                    self.raise_error_response(error)
+                    if optional:
+                        self.raise_error_response(error)
+                    else:
+                        current_app.logger.debug(error.get_error_description())
                 return f(*args, **kwargs)
             return decorated
         return wrapper
