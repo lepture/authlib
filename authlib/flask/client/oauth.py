@@ -189,7 +189,7 @@ class RemoteApp(OAuthClient):
     @property
     def token(self):
         ctx = _app_ctx_stack.top
-        attr = 'authlib_client_oauth_token_{}'.format(self.name)
+        attr = 'authlib_oauth_token_{}'.format(self.name)
         token = getattr(ctx, attr, None)
         if token:
             return token
