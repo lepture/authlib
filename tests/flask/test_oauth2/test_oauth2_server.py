@@ -1,8 +1,48 @@
-from flask import json
+from flask import json, jsonify
+from authlib.flask.oauth2 import ResourceProtector, current_token
+from authlib.flask.oauth2.sqla import create_bearer_token_validator
 from .models import db, User, Client, Token
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
-from .oauth2_server import create_resource_server
+
+require_oauth = ResourceProtector()
+BearerTokenValidator = create_bearer_token_validator(db.session, Token)
+require_oauth.register_token_validator(BearerTokenValidator())
+
+
+def create_resource_server(app):
+    @app.route('/user')
+    @require_oauth('profile')
+    def user_profile():
+        user = current_token.user
+        return jsonify(id=user.id, username=user.username)
+
+    @app.route('/user/email')
+    @require_oauth('email')
+    def user_email():
+        user = current_token.user
+        return jsonify(email=user.username + '@example.com')
+
+    @app.route('/info')
+    @require_oauth()
+    def public_info():
+        return jsonify(status='ok')
+
+    @app.route('/operator-and')
+    @require_oauth('profile email', 'AND')
+    def operator_and():
+        return jsonify(status='ok')
+
+    @app.route('/operator-or')
+    @require_oauth('profile email', 'OR')
+    def operator_or():
+        return jsonify(status='ok')
+
+    @app.route('/acquire')
+    def test_acquire():
+        with require_oauth.acquire('profile') as token:
+            user = token.user
+            return jsonify(id=user.id, username=user.username)
 
 
 class AuthorizationTest(TestCase):
@@ -117,3 +157,14 @@ class ResourceTest(TestCase):
         resp = json.loads(rv.data)
         self.assertEqual(resp['status'], 'ok')
 
+    def test_scope_operator(self):
+        self.prepare_data()
+        self.create_token()
+        headers = self.create_bearer_header('a1')
+        rv = self.client.get('/operator-and', headers=headers)
+        self.assertEqual(rv.status_code, 403)
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['error'], 'insufficient_scope')
+
+        rv = self.client.get('/operator-or', headers=headers)
+        self.assertEqual(rv.status_code, 200)

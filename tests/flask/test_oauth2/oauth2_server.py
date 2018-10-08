@@ -1,7 +1,7 @@
 import os
 import base64
 import unittest
-from flask import Flask, request, jsonify
+from flask import Flask, request
 from authlib.common.security import generate_token
 from authlib.common.encoding import to_bytes, to_unicode
 from authlib.common.urls import url_encode
@@ -10,11 +10,7 @@ from authlib.flask.oauth2.sqla import (
     create_query_client_func,
     create_save_token_func,
 )
-from authlib.flask.oauth2 import (
-    AuthorizationServer,
-    ResourceProtector,
-    current_token,
-)
+from authlib.flask.oauth2 import AuthorizationServer
 from authlib.specs.rfc6749 import OAuth2Error
 from .models import db, User, Client, Token
 
@@ -70,35 +66,6 @@ def create_authorization_server(app, lazy=False):
     def introspect_token():
         return server.create_endpoint_response('introspection')
     return server
-
-
-def create_resource_server(app):
-    require_oauth = ResourceProtector()
-    BearerTokenValidator = create_bearer_token_validator(db.session, Token)
-    require_oauth.register_token_validator(BearerTokenValidator())
-
-    @app.route('/user')
-    @require_oauth('profile')
-    def user_profile():
-        user = current_token.user
-        return jsonify(id=user.id, username=user.username)
-
-    @app.route('/user/email')
-    @require_oauth('email')
-    def user_email():
-        user = current_token.user
-        return jsonify(email=user.username + '@example.com')
-
-    @app.route('/info')
-    @require_oauth()
-    def public_info():
-        return jsonify(status='ok')
-
-    @app.route('/acquire')
-    def test_acquire():
-        with require_oauth.acquire('profile') as token:
-            user = token.user
-            return jsonify(id=user.id, username=user.username)
 
 
 def create_flask_app():
