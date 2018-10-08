@@ -487,6 +487,31 @@ If decorator is not your favorite, there is a ``with`` statement for you::
             user = token.user
             return jsonify(user)
 
+Multiple Scopes
+~~~~~~~~~~~~~~~
+
+You can apply multiple scopes to one endpoint in **AND** and **OR** modes.
+The default is **AND** mode.
+
+.. code-block:: python
+
+    @app.route('/profile')
+    @require_oauth('profile email', 'AND')
+    def user_profile():
+        user = current_token.user
+        return jsonify(user)
+
+It requires the token containing both ``profile`` and ``email`` scope.
+
+.. code-block:: python
+
+    @app.route('/profile')
+    @require_oauth('profile email', 'OR')
+    def user_profile():
+        user = current_token.user
+        return jsonify(user)
+
+It requires the token containing either ``profile`` or ``email`` scope.
 
 MethodView & Flask-Restful
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
