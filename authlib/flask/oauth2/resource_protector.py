@@ -55,10 +55,11 @@ class ResourceProtector(_ResourceProtector):
         headers = error.get_headers()
         raise_http_exception(status, body, headers)
 
-    def acquire_token(self, scope=None):
+    def acquire_token(self, scope=None, operator='AND'):
         """A method to acquire current valid token with the given scope.
 
-        :param scope: resource scope value
+        :param scope: string or list of scope values
+        :param operator: value of "AND" or "OR"
         :return: token object
         """
         request = TokenRequest(
@@ -67,14 +68,14 @@ class ResourceProtector(_ResourceProtector):
             _req.data,
             _req.headers
         )
-        token = self.validate_request(scope, request)
+        token = self.validate_request(scope, request, operator.upper())
         token_authenticated.send(self, token=token)
         ctx = _app_ctx_stack.top
         ctx.authlib_server_oauth2_token = token
         return token
 
     @contextmanager
-    def acquire(self, scope=None):
+    def acquire(self, scope=None, operator='AND'):
         """The with statement of ``require_oauth``. Instead of using a
         decorator, you can use a with statement instead::
 
@@ -85,16 +86,16 @@ class ResourceProtector(_ResourceProtector):
                     return jsonify(user.to_dict())
         """
         try:
-            yield self.acquire_token(scope)
+            yield self.acquire_token(scope, operator)
         except OAuth2Error as error:
             self.raise_error_response(error)
 
-    def __call__(self, scope=None):
+    def __call__(self, scope=None, operator='AND'):
         def wrapper(f):
             @functools.wraps(f)
             def decorated(*args, **kwargs):
                 try:
-                    self.acquire_token(scope)
+                    self.acquire_token(scope, operator)
                 except OAuth2Error as error:
                     self.raise_error_response(error)
                 return f(*args, **kwargs)

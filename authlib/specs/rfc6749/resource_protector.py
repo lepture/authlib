@@ -18,7 +18,7 @@ class ResourceProtector(object):
         if validator.TOKEN_TYPE not in cls.TOKEN_VALIDATORS:
             cls.TOKEN_VALIDATORS[validator.TOKEN_TYPE] = validator
 
-    def validate_request(self, scope, request):
+    def validate_request(self, scope, request, scope_operator='AND'):
         auth = request.headers.get('Authorization')
         if not auth:
             raise MissingAuthorizationError()
@@ -34,4 +34,4 @@ class ResourceProtector(object):
         if not validator:
             raise UnsupportedTokenTypeError()
 
-        return validator(token_string, scope, request)
+        return validator(token_string, scope, request, scope_operator)
