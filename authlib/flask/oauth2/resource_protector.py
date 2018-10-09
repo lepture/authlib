@@ -4,8 +4,12 @@ from flask import json
 from flask import request as _req
 from flask import _app_ctx_stack
 from werkzeug.local import LocalProxy
-from authlib.specs.rfc6749 import OAuth2Error, TokenRequest
-from authlib.specs.rfc6749 import ResourceProtector as _ResourceProtector
+from authlib.specs.rfc6749 import (
+    OAuth2Error,
+    MissingAuthorizationError,
+    TokenRequest,
+    ResourceProtector as _ResourceProtector
+)
 from .signals import token_authenticated
 from ..error import raise_http_exception
 
@@ -92,12 +96,16 @@ class ResourceProtector(_ResourceProtector):
         except OAuth2Error as error:
             self.raise_error_response(error)
 
-    def __call__(self, scope=None, operator='AND'):
+    def __call__(self, scope=None, operator='AND', required=True):
         def wrapper(f):
             @functools.wraps(f)
             def decorated(*args, **kwargs):
                 try:
                     self.acquire_token(scope, operator)
+                except MissingAuthorizationError as error:
+                    if not required:
+                        return f(*args, **kwargs)
+                    self.raise_error_response(error)
                 except OAuth2Error as error:
                     self.raise_error_response(error)
                 return f(*args, **kwargs)

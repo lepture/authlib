@@ -52,6 +52,15 @@ def create_resource_server(app):
             user = token.user
             return jsonify(id=user.id, username=user.username)
 
+    @app.route('/optional')
+    @require_oauth('profile', required=False)
+    def test_optional_token():
+        if current_token:
+            user = current_token.user
+            return jsonify(id=user.id, username=user.username)
+        else:
+            return jsonify(id=0, username='anonymous')
+
 
 class AuthorizationTest(TestCase):
     def test_none_grant(self):
@@ -179,3 +188,17 @@ class ResourceTest(TestCase):
 
         rv = self.client.get('/operator-func', headers=headers)
         self.assertEqual(rv.status_code, 200)
+
+    def test_optional_token(self):
+        self.prepare_data()
+        rv = self.client.get('/optional')
+        self.assertEqual(rv.status_code, 200)
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['username'], 'anonymous')
+
+        self.create_token()
+        headers = self.create_bearer_header('a1')
+        rv = self.client.get('/optional', headers=headers)
+        self.assertEqual(rv.status_code, 200)
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['username'], 'foo')
