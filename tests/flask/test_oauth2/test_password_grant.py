@@ -142,3 +142,20 @@ class PasswordTest(TestCase):
         resp = json.loads(rv.data)
         self.assertIn('access_token', resp)
         self.assertIn('p-password.1.', resp['access_token'])
+
+    def test_custom_expires_in(self):
+        self.app.config.update({
+            'OAUTH2_TOKEN_EXPIRES_IN': {'password': 1800}
+        })
+        self.prepare_data()
+        headers = self.create_basic_header(
+            'password-client', 'password-secret'
+        )
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': 'password',
+            'username': 'foo',
+            'password': 'ok',
+        }, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertIn('access_token', resp)
+        self.assertEqual(resp['expires_in'], 1800)
