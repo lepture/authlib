@@ -168,6 +168,11 @@ Lovely features that Authlib has built-in:
 </details>
 
 <details>
+<summary>⏳ RFC7797: JSON Web Signature (JWS) Unencoded Payload Option</summary>
+<p>RFC7797 implementation is in plan.</p>
+</details>
+
+<details>
 <summary>🎉 RFC8414: OAuth 2.0 Authorization Server Metadata</summary>
 
 - [x] Authorization Server Metadata Model

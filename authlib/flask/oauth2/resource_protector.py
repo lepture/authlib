@@ -96,14 +96,14 @@ class ResourceProtector(_ResourceProtector):
         except OAuth2Error as error:
             self.raise_error_response(error)
 
-    def __call__(self, scope=None, operator='AND', required=True):
+    def __call__(self, scope=None, operator='AND', optional=False):
         def wrapper(f):
             @functools.wraps(f)
             def decorated(*args, **kwargs):
                 try:
                     self.acquire_token(scope, operator)
                 except MissingAuthorizationError as error:
-                    if not required:
+                    if optional:
                         return f(*args, **kwargs)
                     self.raise_error_response(error)
                 except OAuth2Error as error:

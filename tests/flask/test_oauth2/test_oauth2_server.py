@@ -53,7 +53,7 @@ def create_resource_server(app):
             return jsonify(id=user.id, username=user.username)
 
     @app.route('/optional')
-    @require_oauth('profile', required=False)
+    @require_oauth('profile', optional=True)
     def test_optional_token():
         if current_token:
             user = current_token.user
