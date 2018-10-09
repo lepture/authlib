@@ -68,7 +68,9 @@ class ResourceProtector(_ResourceProtector):
             _req.data,
             _req.headers
         )
-        token = self.validate_request(scope, request, operator.upper())
+        if not callable(operator):
+            operator = operator.upper()
+        token = self.validate_request(scope, request, operator)
         token_authenticated.send(self, token=token)
         ctx = _app_ctx_stack.top
         ctx.authlib_server_oauth2_token = token

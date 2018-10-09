@@ -513,6 +513,19 @@ It requires the token containing both ``profile`` and ``email`` scope.
 
 It requires the token containing either ``profile`` or ``email`` scope.
 
+It is also possible to pass a function as the scope operator. e.g.::
+
+    def scope_operator(token_scopes, resource_scopes):
+        # this equals "AND"
+        return token_scopes.issuperset(resource_scopes)
+
+    @app.route('/profile')
+    @require_oauth('profile email', scope_operator)
+    def user_profile():
+        user = current_token.user
+        return jsonify(user)
+
+
 MethodView & Flask-Restful
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

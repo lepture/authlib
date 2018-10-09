@@ -38,6 +38,14 @@ def create_resource_server(app):
     def operator_or():
         return jsonify(status='ok')
 
+    def scope_operator(token_scopes, resource_scopes):
+        return 'profile' in token_scopes and 'email' not in token_scopes
+
+    @app.route('/operator-func')
+    @require_oauth(operator=scope_operator)
+    def operator_func():
+        return jsonify(status='ok')
+
     @app.route('/acquire')
     def test_acquire():
         with require_oauth.acquire('profile') as token:
@@ -167,4 +175,7 @@ class ResourceTest(TestCase):
         self.assertEqual(resp['error'], 'insufficient_scope')
 
         rv = self.client.get('/operator-or', headers=headers)
+        self.assertEqual(rv.status_code, 200)
+
+        rv = self.client.get('/operator-func', headers=headers)
         self.assertEqual(rv.status_code, 200)
