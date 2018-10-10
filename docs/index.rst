@@ -75,11 +75,6 @@ for Requests, Flask and Django.
     flask/client
     django/client
 
-.. toctree::
-    :maxdepth: 1
-
-    client/apps
-
 Server Guide
 ------------
 
@@ -89,10 +84,9 @@ frameworks.
 .. toctree::
     :maxdepth: 2
 
-    flask/oauth1
-    flask/oauth2
-    flask/oidc
-    django/oauth1
+    flask/1/index
+    flask/2/index
+    django/1/index
 
 Specifications
 --------------

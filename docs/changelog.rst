@@ -236,43 +236,9 @@ security vulnerabilities, and uncertainties. Try it bravely.
 - :ref:`Flask implementation <flask_oauth2_server>` of authorization server and resource protector.
 - Mixin of SQLAlchemy models for easy integration with OAuth 2.
 
-Version 0.2.1
--------------
+Old Versions
+------------
 
-**Released on Dec 6, 2017**
-
-This is a bugfix version for Akemi. Sorry for the typo.
-
-- Fixed a typo in :meth:`~authlib.client.OAuth2Session.fetch_access_token`
-  which caused :gh:`issue#5`.
-- Removed pyjwt dependency from rfc5849.
-
-Version 0.2: Akemi
-------------------
-
-**Released on Nov 25, 2017**
-
-This is a Beta version for Clients. You would expect that the clients works
-well enough for daily use.
-
-- :class:`~authlib.client.OAuthClient` is refactored to be the base class for
-  Flask and Django.
-- Add Django integrations :class:`authlib.django.client.OAuth` and
-  :class:`authlib.django.client.RemoteApp`.
-- Refactor on :class:`authlib.flask.client.OAuth` and
-  :class:`authlib.flask.client.RemoteApp`.
-- Refactor on :ref:`client_apps`, make it stable and ready to use.
-
-Version 0.1
------------
-
-**Released on Nov 18, 2017.**
-
-This is an Alpha version for previewing. You can expect there are many
-features missing, however the client part works well enough. These APIs are
-considered stable enough to use in production:
-
-- (stable) :class:`~authlib.client.OAuth1Session`
-- (stable) :class:`~authlib.client.OAuth2Session`
-- (beta) :class:`~authlib.client.OAuthClient`
-- (beta) :class:`authlib.flask.client.OAuth`
+- Version 0.2.1: Released on Dec 6, 2017
+- Version 0.2: Released on Nov 25, 2017
+- Version 0.1: Released on Nov 18, 2017
