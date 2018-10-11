@@ -72,8 +72,8 @@ for Requests, Flask and Django.
     client/oauth1
     client/oauth2
     client/mixed
-    flask/client
-    django/client
+    client/flask
+    client/django
 
 Server Guide
 ------------
