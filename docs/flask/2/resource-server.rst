@@ -68,6 +68,8 @@ If decorator is not your favorite, there is a ``with`` statement for you::
             user = token.user
             return jsonify(user)
 
+.. _flask_oauth2_multiple_scopes:
+
 Multiple Scopes
 ---------------
 

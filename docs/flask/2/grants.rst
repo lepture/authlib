@@ -75,15 +75,6 @@ You can change it in the subclass, e.g. remove the ``none`` authentication metho
     class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
         TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic', 'client_secret_post']
 
-.. versionadded:: 0.10
-    It is better to add CodeChallenge extension to AuthorizationCode Grant.
-
-    .. code-block:: python
-
-        server.register_grant(AuthorizationCodeGrant, [CodeChallenge(required=True)])
-
-    Learn more at :ref:`specs/rfc7636`.
-
 Implicit Grant
 --------------
 
@@ -214,3 +205,22 @@ For a better understanding, you can read the source code of the built-in
 grant types. And there are extended grant types defined by other specs:
 
 1. :ref:`jwt_grant_type`
+
+
+.. _flask_oauth2_grant_extensions:
+
+Grant Extensions
+----------------
+
+.. versionadded:: 0.10
+
+Grant can accept extensions. Developers can pass extensions when registering
+grant::
+
+    authorization_server.register_grant(AuthorizationCodeGrant, [extension])
+
+For instance, there is ``CodeChallenge`` extension in Authlib::
+
+    server.register_grant(AuthorizationCodeGrant, [CodeChallenge(required=False)])
+
+Learn more about ``CodeChallenge`` at :ref:`specs/rfc7636`.

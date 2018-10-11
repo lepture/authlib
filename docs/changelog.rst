@@ -11,11 +11,27 @@ Version 0.10
 
 **Release Date would be Oct 20.**
 
-- Export ``save_authorize_state`` method
-- Add grant extensions (requires documentation)
+The most important change in this version is grant extension system. When
+registering a grant, developers can pass extensions to the grant::
+
+    authorization_server.register_grant(GrantClass, [extension])
+
+Find Flask :ref:`flask_oauth2_grant_extensions` implementation.
+
+RFC implementations and updates in this release:
+
+- RFC8414: OAuth 2.0 Authorization Server Metadata
+- RFC7636: make CodeChallenge a grant extension :ref:`specs/rfc7636`
+- OIDC: make OpenIDCode a grant extension
+
+Besides that, there are other improvements:
+
+- Export ``save_authorize_state`` method on Flask and Django client
 - Add ``fetch_token`` to Django OAuth client
+- Add scope operator for ``@require_oauth`` :ref:`flask_oauth2_multiple_scopes`
 - Fix two OAuth clients in the same Flask route :gh:`PR#85`
-- Add scope operator AND and OR
+
+**Deprecate Changes**: find how to solve the deprecate issues via https://git.io/fAmW1
 
 Version 0.9: Ponyo
 ------------------
