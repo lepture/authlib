@@ -75,7 +75,6 @@ html_context = {
 html_static_path = ['_static']
 
 _sidebar_templates = [
-    'project.html',
     'localtoc.html',
     'relations.html',
     'links.html',
@@ -85,7 +84,11 @@ _sidebar_templates = [
 if '.dev' not in release:
     _sidebar_templates.remove('sponsors.html')
 
+_index_templates = ['project.html'] + _sidebar_templates
+
 html_sidebars = {
+    'index': _index_templates,
+    'flask/2/index': _index_templates,
     '**': _sidebar_templates
 }
 
