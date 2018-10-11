@@ -12,6 +12,7 @@ Useful Links
 3. Check other `Authlib Repositories <https://github.com/authlib>`_.
 4. Learn some skills on `Authlib Blog <https://blog.authlib.org/>`_.
 5. Get latest news via `Authlib on Twitter <https://twitter.com/authlib>`_.
+6. Support Authlib via `Patreon <https://www.patreon.com/lepture>`_.
 
 Specifications
 --------------

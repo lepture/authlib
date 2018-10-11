@@ -37,6 +37,7 @@ setup(
         'Documentation': 'https://docs.authib.org/',
         'Source Code': 'https://github.com/lepture/authlib',
         'Blog': 'https://blog.authlib.org/',
+        'Sponsor': 'https://www.patreon.com/lepture',
     },
     classifiers=[
         'Development Status :: 4 - Beta',
