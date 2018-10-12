@@ -6,10 +6,10 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
-Version 0.10
-------------
+Version 0.10: Kluke
+-------------------
 
-**Release Date would be Oct 20.**
+**Released on Oct 12, 2018.**
 
 The most important change in this version is grant extension system. When
 registering a grant, developers can pass extensions to the grant::
