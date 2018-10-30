@@ -173,11 +173,15 @@ class OAuth2Session(Session):
             body = self._prepare_authorization_code_body(
                 code, authorization_response, body, **kwargs)
         elif username and password:
+            if 'scope' not in kwargs and self.scope:
+                kwargs['scope'] = self.scope
             body = prepare_token_request(
                 'password', body, username=username,
                 password=password, **kwargs)
         else:
             grant_type = kwargs.pop('grant_type', 'client_credentials')
+            if 'scope' not in kwargs and self.scope:
+                kwargs['scope'] = self.scope
             body = prepare_token_request(grant_type, body, **kwargs)
 
         if auth is None:

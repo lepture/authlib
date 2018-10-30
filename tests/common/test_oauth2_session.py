@@ -212,11 +212,12 @@ class OAuth2SessionTest(TestCase):
         def fake_send(r, **kwargs):
             self.assertIn('username=v', r.body)
             self.assertIn('grant_type=password', r.body)
+            self.assertIn('scope=profile', r.body)
             resp = mock.MagicMock()
             resp.json = lambda: self.token
             return resp
 
-        sess = OAuth2Session(client_id=self.client_id)
+        sess = OAuth2Session(client_id=self.client_id, scope='profile')
         sess.send = fake_send
         token = sess.fetch_access_token(url, username='v', password='v')
         self.assertEqual(token, self.token)
@@ -226,11 +227,16 @@ class OAuth2SessionTest(TestCase):
 
         def fake_send(r, **kwargs):
             self.assertIn('grant_type=client_credentials', r.body)
+            self.assertIn('scope=profile', r.body)
             resp = mock.MagicMock()
             resp.json = lambda: self.token
             return resp
 
-        sess = OAuth2Session(client_id=self.client_id, client_secret='v')
+        sess = OAuth2Session(
+            client_id=self.client_id,
+            client_secret='v',
+            scope='profile',
+        )
         sess.send = fake_send
         token = sess.fetch_access_token(url)
         self.assertEqual(token, self.token)
