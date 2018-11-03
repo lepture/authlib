@@ -74,6 +74,7 @@ for Requests, Flask and Django.
     client/mixed
     client/flask
     client/django
+    client/api
 
 Server Guide
 ------------
@@ -137,9 +138,7 @@ non specifications, this part of the documentation is for you.
 .. toctree::
     :maxdepth: 2
 
-    api/client
     api/server
-    api/errors
 
 Get Updates
 -----------

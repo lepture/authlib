@@ -1,5 +1,5 @@
-Client Reference
-================
+Client API References
+=====================
 
 .. meta::
    :description: API references on Authlib Client and its related Flask/Django integrations.

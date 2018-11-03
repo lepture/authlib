@@ -372,7 +372,7 @@ register your remote app with a ``code_challenge_method``::
         code_challenge_method='S256',
     )
 
-Note, the only supportted ``code_challenge_method`` is ``S256``.
+Note, the only supported ``code_challenge_method`` is ``S256``.
 
 Compliance Fix
 --------------
