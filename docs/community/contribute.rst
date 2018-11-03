@@ -46,5 +46,25 @@ accepted:
 * Please add documentation for it, if it requires.
 
 .. note::
-   By making a pull request, you consent that the copyright of your pull
-   request source code belongs to Authlib's author.
+    By making a pull request, you consent that the copyright of your pull
+    request source code belongs to Authlib's author.
+
+Become a Backer
+---------------
+
+Finance support is also welcome. A better finance can make Authlib
+:ref:`sustainable`. Here I offer two options:
+
+1. **Recurring Pledges**
+
+   Recurring pledges come with exclusive benefits, e.g. having your name
+   listed in the Authlib GitHub repository, or have your company logo placed
+   on this website.
+
+   `Become a backer or sponsor via Patreon <https://patreon.com/lepture>`_
+
+2. **One Time Donation**
+
+   I accept one time donation via Stripe, Alipay and Wechat. Donate via
+
+   `Support Hsiaoming Yang <https://lepture.com/donate>`_

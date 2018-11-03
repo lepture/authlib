@@ -38,3 +38,8 @@ good license for Authlib either. If you have a better understanding of licenses
 issues, you can offer your suggestions at:
 
 https://github.com/lepture/authlib/issues/59
+
+.. note::
+    Authlib will be separated into 3 modules in the future. The client part
+    will be licensed under BSD, the server part will remain AGPL (or BSD with
+    Common Clause).

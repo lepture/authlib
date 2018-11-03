@@ -12,40 +12,35 @@ The ultimate Python library in building OAuth and OpenID Connect servers.
 It is designed from low level specifications implementations to high level
 frameworks integrations, to meet the needs of everyone.
 
+Authlib is compatible with Python2.7+ and Python3.5+.
 
-Features
+Overview
 --------
 
-Generic specification implementations that Authlib has built-in:
+A simple :ref:`flask_client` which connects to the Github OAuth2 API::
 
-- :badge:`done` :ref:`specs/rfc5849`
-- :badge:`done` :ref:`specs/rfc6749`
-- :badge:`done` :ref:`specs/rfc6750`
-- :badge:`done` :ref:`specs/rfc7009`
-- :badge:`done` :ref:`specs/rfc7515`
-- :badge-blue:`beta` :ref:`specs/rfc7516`
-- :badge:`done` :ref:`specs/rfc7517`
-- :badge:`done` :ref:`specs/rfc7518`
-- :badge:`done` :ref:`specs/rfc7519`
-- :badge:`done` :ref:`specs/rfc7523`
-- :badge-blue:`beta` :ref:`specs/rfc7636`
-- :badge:`done` :ref:`specs/rfc7662`
-- :badge:`done` :ref:`specs/oidc`
+    from flask import Flask
+    from authlib.flask.client import OAuth
+    # use loginpass to make OAuth connection simpler
+    from loginpass import create_flask_blueprint, GitHub
 
-Framework integrations with current specification implementations:
+    app = Flask(__name__)
+    oauth = OAuth(app)
 
-- :badge-green:`ready` Requests :ref:`oauth_1_session`
-- :badge-green:`ready` Requests :ref:`oauth_2_session`
-- :badge-green:`ready` :ref:`flask_client`
-- :badge-green:`ready` :ref:`django_client`
-- :badge-green:`ready` :ref:`flask_oauth1_server`
-- :badge-green:`ready` :ref:`flask_oauth2_server`
-- :badge-blue:`beta` :ref:`flask_odic_server`
-- :badge-blue:`alpha` :ref:`django_oauth1_server`
-- :badge:`todo` Django OAuth 2 Server
-- :badge:`todo` Django OpenID Connect Server
+    def handle_authorize(remote, token, user_info):
+        if token:
+            save_token(remote.name, token)
+        if user_info:
+            save_user(user_info)
+            return user_page
+        raise some_error
 
-Authlib is compatible with Python2.7+ and Python3.5+.
+    github_bp = create_flask_blueprint(GitHub, oauth, handle_authorize)
+    app.register_blueprint(github_bp, url_prefix='/github')
+
+OAuth server (provider) on the other hand is a little complex, find a real
+:ref:`flask_oauth2_server` via
+`Example of OAuth 2.0 server <https://github.com/authlib/example-oauth2-server>`_.
 
 User Guide
 ----------
