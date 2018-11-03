@@ -2,7 +2,6 @@ from authlib.common.urls import is_valid_url, add_params_to_uri
 from .base_server import BaseServer
 from .errors import (
     OAuth1Error,
-    InsecureTransportError,
     InvalidRequestError,
     MissingRequiredParameterError,
     InvalidClientError,
@@ -10,7 +9,6 @@ from .errors import (
     AccessDeniedError,
     MethodNotAllowedError,
 )
-from .wrapper import OAuth1Request
 
 
 class AuthorizationServer(BaseServer):

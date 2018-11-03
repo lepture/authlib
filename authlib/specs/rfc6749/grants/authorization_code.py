@@ -239,7 +239,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError()
 
-        code = self.request.code
+        code = self.request.data.get('code')
         if code is None:
             raise InvalidRequestError('Missing "code" in request.')
 

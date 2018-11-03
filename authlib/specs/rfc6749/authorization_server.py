@@ -53,11 +53,14 @@ class AuthorizationServer(object):
         self.authenticate_client.register(method, func)
 
     def get_translations(self, request):
-        """Return a translations instance used for i18n error messages."""
+        """Return a translations instance used for i18n error messages.
+        Framework SHOULD implement this function.
+        """
         return None
 
     def get_error_uris(self, request):
-        """Return registered error URIs."""
+        """Return registered error URIs. Framework SHOULD implement
+        this function."""
         return None
 
     def send_signal(self, name, *args, **kwargs):
@@ -73,6 +76,7 @@ class AuthorizationServer(object):
         raise NotImplementedError()
 
     def handle_response(self, status, body, headers):
+        """Return HTTP response. Framework MUST implement this function."""
         raise NotImplementedError()
 
     def register_grant(self, grant_cls, extensions=None):
@@ -128,6 +132,12 @@ class AuthorizationServer(object):
         raise InvalidGrantError()
 
     def create_endpoint_response(self, name, request=None):
+        """Validate endpoint request and create endpoint response.
+
+        :param name: Endpoint name
+        :param request: OAuth2Request instance.
+        :return: Response
+        """
         if name not in self._endpoints:
             raise RuntimeError('There is no "{}" endpoint.'.format(name))
 
