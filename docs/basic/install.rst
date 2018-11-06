@@ -23,6 +23,10 @@ It will also install the dependencies:
 - requests
 - cryptography
 
+.. note::
+    You may enter problems when installing cryptography, check its official
+    document at https://cryptography.io/en/latest/installation/
+
 Get the Source Code
 -------------------
 

@@ -51,8 +51,8 @@ about Authlib, and installation of Authlib.
 .. toctree::
     :maxdepth: 2
 
-    intro
-    install
+    basic/intro
+    basic/install
     community/licenses
 
 Client Guide

@@ -8,10 +8,11 @@ Introduction
         low-level specification implementation to high-level framework
         integrations.
 
-Authlib is a ready to use library for authentication. It was designed to be a
-replacement of my Flask-OAuthlib project. Later it becomes a :ref:`monolithic`
-project that powers from low-level specification implementation to high-level
-framework integrations.
+Authlib is the ultimate Python library in building OAuth and OpenID Connect
+clients and servers. It offers generic implementations of RFCs, including
+:ref:`specs/rfc5849`, :ref:`specs/rfc6749`, :ref:`specs/rfc7519` and many
+more. It becomes a :ref:`monolithic` project that powers from low-level
+specification implementation to high-level framework integrations.
 
 I'm intended to make it profitable, so that it can be :ref:`sustainable`.
 
@@ -62,16 +63,19 @@ related specification, we add it into ``specs``.
 
 Currently, these specs are in the warehouse:
 
-* RFC5849 :ref:`specs/rfc5849`
-* RFC6749 :ref:`specs/rfc6749`
-* RFC6750 :ref:`specs/rfc6750`
-* RFC7009 :ref:`specs/rfc7009`
-* RFC7515 :ref:`specs/rfc7515`
-* RFC7517 :ref:`specs/rfc7517`
-* RFC7518 :ref:`specs/rfc7518`
-* RFC7519 :ref:`specs/rfc7519`
-* RFC7662 :ref:`specs/rfc7662`
-* OIDC :ref:`specs/oidc`
+* :ref:`specs/rfc5849`
+* :ref:`specs/rfc6749`
+* :ref:`specs/rfc6750`
+* :ref:`specs/rfc7009`
+* :ref:`specs/rfc7515`
+* :ref:`specs/rfc7516`
+* :ref:`specs/rfc7517`
+* :ref:`specs/rfc7518`
+* :ref:`specs/rfc7519`
+* :ref:`specs/rfc7523`
+* :ref:`specs/rfc7636`
+* :ref:`specs/rfc7662`
+* :ref:`specs/oidc`
 
 Credits
 -------
