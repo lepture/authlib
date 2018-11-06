@@ -122,6 +122,5 @@ texinfo_documents = [
 
 
 def setup(app):
-    app.add_stylesheet('custom.css')
     sphinx_typlog_theme.add_badge_roles(app)
     sphinx_typlog_theme.add_github_roles(app, 'lepture/authlib')
