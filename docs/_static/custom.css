@@ -1,7 +1,7 @@
 .sidebar .inner {
   padding: 20px 40px 40px;
 }
-.injected .rst-versions {
+.injected .rst-versions.rst-badge {
   left: 0;
   bottom: 0;
   width: 340px;

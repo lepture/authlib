@@ -60,10 +60,7 @@ html_theme_options = {
     )
 }
 
-html_context = {
-    'dev_version': '.dev' in release,
-    'css_files': ['_static/custom.css'],
-}
+html_context = {}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -125,5 +122,6 @@ texinfo_documents = [
 
 
 def setup(app):
+    app.add_stylesheet('custom.css')
     sphinx_typlog_theme.add_badge_roles(app)
     sphinx_typlog_theme.add_github_roles(app, 'lepture/authlib')
