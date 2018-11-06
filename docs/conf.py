@@ -43,13 +43,8 @@ html_theme = 'sphinx_typlog_theme'
 html_favicon = '_static/favicon.ico'
 html_theme_path = [sphinx_typlog_theme.get_path()]
 html_theme_options = {
-    'logo': 'authlib.png',
+    'logo': 'authlib.svg',
     'color': '#3E7FCB',
-    'navs': [
-        {'url': 'https://authlib.org/', 'title': 'Home'},
-        {'url': 'https://blog.authlib.org/', 'title': 'Blog'},
-        {'url': 'https://github.com/lepture/authlib', 'title': 'GitHub'},
-    ],
     'description': (
         'The ultimate Python library in building OAuth and OpenID Connect '
         'servers. JWS, JWE, JWK, JWA, JWT are included.'
@@ -75,6 +70,7 @@ html_context = {
 html_static_path = ['_static']
 
 _sidebar_templates = [
+    'github.html',
     'localtoc.html',
     'relations.html',
     'links.html',
@@ -84,11 +80,7 @@ _sidebar_templates = [
 if '.dev' not in release:
     _sidebar_templates.remove('sponsors.html')
 
-_index_templates = ['project.html'] + _sidebar_templates
-
 html_sidebars = {
-    'index': _index_templates,
-    'flask/2/index': _index_templates,
     '**': _sidebar_templates
 }
 
