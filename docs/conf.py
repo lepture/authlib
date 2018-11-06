@@ -61,7 +61,8 @@ html_theme_options = {
 }
 
 html_context = {
-    'dev_version': '.dev' in release
+    'dev_version': '.dev' in release,
+    'css_files': ['_static/custom.css'],
 }
 
 # Add any paths that contain custom static files (such as style sheets) here,
