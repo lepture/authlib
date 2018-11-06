@@ -7,6 +7,11 @@ OAuthClient
     :description: A mixed OAuth 1 and OAuth 2 client, one to control everything.
         The foundation for Flask and Django integrations.
 
+.. important::
+    This ``OAuthClient`` is designed for developing framework integrations.
+    You are not supposed to use it directly, check out :ref:`flask_client`
+    and :ref:`django_client` instead.
+
 .. module:: authlib.client
 
 A mixed OAuth 1 and OAuth 2 client, one to control them both. With
@@ -23,11 +28,6 @@ and implement a :meth:`OAuthClient.get_token` method::
     class MyOAuthClient(OAuthClient):
         def get_token(self):
             return get_current_user_token()
-
-.. note::
-    This ``OAuthClient`` is designed for developing framework integrations.
-    If you are using Flask or Django, you should read :ref:`flask_client`
-    and :ref:`django_client`.
 
 OAuth 1 Flow
 ------------

@@ -274,7 +274,7 @@ service account JSON configure file::
     from authlib.client import AssertionSession
 
     with open('MyProject-1234.json') as f:
-        info = json.load(f)
+        conf = json.load(f)
 
     token_url = conf['token_uri']
     header = {'alg': 'RS256'}
