@@ -68,6 +68,8 @@ html_context = {}
 html_static_path = ['_static']
 
 _sidebar_templates = [
+    'logo.html',
+    'description.html',
     'github.html',
     'globaltoc.html',
     'links.html',
