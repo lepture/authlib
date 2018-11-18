@@ -19,6 +19,9 @@ This section is a guide on how to obtain an access token in OAuth 2 flow.
     in :ref:`flask_client`. If you are using Django, please read
     :ref:`django_client`.
 
+If you are not familiar with OAuth 2.0, it is better to
+:ref:`understand_oauth2` now.
+
 OAuth2Session for Authorization Code
 ------------------------------------
 

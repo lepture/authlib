@@ -69,7 +69,7 @@ html_static_path = ['_static']
 
 _sidebar_templates = [
     'github.html',
-    'localtoc.html',
+    'globaltoc.html',
     'links.html',
     'sponsors.html',
     'searchbox.html',

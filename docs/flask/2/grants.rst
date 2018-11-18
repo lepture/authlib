@@ -64,7 +64,7 @@ Implement this grant by subclass :class:`AuthorizationCodeGrant`::
 
 .. note:: AuthorizationCodeGrant is the most complex grant.
 
-Default allowed :ref:`token_endpoint_auth_methods` are:
+Default allowed :ref:`client_auth_methods` are:
 
 1. client_secret_basic
 2. client_secret_post
@@ -89,7 +89,7 @@ with::
     server.register_grant(grants.ImplicitGrant)
 
 Implicit Grant is used by **public** client which has no **client_secret**.
-Only allowed :ref:`token_endpoint_auth_methods`: ``none``.
+Only allowed :ref:`client_auth_methods`: ``none``.
 
 Resource Owner Password Credentials Grant
 -----------------------------------------
@@ -110,7 +110,7 @@ it with a subclass of :class:`ResourceOwnerPasswordCredentialsGrant`::
     server.register_grant(PasswordGrant)
 
 
-Default allowed :ref:`token_endpoint_auth_methods`: ``client_secret_basic``.
+Default allowed :ref:`client_auth_methods`: ``client_secret_basic``.
 You can add more in the subclass::
 
     class PasswordGrant(grants.ResourceOwnerPasswordCredentialsGrant):
@@ -130,7 +130,7 @@ grant type. It can be easily registered with::
     # register it to grant endpoint
     server.register_grant(grants.ClientCredentialsGrant)
 
-Default allowed :ref:`token_endpoint_auth_methods`: ``client_secret_basic``.
+Default allowed :ref:`client_auth_methods`: ``client_secret_basic``.
 You can add more in the subclass::
 
     class ClientCredentialsGrant(grants.ClientCredentialsGrant):
@@ -160,7 +160,7 @@ provides it as a grant type, implement it with a subclass of
     # register it to grant endpoint
     server.register_grant(RefreshTokenGrant)
 
-Default allowed :ref:`token_endpoint_auth_methods`: ``client_secret_basic``.
+Default allowed :ref:`client_auth_methods`: ``client_secret_basic``.
 You can add more in the subclass::
 
     class RefreshTokenGrant(grants.RefreshTokenGrant):

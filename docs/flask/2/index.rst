@@ -18,8 +18,8 @@ on GitHub:
 1. `Example of OAuth 2.0 server <https://github.com/authlib/example-oauth2-server>`_
 2. Example of OpenID Connect server (not ready)
 
-At the very beginning, we need to have some basic understanding of the OAuth 2.0
-specification. Read :ref:`specs/rfc6749` at first.
+At the very beginning, we need to have some basic understanding of
+:ref:`the OAuth 2.0 <understand_oauth2>`.
 
 .. important::
 
@@ -38,3 +38,4 @@ Looking for OAuth 2 client? Check out :ref:`flask_client`.
     endpoints
     resource-server
     openid-connect
+    api

@@ -51,89 +51,14 @@ about Authlib, and installation of Authlib.
 .. toctree::
     :maxdepth: 2
 
-    basic/intro
-    basic/install
-    community/licenses
-
-Client Guide
-------------
-
-This part of the documentation contains information on the client parts,
-for Requests, Flask and Django.
-
-.. toctree::
-    :maxdepth: 2
-
-    client/oauth1
-    client/oauth2
-    client/mixed
-    client/flask
-    client/django
-    client/api
-
-Server Guide
-------------
-
-This part of the documentation contains information on the server parts for
-frameworks.
-
-.. toctree::
-    :maxdepth: 2
-
+    basic/index
+    client/index
     flask/1/index
     flask/2/index
     django/1/index
+    specs/index
+    community/index
 
-Specifications
---------------
-
-Guide on specifications. You don't have to read this section if you are
-just using Authlib. But it would be good for you to understand how Authlib
-works.
-
-.. toctree::
-    :maxdepth: 1
-
-    specs/rfc5849
-    specs/rfc6749
-    specs/rfc6750
-    specs/rfc7009
-    specs/rfc7515
-    specs/rfc7516
-    specs/rfc7517
-    specs/rfc7518
-    specs/rfc7519
-    specs/rfc7523
-    specs/rfc7636
-    specs/rfc7662
-    specs/oidc
-
-Community & Contribution
-------------------------
-
-This section aims to make Authlib sustainable, on governance, code commits,
-issues and finance.
-
-.. toctree::
-    :maxdepth: 2
-
-    community/support
-    community/security
-    community/contribute
-    community/awesome
-    community/sustainable
-    community/authors
-
-API Reference
--------------
-
-If you are looking for information on a specific function, class or method for
-non specifications, this part of the documentation is for you.
-
-.. toctree::
-    :maxdepth: 2
-
-    api/server
 
 Get Updates
 -----------

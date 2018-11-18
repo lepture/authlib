@@ -19,6 +19,8 @@ in OAuth 1 flow.
     the same API with requests. If you are using Flask or Django, you may
     have interests in :ref:`flask_client` and :ref:`django_client`.
 
+If you are not familiar with OAuth 1.0, it is better to
+:ref:`understand_oauth1` now.
 
 There are three steps in OAuth 1 to obtain an access token. Initialize
 the session for reuse::
@@ -30,10 +32,10 @@ the session for reuse::
 
 .. _fetch_request_token:
 
-Fetch Request Token
--------------------
+Fetch Temporary Credential
+--------------------------
 
-The first step is to fetch request token, which will be used to generate
+The first step is to fetch temporary credential, which will be used to generate
 authorization URL::
 
     >>> request_token_url = 'https://api.twitter.com/oauth/request_token'
@@ -41,7 +43,7 @@ authorization URL::
     >>> print(request_token)
     {'oauth_token': 'gA..H', 'oauth_token_secret': 'lp..X', 'oauth_callback_confirmed': 'true'}
 
-Save this request token for later use (if required).
+Save this temporary credential for later use (if required).
 
 You can assign a ``redirect_uri`` before fetching the request token, if
 you want to redirect back to another URL other than the one you registered::
@@ -141,12 +143,6 @@ The above is not the real flow, just like what we did in
     ...     token_secret=oauth_token_secret)
     >>> account_url = 'https://api.twitter.com/1.1/account/verify_credentials.json'
     >>> resp = session.get(account_url)
-
-Understand OAuth 1
-------------------
-
-To understand/feel the OAuth 1 authorization flow, register a Twitter consumer
-client at https://apps.twitter.com/ and repeat the steps in this section.
 
 Please note, there are duplicated steps in the documentation, read carefully
 and ignore the duplicated explains.
