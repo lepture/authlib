@@ -13,6 +13,9 @@ provider contains two servers:
 - Authorization Server: to issue access tokens
 - Resources Server: to serve your users' resources
 
+At the very beginning, we need to have some basic understanding of
+:ref:`the OAuth 1.0 <understand_oauth1>`.
+
 .. important::
 
     If you are developing on your localhost, remember to set the environment

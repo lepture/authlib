@@ -237,3 +237,4 @@ the token credential::
     @app.route('/token', methods=['POST'])
     def issue_token():
         return server.create_token_response()
+

@@ -17,7 +17,7 @@ Authlib is compatible with Python2.7+ and Python3.5+.
 Overview
 --------
 
-A simple :ref:`flask_client` which connects to the Github OAuth2 API::
+A simple :ref:`flask_client` which connects to the GitHub OAuth2 API::
 
     from flask import Flask
     from authlib.flask.client import OAuth

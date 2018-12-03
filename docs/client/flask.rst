@@ -38,7 +38,8 @@ Configuration
 To register a remote application on OAuth registry, using the
 :meth:`~OAuth.register` method::
 
-    oauth.register('twitter',
+    oauth.register(
+        name='twitter',
         client_id='Twitter Consumer Key',
         client_secret='Twitter Consumer Secret',
         request_token_url='https://api.twitter.com/oauth/request_token',
@@ -118,6 +119,9 @@ For OAuth 2.0, you can pass extra parameters like::
         'token_placement': 'header',
     }
 
+There are several ``token_endpoint_auth_method``, get a deep inside the
+:ref:`client_auth_methods`.
+
 Database
 --------
 
@@ -182,7 +186,9 @@ Pass the ``cache`` instance into OAuth registry::
     oauth.init_app(app, cache=cache)
 
 If cache system is not available, you can define methods for retrieving and
-saving request token::
+saving request token:
+
+.. code-block:: python
 
     def save_request_token(token):
         save_request_token_to_someplace(current_user, token)
@@ -207,8 +213,11 @@ saving request token::
         fetch_request_token=fetch_request_token,
     )
 
-Implement the Server
---------------------
+.. note:: There is no "request token" in OAuth 2.0, you don't need to
+    implement this section if your are working on OAuth 2.0 integrations.
+
+Flask OAuth Clients Routes
+--------------------------
 
 Let's take Twitter as an example, we need to define routes for login and
 authorization::
@@ -379,24 +388,56 @@ Compliance Fix
 
 The :class:`RemoteApp` is a subclass of :class:`~authlib.client.OAuthClient`,
 they share the same logic for compliance fix. Construct a method to fix
-requests session as in :ref:`compliance_fix_mixed`::
+requests session::
 
-    def compliance_fix(session):
-
-        def fix_protected_request(url, headers, data):
-            # do something
-            return url, headers, data
-
-        session.register_compliance_hook(
-            'protected_request', fix_protected_request)
+    def slack_compliance_fix(session):
+        def _fix(resp):
+            token = resp.json()
+            # slack returns no token_type
+            token['token_type'] = 'Bearer'
+            resp._content = to_unicode(json.dumps(token)).encode('utf-8')
+            return resp
+        session.register_compliance_hook('access_token_response', _fix)
 
 When :meth:`OAuth.register` a remote app, pass it in the parameters::
 
-    oauth.register('twitter',
+    oauth.register(
+        'slack',
         client_id='...',
         client_secret='...',
         ...,
-        compliance_fix=compliance_fix,
+        compliance_fix=slack_compliance_fix,
         ...
     )
 
+Find all the available compliance hooks at :ref:`compliance_fix_oauth2`.
+
+Loginpass
+---------
+
+There are many built-in integrations served by loginpass_, checkout the
+``flask_example`` in loginpass project. Here is an example of GitHub::
+
+    from flask import Flask
+    from authlib.flask.client import OAuth
+    from loginpass import create_flask_blueprint, GitHub
+
+    app = Flask(__name__)
+    oauth = OAuth(app)
+
+    def handle_authorize(remote, token, user_info):
+        if token:
+            save_token(remote.name, token)
+        if user_info:
+            save_user(user_info)
+            return user_page
+        raise some_error
+
+    github_bp = create_flask_blueprint(GitHub, oauth, handle_authorize)
+    app.register_blueprint(github_bp, url_prefix='/github')
+    # Now, there are: ``/github/login`` and ``/github/auth``
+
+The source code of loginpass is very simple, they are just preconfigured
+services integrations.
+
+.. _loginpass: https://github.com/authlib/loginpass

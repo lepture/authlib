@@ -194,9 +194,9 @@ There are services that claimed they are providing OAuth API, but with a little
 differences. Some services even return with the wrong Content Type. Compliance
 hooks are provided to solve those problems:
 
-* access_token_response: invoked before token parsing.
-* refresh_token_response: invoked before refresh token parsing.
-* protected_request: invoked before making a request.
+* ``access_token_response``: invoked before token parsing.
+* ``refresh_token_response``: invoked before refresh token parsing.
+* ``protected_request``: invoked before making a request.
 
 For instance, linkedin is using a ``oauth2_access_token`` parameter in query
 string to protect users' resources, let's fix it::
@@ -209,8 +209,8 @@ string to protect users' resources, let's fix it::
         url = add_params_to_uri(url, token)
         return url, headers, data
 
-    session.register_compliance_hook('protected_request',
-                                     _non_compliant_param_name)
+    session.register_compliance_hook(
+        'protected_request', _non_compliant_param_name)
 
 If you find a non standard OAuth 2 services, and you can't fix it. Please
 report it in GitHub issues.
@@ -257,10 +257,6 @@ Get deep inside with :class:`~authlib.specs.rfc7519.JWT` and
 :class:`~authlib.specs.oidc.CodeIDToken`. Learn how to validate JWT claims
 at :ref:`specs/rfc7519`.
 
-There is a built-in Google app which supports OpenID Connect, checkout the
-source code in loginpass_.
-
-.. _loginpass: https://github.com/authlib/loginpass
 
 AssertionSession
 ----------------

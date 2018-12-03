@@ -1,3 +1,8 @@
+.. meta::
+    :description: Understand the concepts in OAuth 2.0, the authorization flow,
+        grant types, roles, authentication methods and etc.
+    :image: https://user-images.githubusercontent.com/290496/48670041-e5803e00-eb53-11e8-91a9-3776276d6bf6.png
+
 .. _understand_oauth2:
 
 Understand OAuth 2.0

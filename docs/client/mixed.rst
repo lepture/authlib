@@ -118,7 +118,6 @@ token now::
     token = client.fetch_access_token(redirect_uri, **params)
     save_token_to_db(token)
 
-.. _compliance_fix_mixed:
 
 Compliance Fix
 --------------

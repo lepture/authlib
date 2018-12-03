@@ -1,3 +1,8 @@
+.. meta::
+    :description: Understand the concepts in OAuth 1.0, the authorization flow,
+        roles, signatures and etc.
+    :image: https://user-images.githubusercontent.com/290496/48671968-2c316080-eb73-11e8-9e6a-9e895cd67262.png
+
 .. _understand_oauth1:
 
 Understand OAuth 1.0

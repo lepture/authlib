@@ -30,7 +30,8 @@ Configuration
 To register a remote application on OAuth registry, using the
 :meth:`~OAuth.register` method::
 
-    oauth.register('twitter',
+    oauth.register(
+        'twitter',
         client_id='Twitter Consumer Key',
         client_secret='Twitter Consumer Secret',
         request_token_url='https://api.twitter.com/oauth/request_token',
@@ -87,6 +88,9 @@ For OAuth 2.0, you can pass extra parameters like::
         'token_endpoint_auth_method': 'client_secret_basic',
         'token_placement': 'header',
     }
+
+There are several ``token_endpoint_auth_method``, get a deep inside the
+:ref:`client_auth_methods`.
 
 Sessions Middleware
 -------------------
@@ -247,23 +251,26 @@ Compliance Fix
 
 The :class:`RemoteApp` is a subclass of :class:`~authlib.client.OAuthClient`,
 they share the same logic for compliance fix. Construct a method to fix
-requests session as in :ref:`compliance_fix_mixed`::
+requests session::
 
-    def compliance_fix(session):
-
-        def fix_protected_request(url, headers, data):
-            # do something
-            return url, headers, data
-
-        session.register_compliance_hook(
-            'protected_request', fix_protected_request)
+    def slack_compliance_fix(session):
+        def _fix(resp):
+            token = resp.json()
+            # slack returns no token_type
+            token['token_type'] = 'Bearer'
+            resp._content = to_unicode(json.dumps(token)).encode('utf-8')
+            return resp
+        session.register_compliance_hook('access_token_response', _fix)
 
 When :meth:`OAuth.register` a remote app, pass it in the parameters::
 
-    oauth.register('twitter',
+    oauth.register(
+        'slack',
         client_id='...',
         client_secret='...',
         ...,
-        compliance_fix=compliance_fix,
+        compliance_fix=slack_compliance_fix,
         ...
     )
+
+Find all the available compliance hooks at :ref:`compliance_fix_oauth2`.

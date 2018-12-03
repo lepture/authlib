@@ -21,7 +21,7 @@ Sponsor the Project
 -------------------
 
 Authlib is accepting sponsorships via Patreon_. You are welcome to become a
-support, a backer or a company sponsor.
+supporter, a backer or a company sponsor.
 
 .. _Patreon: https://www.patreon.com/lepture
 
