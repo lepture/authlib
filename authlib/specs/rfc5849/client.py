@@ -1,7 +1,4 @@
 import time
-import base64
-import hashlib
-from authlib.common.encoding import to_native, to_bytes
 from authlib.common.security import generate_token
 from authlib.common.urls import extract_params
 from .wrapper import OAuth1Request
@@ -88,7 +85,7 @@ class Client(object):
         request = OAuth1Request(method, uri, body, headers)
         return sign(self, request)
 
-    def get_oauth_params(self, body, headers, nonce, timestamp):
+    def get_oauth_params(self, nonce, timestamp):
         oauth_params = [
             ('oauth_nonce', nonce),
             ('oauth_timestamp', timestamp),
@@ -102,14 +99,6 @@ class Client(object):
             oauth_params.append(('oauth_callback', self.redirect_uri))
         if self.verifier:
             oauth_params.append(('oauth_verifier', self.verifier))
-
-        # https://tools.ietf.org/id/draft-eaton-oauth-bodyhash-00.html
-        content_type = headers.get('Content-Type', '')
-        not_form = not content_type.startswith(CONTENT_TYPE_FORM_URLENCODED)
-        if body and content_type and not_form:
-            sig = base64.b64encode(hashlib.sha1(to_bytes(body)).digest())
-            oauth_params.append(('oauth_body_hash', to_native(sig)))
-
         return oauth_params
 
     def _render(self, uri, headers, body, oauth_params):
@@ -152,7 +141,7 @@ class Client(object):
         if headers is None:
             headers = {}
 
-        oauth_params = self.get_oauth_params(body, headers, nonce, timestamp)
+        oauth_params = self.get_oauth_params(nonce, timestamp)
         uri, headers, body = self._render(uri, headers, body, oauth_params)
 
         sig = self.get_oauth_signature(method, uri, body, headers)
