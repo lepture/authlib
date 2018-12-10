@@ -7,6 +7,7 @@ class JWEAlgorithm(object):
     """
     TYPE = 'JWE'
     HEADER_KEY = 'alg'
+    EXTRA_HEADERS = None
 
     def __init__(self, name):
         self.name = name

@@ -88,6 +88,31 @@ class JWETest(unittest.TestCase):
         invalid_ek = b'a' + ek[1:]
         self.assertRaises(ValueError, alg.unwrap, invalid_ek, {}, private_key)
 
+    def test_aes_gcm_jwe(self):
+        jwe = JWE(algorithms=JWE_ALGORITHMS)
+        sizes = [128, 192, 256]
+        _enc_choices = [
+            'A128CBC-HS256', 'A192CBC-HS384', 'A256CBC-HS512',
+            'A128GCM', 'A192GCM', 'A256GCM'
+        ]
+        for s in sizes:
+            alg = 'A{}GCMKW'.format(s)
+            key = os.urandom(s // 8)
+            for enc in _enc_choices:
+                protected = {'alg': alg, 'enc': enc}
+                data = jwe.serialize_compact(protected, b'hello', key)
+                rv = jwe.deserialize_compact(data, key)
+                self.assertEqual(rv['payload'], b'hello')
+
+    def test_ase_gcm_jwe_invalid_key(self):
+        jwe = JWE(algorithms=JWE_ALGORITHMS)
+        protected = {'alg': 'A128GCMKW', 'enc': 'A128GCM'}
+        self.assertRaises(
+            ValueError,
+            jwe.serialize_compact,
+            protected, b'hello', b'invalid-key'
+        )
+
 
 def _find_alg(name):
     for alg in JWE_ALGORITHMS:

@@ -69,23 +69,29 @@ class JWE(object):
         :param key: Private key used to generate signature
         :return: byte
         """
-        self._validate_header(protected)
-        alg, enc_alg, key = self._prepare_alg_enc_key(protected, key)
-
-        # step 1: Encoding JWE Protected Header
-        protected_segment = json_b64encode(protected)
+        self._pre_validate_header(protected)
+        # step 1: Prepare algorithms
+        algorithm, enc_alg, key = self._prepare_alg_enc_key(protected, key)
+        self._post_validate_header(protected, algorithm)
 
         # step 2: Generate a random Content Encryption Key (CEK)
         cek = enc_alg.generate_cek()
 
         # step 3: Encrypt the CEK with the recipient's public key
-        ek = alg.wrap(cek, protected, key)
+        ek = algorithm.wrap(cek, protected, key)
+        if isinstance(ek, dict):
+            # AESGCMKW algorithm contains iv, tag in header
+            header = ek.get('header')
+            if header:
+                protected.update(header)
+            ek = ek.get('ek')
 
         # step 4: Generate a random JWE Initialization Vector
         iv = enc_alg.generate_iv()
 
         # step 5: Let the Additional Authenticated Data encryption parameter
         # be ASCII(BASE64URL(UTF8(JWE Protected Header)))
+        protected_segment = json_b64encode(protected)
         aad = to_bytes(protected_segment, 'ascii')
 
         # step 6: compress message if required
@@ -121,10 +127,10 @@ class JWE(object):
         ciphertext = extract_segment(ciphertext_s, DecodeError, 'ciphertext')
         tag = extract_segment(tag_s, DecodeError, 'authentication tag')
 
-        self._validate_header(protected)
-
+        self._pre_validate_header(protected)
         algorithm, enc_alg, key = self._prepare_alg_enc_key(
             protected, key, private=True)
+        self._post_validate_header(protected, algorithm)
 
         cek = algorithm.unwrap(ek, protected, key)
         aad = to_bytes(protected_s, 'ascii')
@@ -154,7 +160,7 @@ class JWE(object):
         enc_alg = self._enc_algorithms[header['enc']]
         return algorithm, enc_alg, key
 
-    def _validate_header(self, header):
+    def _pre_validate_header(self, header):
         if 'alg' not in header:
             raise MissingAlgorithmError()
 
@@ -173,9 +179,13 @@ class JWE(object):
         if zip and zip not in self._zip_algorithms:
             raise UnsupportedCompressionAlgorithmError()
 
+    def _post_validate_header(self, header, alg):
         names = self.REGISTERED_HEADER_PARAMETER_NAMES.copy()
         if self._private_headers:
             names = names.union(self._private_headers)
+
+        if alg.EXTRA_HEADERS:
+            names = names.union(alg.EXTRA_HEADERS)
 
         for k in header:
             if k not in names:
