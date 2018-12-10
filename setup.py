@@ -6,9 +6,8 @@ from setuptools import setup, find_packages
 from authlib.consts import version, homepage
 
 
-def fread(filename):
-    with open(filename) as f:
-        return f.read()
+with open('README.rst') as f:
+    readme = f.read()
 
 
 client_requires = ['requests']
@@ -29,15 +28,15 @@ setup(
     zip_safe=False,
     include_package_data=True,
     platforms='any',
-    long_description=fread('README.rst'),
+    long_description=readme,
     license='GNU AGPLv3+',
     install_requires=client_requires + crypto_requires,
     project_urls={
-        'Bug Tracker': 'https://github.com/lepture/authlib/issues',
         'Documentation': 'https://docs.authib.org/',
+        'Bug Tracker': 'https://github.com/lepture/authlib/issues',
         'Source Code': 'https://github.com/lepture/authlib',
         'Blog': 'https://blog.authlib.org/',
-        'Sponsor': 'https://www.patreon.com/lepture',
+        'Donate': 'https://lepture.com/donate',
     },
     classifiers=[
         'Development Status :: 4 - Beta',
