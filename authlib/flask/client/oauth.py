@@ -49,7 +49,7 @@ class OAuth(object):
     def init_app(self, app, cache=None, fetch_token=None, update_token=None):
         """Init app with Flask instance."""
         self.app = app
-        if cache:
+        if cache is not None:
             self.cache = cache
 
         if fetch_token:
@@ -128,7 +128,7 @@ class OAuth(object):
 
     def _generate_oauth1_client_kwargs(self, name, kwargs):
         cache = self.cache
-        if not kwargs.get('fetch_request_token') and cache:
+        if not kwargs.get('fetch_request_token') and cache is not None:
             def fetch_request_token():
                 key = _req_token_tpl.format(name)
                 sid = session.pop(key, None)
@@ -141,7 +141,7 @@ class OAuth(object):
 
             kwargs['fetch_request_token'] = fetch_request_token
 
-        if not kwargs.get('save_request_token') and cache:
+        if not kwargs.get('save_request_token') and cache is not None:
             def save_request_token(token):
                 key = _req_token_tpl.format(name)
                 sid = uuid.uuid4().hex
