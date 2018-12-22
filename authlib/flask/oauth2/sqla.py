@@ -136,6 +136,9 @@ class OAuth2ClientMixin(ClientMixin):
             client_secret_expires_at=self.expires_at,
         )
 
+    def get_client_id(self):
+        return self.client_id
+
     def get_default_redirect_uri(self):
         if self.redirect_uris:
             return self.redirect_uris[0]

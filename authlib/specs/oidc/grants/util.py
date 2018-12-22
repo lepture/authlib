@@ -59,12 +59,14 @@ def generate_id_token(
         key, token, request, alg, iss, exp,
         nonce=None, auth_time=None, code=None):
     scopes = scope_to_list(token['scope'])
+
     # TODO: merge scopes and claims
     user_info = _generate_user_info(request.user, scopes)
+    client = request.client
 
     payload = _generate_id_token_payload(
         alg, iss,
-        [request.client.client_id],
+        [client.get_client_id()],
         exp=exp,
         nonce=nonce,
         auth_time=auth_time,

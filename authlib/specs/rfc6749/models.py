@@ -18,6 +18,17 @@ class ClientMixin(object):
     .. _`Section 2`: https://tools.ietf.org/html/rfc6749#section-2
     """
 
+    def get_client_id(self):
+        """A method to return client_id of the client. For instance, the value
+        in database is saved in a column called ``client_id``::
+
+            def get_client_id(self):
+                return self.client_id
+
+        :return: string
+        """
+        raise NotImplementedError()
+
     def get_default_redirect_uri(self):
         """A method to get client default redirect_uri. For instance, the
         database table for client has a column called ``default_redirect_uri``::

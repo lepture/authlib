@@ -70,7 +70,7 @@ class AuthorizationServer(BaseServer):
         self.validate_oauth_signature(request)
         return request
 
-    def create_temporary_credentials_response(self, request):
+    def create_temporary_credentials_response(self, request=None):
         """Validate temporary credentials token request and create response
         for temporary credentials token. Assume the endpoint of temporary
         credentials request is ``https://photos.example.net/initiate``:
