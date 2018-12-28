@@ -139,7 +139,8 @@ class OAuth2Session(Session):
     def fetch_access_token(
             self, url=None, code=None, authorization_response=None,
             body='', auth=None, username=None, password=None, method='POST',
-            headers=None, timeout=None, verify=True, proxies=None, **kwargs):
+            headers=None, timeout=None, verify=True, proxies=None, cert=None,
+            **kwargs):
         """Generic method for fetching an access token from the token endpoint.
 
         :param url: Access Token endpoint URL, if not configured,
@@ -161,6 +162,7 @@ class OAuth2Session(Session):
         :param timeout: Timeout of the request in seconds.
         :param verify: Verify SSL certificate.
         :param proxies: Proxies to use with requests.
+        :param cert: Client side certificates.
         :param kwargs: Extra parameters to include in the token request.
         :return: A :class:`OAuth2Token` object (a dict too).
         """
@@ -194,12 +196,12 @@ class OAuth2Session(Session):
             resp = self.post(
                 url, data=dict(url_decode(body)), timeout=timeout,
                 headers=headers, auth=auth, verify=verify, proxies=proxies,
-                withhold_token=True)
+                cert=cert, withhold_token=True)
         else:
             resp = self.get(
                 url, params=dict(url_decode(body)), timeout=timeout,
                 headers=headers, auth=auth, verify=verify, proxies=proxies,
-                withhold_token=True)
+                cert=cert, withhold_token=True)
 
         for hook in self.compliance_hook['access_token_response']:
             resp = hook(resp)
@@ -216,7 +218,7 @@ class OAuth2Session(Session):
 
     def refresh_token(self, url, refresh_token=None, body='', auth=None,
                       headers=None, timeout=None, verify=True,
-                      proxies=None, **kwargs):
+                      proxies=None, cert=None, **kwargs):
         """Fetch a new access token using a refresh token.
 
         :param url: Refresh Token endpoint, must be HTTPS.
@@ -227,6 +229,7 @@ class OAuth2Session(Session):
         :param headers: Dict to default request headers with.
         :param timeout: Timeout of the request in seconds.
         :param verify: Verify SSL certificate.
+        :param cert: Client side certificates.
         :param proxies: Proxies to use with requests.
         :param kwargs: Extra parameters to include in the token request.
         :return: A :class:`OAuth2Token` object (a dict too).
@@ -248,7 +251,7 @@ class OAuth2Session(Session):
         resp = self.post(
             url, data=dict(url_decode(body)), auth=auth, timeout=timeout,
             headers=headers, verify=verify, withhold_token=True,
-            proxies=proxies)
+            proxies=proxies, cert=cert)
 
         for hook in self.compliance_hook['refresh_token_response']:
             resp = hook(resp)
