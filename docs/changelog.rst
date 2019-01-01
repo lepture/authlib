@@ -6,6 +6,26 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 0.11
+------------
+
+**Release Date not decided yet.**
+
+**BIG NEWS**: Authlib has changed its open source license from AGPL to BSD.
+
+RFC implementations and updates in this release:
+
+- RFC7518: Added A128GCMKW, A192GCMKW, A256GCMKW algorithms for JWE.
+- RFC5849: Removed draft-eaton-oauth-bodyhash-00 spec for OAuth 1.0.
+
+Small changes and bug fixes in this release:
+
+- Fixed missing scope on password and client_credentials grant types
+  of ``OAuth2Session`` via :gh:`issue#96`.
+- Fixed Flask OAuth client cache detection via :gh:`issue#98`.
+- Enabled ssl certificates for ``OAuth2Session`` via :gh:`PR#100`, thanks
+  to pingz.
+
 Version 0.10: Kluke
 -------------------
 

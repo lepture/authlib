@@ -28,7 +28,7 @@ supporter, a backer or a company sponsor.
 Commercial License
 ------------------
 
-Authlib is licensed under AGPLv3+, if this license doesn't fit your company,
+Authlib is licensed under BSD, if this license doesn't fit your company,
 consider to purchase a commercial license.
 
 Find more information on

@@ -29,7 +29,7 @@ setup(
     include_package_data=True,
     platforms='any',
     long_description=readme,
-    license='GNU AGPLv3+',
+    license='BSD',
     install_requires=client_requires + crypto_requires,
     project_urls={
         'Documentation': 'https://docs.authib.org/',
@@ -45,7 +45,7 @@ setup(
         'Framework :: Flask',
         'Framework :: Django',
         'Intended Audience :: Developers',
-        'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
+        'License :: OSI Approved :: BSD License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
         'Programming Language :: Python :: 2',
