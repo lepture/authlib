@@ -1,10 +1,10 @@
 from werkzeug.utils import import_string
 from flask import Response, json
-from authlib.specs.rfc6749 import (
+from authlib.oauth2 import (
     OAuth2Request,
+    ClientAuthentication,
     AuthorizationServer as _AuthorizationServer,
 )
-from authlib.specs.rfc6749 import ClientAuthentication
 from authlib.specs.rfc6750 import BearerToken
 from authlib.common.security import generate_token
 from authlib.common.encoding import to_unicode

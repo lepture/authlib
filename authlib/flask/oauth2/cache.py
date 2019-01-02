@@ -1,5 +1,5 @@
 from authlib.common.security import generate_token
-from authlib.specs.rfc6749.grants import AuthorizationCodeGrant
+from authlib.oauth2.rfc6749.grants import AuthorizationCodeGrant
 
 
 class AuthorizationCode(dict):
