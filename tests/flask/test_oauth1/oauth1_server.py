@@ -20,7 +20,7 @@ from authlib.flask.oauth1.cache import (
     register_nonce_hooks,
     create_exists_nonce_func as create_cache_exists_nonce_func,
 )
-from authlib.specs.rfc5849 import OAuth1Error
+from authlib.oauth1.errors import OAuth1Error
 from authlib.common.urls import url_decode, url_encode
 from authlib.common.encoding import to_unicode
 from tests.util import read_file_path

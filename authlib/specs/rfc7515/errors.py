@@ -1,4 +1,4 @@
-from authlib.jose import (
+from authlib.jose.errors import (
     JoseError, DecodeError, MissingAlgorithmError,
     UnsupportedAlgorithmError, BadSignatureError,
     InvalidHeaderParameterName,

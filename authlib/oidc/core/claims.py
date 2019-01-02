@@ -2,7 +2,7 @@ import time
 import hmac
 from authlib.common.encoding import to_bytes
 from authlib.jose import JWTClaims
-from authlib.jose import (
+from authlib.jose.errors import (
     MissingClaimError,
     InvalidClaimError,
 )

@@ -4,13 +4,13 @@ import requests
 from unittest import TestCase
 from io import StringIO
 
-from authlib.specs.rfc5849 import (
+from authlib.oauth1 import (
     SIGNATURE_PLAINTEXT,
     SIGNATURE_RSA_SHA1,
     SIGNATURE_TYPE_BODY,
     SIGNATURE_TYPE_QUERY,
 )
-from authlib.specs.rfc5849.util import escape
+from authlib.oauth1.rfc5849.util import escape
 from authlib.common.encoding import to_unicode, unicode_type
 from authlib.client import OAuth1Session, OAuthError
 from tests.client_base import mock_text_response
