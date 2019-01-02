@@ -13,8 +13,8 @@ from authlib.specs.rfc5849 import (
 from authlib.specs.rfc5849.util import escape
 from authlib.common.encoding import to_unicode, unicode_type
 from authlib.client import OAuth1Session, OAuthError
-from ..client_base import mock_text_response
-from ..util import read_file_path
+from tests.client_base import mock_text_response
+from tests.util import read_file_path
 
 
 TEST_RSA_OAUTH_SIGNATURE = (

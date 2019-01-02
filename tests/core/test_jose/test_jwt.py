@@ -1,8 +1,8 @@
 import unittest
 import datetime
-from authlib.specs.rfc7515 import UnsupportedAlgorithmError
-from authlib.specs.rfc7519 import JWT, JWTClaims, jwt
-from authlib.specs.rfc7519 import errors
+from authlib.jose import errors
+from authlib.jose import JWT, JWTClaims, jwt
+from authlib.jose import UnsupportedAlgorithmError
 from tests.util import read_file_path
 
 

@@ -1,8 +1,7 @@
 import unittest
 import json
-from authlib.specs.rfc7515 import JWS
-from authlib.specs.rfc7515 import errors
-from authlib.specs.rfc7518 import JWS_ALGORITHMS, JWE_ALGORITHMS
+from authlib.jose import JWS, JWS_ALGORITHMS, JWE_ALGORITHMS
+from authlib.jose import errors
 from tests.util import read_file_path
 
 

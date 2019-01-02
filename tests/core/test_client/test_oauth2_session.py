@@ -11,8 +11,8 @@ from authlib.specs.rfc6749 import (
     MismatchingStateException,
 )
 from authlib.specs.rfc7523 import register_session_client_auth_method
-from ..util import read_file_path
-from ..client_base import mock_json_response
+from tests.util import read_file_path
+from tests.client_base import mock_json_response
 
 
 class OAuth2SessionTest(TestCase):

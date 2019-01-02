@@ -1,12 +1,8 @@
 import unittest
-from authlib.specs.rfc7517 import JWK
+from authlib.jose import jwk
 from authlib.jose.rfc7517.jwk import EC_TYPES, RSA_TYPES
-from authlib.specs.rfc7518 import JWK_ALGORITHMS
 from authlib.common.encoding import base64_to_int
-from ..util import read_file_path
-
-jwk = JWK(algorithms=JWK_ALGORITHMS)
-
+from tests.util import read_file_path
 
 RSA_PRIVATE_KEY = read_file_path('jwk_private.json')
 

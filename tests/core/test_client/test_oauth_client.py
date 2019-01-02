@@ -3,7 +3,7 @@ import unittest
 import mock
 from authlib.common.urls import quote
 from authlib.client import OAuthClient, OAuthError
-from ..client_base import (
+from tests.client_base import (
     mock_send_value,
     get_bearer_token,
 )
