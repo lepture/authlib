@@ -1,5 +1,5 @@
 """
-    authlib.specs.oidc.grants.code
+    authlib.oidc.core.grants.code
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Implementation of Authentication using the Authorization Code Flow
