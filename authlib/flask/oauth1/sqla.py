@@ -1,6 +1,6 @@
 from sqlalchemy import Column, UniqueConstraint
 from sqlalchemy import String, Integer, Text
-from authlib.specs.rfc5849 import (
+from authlib.oauth1 import (
     ClientMixin,
     TemporaryCredentialMixin,
     TokenCredentialMixin,

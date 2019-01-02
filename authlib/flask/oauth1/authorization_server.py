@@ -1,7 +1,7 @@
 import logging
 from werkzeug.utils import import_string
 from flask import Response
-from authlib.specs.rfc5849 import (
+from authlib.oauth1 import (
     OAuth1Request,
     AuthorizationServer as _AuthorizationServer,
 )

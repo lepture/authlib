@@ -18,7 +18,6 @@ from .rfc5849.models import (
 )
 from .rfc5849.authorization_server import AuthorizationServer
 from .rfc5849.resource_protector import ResourceProtector
-from .rfc5849 import errors
 
 __all__ = [
     'OAuth1Request',
@@ -36,5 +35,4 @@ __all__ = [
     'TemporaryCredential',
     'AuthorizationServer',
     'ResourceProtector',
-    'errors',
 ]

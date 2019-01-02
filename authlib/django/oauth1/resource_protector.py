@@ -1,6 +1,6 @@
 import functools
-from authlib.specs.rfc5849 import OAuth1Error
-from authlib.specs.rfc5849 import ResourceProtector as _ResourceProtector
+from authlib.oauth1.errors import OAuth1Error
+from authlib.oauth1 import ResourceProtector as _ResourceProtector
 from django.http import JsonResponse
 from django.conf import settings
 from .nonce import exists_nonce_in_cache

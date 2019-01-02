@@ -1,4 +1,4 @@
-from authlib.specs.rfc5849 import TemporaryCredential
+from authlib.oauth1 import TemporaryCredential
 
 
 def register_temporary_credential_hooks(

@@ -1,9 +1,9 @@
 import logging
-from authlib.specs.rfc5849 import (
+from authlib.oauth1 import (
     OAuth1Request,
     AuthorizationServer as _AuthorizationServer,
 )
-from authlib.specs.rfc5849 import TemporaryCredential
+from authlib.oauth1 import TemporaryCredential
 from authlib.common.security import generate_token
 from authlib.common.urls import url_encode
 from django.core.cache import cache

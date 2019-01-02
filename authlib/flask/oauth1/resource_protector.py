@@ -3,8 +3,8 @@ from flask import json, Response
 from flask import request as _req
 from flask import _app_ctx_stack
 from werkzeug.local import LocalProxy
-from authlib.specs.rfc5849 import OAuth1Error
-from authlib.specs.rfc5849 import ResourceProtector as _ResourceProtector
+from authlib.oauth1 import ResourceProtector as _ResourceProtector
+from authlib.oauth1.errors import OAuth1Error
 
 _JSON_HEADERS = [
     ('Content-Type', 'application/json'),
