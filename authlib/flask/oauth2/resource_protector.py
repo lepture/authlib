@@ -4,11 +4,13 @@ from flask import json
 from flask import request as _req
 from flask import _app_ctx_stack
 from werkzeug.local import LocalProxy
-from authlib.specs.rfc6749 import (
+from authlib.oauth2 import (
     OAuth2Error,
+    ResourceProtector as _ResourceProtector
+)
+from authlib.oauth2.rfc6749 import (
     MissingAuthorizationError,
     TokenRequest,
-    ResourceProtector as _ResourceProtector
 )
 from .signals import token_authenticated
 from ..error import raise_http_exception
