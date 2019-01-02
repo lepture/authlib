@@ -1,4 +1,4 @@
-from authlib.specs.rfc6749 import (
+from authlib.oauth2.rfc6749 import (
     AuthorizationCodeMixin as _AuthorizationCodeMixin
 )
 

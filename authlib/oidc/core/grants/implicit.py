@@ -1,6 +1,6 @@
 import logging
-from authlib.specs.rfc6749.grants import ImplicitGrant
-from authlib.specs.rfc6749 import InvalidScopeError, AccessDeniedError
+from authlib.oauth2.rfc6749.grants import ImplicitGrant
+from authlib.oauth2.rfc6749 import InvalidScopeError, AccessDeniedError
 from .util import (
     is_openid_scope,
     validate_nonce,

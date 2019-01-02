@@ -1,4 +1,4 @@
-from authlib.specs.rfc6749 import OAuth2Error
+from authlib.oauth2 import OAuth2Error
 
 
 class InteractionRequiredError(OAuth2Error):

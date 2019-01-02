@@ -1,0 +1,124 @@
+import inspect
+from authlib.deprecate import deprecate
+
+
+class BearerToken(object):
+    """Bearer Token generator which can create the payload for token response
+    by OAuth 2 server. A typical token response would be:
+
+    .. code-block:: http
+
+        HTTP/1.1 200 OK
+        Content-Type: application/json;charset=UTF-8
+        Cache-Control: no-store
+        Pragma: no-cache
+
+        {
+            "access_token":"mF_9.B5f-4.1JqM",
+            "token_type":"Bearer",
+            "expires_in":3600,
+            "refresh_token":"tGzv3JOkF0XG5Qx2TlKWIA"
+        }
+
+    :param access_token_generator: a function to generate access_token.
+    :param refresh_token_generator: a function to generate refresh_token,
+        if not provided, refresh_token will not be added into token response.
+    :param expires_generator: The expires_generator can be an int value or a
+        function. If it is int, all token expires_in will be this value. If it
+        is function, it can  generate expires_in depending on client and
+        grant_type::
+
+            def expires_generator(client, grant_type):
+                if is_official_client(client):
+                    return 3600 * 1000
+                if grant_type == 'implicit':
+                    return 3600
+                return 3600 * 10
+    :return: Callable
+
+    When BearerToken is initialized, it will be callable::
+
+        token_generator = BearerToken(access_token_generator)
+        token = token_generator(client, grant_type, expires_in=None,
+                    scope=None, include_refresh_token=True)
+
+    The callable function that BearerToken created accepts these parameters:
+
+    :param client: the client that making the request.
+    :param grant_type: current requested grant_type.
+    :param expires_in: if provided, use this value as expires_in.
+    :param scope: current requested scope.
+    :param include_refresh_token: should refresh_token be included.
+    :return: Token dict
+    """
+
+    #: default expires_in value
+    DEFAULT_EXPIRES_IN = 3600
+    #: default expires_in value differentiate by grant_type
+    GRANT_TYPES_EXPIRES_IN = {
+        'authorization_code': 864000,
+        'implicit': 3600,
+        'password': 864000,
+        'client_credentials': 864000
+    }
+
+    def __init__(self, access_token_generator,
+                 refresh_token_generator=None,
+                 expires_generator=None):
+        self.access_token_generator = access_token_generator
+        self.refresh_token_generator = refresh_token_generator
+        self.expires_generator = expires_generator
+
+    def _get_expires_in(self, client, grant_type):
+        if self.expires_generator is None:
+            expires_in = self.GRANT_TYPES_EXPIRES_IN.get(
+                grant_type, self.DEFAULT_EXPIRES_IN)
+        elif callable(self.expires_generator):
+            expires_in = self.expires_generator(client, grant_type)
+        elif isinstance(self.expires_generator, int):
+            expires_in = self.expires_generator
+        else:
+            expires_in = self.DEFAULT_EXPIRES_IN
+        return expires_in
+
+    def __call__(self, client, grant_type, user=None, scope=None,
+                 expires_in=None, include_refresh_token=True):
+
+        access_token = _gen_token(
+            self.access_token_generator,
+            client, grant_type, user, scope
+        )
+
+        if expires_in is None:
+            expires_in = self._get_expires_in(client, grant_type)
+
+        token = {
+            'token_type': 'Bearer',
+            'access_token': access_token,
+            'expires_in': expires_in
+        }
+        if include_refresh_token and self.refresh_token_generator:
+            token['refresh_token'] = _gen_token(
+                self.refresh_token_generator,
+                client, grant_type, user, scope
+            )
+        if scope:
+            token['scope'] = scope
+        return token
+
+
+def _gen_token(func, client, grant_type, user, scope):
+    if hasattr(inspect, 'getfullargspec'):
+        spec = inspect.getfullargspec(func)
+        no_args = not spec.args and not spec.varkw
+    else:
+        spec = inspect.getargspec(func)
+        no_args = not spec.args and not spec.keywords
+    if no_args:
+        deprecate('Token generator now accepts parameters', '0.11', 'vhL75', 'tg')
+        return func()
+
+    return func(
+        client=client, grant_type=grant_type,
+        user=user, scope=scope,
+    )

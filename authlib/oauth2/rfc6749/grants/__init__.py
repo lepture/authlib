@@ -1,5 +1,5 @@
 """
-    authlib.specs.rfc6749.grants
+    authlib.oauth2.rfc6749.grants
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Implementation for `Section 4`_ of "Obtaining Authorization".

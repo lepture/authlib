@@ -1,5 +1,5 @@
 import time
-from ..rfc7519 import jwt
+from authlib.jose import jwt
 
 
 def sign_jwt_bearer_assertion(

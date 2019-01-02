@@ -1,6 +1,6 @@
 import logging
-from authlib.specs.rfc6749.grants import AuthorizationCodeGrant
-from authlib.specs.rfc6749 import AccessDeniedError, InvalidScopeError
+from authlib.oauth2.rfc6749 import grants
+from authlib.oauth2.rfc6749 import AccessDeniedError, InvalidScopeError
 from .util import (
     is_openid_scope,
     create_response_mode_response,
@@ -11,7 +11,7 @@ from .code import OpenIDCode
 log = logging.getLogger(__name__)
 
 
-class OpenIDHybridGrant(AuthorizationCodeGrant):
+class OpenIDHybridGrant(grants.AuthorizationCodeGrant):
     TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic']
     RESPONSE_TYPES = ['code id_token', 'code token', 'code id_token token']
 

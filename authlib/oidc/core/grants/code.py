@@ -9,7 +9,7 @@
 """
 
 import logging
-from authlib.specs.rfc6749.grants import AuthorizationCodeGrant
+from authlib.oauth2.rfc6749 import grants
 from .util import (
     is_openid_scope,
     validate_nonce,
@@ -63,7 +63,7 @@ class OpenIDCode(object):
             )
 
 
-class OpenIDCodeGrant(AuthorizationCodeGrant):
+class OpenIDCodeGrant(grants.AuthorizationCodeGrant):
     TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic']
 
     def __init__(self, *args, **kwargs):
