@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 import json
 from requests import Session
-from .errors import (
-    MissingTokenError,
-    MissingVerifierError,
-    FetchTokenDeniedError,
-)
-from ..common.urls import (
+from authlib.common.urls import (
     url_decode,
     add_params_to_uri,
     urlparse,
 )
-from ..specs.rfc5849 import (
+from authlib.oauth1 import (
     SIGNATURE_HMAC_SHA1,
     SIGNATURE_TYPE_HEADER,
+)
+from .errors import (
+    MissingTokenError,
+    MissingVerifierError,
+    FetchTokenDeniedError,
 )
 from .oauth1_auth import OAuth1Auth
 from ..deprecate import deprecate

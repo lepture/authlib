@@ -1,16 +1,16 @@
 # -*- coding: utf-8 -*-
 from requests.auth import AuthBase
 from requests.utils import to_native_string
-from ..common.encoding import to_native
-from ..common.urls import extract_params
-from ..specs.rfc5849 import Client
-from ..specs.rfc5849 import SIGNATURE_TYPE_BODY
+from authlib.common.encoding import to_native
+from authlib.common.urls import extract_params
+from authlib.oauth1 import AuthClient
+from authlib.oauth1 import SIGNATURE_TYPE_BODY
 
 
 CONTENT_TYPE_FORM_URLENCODED = 'application/x-www-form-urlencoded'
 
 
-class OAuth1Auth(AuthBase, Client):
+class OAuth1Auth(AuthBase, AuthClient):
     """Signs the request using OAuth 1 (RFC5849)"""
 
     def sign_request(self, req):
