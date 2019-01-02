@@ -15,7 +15,7 @@ from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import GCM, CBC
 from cryptography.hazmat.primitives.padding import PKCS7
 from cryptography.exceptions import InvalidTag
-from authlib.specs.rfc7516 import JWEEncAlgorithm
+from authlib.jose.rfc7516 import JWEEncAlgorithm
 from ..util import encode_int
 
 

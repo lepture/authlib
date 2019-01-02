@@ -1,8 +1,7 @@
 import json
-from authlib.common.encoding import text_types, to_unicode
-from authlib.specs.rfc7517 import JWK
-from authlib.specs.rfc7518 import JWK_ALGORITHMS
-from .errors import DecodeError
+from authlib.common.encoding import text_types
+from .rfc7517 import JWK
+from .rfc7518 import JWK_ALGORITHMS
 
 jwk = JWK(algorithms=JWK_ALGORITHMS)
 
@@ -28,13 +27,3 @@ def create_key_func(key):
     def key_func(header, payload):
         return load_key(key, header, payload)
     return key_func
-
-
-def decode_payload(bytes_payload):
-    try:
-        payload = json.loads(to_unicode(bytes_payload))
-    except ValueError:
-        raise DecodeError('Invalid payload value')
-    if not isinstance(payload, dict):
-        raise DecodeError('Invalid payload type')
-    return payload

@@ -20,7 +20,7 @@ from cryptography.hazmat.primitives.asymmetric.ec import (
     SECP256R1, SECP384R1, SECP521R1,
 )
 from cryptography.hazmat.backends import default_backend
-from authlib.specs.rfc7517 import JWKAlgorithm
+from authlib.jose.rfc7517 import JWKAlgorithm
 from authlib.common.encoding import to_bytes, base64_to_int, int_to_base64
 
 invalid_strings = [
