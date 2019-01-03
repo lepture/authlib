@@ -48,7 +48,7 @@ Authlib has provided a mixin for SQLAlchemy, define the client with this mixin::
 
 A client is registered by a user (developer) on your website. If you decide to
 implement all the missing methods by yourself, get a deep inside with
-:class:`~authlib.specs.rfc6749.ClientMixin` API reference.
+:class:`~authlib.oauth2.rfc6749.ClientMixin` API reference.
 
 Token
 -----

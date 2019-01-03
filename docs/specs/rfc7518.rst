@@ -15,7 +15,7 @@ Algorithms for JWS
 ------------------
 
 The interface for JWS Algorithms are all inherit from
-:class:`authlib.specs.rfc7515.JWSAlgorithm`.
+:class:`authlib.jose.rfc7515.JWSAlgorithm`.
 
 Find how to use them in :ref:`jws_guide`.
 
@@ -71,8 +71,8 @@ Algorithms for JWE
 
 This section contains algorithms for JWE ``alg`` and ``enc`` header. For
 ``alg`` the interface are all inherited from
-:class:`authlib.specs.rfc7516.JWEAlgorithm`. For ``enc``, the interface are
-inherited from :class:`authlib.specs.rfc7516.JWEEncAlgorithm`.
+:class:`authlib.jose.rfc7516.JWEAlgorithm`. For ``enc``, the interface are
+inherited from :class:`authlib.jose.rfc7516.JWEEncAlgorithm`.
 
 Current available algorithms for ``alg``:
 
@@ -98,7 +98,7 @@ Algorithms for JWK
 
 This section defines the parameters for keys using the algorithms via
 RFC7518 `Section 6`_. The interface for JWK Algorithms are all inherited from
-:class:`authlib.specs.rfc7517.JWKAlgorithm`. The available values of ``kty``:
+:class:`authlib.jose.rfc7517.JWKAlgorithm`. The available values of ``kty``:
 
 1. EC: Elliptic Curve (requires extra crypto backends)
 2. RSA: RSA (requires extra crypto backends)

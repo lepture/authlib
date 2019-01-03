@@ -11,7 +11,7 @@ server. Here is the way to protect your users' resources::
 
     from flask import jsonify
     from authlib.flask.oauth2 import ResourceProtector, current_token
-    from authlib.specs.rfc6750 import BearerTokenValidator
+    from authlib.oauth2.rfc6750 import BearerTokenValidator
 
     class MyBearerTokenValidator(BearerTokenValidator):
         def authenticate_token(self, token_string):

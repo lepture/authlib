@@ -13,7 +13,7 @@ This section contains the generic Python implementation of RFC7523_.
 
 .. _RFC7523: https://tools.ietf.org/html/rfc7523
 
-.. module:: authlib.specs.rfc7523
+.. module:: authlib.oauth2.rfc7523
 
 
 .. _jwt_grant_type:
@@ -23,13 +23,13 @@ Using JWTs as Authorization Grants
 
 JWT Profile for OAuth 2.0 Authorization Grants works in the same way with
 :ref:`RFC6749 <specs/rfc6749>` built-in grants. Which means it can be
-registered with :meth:`~authlib.specs.rfc6749.AuthorizationServer.register_grant`.
+registered with :meth:`~authlib.oauth2.rfc6749.AuthorizationServer.register_grant`.
 
 The base class is :class:`JWTBearerGrant`, you need to implement the missing
 methods in order to use it. Here is an example::
 
-    from authlib.specs.rfc7519 import jwk
-    from authlib.specs.rfc7523 import JWTBearerGrant as _JWTBearerGrant
+    from authlib.jose import jwk
+    from authlib.oauth2.rfc7523 import JWTBearerGrant as _JWTBearerGrant
 
     class JWTBearerGrant(_JWTBearerGrant):
         def authenticate_user(self, claims):
@@ -68,8 +68,8 @@ methods. In this section, Authlib provides two more options:
 ``client_secret_jwt`` and ``private_key_jwt``. RFC7523 itself doesn't define
 any names, these two names are defined by OpenID Connect in ClientAuthentication_.
 
-The :class:`~authlib.specs.rfc6749.AuthorizationServer` has provided a method
-:meth:`~authlib.specs.rfc6749.AuthorizationServer.register_client_auth_method`
+The :class:`~authlib.oauth2.rfc6749.AuthorizationServer` has provided a method
+:meth:`~authlib.oauth2.rfc6749.AuthorizationServer.register_client_auth_method`
 to add more client authentication methods.
 
 In Authlib, ``client_secret_jwt`` and ``private_key_jwt`` share the same API,
@@ -106,7 +106,7 @@ grant types support this authentication method, you need to add it to the
 supported grant types too, e.g. we want to support this in authorization
 code grant::
 
-    from authlib.specs.rfc6749 import grants
+    from authlib.oauth2.rfc6749 import grants
 
     class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
         TOKEN_ENDPOINT_AUTH_METHODS = [
@@ -141,7 +141,7 @@ Authlib RFC7523 has provided you a helper function to register client assertion
 authentication method easily to ``OAuth2Session``. Take ``client_secret_jwt``
 as an example::
 
-    from authlib.specs.rfc7523 import register_session_client_auth_method
+    from authlib.oauth2.rfc7523 import register_session_client_auth_method
     from authlib.client import OAuth2Session
 
     session = OAuth2Session(

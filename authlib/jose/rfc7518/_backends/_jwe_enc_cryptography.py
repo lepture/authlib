@@ -1,6 +1,6 @@
 """
-    authlib.specs.rfc7518
-    ~~~~~~~~~~~~~~~~~~~~~
+    authlib.jose.rfc7518
+    ~~~~~~~~~~~~~~~~~~~~
 
     Cryptographic Algorithms for Cryptographic Algorithms for Content
     Encryption per `Section 5`_.

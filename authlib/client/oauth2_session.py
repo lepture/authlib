@@ -1,16 +1,16 @@
 import logging
 from requests import Session
-from ..common.security import generate_token
-from ..common.urls import url_decode
-from ..specs.rfc6749.parameters import (
+from authlib.common.security import generate_token
+from authlib.common.urls import url_decode
+from authlib.oauth2.rfc6749.parameters import (
     prepare_grant_uri,
     prepare_token_request,
     parse_authorization_code_response,
     parse_implicit_response,
 )
-from ..specs.rfc6749 import OAuth2Token
-from ..specs.rfc6749 import InsecureTransportError
-from ..specs.rfc7009 import prepare_revoke_token_request
+from authlib.oauth2.rfc6749 import OAuth2Token
+from authlib.oauth2.rfc6749 import InsecureTransportError
+from authlib.oauth2.rfc7009 import prepare_revoke_token_request
 from .errors import OAuthError, TokenExpiredError
 from .oauth2_auth import OAuth2Auth, OAuth2ClientAuth
 from ..deprecate import deprecate

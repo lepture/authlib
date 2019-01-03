@@ -1,6 +1,6 @@
 from requests import Session
-from ..specs.rfc6749 import OAuth2Token
-from ..specs.rfc7523 import JWTBearerGrant
+from authlib.oauth2.rfc6749 import OAuth2Token
+from authlib.oauth2.rfc7523 import JWTBearerGrant
 from .oauth2_auth import OAuth2Auth
 
 

@@ -12,7 +12,7 @@ create a **HMAC-SHA256** signature method::
 
     import hmac
     from authlib.common.encoding import to_bytes
-    from authlib.specs.rfc5849 import signature
+    from authlib.oauth1.rfc5849 import signature
 
     def verify_hmac_sha256(request):
         text = signature.generate_signature_base_string(request)

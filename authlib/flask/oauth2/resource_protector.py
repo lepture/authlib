@@ -25,7 +25,7 @@ class ResourceProtector(_ResourceProtector):
         require_oauth = ResourceProtector()
 
         # add bearer token validator
-        from authlib.specs.rfc6750 import BearerTokenValidator
+        from authlib.oauth2.rfc6750 import BearerTokenValidator
         from project.models import Token
 
         class MyBearerTokenValidator(BearerTokenValidator):

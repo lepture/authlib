@@ -10,7 +10,7 @@ This section contains the generic implementation of RFC7662_.
 
 .. _RFC7662: https://tools.ietf.org/html/rfc7662
 
-.. module:: authlib.specs.rfc7662
+.. module:: authlib.oauth2.rfc7662
 
 .. _register_introspection_endpoint:
 
@@ -21,7 +21,7 @@ With the help of ``register_endpoint`` offered by :ref:`flask_oauth2_server`,
 we can easily add introspection endpoint to the authorization server. But
 first, we need to implement the missing methods::
 
-    from authlib.specs.rfc7662 import IntrospectionEndpoint
+    from authlib.oauth2.rfc7662 import IntrospectionEndpoint
 
     class MyIntrospectionEndpoint(IntrospectionEndpoint):
         def query_token(self, token, token_type_hint, client):

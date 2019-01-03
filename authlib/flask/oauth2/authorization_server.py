@@ -5,7 +5,7 @@ from authlib.oauth2 import (
     ClientAuthentication,
     AuthorizationServer as _AuthorizationServer,
 )
-from authlib.specs.rfc6750 import BearerToken
+from authlib.oauth2.rfc6750 import BearerToken
 from authlib.common.security import generate_token
 from authlib.common.encoding import to_unicode
 from authlib.deprecate import deprecate
@@ -143,7 +143,7 @@ class AuthorizationServer(_AuthorizationServer):
     def create_bearer_token_generator(self, app):
         """Create a generator function for generating ``token`` value. This
         method will create a Bearer Token generator with
-        :class:`authlib.specs.rfc6750.BearerToken`. By default, it will not
+        :class:`authlib.oauth2.rfc6750.BearerToken`. By default, it will not
         generate ``refresh_token``, which can be turn on by configuration
         ``OAUTH2_REFRESH_TOKEN_GENERATOR=True``.
         """

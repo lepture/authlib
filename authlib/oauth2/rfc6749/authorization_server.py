@@ -10,7 +10,7 @@ class AuthorizationServer(object):
 
     :param query_client: A function to get client by client_id. The client
         model class MUST implement the methods described by
-        :class:`~authlib.specs.rfc6749.ClientMixin`.
+        :class:`~authlib.oauth2.rfc6749.ClientMixin`.
     :param token_generator: A method to generate tokens.
     """
     def __init__(self, query_client, generate_token, save_token, **config):
@@ -81,7 +81,7 @@ class AuthorizationServer(object):
 
     def register_grant(self, grant_cls, extensions=None):
         """Register a grant class into the endpoint registry. Developers
-        can implement the grants in ``authlib.specs.rfc6749.grants`` and
+        can implement the grants in ``authlib.oauth2.rfc6749.grants`` and
         register with this method::
 
             class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):

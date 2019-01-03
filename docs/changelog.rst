@@ -120,7 +120,7 @@ version 0.7:
 
 - RFC7515_: Refactored :class:`~authlib.rfc7515.JWS`, make it a full implementation.
 - RFC7521_: Add :class:`~authlib.client.AssertionSession`, only works with RFC7523_.
-- RFC7523_: Add :class:`~authlib.specs.rfc7523.JWTBearerGrant`, read the guide in
+- RFC7523_: Add :class:`~authlib.oauth2.rfc7523.JWTBearerGrant`, read the guide in
   :ref:`specs/rfc7523`.
 
 Besides that, there are more changes:
@@ -206,7 +206,7 @@ This version breaks a lot of things. There are many redesigns in order to
 get a better stable API. It is still in Alpha stage, with these breaking
 changes, I hope Authlib will go into Beta in the next version.
 
-- Added :meth:`~authlib.specs.rfc6749.register_error_uri` and its Flask
+- Added :meth:`~authlib.oauth2.rfc6749.register_error_uri` and its Flask
   integration.
 - :class:`~authlib.client.OAuth2Session` supports more grant types.
 - Deprecate built-in cache. Read more on :gh:`issue#23`.

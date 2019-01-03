@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-    authlib.specs.rfc7519
-    ~~~~~~~~~~~~~~~~~~~~~
+    authlib.jose.rfc7519
+    ~~~~~~~~~~~~~~~~~~~~
 
     This module represents a direct implementation of
     JSON Web Token (JWT).

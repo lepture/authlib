@@ -53,6 +53,7 @@ about Authlib, and installation of Authlib.
 
     basic/index
     client/index
+    jose/index
     flask/1/index
     flask/2/index
     django/1/index

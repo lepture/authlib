@@ -1,7 +1,7 @@
 Register Grants
 ===============
 
-.. module:: authlib.specs.rfc6749.grants
+.. module:: authlib.oauth2.rfc6749.grants
 
 There are four grant types defined by RFC6749, you can also create your own
 extended grant. Register the supported grant types to the authorization server.
@@ -28,7 +28,7 @@ kept in a database or a cache like redis. Here is a SQLAlchemy mixin for
 
 Implement this grant by subclass :class:`AuthorizationCodeGrant`::
 
-    from authlib.specs.rfc6749 import grants
+    from authlib.oauth2.rfc6749 import grants
     from authlib.common.security import generate_token
 
     class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
@@ -83,7 +83,7 @@ owner granted the access, access token is issued in the redirect URI,
 there is no missing implementation, which means it can be easily registered
 with::
 
-    from authlib.specs.rfc6749 import grants
+    from authlib.oauth2.rfc6749 import grants
 
     # register it to grant endpoint
     server.register_grant(grants.ImplicitGrant)
@@ -98,7 +98,7 @@ Resource owner uses his username and password to exchange an access token,
 this grant type should be used only when the client is trustworthy, implement
 it with a subclass of :class:`ResourceOwnerPasswordCredentialsGrant`::
 
-    from authlib.specs.rfc6749 import grants
+    from authlib.oauth2.rfc6749 import grants
 
     class PasswordGrant(grants.ResourceOwnerPasswordCredentialsGrant):
         def authenticate_user(self, username, password):
@@ -125,7 +125,7 @@ Client credentials grant type can access public resources and MAYBE the
 client's creator's resources, depending on how you issue tokens to this
 grant type. It can be easily registered with::
 
-    from authlib.specs.rfc6749 import grants
+    from authlib.oauth2.rfc6749 import grants
 
     # register it to grant endpoint
     server.register_grant(grants.ClientCredentialsGrant)
@@ -145,7 +145,7 @@ Many OAuth 2 providers haven't implemented refresh token endpoint. Authlib
 provides it as a grant type, implement it with a subclass of
 :class:`RefreshTokenGrant`::
 
-    from authlib.specs.rfc6749 import grants
+    from authlib.oauth2.rfc6749 import grants
 
     class RefreshTokenGrant(grants.RefreshTokenGrant):
         def authenticate_refresh_token(self, refresh_token):
@@ -181,7 +181,7 @@ supports two endpoints:
 
 Creating a custom grant type with **BaseGrant**::
 
-    from authlib.specs.rfc6749 import grants
+    from authlib.oauth2.rfc6749 import grants
 
 
     class MyCustomGrant(grants.BaseGrant):

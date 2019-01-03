@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-    authlib.specs.rfc7518
-    ~~~~~~~~~~~~~~~~~~~~~
+    authlib.jose.rfc7518
+    ~~~~~~~~~~~~~~~~~~~~
 
     Cryptographic Algorithms for Keys per `Section 6`_.
 

@@ -1,5 +1,5 @@
 """
-    authlib.specs.rfc7515
+    authlib.jose.rfc7515
     ~~~~~~~~~~~~~~~~~~~~~
 
     This module represents a direct implementation of

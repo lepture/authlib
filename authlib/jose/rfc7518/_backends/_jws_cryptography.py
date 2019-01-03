@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-    authlib.specs.rfc7518
-    ~~~~~~~~~~~~~~~~~~~~~
+    authlib.jose.rfc7518
+    ~~~~~~~~~~~~~~~~~~~~
 
     "alg" (Algorithm) Header Parameter Values for JWS per `Section 3`_.
 

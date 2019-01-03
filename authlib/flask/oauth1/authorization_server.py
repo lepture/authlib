@@ -25,7 +25,7 @@ class AuthorizationServer(_AuthorizationServer):
     :param app: A Flask app instance
     :param query_client: A function to get client by client_id. The client
         model class MUST implement the methods described by
-        :class:`~authlib.specs.rfc5849.ClientMixin`.
+        :class:`~authlib.oauth1.rfc5849.ClientMixin`.
     :param token_generator: A function to generate token
     """
 

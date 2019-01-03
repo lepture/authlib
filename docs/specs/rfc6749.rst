@@ -26,7 +26,7 @@ check:
 Servers
 ~~~~~~~
 
-.. module:: authlib.specs.rfc6749
+.. module:: authlib.oauth2.rfc6749
 
 .. autoclass:: AuthorizationServer
     :members:
@@ -68,7 +68,7 @@ Errors
 Grant Types
 ~~~~~~~~~~~
 
-.. module:: authlib.specs.rfc6749.grants
+.. module:: authlib.oauth2.rfc6749.grants
 
 .. autoclass:: AuthorizationCodeGrant
     :member-order: bysource

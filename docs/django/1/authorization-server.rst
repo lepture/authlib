@@ -44,7 +44,7 @@ it yourself::
 
     from django.db import models
     from django.contrib.auth.models import User
-    from authlib.specs.rfc5849 import ClientMixin
+    from authlib.oauth1 import ClientMixin
 
     class Client(models.Model, ClientMixin):
         user = models.ForeignKey(User, on_delete=CASCADE)
@@ -62,7 +62,7 @@ it yourself::
             return None
 
 A client is registered by a user (developer) on your website. Get a deep
-inside with :class:`~authlib.specs.rfc5849.ClientMixin` API reference.
+inside with :class:`~authlib.oauth1.rfc5849.ClientMixin` API reference.
 
 Token
 -----
@@ -75,7 +75,7 @@ Here is an example of how it looks in Django::
 
     from django.db import models
     from django.contrib.auth.models import User
-    from authlib.specs.rfc5849 import TokenCredentialMixin
+    from authlib.oauth1 import TokenCredentialMixin
 
     class Token(models.Model, TokenCredentialMixin):
         user = models.ForeignKey(User, on_delete=CASCADE)

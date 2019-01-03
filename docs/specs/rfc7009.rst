@@ -10,7 +10,7 @@ This section contains the generic implementation of RFC7009_.
 
 .. _RFC7009: https://tools.ietf.org/html/rfc7009
 
-.. module:: authlib.specs.rfc7009
+.. module:: authlib.oauth2.rfc7009
 
 .. _register_revocation_endpoint:
 
@@ -20,7 +20,7 @@ Register Revocation Endpoint
 The revocation endpoint can be easily registered to :ref:`flask_oauth2_server`.
 But there are missing methods to be implemented::
 
-    from authlib.specs.rfc7009 import RevocationEndpoint
+    from authlib.oauth2.rfc7009 import RevocationEndpoint
 
     class MyRevocationEndpoint(RevocationEndpoint):
         def query_token(self, token, token_type_hint, client):

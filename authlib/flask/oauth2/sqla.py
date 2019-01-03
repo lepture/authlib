@@ -288,7 +288,7 @@ def create_revocation_endpoint(session, token_model):
     :param session: SQLAlchemy session
     :param token_model: Token model class
     """
-    from authlib.specs.rfc7009 import RevocationEndpoint
+    from authlib.oauth2.rfc7009 import RevocationEndpoint
     query_token = create_query_token_func(session, token_model)
 
     class _RevocationEndpoint(RevocationEndpoint):
@@ -310,7 +310,7 @@ def create_bearer_token_validator(session, token_model):
     :param session: SQLAlchemy session
     :param token_model: Token model class
     """
-    from authlib.specs.rfc6750 import BearerTokenValidator
+    from authlib.oauth2.rfc6750 import BearerTokenValidator
 
     class _BearerTokenValidator(BearerTokenValidator):
         def authenticate_token(self, token_string):

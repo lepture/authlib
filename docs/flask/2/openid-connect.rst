@@ -11,7 +11,7 @@ OpenID Connect 1.0 is supported from version 0.6. The integrations are built
 with :ref:`flask_oauth2_custom_grant_types`. Since OpenID Connect is built on
 OAuth 2.0 frameworks, you need to read :ref:`flask_oauth2_server` at first.
 
-.. module:: authlib.specs.rfc6749.grants
+.. module:: authlib.oauth2.rfc6749.grants
 
 Configuration
 -------------

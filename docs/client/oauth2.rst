@@ -246,16 +246,15 @@ a ``id_token``::
 This ``id_token`` is a JWT text, it can not be used unless it is parsed.
 Authlib has provided tools for parsing and validating OpenID Connect id_token::
 
-    >>> from authlib.specs.oidc import CodeIDToken
-    >>> from authlib.specs.rfc7519 import JWT
+    >>> from authlib.oidc.core import CodeIDToken
+    >>> from authlib.jose import jwt
     >>> # GET keys from https://www.googleapis.com/oauth2/v3/certs
-    >>> jwt = JWT()
     >>> claims = jwt.decode(resp['id_token'], keys, claims_cls=CodeIDToken)
     >>> claims.validate()
 
-Get deep inside with :class:`~authlib.specs.rfc7519.JWT` and
-:class:`~authlib.specs.oidc.CodeIDToken`. Learn how to validate JWT claims
-at :ref:`specs/rfc7519`.
+Get deep inside with :class:`~authlib.jose.rfc7519.JWT` and
+:class:`~authlib.oidc.core.CodeIDToken`. Learn how to validate JWT claims
+at :ref:`jwt_guide`.
 
 
 AssertionSession
@@ -303,4 +302,5 @@ also read these posts:
 - `Access Google Analytics API <https://blog.authlib.org/2018/access-google-analytics-api>`_.
 - `Using Authlib with gspread <https://blog.authlib.org/2018/authlib-for-gspread>`_.
 
+.. _loginpass: https://github.com/authlib/loginpass
 .. _`Google Service Account`: https://developers.google.com/identity/protocols/OAuth2ServiceAccount

@@ -1,7 +1,7 @@
 from requests.auth import AuthBase, HTTPBasicAuth
-from ..common.urls import add_params_to_qs
-from ..specs.rfc6749 import OAuth2Token
-from ..specs.rfc6750 import add_bearer_token
+from authlib.common.urls import add_params_to_qs
+from authlib.oauth2.rfc6749 import OAuth2Token
+from authlib.oauth2.rfc6750 import add_bearer_token
 from .errors import (
     MissingTokenError,
     UnsupportedTokenTypeError,

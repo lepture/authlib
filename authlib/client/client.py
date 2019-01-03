@@ -6,7 +6,7 @@ from .errors import (
     MissingRequestTokenError,
     MissingTokenError,
 )
-from ..specs.rfc7636 import create_s256_code_challenge
+from ..oauth2.rfc7636 import create_s256_code_challenge
 from ..common.urls import urlparse
 from ..common.security import generate_token
 from ..consts import default_user_agent

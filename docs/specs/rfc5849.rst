@@ -15,7 +15,7 @@ create an OAuth 1.0 provider in these frameworks:
 
 .. _RFC5849: https://tools.ietf.org/html/rfc5849
 
-.. module:: authlib.specs.rfc5849
+.. module:: authlib.oauth1.rfc5849
 
 
 Servers

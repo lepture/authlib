@@ -13,7 +13,7 @@ how to use it in :ref:`flask_odic_server`.
 OpenID Grants
 -------------
 
-.. module:: authlib.specs.oidc.grants
+.. module:: authlib.oidc.core.grants
 
 .. autoclass:: OpenIDCodeGrant
     :show-inheritance:
@@ -30,7 +30,7 @@ OpenID Grants
 OpenID Claims
 -------------
 
-.. module:: authlib.specs.oidc
+.. module:: authlib.oidc.core
 
 .. autoclass:: IDToken
     :show-inheritance:

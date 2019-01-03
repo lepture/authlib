@@ -43,7 +43,7 @@ Authlib has provided a mixin for SQLAlchemy, define the client with this mixin::
         user = db.relationship('User')
 
 A client is registered by a user (developer) on your website. Get a deep
-inside with :class:`~authlib.specs.rfc5849.ClientMixin` API reference.
+inside with :class:`~authlib.oauth1.rfc5849.ClientMixin` API reference.
 
 Temporary Credentials
 ---------------------
@@ -70,7 +70,7 @@ there is also a SQLAlchemy mixin::
         user = db.relationship('User')
 
 To make a Temporary Credentials model yourself, get more information with
-:class:`~authlib.specs.rfc5849.ClientMixin` API reference.
+:class:`~authlib.oauth1.rfc5849.ClientMixin` API reference.
 
 Token Credentials
 -----------------
@@ -94,7 +94,7 @@ Here is a SQLAlchemy mixin for easy integration::
         self.user_id = user_id
 
 If SQLAlchemy is not what you want, read the API reference of
-:class:`~authlib.specs.rfc5849.TokenCredentialMixin` and implement the missing
+:class:`~authlib.oauth1.rfc5849.TokenCredentialMixin` and implement the missing
 methods.
 
 Timestamp and Nonce

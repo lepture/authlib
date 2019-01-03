@@ -21,7 +21,7 @@ using it. Learn how to use it in :ref:`flask_oauth2_resource_protector`.
 API Reference
 -------------
 
-.. module:: authlib.specs.rfc6750
+.. module:: authlib.oauth2.rfc6750
 
 .. autoclass:: BearerTokenValidator
     :members:

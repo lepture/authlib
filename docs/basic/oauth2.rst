@@ -65,7 +65,7 @@ server with the grant of the resource owner.
 Grant Types
 -----------
 
-.. module:: authlib.specs.rfc6749.grants
+.. module:: authlib.oauth2.rfc6749.grants
 
 Authorization server MAY supports several **grant types** during the **authorization**,
 step 1 and 2. A grant type defines a way of how the authorization server will verify

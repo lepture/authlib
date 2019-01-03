@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-    authlib.specs.rfc5849.signature
+    authlib.oauth1.rfc5849.signature
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     This module represents a direct implementation of `section 3.4`_ of the spec.
