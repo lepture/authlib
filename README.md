@@ -4,10 +4,10 @@
 
 # Authlib
 
-<a href="https://lepture.com/donate"><img src="https://img.shields.io/badge/$-donate-ff69b4.svg?maxAge=2592000" /></a>
+<a href="https://lepture.com/donate"><img src="https://badgen.net/badge/donate/lepture/ff69b4" /></a>
 <a href="https://travis-ci.org/lepture/authlib"><img src="https://api.travis-ci.org/lepture/authlib.svg?branch=master" alt="Build Status"></a>
 <a href="https://codecov.io/gh/lepture/authlib?branch=master"><img src="https://codecov.io/gh/lepture/authlib/branch/master/graph/badge.svg" alt="Coverage Status"></a>
-<a href="https://pypi.org/project/Authlib/"><img src="https://img.shields.io/pypi/v/authlib.svg?maxAge=3600" alt="PyPI Version"></a>
+<a href="https://pypi.org/project/Authlib/"><img src="https://badgen.net/pypi/v/authlib" alt="PyPI Version"></a>
 <a href="https://pypi.org/project/Authlib/"><img src="https://img.shields.io/pypi/status/authlib.svg?maxAge=3600" alt="Release Stage"></a>
 <a href="https://codeclimate.com/github/lepture/authlib/maintainability"><img src="https://api.codeclimate.com/v1/badges/8c09859e1ab803f7b9ac/maintainability" alt="Maintainability" /></a>
 <a href="https://twitter.com/intent/follow?screen_name=authlib"><img src="https://img.shields.io/twitter/follow/authlib.svg?maxAge=3600&style=social&logo=twitter&label=Follow" alt="Follow Twitter"></a>
@@ -43,12 +43,12 @@ authorization_server.register_endpoint(IntrospectionEndpoint)
 
 ## Useful Links
 
-1. Take a look at [Authlib Homepage](https://authlib.org/)
-2. Get more information with [Authlib Documentation](https://docs.authlib.org/)
-3. Check other [Authlib Repositories](https://github.com/authlib)
-4. Learn some skills on [Authlib Blog](https://blog.authlib.org/)
-5. Get latest news via [Authlib on Twitter](https://twitter.com/authlib)
-6. Ask questions on StackOverflow with [Authlib Tag](https://stackoverflow.com/questions/tagged/authlib)
+1. Homepage: <https://authlib.org/>.
+2. Documentation: <https://docs.authlib.org/>.
+3. Blog: <https://blog.authlib.org/>.
+4. Twitter: <https://twitter.com/authlib>.
+5. StackOverflow: <https://stackoverflow.com/questions/tagged/authlib>.
+6. Other Repositories: <https://github.com/authlib>.
 
 ## Spec Implementations
 

@@ -7,12 +7,12 @@ JWS, JWK, JWA, JWT are included.
 Useful Links
 ------------
 
-1. Take a look at `Authlib Homepage <https://authlib.org/>`_.
-2. Get more information with `Authlib Documentation <https://docs.authlib.org/>`_.
-3. Check other `Authlib Repositories <https://github.com/authlib>`_.
-4. Learn some skills on `Authlib Blog <https://blog.authlib.org/>`_.
-5. Get latest news via `Authlib on Twitter <https://twitter.com/authlib>`_.
-6. Support Authlib via `Patreon <https://www.patreon.com/lepture>`_.
+1. Homepage: https://authlib.org/.
+2. Documentation: https://docs.authlib.org/.
+3. Blog: https://blog.authlib.org/.
+4. More Repositories: https://github.com/authlib.
+5. Twitter: https://twitter.com/authlib.
+6. Donate: https://www.patreon.com/lepture.
 
 Specifications
 --------------
