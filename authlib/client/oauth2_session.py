@@ -24,9 +24,11 @@ DEFAULT_HEADERS = {
 }
 
 
-class OAuth2Session(Session):
-    """Construct a new OAuth 2 client requests session.
+class OAuth2Handler:
+    """Construct a new OAuth 2 client handler.
 
+    :param session: Requests session object to communicate with
+                    authorization server.
     :param client_id: Client ID, which you get from client registration.
     :param client_secret: Client Secret, which you get from registration.
     :param token_endpoint_auth_method: Client auth method for token endpoint.
@@ -44,13 +46,13 @@ class OAuth2Session(Session):
     :param token_updater: A function for you to update token. It accept a
                           :class:`OAuth2Token` as parameter.
     """
-    def __init__(self, client_id=None, client_secret=None,
-                 token_endpoint_auth_method=None,
+    def __init__(self, session=None, client_id=None,
+                 client_secret=None, token_endpoint_auth_method=None,
                  refresh_token_url=None, refresh_token_params=None,
-                 scope=None, redirect_uri=None,
-                 token=None, token_placement='header',
-                 state=None, token_updater=None, **kwargs):
-        super(OAuth2Session, self).__init__()
+                 scope=None, redirect_uri=None, token=None,
+                 token_placement='header', state=None,
+                 token_updater=None, **kwargs):
+        self.session = session or Session()
 
         self.client_id = client_id
         self._token_auth = OAuth2Auth(token, token_placement)
@@ -193,15 +195,15 @@ class OAuth2Session(Session):
             headers = DEFAULT_HEADERS
 
         if method.upper() == 'POST':
-            resp = self.post(
+            resp = self.session.request('POST',
                 url, data=dict(url_decode(body)), timeout=timeout,
                 headers=headers, auth=auth, verify=verify, proxies=proxies,
-                cert=cert, withhold_token=True)
+                cert=cert)
         else:
-            resp = self.get(
+            resp = self.session.request('GET',
                 url, params=dict(url_decode(body)), timeout=timeout,
                 headers=headers, auth=auth, verify=verify, proxies=proxies,
-                cert=cert, withhold_token=True)
+                cert=cert)
 
         for hook in self.compliance_hook['access_token_response']:
             resp = hook(resp)
@@ -248,10 +250,10 @@ class OAuth2Session(Session):
         if auth is None:
             auth = self._client_auth
 
-        resp = self.post(
+        resp = self.session.request('POST',
             url, data=dict(url_decode(body)), auth=auth, timeout=timeout,
-            headers=headers, verify=verify, withhold_token=True,
-            proxies=proxies, cert=cert)
+            headers=headers, verify=verify, proxies=proxies,
+            cert=cert)
 
         for hook in self.compliance_hook['refresh_token_response']:
             resp = hook(resp)
@@ -293,23 +295,9 @@ class OAuth2Session(Session):
         if auth is None:
             auth = self._client_auth
 
-        return self.post(
+        return self.session.request('POST',
             url, data=dict(url_decode(data)),
             headers=headers, auth=auth, **kwargs)
-
-    def request(self, method, url, withhold_token=False, auth=None, **kwargs):
-        """Send request with auto refresh token feature (if available)."""
-        if self.token and not withhold_token:
-            if self.token.is_expired():
-                refresh_token = self.token.get('refresh_token')
-                if not self.refresh_token_url or not refresh_token:
-                    raise TokenExpiredError()
-                self.refresh_token(self.refresh_token_url, refresh_token)
-
-            if auth is None:
-                auth = self._token_auth
-        return super(OAuth2Session, self).request(
-            method, url, auth=auth, **kwargs)
 
     def register_compliance_hook(self, hook_type, hook):
         """Register a hook for request/response tweaking.
@@ -356,3 +344,54 @@ class OAuth2Session(Session):
         return prepare_token_request(
             'authorization_code', body=body,
             code=code, state=state, **kwargs)
+
+class OAuth2Session(OAuth2Handler, Session):
+    """Construct a new OAuth 2 client requests session.
+
+    :param client_id: Client ID, which you get from client registration.
+    :param client_secret: Client Secret, which you get from registration.
+    :param token_endpoint_auth_method: Client auth method for token endpoint.
+    :param refresh_token_url: Refresh Token endpoint for auto refresh token.
+    :param refresh_token_params: Extra parameters for refresh token endpoint.
+    :param scope: Scope that you needed to access user resources.
+    :param redirect_uri: Redirect URI you registered as callback.
+    :param token: A dict of token attributes such as ``access_token``,
+                  ``token_type`` and ``expires_at``.
+    :param token_placement: The place to put token in HTTP request. Available
+                            values: "header", "body", "uri".
+    :param state: State string used to prevent CSRF. This will be given
+                  when creating the authorization url and must be
+                  supplied when parsing the authorization response.
+    :param token_updater: A function for you to update token. It accept a
+                          :class:`OAuth2Token` as parameter.
+    """
+    def __init__(self, client_id=None, client_secret=None,
+                 token_endpoint_auth_method=None,
+                 refresh_token_url=None, refresh_token_params=None,
+                 scope=None, redirect_uri=None,
+                 token=None, token_placement='header',
+                 state=None, token_updater=None, **kwargs):
+        OAuth2Handler.__init__(self, session=super(OAuth2Session, self),
+                 client_id=client_id,
+                 client_secret=client_secret,
+                 token_endpoint_auth_method=token_endpoint_auth_method,
+                 refresh_token_url=refresh_token_url,
+                 refresh_token_params=refresh_token_params,
+                 scope=scope, redirect_uri=redirect_uri, token=token,
+                 token_placement=token_placement, state=state,
+                 token_updater=token_updater, **kwargs)
+        Session.__init__(self)
+
+    def request(self, method, url, withhold_token=False, auth=None, **kwargs):
+        """Send request with auto refresh token feature (if available)."""
+        if self.token and not withhold_token:
+            if self.token.is_expired():
+                refresh_token = self.token.get('refresh_token')
+                if not self.refresh_token_url or not refresh_token:
+                    raise TokenExpiredError()
+                self.refresh_token(self.refresh_token_url, refresh_token)
+
+            if auth is None:
+                auth = self._token_auth
+        return super(OAuth2Session, self).request(
+            method, url, auth=auth, **kwargs)
