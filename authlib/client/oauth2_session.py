@@ -1,5 +1,6 @@
 import logging
 from requests import Session
+from requests.auth import AuthBase
 from authlib.common.security import generate_token
 from authlib.common.urls import url_decode
 from authlib.oauth2.rfc6749.parameters import (
@@ -11,11 +12,11 @@ from authlib.oauth2.rfc6749.parameters import (
 from authlib.oauth2.rfc6749 import OAuth2Token
 from authlib.oauth2.rfc6749 import InsecureTransportError
 from authlib.oauth2.rfc7009 import prepare_revoke_token_request
-from .errors import OAuthError, TokenExpiredError
+from .errors import OAuthError, MissingTokenError, TokenExpiredError
 from .oauth2_auth import OAuth2Auth, OAuth2ClientAuth
 from ..deprecate import deprecate
 
-__all__ = ['OAuth2Handler', 'OAuth2Session']
+__all__ = ['OAuth2Handler', 'OAuth2Session', 'OAuth2HandlerAuth']
 
 log = logging.getLogger(__name__)
 DEFAULT_HEADERS = {
@@ -404,3 +405,21 @@ class OAuth2Session(OAuth2Handler, Session):
                 auth = self._token_auth
         return super(OAuth2Session, self).request(
             method, url, auth=auth, **kwargs)
+
+
+class OAuth2HandlerAuth(AuthBase):
+    """Construct a new OAuth 2 client requests authentification
+    object.
+
+    :param handler: OAuth2Handler instance
+    """
+    def __init__(self, handler):
+        self.handler = handler
+
+    def __call__(self, req):
+        """Set up request with auto refresh token feature (if available)."""
+        if self.handler.token:
+            self.handler.ensure_fresh_token()
+        else:
+            raise MissingTokenError()
+        return self.handler._token_auth(req)
