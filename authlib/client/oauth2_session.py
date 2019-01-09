@@ -15,7 +15,7 @@ from .errors import OAuthError, TokenExpiredError
 from .oauth2_auth import OAuth2Auth, OAuth2ClientAuth
 from ..deprecate import deprecate
 
-__all__ = ['OAuth2Session']
+__all__ = ['OAuth2Handler', 'OAuth2Session']
 
 log = logging.getLogger(__name__)
 DEFAULT_HEADERS = {
