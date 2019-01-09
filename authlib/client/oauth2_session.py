@@ -218,9 +218,9 @@ class OAuth2Handler:
         params = parse_implicit_response(authorization_response, self.state)
         return self._parse_and_validate_token(params)
 
-    def refresh_token(self, url, refresh_token=None, body='', auth=None,
-                      headers=None, timeout=None, verify=True,
-                      proxies=None, cert=None, **kwargs):
+    def refresh_token(self, url=None, refresh_token=None, body='',
+                      auth=None, headers=None, timeout=None,
+                      verify=True, proxies=None, cert=None, **kwargs):
         """Fetch a new access token using a refresh token.
 
         :param url: Refresh Token endpoint, must be HTTPS.
@@ -236,6 +236,9 @@ class OAuth2Handler:
         :param kwargs: Extra parameters to include in the token request.
         :return: A :class:`OAuth2Token` object (a dict too).
         """
+        if url is None:
+            url = self.refresh_token_url
+
         refresh_token = refresh_token or self.token.get('refresh_token')
         if self.refresh_token_params is not None:
             kwargs.update(self.refresh_token_params)
