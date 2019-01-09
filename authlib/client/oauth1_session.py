@@ -1,16 +1,12 @@
 # -*- coding: utf-8 -*-
 import json
 from requests import Session
-from authlib.common.urls import (
-    url_decode,
-)
+from authlib.common.urls import url_decode
 from authlib.oauth1 import (
     SIGNATURE_HMAC_SHA1,
     SIGNATURE_TYPE_HEADER,
 )
-from .errors import (
-    FetchTokenDeniedError,
-)
+from .errors import FetchTokenDeniedError
 from .oauth1_protocol import OAuth1Protocol
 from ..deprecate import deprecate
 
@@ -27,13 +23,13 @@ class OAuth1Session(OAuth1Protocol, Session):
     :param callback_uri: The URL the user is redirect back to after
                          authorization.
     :param rsa_key: The private RSA key as a string. Can only be used with
-                    signature_method=authlib.spec.rfc5849.SIGNATURE_RSA.
+                    signature_method=authlib.oauth1.SIGNATURE_RSA.
     :param verifier: A verifier string to prove authorization was granted.
     :param signature_method: Signature methods for OAuth 1, available types:
 
-                             * :data:`authlib.spec.rfc5849.SIGNATURE_HMAC_SHA1`
-                             * :data:`authlib.spec.rfc5849.SIGNATURE_RSA_SHA1`
-                             * :data:`authlib.spec.rfc5849.SIGNATURE_PLAINTEXT`
+                             * :data:`authlib.oauth1.SIGNATURE_HMAC_SHA1`
+                             * :data:`authlib.oauth1.SIGNATURE_RSA_SHA1`
+                             * :data:`authlib.oauth1.SIGNATURE_PLAINTEXT`
 
                              Default is ``SIGNATURE_HMAC_SHA1``. You can extend
                              signature method via ``rfc5849.Client``.
@@ -42,9 +38,9 @@ class OAuth1Session(OAuth1Protocol, Session):
                            Authorization header (default) or to the URL
                            query parameters or the request body. Defined as:
 
-                           * :data:`authlib.spec.rfc5849.SIGNATURE_TYPE_HEADER`
-                           * :data:`authlib.spec.rfc5849.SIGNATURE_TYPE_BODY`
-                           * :data:`authlib.spec.rfc5849.SIGNATURE_TYPE_QUERY`
+                           * :data:`authlib.oauth1.SIGNATURE_TYPE_HEADER`
+                           * :data:`authlib.oauth1.SIGNATURE_TYPE_BODY`
+                           * :data:`authlib.oauth1.SIGNATURE_TYPE_QUERY`
 
     :param force_include_body: Always include the request body in the
                                signature creation.
