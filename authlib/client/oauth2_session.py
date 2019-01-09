@@ -266,6 +266,16 @@ class OAuth2Handler:
             self.token_updater(self.token)
         return self.token
 
+    def ensure_fresh_token(self):
+        """Auto refresh access token if expired (using refresh token
+        feature). Raise TokenExpiredError if cannot refresh."""
+        if self.token.is_expired():
+            refresh_token = self.token.get('refresh_token')
+            if self.refresh_token_url and refresh_token:
+                self.refresh_token(self.refresh_token_url, refresh_token)
+            else:
+                raise TokenExpiredError()
+
     def revoke_token(self, url, token, token_type_hint=None,
                      body=None, auth=None, headers=None, **kwargs):
         """Revoke token method defined via `RFC7009`_.
@@ -345,6 +355,7 @@ class OAuth2Handler:
             'authorization_code', body=body,
             code=code, state=state, **kwargs)
 
+
 class OAuth2Session(OAuth2Handler, Session):
     """Construct a new OAuth 2 client requests session.
 
@@ -385,12 +396,7 @@ class OAuth2Session(OAuth2Handler, Session):
     def request(self, method, url, withhold_token=False, auth=None, **kwargs):
         """Send request with auto refresh token feature (if available)."""
         if self.token and not withhold_token:
-            if self.token.is_expired():
-                refresh_token = self.token.get('refresh_token')
-                if not self.refresh_token_url or not refresh_token:
-                    raise TokenExpiredError()
-                self.refresh_token(self.refresh_token_url, refresh_token)
-
+            self.ensure_fresh_token()
             if auth is None:
                 auth = self._token_auth
         return super(OAuth2Session, self).request(
