@@ -1,14 +1,28 @@
 # -*- coding: utf-8 -*-
-import json
 from requests import Session
-from authlib.common.urls import url_decode
+from requests.auth import AuthBase
 from authlib.oauth1 import (
     SIGNATURE_HMAC_SHA1,
     SIGNATURE_TYPE_HEADER,
 )
-from .errors import FetchTokenDeniedError
+from authlib.common.encoding import to_native
+from authlib.oauth1 import AuthClient
 from .oauth1_protocol import OAuth1Protocol
 from ..deprecate import deprecate
+
+
+class OAuth1Auth(AuthBase, AuthClient):
+    """Signs the request using OAuth 1 (RFC5849)"""
+
+    def __call__(self, req):
+        url, headers, body = self.prepare(
+            req.method, req.url, req.body, req.headers)
+
+        req.url = to_native(url)
+        req.prepare_headers(headers)
+        if body:
+            req.body = body
+        return req
 
 
 class OAuth1Session(OAuth1Protocol, Session):
@@ -46,6 +60,8 @@ class OAuth1Session(OAuth1Protocol, Session):
                                signature creation.
     :param kwargs: Extra parameters to include.
     """
+    auth_class = OAuth1Auth
+
     def __init__(self, client_id, client_secret=None,
                  token=None, token_secret=None,
                  redirect_uri=None, rsa_key=None, verifier=None,
@@ -54,7 +70,8 @@ class OAuth1Session(OAuth1Protocol, Session):
                  force_include_body=False, **kwargs):
         Session.__init__(self)
         OAuth1Protocol.__init__(
-            self, client_id, client_secret=client_secret,
+            self, session=self,
+            client_id=client_id, client_secret=client_secret,
             token=token, token_secret=token_secret,
             redirect_uri=redirect_uri, rsa_key=rsa_key, verifier=verifier,
             signature_method=signature_method, signature_type=signature_type,
@@ -63,30 +80,6 @@ class OAuth1Session(OAuth1Protocol, Session):
     def authorization_url(self, url, request_token=None, **kwargs):  # pragma: no cover
         deprecate('Use "create_authorization_url" instead', '0.12')
         return self.create_authorization_url(url, request_token, **kwargs)
-
-    def _fetch_token(self, url, **kwargs):
-        resp = self.post(url, **kwargs)
-
-        if resp.status_code >= 400:
-            error = "Token request failed with code {}, response was '{}'."
-            message = error.format(resp.status_code, resp.text)
-            raise FetchTokenDeniedError(description=message)
-
-        try:
-            text = resp.text.strip()
-            if text.startswith('{'):
-                token = json.loads(text)
-            else:
-                token = dict(url_decode(text))
-        except (TypeError, ValueError) as e:
-            error = ("Unable to decode token from token response. "
-                     "This is commonly caused by an unsuccessful request where"
-                     " a non urlencoded error message is returned. "
-                     "The decoding error was %s""" % e)
-            raise ValueError(error)
-
-        self.token = token
-        return token
 
     def rebuild_auth(self, prepared_request, response):
         """When being redirected we should always strip Authorization

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import json
 from authlib.common.urls import (
     url_decode,
     add_params_to_uri,
@@ -8,15 +9,18 @@ from authlib.oauth1 import (
     SIGNATURE_HMAC_SHA1,
     SIGNATURE_TYPE_HEADER,
 )
+from authlib.oauth1 import AuthClient
 from .errors import (
     MissingTokenError,
     MissingVerifierError,
+    FetchTokenDeniedError,
 )
-from .oauth1_auth import OAuth1Auth
 
 
 class OAuth1Protocol(object):
-    def __init__(self, client_id, client_secret=None,
+    auth_class = AuthClient
+
+    def __init__(self, session, client_id, client_secret=None,
                  token=None, token_secret=None,
                  redirect_uri=None, rsa_key=None, verifier=None,
                  signature_method=SIGNATURE_HMAC_SHA1,
@@ -25,10 +29,10 @@ class OAuth1Protocol(object):
         if not client_id:
             raise ValueError('Missing "client_id"')
 
-        self._client = OAuth1Auth(
+        self.session = session
+        self._client = self.auth_class(
             client_id, client_secret=client_secret,
-            token=token,
-            token_secret=token_secret,
+            token=token, token_secret=token_secret,
             redirect_uri=redirect_uri,
             signature_method=signature_method,
             signature_type=signature_type,
@@ -36,8 +40,8 @@ class OAuth1Protocol(object):
             verifier=verifier,
             force_include_body=force_include_body
         )
-        self.auth = self._client
         self._kwargs = kwargs
+        self.auth = self._client
 
     @property
     def redirect_uri(self):
@@ -120,10 +124,10 @@ class OAuth1Protocol(object):
         else:
             self._client.realm = None
 
-        resp = self._fetch_token(url, **kwargs)
+        token = self._fetch_token(url, **kwargs)
         self._client.redirect_uri = None
         self._client.realm = None
-        return resp
+        return token
 
     def fetch_access_token(self, url, verifier=None, **kwargs):
         """Method for fetching an access token from the token endpoint.
@@ -141,9 +145,9 @@ class OAuth1Protocol(object):
             self._client.verifier = verifier
         if not self._client.verifier:
             raise MissingVerifierError()
-        resp = self._fetch_token(url, **kwargs)
+        token = self._fetch_token(url, **kwargs)
         self._client.verifier = None
-        return resp
+        return token
 
     def parse_authorization_response(self, url):
         """Extract parameters from the post authorization redirect
@@ -158,4 +162,28 @@ class OAuth1Protocol(object):
         return token
 
     def _fetch_token(self, url, **kwargs):
-        raise NotImplementedError()
+        resp = self.session.post(url, auth=self.auth, **kwargs)
+        token = parse_response_token(resp.status_code, resp.text)
+        self.token = token
+        return token
+
+
+def parse_response_token(status_code, text):
+    if status_code >= 400:
+        error = "Token request failed with code {}, response was '{}'."
+        message = error.format(status_code, text)
+        raise FetchTokenDeniedError(description=message)
+
+    try:
+        text = text.strip()
+        if text.startswith('{'):
+            token = json.loads(text)
+        else:
+            token = dict(url_decode(text))
+    except (TypeError, ValueError) as e:
+        error = ("Unable to decode token from token response. "
+                 "This is commonly caused by an unsuccessful request where"
+                 " a non urlencoded error message is returned. "
+                 "The decoding error was %s""" % e)
+        raise ValueError(error)
+    return token

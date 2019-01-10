@@ -1,6 +1,7 @@
 import time
 from authlib.common.security import generate_token
 from authlib.common.urls import extract_params
+from authlib.common.encoding import to_native
 from .wrapper import OAuth1Request
 from .signature import (
     SIGNATURE_HMAC_SHA1,
@@ -148,6 +149,30 @@ class AuthClient(object):
         oauth_params.append(('oauth_signature', sig))
 
         uri, headers, body = self._render(uri, headers, body, oauth_params)
+        return uri, headers, body
+
+    def prepare(self, method, uri, body, headers):
+        """Add OAuth parameters to the request.
+
+        Parameters may be included from the body if the content-type is
+        urlencoded, if no content type is set, a guess is made.
+        """
+        content_type = to_native(headers.get('Content-Type', ''))
+        if self.signature_type == SIGNATURE_TYPE_BODY:
+            content_type = CONTENT_TYPE_FORM_URLENCODED
+        elif not content_type and extract_params(body):
+            content_type = CONTENT_TYPE_FORM_URLENCODED
+
+        if CONTENT_TYPE_FORM_URLENCODED in content_type:
+            headers['Content-Type'] = CONTENT_TYPE_FORM_URLENCODED
+            uri, headers, body = self.sign(method, uri, body, headers)
+        elif self.force_include_body:
+            # To allow custom clients to work on non form encoded bodies.
+            uri, headers, body = self.sign(method, uri, body, headers)
+        else:
+            # Omit body data in the signing of non form-encoded requests
+            uri, headers, _ = self.sign(method, uri, '', headers)
+            body = ''
         return uri, headers, body
 
 
