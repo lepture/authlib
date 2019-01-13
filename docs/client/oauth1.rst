@@ -148,6 +148,27 @@ The above is not the real flow, just like what we did in
 Please note, there are duplicated steps in the documentation, read carefully
 and ignore the duplicated explains.
 
+Using OAuth1Auth
+~~~~~~~~~~~~~~~~
+
+It is also possible to access protected resources with ``OAuth1Auth`` object.
+Create an instance of OAuth1Auth with an access token::
+
+    auth = OAuth1Auth(
+        client_id='..',
+        client_secret=client_secret='..',
+        token='oauth_token value',
+        token_secret='oauth_token_secret value',
+        ...
+    )
+
+Pass this ``auth`` to ``requests` to access protected resources::
+
+    import requests
+
+    url = 'https://api.twitter.com/1.1/account/verify_credentials.json'
+    resp = requests.get(url, auth=auth)
+
 
 OAuth1AsyncClient for aiohttp
 -----------------------------

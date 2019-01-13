@@ -1,4 +1,5 @@
 from yarl import URL
+from typing import Any  # noqa
 from aiohttp import ClientRequest
 from authlib.oauth1 import AuthClient
 from .oauth1_protocol import OAuth1Protocol, parse_response_token
@@ -7,20 +8,16 @@ from .oauth1_protocol import OAuth1Protocol, parse_response_token
 class OAuth1AsyncRequest(ClientRequest):
     def __init__(self, *args, **kwargs):
         auth = kwargs.pop('auth', None)
+        data = kwargs.get('data')
         super(OAuth1AsyncRequest, self).__init__(*args, **kwargs)
-        self.update_oauth1_auth(auth)
+        self.update_oauth1_auth(auth, data)
 
-    def update_oauth1_auth(self, auth: AuthClient):
+    def update_oauth1_auth(self, auth: AuthClient, data: Any=None):
         if auth is None:
             return
 
-        if self.body:
-            text = self.body._value
-        else:
-            text = ''
-
         url, headers, body = auth.prepare(
-            self.method, str(self.url), text, self.headers)
+            self.method, str(self.url), data, self.headers)
         self.url = URL(url)
         self.update_headers(headers)
         if body:
