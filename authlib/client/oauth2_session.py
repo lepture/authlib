@@ -16,7 +16,7 @@ from .errors import OAuthError, MissingTokenError, TokenExpiredError
 from .oauth2_auth import OAuth2Auth, OAuth2ClientAuth
 from ..deprecate import deprecate
 
-__all__ = ['OAuth2Handler', 'OAuth2Session', 'OAuth2HandlerAuth']
+__all__ = ['OAuth2Protocol', 'OAuth2Session', 'OAuth2ProtocolAuth']
 
 log = logging.getLogger(__name__)
 DEFAULT_HEADERS = {
@@ -25,8 +25,8 @@ DEFAULT_HEADERS = {
 }
 
 
-class OAuth2Handler:
-    """Construct a new OAuth 2 client handler.
+class OAuth2Protocol:
+    """Construct a new OAuth 2 client protocol handler.
 
     :param session: Requests session object to communicate with
                     authorization server.
@@ -360,7 +360,7 @@ class OAuth2Handler:
             code=code, state=state, **kwargs)
 
 
-class OAuth2Session(OAuth2Handler, Session):
+class OAuth2Session(OAuth2Protocol, Session):
     """Construct a new OAuth 2 client requests session.
 
     :param client_id: Client ID, which you get from client registration.
@@ -386,7 +386,7 @@ class OAuth2Session(OAuth2Handler, Session):
                  scope=None, redirect_uri=None,
                  token=None, token_placement='header',
                  state=None, token_updater=None, **kwargs):
-        OAuth2Handler.__init__(self, session=super(OAuth2Session, self),
+        OAuth2Protocol.__init__(self, session=super(OAuth2Session, self),
                  client_id=client_id,
                  client_secret=client_secret,
                  token_endpoint_auth_method=token_endpoint_auth_method,
@@ -407,19 +407,19 @@ class OAuth2Session(OAuth2Handler, Session):
             method, url, auth=auth, **kwargs)
 
 
-class OAuth2HandlerAuth(AuthBase):
+class OAuth2ProtocolAuth(AuthBase):
     """Construct a new OAuth 2 client requests authentification
     object.
 
-    :param handler: OAuth2Handler instance
+    :param protocol: OAuth2Protocol instance
     """
-    def __init__(self, handler):
-        self.handler = handler
+    def __init__(self, protocol):
+        self.protocol = protocol
 
     def __call__(self, req):
         """Set up request with auto refresh token feature (if available)."""
-        if self.handler.token:
-            self.handler.ensure_fresh_token()
+        if self.protocol.token:
+            self.protocol.ensure_fresh_token()
         else:
             raise MissingTokenError()
-        return self.handler._token_auth(req)
+        return self.protocol._token_auth(req)
