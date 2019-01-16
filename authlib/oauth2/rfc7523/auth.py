@@ -17,11 +17,11 @@ def register_session_client_auth_method(session, token_url=None, **kwargs):
     else:
         raise ValueError('Invalid token_endpoint_auth_method')
 
-    def _auth(client, req):
+    def _auth(client, method, uri, headers, body):
         if token_url:
             _url = token_url
         else:
-            _url = req.url
+            _url = uri
 
         client_assertion = func(
             client.client_secret,
@@ -29,10 +29,10 @@ def register_session_client_auth_method(session, token_url=None, **kwargs):
             token_url=_url,
             **kwargs
         )
-        req.body = add_params_to_qs(req.body or '', [
+        body = add_params_to_qs(body or '', [
             ('client_assertion_type', ASSERTION_TYPE),
             ('client_assertion', client_assertion)
         ])
-        return req
+        return uri, headers, body
 
     session.register_client_auth_method(_auth)

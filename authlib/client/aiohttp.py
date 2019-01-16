@@ -5,14 +5,19 @@ from authlib.oauth1 import AuthClient
 from .oauth1_protocol import OAuth1Protocol, parse_response_token
 
 
-class OAuth1AsyncRequest(ClientRequest):
+class BaseRequest(ClientRequest):
     def __init__(self, *args, **kwargs):
         auth = kwargs.pop('auth', None)
         data = kwargs.get('data')
-        super(OAuth1AsyncRequest, self).__init__(*args, **kwargs)
-        self.update_oauth1_auth(auth, data)
+        super(BaseRequest, self).__init__(*args, **kwargs)
+        self.update_oauth_auth(auth, data)
 
-    def update_oauth1_auth(self, auth: AuthClient, data: Any=None):
+    def update_oauth_auth(self, auth, data):
+        raise NotImplementedError()
+
+
+class OAuth1AsyncRequest(BaseRequest):
+    def update_oauth_auth(self, auth: AuthClient, data: Any=None):
         if auth is None:
             return
 

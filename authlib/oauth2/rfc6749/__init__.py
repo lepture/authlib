@@ -14,6 +14,7 @@
 from .wrappers import *
 from .errors import *
 from .models import *
+from .auth_client import AuthClient
 from .authenticate_client import ClientAuthentication
 from .authorization_server import AuthorizationServer
 from .resource_protector import ResourceProtector

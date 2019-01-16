@@ -1,5 +1,5 @@
-from requests.auth import AuthBase, HTTPBasicAuth
-from authlib.common.urls import add_params_to_qs
+from requests.auth import AuthBase
+from authlib.oauth2.rfc6749 import AuthClient
 from authlib.oauth2.rfc6749 import OAuth2Token
 from authlib.oauth2.rfc6750 import add_bearer_token
 from .errors import (
@@ -56,7 +56,7 @@ class OAuth2Auth(AuthBase):
         return req
 
 
-class OAuth2ClientAuth(HTTPBasicAuth):
+class OAuth2ClientAuth(AuthBase, AuthClient):
     """Attaches OAuth Client Authentication to the given Request object.
 
     :param client_id: Client ID, which you get from client registration.
@@ -68,47 +68,8 @@ class OAuth2ClientAuth(HTTPBasicAuth):
         * client_secret_post
         * none
     """
-    def __init__(self, client_id, client_secret,
-                 auth_method='client_secret_basic'):
-        super(OAuth2ClientAuth, self).__init__(client_id, client_secret)
-
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.auth_method = auth_method
-        self._methods = {
-            'none': _auth_none,
-            'client_secret_post': _auth_client_secret_post,
-        }
-
-    def register(self, method, func):
-        assert method not in self._methods
-        self._methods[method] = func
-
     def __call__(self, req):
-        if self.auth_method == 'client_secret_basic':
-            return super(OAuth2ClientAuth, self).__call__(req)
-
-        func = self._methods.get(self.auth_method)
-        if func:
-            req = func(self, req)
+        req.url, req.headers, req.body = self.prepare(
+            req.method, req.url, req.headers, req.body
+        )
         return req
-
-
-def _auth_none(auth, req):
-    if req.method == 'GET':
-        req.url = add_params_to_qs(req.url, [
-            ('client_id', auth.client_id)
-        ])
-    elif req.method == 'POST':
-        req.body = add_params_to_qs(req.body or '', [
-            ('client_id', auth.client_id)
-        ])
-    return req
-
-
-def _auth_client_secret_post(auth, req):
-    req.body = add_params_to_qs(req.body or '', [
-        ('client_id', auth.client_id),
-        ('client_secret', auth.client_secret or '')
-    ])
-    return req
