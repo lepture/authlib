@@ -13,7 +13,10 @@ Sessions and Client
 
 .. autoclass:: OAuth1Session
     :members:
-    :member-order: bysource
+        create_authorization_url,
+        fetch_request_token,
+        fetch_access_token,
+        parse_authorization_response
 
 .. autoclass:: OAuth1Auth
     :members:
