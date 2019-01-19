@@ -6,12 +6,12 @@ from authlib.oauth1 import (
     SIGNATURE_TYPE_HEADER,
 )
 from authlib.common.encoding import to_native
-from authlib.oauth1 import AuthClient
+from authlib.oauth1 import ClientAuth
 from .oauth1_protocol import OAuth1Protocol
 from ..deprecate import deprecate
 
 
-class OAuth1Auth(AuthBase, AuthClient):
+class OAuth1Auth(AuthBase, ClientAuth):
     """Signs the request using OAuth 1 (RFC5849)"""
 
     def __call__(self, req):

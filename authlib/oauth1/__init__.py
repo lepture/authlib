@@ -2,7 +2,7 @@
 
 from .rfc5849 import (
     OAuth1Request,
-    AuthClient,
+    ClientAuth,
     SIGNATURE_HMAC_SHA1,
     SIGNATURE_RSA_SHA1,
     SIGNATURE_PLAINTEXT,
@@ -19,7 +19,7 @@ from .rfc5849 import (
 
 __all__ = [
     'OAuth1Request',
-    'AuthClient',
+    'ClientAuth',
     'SIGNATURE_HMAC_SHA1',
     'SIGNATURE_RSA_SHA1',
     'SIGNATURE_PLAINTEXT',

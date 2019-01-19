@@ -9,7 +9,7 @@ from authlib.oauth1 import (
     SIGNATURE_HMAC_SHA1,
     SIGNATURE_TYPE_HEADER,
 )
-from authlib.oauth1 import AuthClient
+from authlib.oauth1 import ClientAuth
 from .errors import (
     MissingTokenError,
     MissingVerifierError,
@@ -18,7 +18,7 @@ from .errors import (
 
 
 class OAuth1Protocol(object):
-    auth_class = AuthClient
+    auth_class = ClientAuth
 
     def __init__(self, session, client_id, client_secret=None,
                  token=None, token_secret=None,

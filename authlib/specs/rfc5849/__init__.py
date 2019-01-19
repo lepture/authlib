@@ -12,7 +12,7 @@
 
 from authlib.oauth1.rfc5849.errors import *
 from authlib.oauth1 import (
-    AuthClient as Client,
+    ClientAuth as Client,
     OAuth1Request,
     SIGNATURE_HMAC_SHA1,
     SIGNATURE_RSA_SHA1,

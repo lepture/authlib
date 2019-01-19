@@ -1,7 +1,7 @@
 from yarl import URL
 from typing import Any  # noqa
 from aiohttp import ClientRequest
-from authlib.oauth1 import AuthClient
+from authlib.oauth1 import ClientAuth
 from .oauth1_protocol import OAuth1Protocol, parse_response_token
 
 
@@ -17,7 +17,7 @@ class BaseRequest(ClientRequest):
 
 
 class OAuth1AsyncRequest(BaseRequest):
-    def update_oauth_auth(self, auth: AuthClient, data: Any=None):
+    def update_oauth_auth(self, auth: ClientAuth, data: Any=None):
         if auth is None:
             return
 

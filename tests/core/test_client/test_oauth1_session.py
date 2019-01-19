@@ -55,8 +55,8 @@ class OAuth1SessionTest(TestCase):
         body.send = verify_signature(lambda r: r.body)
         body.post('https://i.b', headers=headers, data='')
 
-    @mock.patch('authlib.oauth1.rfc5849.auth_client.generate_timestamp')
-    @mock.patch('authlib.oauth1.rfc5849.auth_client.generate_nonce')
+    @mock.patch('authlib.oauth1.rfc5849.client_auth.generate_timestamp')
+    @mock.patch('authlib.oauth1.rfc5849.client_auth.generate_nonce')
     def test_signature_methods(self, generate_nonce, generate_timestamp):
         generate_nonce.return_value = 'abc'
         generate_timestamp.return_value = '123'
@@ -96,8 +96,8 @@ class OAuth1SessionTest(TestCase):
         auth.send = self.verify_signature(signature)
         auth.post('https://i.b')
 
-    @mock.patch('authlib.oauth1.rfc5849.auth_client.generate_timestamp')
-    @mock.patch('authlib.oauth1.rfc5849.auth_client.generate_nonce')
+    @mock.patch('authlib.oauth1.rfc5849.client_auth.generate_timestamp')
+    @mock.patch('authlib.oauth1.rfc5849.client_auth.generate_nonce')
     def test_binary_upload(self, generate_nonce, generate_timestamp):
         generate_nonce.return_value = 'abc'
         generate_timestamp.return_value = '123'
@@ -112,8 +112,8 @@ class OAuth1SessionTest(TestCase):
         auth.send = self.verify_signature(signature)
         auth.post('https://i.b', headers=headers, files=[('fake', fake_xml)])
 
-    @mock.patch('authlib.oauth1.rfc5849.auth_client.generate_timestamp')
-    @mock.patch('authlib.oauth1.rfc5849.auth_client.generate_nonce')
+    @mock.patch('authlib.oauth1.rfc5849.client_auth.generate_timestamp')
+    @mock.patch('authlib.oauth1.rfc5849.client_auth.generate_nonce')
     def test_nonascii(self, generate_nonce, generate_timestamp):
         generate_nonce.return_value = 'abc'
         generate_timestamp.return_value = '123'
