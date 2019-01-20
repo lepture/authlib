@@ -1,6 +1,5 @@
 # flake8: noqa
 
-from .oauth1_protocol import OAuth1Protocol
 from .oauth1_session import OAuth1Session, OAuth1Auth
 from .oauth2_session import OAuth2Protocol, OAuth2Session
 from .oauth2_auth import OAuth2Auth, OAuth2ClientAuth

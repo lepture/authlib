@@ -69,7 +69,7 @@ class ClientAuth(object):
         self.realm = realm
         self.force_include_body = force_include_body
 
-    def get_oauth_signature(self, method, uri, body, headers):
+    def get_oauth_signature(self, method, uri, headers, body):
         """Get an OAuth signature to be used in signing a request
 
         To satisfy `section 3.4.1.2`_ item 2, if the request argument's
@@ -83,7 +83,7 @@ class ClientAuth(object):
         if not sign:
             raise ValueError('Invalid signature method.')
 
-        request = OAuth1Request(method, uri, body, headers)
+        request = OAuth1Request(method, uri, body=body, headers=headers)
         return sign(self, request)
 
     def get_oauth_params(self, nonce, timestamp):
@@ -116,7 +116,7 @@ class ClientAuth(object):
             raise ValueError('Unknown signature type specified.')
         return uri, headers, body
 
-    def sign(self, method, uri, body, headers, nonce=None, timestamp=None):
+    def sign(self, method, uri, headers, body, nonce=None, timestamp=None):
         """Sign the HTTP request, add OAuth parameters and signature.
 
         :param method: HTTP method of the request.
@@ -145,13 +145,13 @@ class ClientAuth(object):
         oauth_params = self.get_oauth_params(nonce, timestamp)
         uri, headers, body = self._render(uri, headers, body, oauth_params)
 
-        sig = self.get_oauth_signature(method, uri, body, headers)
+        sig = self.get_oauth_signature(method, uri, headers, body)
         oauth_params.append(('oauth_signature', sig))
 
         uri, headers, body = self._render(uri, headers, body, oauth_params)
         return uri, headers, body
 
-    def prepare(self, method, uri, body, headers):
+    def prepare(self, method, uri, headers, body):
         """Add OAuth parameters to the request.
 
         Parameters may be included from the body if the content-type is
@@ -165,13 +165,13 @@ class ClientAuth(object):
 
         if CONTENT_TYPE_FORM_URLENCODED in content_type:
             headers['Content-Type'] = CONTENT_TYPE_FORM_URLENCODED
-            uri, headers, body = self.sign(method, uri, body, headers)
+            uri, headers, body = self.sign(method, uri, headers, body)
         elif self.force_include_body:
             # To allow custom clients to work on non form encoded bodies.
-            uri, headers, body = self.sign(method, uri, body, headers)
+            uri, headers, body = self.sign(method, uri, headers, body)
         else:
             # Omit body data in the signing of non form-encoded requests
-            uri, headers, _ = self.sign(method, uri, '', headers)
+            uri, headers, _ = self.sign(method, uri, headers, '')
             body = ''
         return uri, headers, body
 

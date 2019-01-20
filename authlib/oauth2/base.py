@@ -1,4 +1,4 @@
-from authlib.common.errors import AuthlibHTTPError
+from authlib.common.errors import AuthlibBaseError, AuthlibHTTPError
 
 
 class OAuth2Error(AuthlibHTTPError):
@@ -13,3 +13,7 @@ class OAuth2Error(AuthlibHTTPError):
         if self.state:
             error.append(('state', self.state))
         return error
+
+
+class OAuthClientError(AuthlibBaseError):
+    pass

@@ -1,35 +1,30 @@
 from yarl import URL
-from typing import Any  # noqa
-from aiohttp import ClientRequest
-from authlib.oauth1 import ClientAuth
-from .oauth1_protocol import OAuth1Protocol, parse_response_token
+from aiohttp import ClientRequest, ClientSession
+from requests import Session
+from authlib.oauth1 import OAuth1Client
+from authlib.oauth2.client import OAuth2Client
 
 
-class BaseRequest(ClientRequest):
+class OAuthRequest(ClientRequest):
     def __init__(self, *args, **kwargs):
         auth = kwargs.pop('auth', None)
         data = kwargs.get('data')
-        super(BaseRequest, self).__init__(*args, **kwargs)
+        super(OAuthRequest, self).__init__(*args, **kwargs)
         self.update_oauth_auth(auth, data)
 
     def update_oauth_auth(self, auth, data):
-        raise NotImplementedError()
-
-
-class OAuth1AsyncRequest(BaseRequest):
-    def update_oauth_auth(self, auth: ClientAuth, data: Any=None):
         if auth is None:
             return
 
         url, headers, body = auth.prepare(
-            self.method, str(self.url), data, self.headers)
+            self.method, str(self.url), self.headers, data)
         self.url = URL(url)
         self.update_headers(headers)
         if body:
             self.update_body_from_data(body)
 
 
-class OAuth1AsyncClient(OAuth1Protocol):
+class AsyncOAuth1Client(OAuth1Client):
     """The OAuth 1.0 Client for ``aiohttp.ClientSession``. Here
     is how it works::
 
@@ -41,7 +36,7 @@ class OAuth1AsyncClient(OAuth1Protocol):
     async def _fetch_token(self, url, **kwargs):
         async with self.post(url, **kwargs) as resp:
             text = await resp.text()
-            token = parse_response_token(resp.status, text)
+            token = self.parse_response_token(resp.status, text)
             self.token = token
             return token
 
@@ -65,3 +60,24 @@ class OAuth1AsyncClient(OAuth1Protocol):
 
     def delete(self, url, **kwargs):
         return self.session.delete(url, auth=self.auth, **kwargs)
+
+
+class AsyncOAuth2Client(OAuth2Client):
+    async def _fetch_token(self, url, body='', headers=None, auth=None,
+                           method='POST', timeout=None, verify=True,
+                           proxies=None, cert=None):
+        if method.upper() == 'POST':
+            resp = self.session.post(
+                url, data=body, timeout=timeout,
+                headers=headers, auth=auth, verify_ssl=verify, proxies=proxies,
+                cert=cert)
+        else:
+            resp = self.session.get(
+                url, params=dict(url_decode(body)), timeout=timeout,
+                headers=headers, auth=auth, verify_ssl=verify, proxies=proxies,
+                cert=cert)
+
+        for hook in self.compliance_hook['access_token_response']:
+            resp = hook(resp)
+
+        return self.parse_response_token(resp.json())

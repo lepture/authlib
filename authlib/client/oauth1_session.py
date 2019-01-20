@@ -6,8 +6,7 @@ from authlib.oauth1 import (
     SIGNATURE_TYPE_HEADER,
 )
 from authlib.common.encoding import to_native
-from authlib.oauth1 import ClientAuth
-from .oauth1_protocol import OAuth1Protocol
+from authlib.oauth1 import ClientAuth, ClientProtocol
 from ..deprecate import deprecate
 
 
@@ -25,7 +24,7 @@ class OAuth1Auth(AuthBase, ClientAuth):
         return req
 
 
-class OAuth1Session(OAuth1Protocol, Session):
+class OAuth1Session(ClientProtocol, Session):
     """Construct a new OAuth 1 client requests session.
 
     :param client_id: Consumer key, which you get from registration.
