@@ -1,7 +1,20 @@
 from requests import Session
-from authlib.oauth2.rfc6749 import OAuth2Token
 from authlib.oauth2.rfc7523 import JWTBearerGrant
-from .oauth2_auth import OAuth2Auth
+from .oauth2_session import OAuth2Auth
+from .errors import UnsupportedTokenTypeError
+
+
+class AssertionToken(OAuth2Auth):
+    def __call__(self, req):
+        if not self.token or self.token.is_expired():
+            self.client.refresh_token()
+        try:
+            req.url, req.headers, req.body = self.prepare(
+                req.url, req.headers, req.body)
+        except KeyError as error:
+            description = 'Unsupported token_type: {}'.format(str(error))
+            raise UnsupportedTokenTypeError(description=description)
+        return req
 
 
 class AssertionSession(Session):
@@ -28,21 +41,16 @@ class AssertionSession(Session):
         self.audience = audience
         self.claims = claims
         self.scope = scope
-        self._token_auth = OAuth2Auth(None, token_placement)
+        self.token_auth = AssertionToken(None, token_placement, self)
         self._kwargs = kwargs
 
     @property
     def token(self):
-        return self._token_auth.token
+        return self.token_auth.token
 
     @token.setter
     def token(self, token):
-        self._token_auth.token = OAuth2Token.from_dict(token)
-
-    def auto_refresh_token(self):
-        """Refresh token automatically."""
-        if not self.token or self.token.is_expired():
-            self.refresh_token()
+        self.token_auth.set_token(token)
 
     def refresh_token(self):
         """Using Assertions as Authorization Grants to refresh token as
@@ -69,9 +77,7 @@ class AssertionSession(Session):
                 withhold_token=False, auth=None, **kwargs):
         """Send request with auto refresh token feature."""
         if not withhold_token:
-            self.auto_refresh_token()
-
             if auth is None:
-                auth = self._token_auth
+                auth = self.token_auth
         return super(AssertionSession, self).request(
             method, url, headers=headers, data=data, auth=auth, **kwargs)

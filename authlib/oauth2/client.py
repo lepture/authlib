@@ -74,8 +74,6 @@ class OAuth2Client(object):
 
         self.scope = scope
         self.redirect_uri = redirect_uri
-
-        self.token = token
         self.token_placement = token_placement
 
         self.state = state
@@ -216,8 +214,8 @@ class OAuth2Client(object):
         if url is None:
             url = self.refresh_token_url
 
-        session_kwargs = self._extract_session_request_params(kwargs)
         refresh_token = refresh_token or self.token.get('refresh_token')
+        session_kwargs = self._extract_session_request_params(kwargs)
         if self.refresh_token_params is not None:
             kwargs.update(self.refresh_token_params)
 
