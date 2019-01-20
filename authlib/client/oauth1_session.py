@@ -6,7 +6,9 @@ from authlib.oauth1 import (
     SIGNATURE_TYPE_HEADER,
 )
 from authlib.common.encoding import to_native
-from authlib.oauth1 import ClientAuth, ClientProtocol
+from authlib.oauth1 import ClientAuth
+from authlib.oauth1.client import OAuth1Client
+from .errors import OAuthError
 from ..deprecate import deprecate
 
 
@@ -15,7 +17,7 @@ class OAuth1Auth(AuthBase, ClientAuth):
 
     def __call__(self, req):
         url, headers, body = self.prepare(
-            req.method, req.url, req.body, req.headers)
+            req.method, req.url, req.headers, req.body)
 
         req.url = to_native(url)
         req.prepare_headers(headers)
@@ -24,41 +26,7 @@ class OAuth1Auth(AuthBase, ClientAuth):
         return req
 
 
-class OAuth1Session(ClientProtocol, Session):
-    """Construct a new OAuth 1 client requests session.
-
-    :param client_id: Consumer key, which you get from registration.
-    :param client_secret: Consumer Secret, which you get from registration.
-    :param token: A token string, also referred to as request token or access
-                  token depending on when in the workflow it is used.
-    :param token_secret: A token secret obtained with either a request or
-                         access token. Often referred to as token secret.
-    :param callback_uri: The URL the user is redirect back to after
-                         authorization.
-    :param rsa_key: The private RSA key as a string. Can only be used with
-                    signature_method=authlib.oauth1.SIGNATURE_RSA.
-    :param verifier: A verifier string to prove authorization was granted.
-    :param signature_method: Signature methods for OAuth 1, available types:
-
-                             * :data:`authlib.oauth1.SIGNATURE_HMAC_SHA1`
-                             * :data:`authlib.oauth1.SIGNATURE_RSA_SHA1`
-                             * :data:`authlib.oauth1.SIGNATURE_PLAINTEXT`
-
-                             Default is ``SIGNATURE_HMAC_SHA1``. You can extend
-                             signature method via ``rfc5849.Client``.
-    :param signature_type: Signature type decides where the OAuth
-                           parameters are added. Either in the
-                           Authorization header (default) or to the URL
-                           query parameters or the request body. Defined as:
-
-                           * :data:`authlib.oauth1.SIGNATURE_TYPE_HEADER`
-                           * :data:`authlib.oauth1.SIGNATURE_TYPE_BODY`
-                           * :data:`authlib.oauth1.SIGNATURE_TYPE_QUERY`
-
-    :param force_include_body: Always include the request body in the
-                               signature creation.
-    :param kwargs: Extra parameters to include.
-    """
+class OAuth1Session(OAuth1Client, Session):
     auth_class = OAuth1Auth
 
     def __init__(self, client_id, client_secret=None,
@@ -68,7 +36,7 @@ class OAuth1Session(ClientProtocol, Session):
                  signature_type=SIGNATURE_TYPE_HEADER,
                  force_include_body=False, **kwargs):
         Session.__init__(self)
-        OAuth1Protocol.__init__(
+        OAuth1Client.__init__(
             self, session=self,
             client_id=client_id, client_secret=client_secret,
             token=token, token_secret=token_secret,
@@ -89,3 +57,7 @@ class OAuth1Session(ClientProtocol, Session):
             # any authentication headers.
             prepared_request.headers.pop('Authorization', True)
             prepared_request.prepare_auth(self.auth)
+
+    @staticmethod
+    def handle_error(error_type, error_description):
+        raise OAuthError(error_type, error_description)

@@ -5,11 +5,11 @@ from authlib.common.urls import (
     add_params_to_uri,
     urlparse,
 )
-from .signature import (
+from .rfc5849 import (
     SIGNATURE_HMAC_SHA1,
     SIGNATURE_TYPE_HEADER,
+    ClientAuth,
 )
-from .client_auth import ClientAuth
 
 
 class OAuth1Client(object):
@@ -71,7 +71,8 @@ class OAuth1Client(object):
             if 'oauth_verifier' in token:
                 self._client.verifier = token['oauth_verifier']
         else:
-            raise ValueError('oauth_token is missing: {!r}'.format(token))
+            message = 'oauth_token is missing: {!r}'.format(token)
+            self.handle_error('missing_token', message)
 
     def create_authorization_url(self, url, request_token=None, **kwargs):
         """Create an authorization URL by appending request_token and optional
@@ -138,7 +139,7 @@ class OAuth1Client(object):
         if verifier:
             self._client.verifier = verifier
         if not self._client.verifier:
-            raise  ValueError('Missing "verifier" value')
+            self.handle_error('missing_verifier', 'Missing "verifier" value')
         token = self._fetch_token(url, **kwargs)
         self._client.verifier = None
         return token
@@ -161,11 +162,10 @@ class OAuth1Client(object):
         self.token = token
         return token
 
-    @staticmethod
-    def parse_response_token(status_code, text):
+    def parse_response_token(self, status_code, text):
         if status_code >= 400:
-            error = "Token request failed with code {}, response was '{}'."
-            raise ValueError(error.format(status_code, text))
+            message = "Token request failed with code {}, response was '{}'."
+            self.handle_error('fetch_token_denied', message)
 
         try:
             text = text.strip()
@@ -180,3 +180,7 @@ class OAuth1Client(object):
                      "The decoding error was %s""" % e)
             raise ValueError(error)
         return token
+
+    @staticmethod
+    def handle_error(error_type, error_description):
+        raise ValueError('{}: {}'.format(error_type, error_description))

@@ -97,7 +97,8 @@ class TokenAuth(object):
             refresh_token_url = getattr(self.client, 'refresh_token_url')
             refresh_token = self.token.get('refresh_token')
             if refresh_token_url and refresh_token:
-                self.client.refresh_token(refresh_token_url, refresh_token)
+                return self.client.refresh_token(
+                    refresh_token_url, refresh_token)
             else:
                 raise InvalidTokenError()
 

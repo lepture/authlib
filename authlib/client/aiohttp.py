@@ -1,7 +1,7 @@
 from yarl import URL
-from aiohttp import ClientRequest, ClientSession
-from requests import Session
-from authlib.oauth1 import OAuth1Client
+from aiohttp import ClientRequest
+from authlib.common.urls import url_decode
+from authlib.oauth1.client import OAuth1Client
 from authlib.oauth2.client import OAuth2Client
 
 
@@ -63,21 +63,72 @@ class AsyncOAuth1Client(OAuth1Client):
 
 
 class AsyncOAuth2Client(OAuth2Client):
+    SESSION_REQUEST_PARAMS = (
+        'timeout', 'allow_redirects', 'max_redirects',
+        'expect100', 'read_until_eof',
+        'json', 'cookies', 'skip_auto_headers', 'compress',
+        'chunked', 'raise_for_status', 'proxy', 'proxy_auth',
+        'verify_ssl', 'fingerprint', 'ssl_context', 'ssl',
+        'proxy_headers', 'trace_request_ctx',
+    )
+
     async def _fetch_token(self, url, body='', headers=None, auth=None,
-                           method='POST', timeout=None, verify=True,
-                           proxies=None, cert=None):
+                           method='POST', **kwargs):
         if method.upper() == 'POST':
-            resp = self.session.post(
-                url, data=body, timeout=timeout,
-                headers=headers, auth=auth, verify_ssl=verify, proxies=proxies,
-                cert=cert)
+            async with self.session.post(
+                    url, data=dict(url_decode(body)), headers=headers,
+                    auth=auth, **kwargs) as resp:
+                token = await self._parse_token(resp, 'access_token_response')
+                return self.parse_response_token(token)
         else:
-            resp = self.session.get(
-                url, params=dict(url_decode(body)), timeout=timeout,
-                headers=headers, auth=auth, verify_ssl=verify, proxies=proxies,
-                cert=cert)
+            async with self.session.get(
+                    url, params=dict(url_decode(body)), headers=headers,
+                    auth=auth, **kwargs) as resp:
+                token = await self._parse_token(resp, 'access_token_response')
+                return self.parse_response_token(token)
 
-        for hook in self.compliance_hook['access_token_response']:
-            resp = hook(resp)
+    async def _refresh_token(self, url, refresh_token=None, body='', headers=None,
+                             auth=None, **kwargs):
+        async with self.session.post(
+                url, data=dict(url_decode(body)), headers=headers,
+                auth=auth, **kwargs) as resp:
+            token = await self._parse_token(resp, 'refresh_token_response')
+            if 'refresh_token' not in token:
+                self.token['refresh_token'] = refresh_token
 
-        return self.parse_response_token(resp.json())
+            if callable(self.token_updater):
+                await self.token_updater(self.token)
+
+            return self.token
+
+    async def _parse_token(self, resp, hook_type):
+        for hook in self.compliance_hook[hook_type]:
+            resp = await hook(resp)
+        token = await resp.json()
+        return token
+
+    async def _wrap_request(self, method, url, **kwargs):
+        await self.token_auth.auto_refresh_token()
+        func = getattr(self.session, method)
+        return func(url, auth=self.token_auth, **kwargs)
+
+    def get(self, url, **kwargs):
+        return self._wrap_request('get', url, **kwargs)
+
+    def options(self, url, **kwargs):
+        return self._wrap_request('options', url, **kwargs)
+
+    def head(self, url, **kwargs):
+        return self._wrap_request('head', url, **kwargs)
+
+    def post(self, url, **kwargs):
+        return self._wrap_request('post', url, **kwargs)
+
+    def put(self, url, **kwargs):
+        return self._wrap_request('put', url, **kwargs)
+
+    def patch(self, url, **kwargs):
+        return self._wrap_request('patch', url, **kwargs)
+
+    def delete(self, url, **kwargs):
+        return self._wrap_request('delete', url, **kwargs)

@@ -36,11 +36,19 @@ class OAuth2Client(object):
     :param state: State string used to prevent CSRF. This will be given
                   when creating the authorization url and must be
                   supplied when parsing the authorization response.
+    :param token_updater: A function for you to update token. It accept a
+                          :class:`OAuth2Token` as parameter.
     """
     client_auth_class = ClientAuth
     token_auth_class = TokenAuth
-    EXTRA_AUTHORIZE_PARAMS = [
-        'response_mode', 'nonce', 'prompt', 'login_hint']
+
+    EXTRA_AUTHORIZE_PARAMS = (
+        'response_mode', 'nonce', 'prompt', 'login_hint'
+    )
+    SESSION_REQUEST_PARAMS = (
+        'allow_redirects', 'timeout', 'cookies', 'files',
+        'proxies', 'hooks', 'stream', 'verify', 'cert', 'json'
+    )
 
     def __init__(self, session, client_id=None,
                  client_secret=None, client_auth_method=None,
@@ -121,7 +129,7 @@ class OAuth2Client(object):
 
     def fetch_token(self, url=None, code=None, authorization_response=None,
                     body='', auth=None, username=None, password=None,
-                    method='POST', headers=None, timeout=None, **kwargs):
+                    method='POST', headers=None, **kwargs):
         """Generic method for fetching an access token from the token endpoint.
 
         :param url: Access Token endpoint URL, if not configured,
@@ -140,14 +148,13 @@ class OAuth2Client(object):
                        to POST, but may also be GET. Other methods should
                        be added as needed.
         :param headers: Dict to default request headers with.
-        :param timeout: Timeout of the request in seconds.
         :return: A :class:`OAuth2Token` object (a dict too).
         """
         if url is None and authorization_response:
             return self.token_from_fragment(authorization_response)
         InsecureTransportError.check(url)
 
-        session_kwargs = self.extract_session_parameters(kwargs)
+        session_kwargs = self._extract_session_request_params(kwargs)
         if code or authorization_response:
             body = self._prepare_authorization_code_body(
                 code, authorization_response, body, **kwargs)
@@ -171,19 +178,19 @@ class OAuth2Client(object):
 
         return self._fetch_token(
             url, body=body, auth=auth, method=method, headers=headers,
-            timeout=timeout, **session_kwargs,
+            **session_kwargs,
         )
 
     def _fetch_token(self, url, body='', headers=None, auth=None,
-                     method='POST', timeout=None, **kwargs):
+                     method='POST', **kwargs):
         if method.upper() == 'POST':
             resp = self.session.post(
-                url, data=dict(url_decode(body)), timeout=timeout,
-                headers=headers, auth=auth, **kwargs)
+                url, data=dict(url_decode(body)), headers=headers,
+                auth=auth, **kwargs)
         else:
             resp = self.session.get(
-                url, params=dict(url_decode(body)), timeout=timeout,
-                headers=headers, auth=auth, **kwargs)
+                url, params=dict(url_decode(body)), headers=headers,
+                auth=auth, **kwargs)
 
         for hook in self.compliance_hook['access_token_response']:
             resp = hook(resp)
@@ -195,7 +202,7 @@ class OAuth2Client(object):
         return self.parse_response_token(token)
 
     def refresh_token(self, url=None, refresh_token=None, body='',
-                      auth=None, headers=None, timeout=None, **kwargs):
+                      auth=None, headers=None, **kwargs):
         """Fetch a new access token using a refresh token.
 
         :param url: Refresh Token endpoint, must be HTTPS.
@@ -204,13 +211,12 @@ class OAuth2Client(object):
                      include in the token request. Prefer kwargs over body.
         :param auth: An auth tuple or method as accepted by requests.
         :param headers: Dict to default request headers with.
-        :param timeout: Timeout of the request in seconds.
         :return: A :class:`OAuth2Token` object (a dict too).
         """
         if url is None:
             url = self.refresh_token_url
 
-        session_kwargs = self.extract_session_parameters(kwargs)
+        session_kwargs = self._extract_session_request_params(kwargs)
         refresh_token = refresh_token or self.token.get('refresh_token')
         if self.refresh_token_params is not None:
             kwargs.update(self.refresh_token_params)
@@ -227,14 +233,13 @@ class OAuth2Client(object):
 
         return self._refresh_token(
             url, refresh_token=refresh_token, body=body, headers=headers,
-            auth=auth, timeout=timeout, **session_kwargs)
+            auth=auth, **session_kwargs)
 
     def _refresh_token(self, url, refresh_token=None, body='', headers=None,
-                       auth=None, timeout=None, **kwargs):
-
+                       auth=None, **kwargs):
         resp = self.session.post(
-            url, data=dict(url_decode(body)), auth=auth, timeout=timeout,
-            headers=headers, **kwargs)
+            url, data=dict(url_decode(body)), headers=headers,
+            auth=auth, **kwargs)
 
         for hook in self.compliance_hook['refresh_token_response']:
             resp = hook(resp)
@@ -276,7 +281,7 @@ class OAuth2Client(object):
         if auth is None:
             auth = self.client_auth
 
-        session_kwargs = self.extract_session_parameters(kwargs)
+        session_kwargs = self._extract_session_request_params(kwargs)
         return self._revoke_token(
             url, body, auth=auth, headers=headers, **session_kwargs)
 
@@ -331,10 +336,10 @@ class OAuth2Client(object):
             'authorization_code', body=body,
             code=code, state=state, **kwargs)
 
-    @staticmethod
-    def extract_session_parameters(kwargs):
+    def _extract_session_request_params(self, kwargs):
         """Extract parameters for session object from the passing ``**kwargs``."""
-        verify = kwargs.pop('verify', True)
-        proxies = kwargs.pop('proxies', None)
-        cert = kwargs.pop('cert', None)
-        return {'verify': verify, 'proxies': proxies, 'cert': cert}
+        rv = {}
+        for k in self.SESSION_REQUEST_PARAMS:
+            if k in kwargs:
+                rv[k] = kwargs.pop(k)
+        return rv

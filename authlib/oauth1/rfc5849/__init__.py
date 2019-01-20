@@ -9,7 +9,6 @@
 
 from .wrapper import OAuth1Request
 from .client_auth import ClientAuth
-from .client_protocol import OAuth1Client
 from .signature import (
     SIGNATURE_HMAC_SHA1,
     SIGNATURE_RSA_SHA1,
