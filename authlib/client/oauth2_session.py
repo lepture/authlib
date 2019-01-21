@@ -4,7 +4,9 @@ from requests.auth import AuthBase
 from authlib.oauth2.client import OAuth2Client
 from authlib.oauth2.client_auth import ClientAuth, TokenAuth
 from .errors import (
-    MissingTokenError, UnsupportedTokenTypeError,
+    OAuthError,
+    MissingTokenError,
+    UnsupportedTokenTypeError,
 )
 from ..deprecate import deprecate
 
@@ -22,7 +24,7 @@ class OAuth2Auth(AuthBase, TokenAuth):
     def __call__(self, req):
         if not self.token:
             raise MissingTokenError()
-        self.auto_refresh_token()
+        self.ensure_refresh_token()
         try:
             req.url, req.headers, req.body = self.prepare(
                 req.url, req.headers, req.body)
@@ -43,10 +45,8 @@ class OAuth2ClientAuth(AuthBase, ClientAuth):
 
 
 class OAuth2Session(OAuth2Client, Session):
-    """Construct a new OAuth 2 client protocol handler.
+    """Construct a new OAuth 2 client requests session.
 
-    :param session: Requests session object to communicate with
-                    authorization server.
     :param client_id: Client ID, which you get from client registration.
     :param client_secret: Client Secret, which you get from registration.
     :param token_endpoint_auth_method: Client auth method for token endpoint.
@@ -98,7 +98,7 @@ class OAuth2Session(OAuth2Client, Session):
         return self.create_authorization_url(url, state, **kwargs)
 
     def fetch_access_token(self, url=None, **kwargs):
-        """Alias for fetch_access_token. Compatible with requests-oauthlib."""
+        """Alias for fetch_token."""
         return self.fetch_token(url, **kwargs)
 
     def request(self, method, url, withhold_token=False, auth=None, **kwargs):
@@ -108,3 +108,7 @@ class OAuth2Session(OAuth2Client, Session):
                 auth = self.token_auth
         return super(OAuth2Session, self).request(
             method, url, auth=auth, **kwargs)
+
+    @staticmethod
+    def handle_error(error_type, error_description):
+        raise OAuthError(error_type, error_description)

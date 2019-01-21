@@ -12,15 +12,6 @@ class MissingTokenError(OAuthError):
     error = 'missing_token'
 
 
-class MissingVerifierError(OAuthError):
-    error = 'missing_verifier'
-    description = 'No client verifier has been set.'
-
-
-class FetchTokenDeniedError(OAuthError):
-    error = 'fetch_token_denied'
-
-
 class TokenExpiredError(OAuthError):
     error = 'token_expired'
 

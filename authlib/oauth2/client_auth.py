@@ -92,7 +92,7 @@ class TokenAuth(object):
     def set_token(self, token):
         self.token = OAuth2Token.from_dict(token)
 
-    def auto_refresh_token(self):
+    def ensure_refresh_token(self):
         if self.client and self.token.is_expired():
             refresh_token_url = getattr(self.client, 'refresh_token_url')
             refresh_token = self.token.get('refresh_token')

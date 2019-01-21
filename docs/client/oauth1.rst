@@ -170,29 +170,28 @@ Pass this ``auth`` to ``requests` to access protected resources::
     resp = requests.get(url, auth=auth)
 
 
-OAuth1AsyncClient for aiohttp
+AsyncOAuth1Client for aiohttp
 -----------------------------
 
 .. versionadded:: v0.11
     This is an experimental feature.
 
-The ``OAuth1AsyncClient`` is located in ``authlib.client.aiohttp``. Authlib doesn't
+The ``AsyncOAuth1Client`` is located in ``authlib.client.aiohttp``. Authlib doesn't
 embed ``aiohttp`` as a dependency, you need to install it yourself.
 
-Here is an example on how you can initialize an instance of ``OAuth1AsyncClient``
+Here is an example on how you can initialize an instance of ``AsyncOAuth1Client``
 for ``aiohttp``::
 
     import asyncio
     from aiohttp import ClientSession
-    from authlib.client.aiohttp import OAuth1AsyncClient
-    from authlib.client.aiohttp import OAuth1AsyncRequest
+    from authlib.client.aiohttp import AsyncOAuth1Client, OAuthRequest
 
     REQUEST_TOKEN_URL = 'https://api.twitter.com/oauth/request_token'
 
     async def main():
-        # OAuth1AsyncRequest is required to handle auth
-        async with ClientSession(request_class=OAuth1AsyncRequest) as session:
-            client = OAuth1AsyncClient(session, 'client_id', 'client_secret', ...)
+        # OAuthRequest is required to handle auth
+        async with ClientSession(request_class=OAuthRequest) as session:
+            client = AsyncOAuth1Client(session, 'client_id', 'client_secret', ...)
             token = await client.fetch_request_token(REQUEST_TOKEN_URL)
             print(token)
 
@@ -246,7 +245,7 @@ authorize response would be something like::
     https://your-domain.org/auth?oauth_token=gA..H&oauth_verifier=fcg..1Dq
 
 In the production flow, you may need to create a new instance of
-``OAuth1AsyncClient``, it is the same as above. You need to use the previous
+``AsyncOAuth1Client``, it is the same as above. You need to use the previous
 request token to exchange an access token::
 
     # twitter redirected back to your website
@@ -272,7 +271,7 @@ Access Protected Resources
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Now you can access the protected resources. Usually, you will need to create
-an instance of ``OAuth1AsyncClient``::
+an instance of ``AsyncOAuth1Client``::
 
     # get back the access token if you have saved it in some place
     access_token = {'oauth_token': '...', 'oauth_secret': '...'}
@@ -287,10 +286,11 @@ an instance of ``OAuth1AsyncClient``::
 Notice, it is also possible to create the client instance with access token at
 the initialization::
 
-    client = OAuth1AsyncClient(
+    client = AsyncOAuth1Client(
         session, 'client_id', 'client_secret',
         token='...', token_secret='...',
         ...
     )
 
-This is still an experimental feature in Authlib. Use with caution.
+.. warning::
+    This is still an experimental feature in Authlib. Use it with caution.

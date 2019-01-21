@@ -3,6 +3,7 @@ from aiohttp import ClientRequest
 from authlib.common.urls import url_decode
 from authlib.oauth1.client import OAuth1Client
 from authlib.oauth2.client import OAuth2Client
+from .errors import OAuthError
 
 
 class OAuthRequest(ClientRequest):
@@ -24,14 +25,44 @@ class OAuthRequest(ClientRequest):
             self.update_body_from_data(body)
 
 
-class AsyncOAuth1Client(OAuth1Client):
+class AsyncClientMixin(object):
+    @staticmethod
+    def handle_error(error_type, error_description):
+        raise OAuthError(error_type, error_description)
+
+    def _request(self, method, url, **kwargs):
+        raise NotImplementedError()
+
+    def get(self, url, **kwargs):
+        return self._request('GET', url, **kwargs)
+
+    def options(self, url, **kwargs):
+        return self._request('OPTIONS', url, **kwargs)
+
+    def head(self, url, **kwargs):
+        return self._request('HEAD', url, **kwargs)
+
+    def post(self, url, **kwargs):
+        return self._request('POST', url, **kwargs)
+
+    def put(self, url, **kwargs):
+        return self._request('PUT', url, **kwargs)
+
+    def patch(self, url, **kwargs):
+        return self._request('PATCH', url, **kwargs)
+
+    def delete(self, url, **kwargs):
+        return self._request('DELETE', url, **kwargs)
+
+
+class AsyncOAuth1Client(AsyncClientMixin, OAuth1Client):
     """The OAuth 1.0 Client for ``aiohttp.ClientSession``. Here
     is how it works::
 
         from aiohttp import ClientSession
 
-        async with ClientSession(request_class=OAuth1ClientRequest) as session:
-            client = OAuth1AsyncClient(session, client_id, client_secret, ...)
+        async with ClientSession(request_class=OAuthRequest) as session:
+            client = AsyncOAuth1Client(session, client_id, client_secret, ...)
     """
     async def _fetch_token(self, url, **kwargs):
         async with self.post(url, **kwargs) as resp:
@@ -40,29 +71,11 @@ class AsyncOAuth1Client(OAuth1Client):
             self.token = token
             return token
 
-    def get(self, url, **kwargs):
-        return self.session.get(url, auth=self.auth, **kwargs)
-
-    def options(self, url, **kwargs):
-        return self.session.options(url, auth=self.auth, **kwargs)
-
-    def head(self, url, **kwargs):
-        return self.session.head(url, auth=self.auth, **kwargs)
-
-    def post(self, url, **kwargs):
-        return self.session.post(url, auth=self.auth, **kwargs)
-
-    def put(self, url, **kwargs):
-        return self.session.put(url, auth=self.auth, **kwargs)
-
-    def patch(self, url, **kwargs):
-        return self.session.patch(url, auth=self.auth, **kwargs)
-
-    def delete(self, url, **kwargs):
-        return self.session.delete(url, auth=self.auth, **kwargs)
+    def _request(self, method, url, **kwargs):
+        return self.session.request(method, url, auth=self.auth, **kwargs)
 
 
-class AsyncOAuth2Client(OAuth2Client):
+class AsyncOAuth2Client(AsyncClientMixin, OAuth2Client):
     SESSION_REQUEST_PARAMS = (
         'timeout', 'allow_redirects', 'max_redirects',
         'expect100', 'read_until_eof',
@@ -107,28 +120,7 @@ class AsyncOAuth2Client(OAuth2Client):
         token = await resp.json()
         return token
 
-    async def _wrap_request(self, method, url, **kwargs):
-        await self.token_auth.auto_refresh_token()
-        func = getattr(self.session, method)
-        return func(url, auth=self.token_auth, **kwargs)
-
-    def get(self, url, **kwargs):
-        return self._wrap_request('get', url, **kwargs)
-
-    def options(self, url, **kwargs):
-        return self._wrap_request('options', url, **kwargs)
-
-    def head(self, url, **kwargs):
-        return self._wrap_request('head', url, **kwargs)
-
-    def post(self, url, **kwargs):
-        return self._wrap_request('post', url, **kwargs)
-
-    def put(self, url, **kwargs):
-        return self._wrap_request('put', url, **kwargs)
-
-    def patch(self, url, **kwargs):
-        return self._wrap_request('patch', url, **kwargs)
-
-    def delete(self, url, **kwargs):
-        return self._wrap_request('delete', url, **kwargs)
+    async def _request(self, method, url, **kwargs):
+        await self.token_auth.ensure_refresh_token()
+        return self.session.request(
+            method, url, auth=self.token_auth, **kwargs)

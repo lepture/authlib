@@ -8,7 +8,6 @@ from .rfc6749.parameters import (
     parse_implicit_response,
 )
 from .rfc7009 import prepare_revoke_token_request
-from .base import OAuthClientError
 from .client_auth import TokenAuth, ClientAuth
 
 DEFAULT_HEADERS = {
@@ -18,7 +17,7 @@ DEFAULT_HEADERS = {
 
 
 class OAuth2Client(object):
-    """Construct a new OAuth 2 client protocol handler.
+    """Construct a new OAuth 2 protocol client.
 
     :param session: Requests session object to communicate with
                     authorization server.
@@ -74,7 +73,6 @@ class OAuth2Client(object):
 
         self.scope = scope
         self.redirect_uri = redirect_uri
-        self.token_placement = token_placement
 
         self.state = state
         self.token_updater = token_updater
@@ -175,8 +173,8 @@ class OAuth2Client(object):
             headers = DEFAULT_HEADERS
 
         return self._fetch_token(
-            url, body=body, auth=auth, method=method, headers=headers,
-            **session_kwargs,
+            url, body=body, auth=auth, method=method,
+            headers=headers, **session_kwargs
         )
 
     def _fetch_token(self, url, body='', headers=None, auth=None,
@@ -215,10 +213,10 @@ class OAuth2Client(object):
             url = self.refresh_token_url
 
         refresh_token = refresh_token or self.token.get('refresh_token')
-        session_kwargs = self._extract_session_request_params(kwargs)
         if self.refresh_token_params is not None:
             kwargs.update(self.refresh_token_params)
 
+        session_kwargs = self._extract_session_request_params(kwargs)
         body = prepare_token_request(
             'refresh_token', body=body, scope=self.scope,
             refresh_token=refresh_token, **kwargs)
@@ -314,7 +312,7 @@ class OAuth2Client(object):
 
         error = token['error']
         description = token.get('error_description', error)
-        raise OAuthClientError(error=error, description=description)
+        self.handle_error(error, description)
 
     def _prepare_authorization_code_body(self, code, authorization_response,
                                          body, **kwargs):
@@ -341,3 +339,7 @@ class OAuth2Client(object):
             if k in kwargs:
                 rv[k] = kwargs.pop(k)
         return rv
+
+    @staticmethod
+    def handle_error(error_type, error_description):
+        raise ValueError('{}: {}'.format(error_type, error_description))

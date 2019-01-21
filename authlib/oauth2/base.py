@@ -13,7 +13,3 @@ class OAuth2Error(AuthlibHTTPError):
         if self.state:
             error.append(('state', self.state))
         return error
-
-
-class OAuthClientError(AuthlibBaseError):
-    pass

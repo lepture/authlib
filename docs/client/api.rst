@@ -23,16 +23,19 @@ Sessions and Client
 
 .. autoclass:: OAuth2Session
     :members:
-    :member-order: bysource
+        register_client_auth_method,
+        create_authorization_url,
+        fetch_token,
+        fetch_access_token,
+        refresh_token,
+        revoke_token,
+        register_compliance_hook
 
 .. autoclass:: AssertionSession
     :members:
     :member-order: bysource
 
 .. autoclass:: OAuth2Auth
-    :members:
-
-.. autoclass:: OAuth2ClientAuth
     :members:
 
 .. autoclass:: OAuthClient
