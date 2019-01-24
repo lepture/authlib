@@ -4,7 +4,7 @@ Introduction
 ============
 
 .. meta::
-    :description: A general introduction on Authlib, a project that powers from
+    :description: A general introduction to Authlib, a project that powers from
         low-level specification implementation to high-level framework
         integrations.
 
@@ -14,7 +14,7 @@ OAuth 1.0, OAuth 2.0, JWT and many more. It becomes a :ref:`monolithic`
 project that powers from low-level specification implementation to high-level
 framework integrations.
 
-I'm intended to make it profitable, so that it can be :ref:`sustainable`.
+I'm intended to make it profitable so that it can be :ref:`sustainable`.
 
 .. _monolithic:
 
@@ -23,9 +23,9 @@ Monolithic
 
 Authlib is a monolithic library. While being monolithic, it keeps everything
 synchronized, from spec implementation to framework integrations, from client
-requests to server providers.
+requests to service providers.
 
-The benefits are obvious, it won't break things. When specifications changed,
+The benefits are obvious; it won't break things. When specifications changed,
 implementation will change too. Let the developers of Authlib take the pain,
 users of Authlib should not suffer from it.
 
@@ -36,14 +36,14 @@ into the root **__init__.py**.
 Flexible
 --------
 
-Authlib is designed as flexible as possible. Since it is build from low-level
+Authlib is designed as flexible as possible. Since it is built from low-level
 specification implementation to high-level framework integrations, if a high
-level can't meet your needs, you can always create one for your own based on
-the low level implementation.
+level can't meet your needs, you can always create one for your purpose based on
+the low-level implementation.
 
-Most of the cases, you don't need to do such thing. Flexible has been taken
+Most of the cases, you don't need to do so. Flexible has been taken
 into account from the start of the project. Take OAuth 2.0 server as an
-example, instead of a pre configured server, Authlib takes the advantage of
+example, instead of a pre-configured server, Authlib takes advantage of
 ``register``.
 
 .. code-block:: python
@@ -59,7 +59,7 @@ Specification
 
 Authlib is a spec-compliant library which follows the latest specifications.
 We keep the generic tool functions in a ``specs`` module. When there is a
-related specification, we add it into ``specs``.
+auth-related specification, we add it into ``specs``.
 
 Currently, these specs are in the warehouse:
 
