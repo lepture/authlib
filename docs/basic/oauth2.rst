@@ -31,7 +31,7 @@ you are building an application to analyze one's code on GitHub:
   it is your application.
 
 - **Resource Owner**: the users and orgs on GitHub are the resource owners, since
-  they owns their source code (resources).
+  they own their source code (resources).
 
 - **Resource Server**: The API servers of GitHub. Your **client** will make requests
   to the resource server to fetch source code. The server serves resources.
@@ -48,14 +48,14 @@ source code on GitHub.
 It usually takes these steps:
 
 1. Your application (**client**) prompts the user to log in.
-2. The user click the *login* button, your application will redirect to GitHub's
+2. The user clicks the *login* button, your application will redirect to GitHub's
    authorize page (**Authorization Server**).
 3. The user (he/she is a GitHub user, which means he/she is a **Resource Owner**)
-   click the *allow* button to tell GitHub that he/she granted the access.
+   clicks the *allow* button to tell GitHub that he/she granted the access.
 4. The **Authorization Server** issues an **access token** to your application.
-   (This step can contain several sub steps)
+   (This step can contain several sub-steps)
 5. Your application uses the **access token** to fetch source code from GitHub's
-   **Resource Server**, analyze the source code, and return the result to your
+   **Resource Server**, analyze the source code and return the result to your
    application user.
 
 But there are more details inside the flow. The most important thing in OAuth 2.0
@@ -99,9 +99,9 @@ can use this ``code`` to exchange an access token:
 Client Authentication Methods
 -----------------------------
 
-In the above code, there is an ``Authorization`` header, this contains the
+In the above code, there is an ``Authorization`` header; it contains the
 information of the client. A client MUST provide its client information to obtain
-an access token, there are several ways to provide this data, for instance:
+an access token. There are several ways to provide this data, for instance:
 
 - ``none``: The client is a public client which means it has no client_secret
 
@@ -147,7 +147,7 @@ Token Scopes
 ------------
 
 Scope is a very important concept in OAuth 2.0. An access token is usually issued
-with a limited scopes.
+with limited scopes.
 
 For instance, your "source code analyzer" application MAY only have access to the
 public repositories of a GiHub user.

@@ -16,7 +16,7 @@ Understand OAuth 1.0
     agent redirections.
 
 This section will help developers understand the concepts in OAuth 1.0, but not
-in deep of OAuth 1.0. Here is an overview of an OAuth 1.0 flow:
+in deep. Here is an overview of a typical OAuth 1.0 flow:
 
 .. figure:: https://user-images.githubusercontent.com/290496/48671968-2c316080-eb73-11e8-9e6a-9e895cd67262.png
     :alt: OAuth 1.0 Flow
@@ -29,17 +29,16 @@ Roles in OAuth 1.0
 There are usually three roles in an OAuth 1.0 flow. Let's take Twitter as an example,
 you are building a mobile app to send tweets:
 
-- **Client**: a client is a third-party application, in this case,
+- **Client**: a client is a third-party application. In this case,
   it is your application.
 - **Resource Owner**: the users on Twitter are the resource owners, since
-  they owns their tweets (resources).
-- **Server**: authorization and resource server, in this case, it is twitter.
+  they own their tweets (resources).
+- **Server**: authorization and resource server. In this case, it is twitter.
 
 Credentials
 -----------
 
-During the OAuth 1.0 process, there are several credentials passed from server to client,
-and client to server.
+During the OAuth 1.0 process, there are several credentials passed from server to client, and vice versa.
 
 1. client credentials
 2. temporary credentials
@@ -48,9 +47,9 @@ and client to server.
 OAuth 1.0 Flow
 --------------
 
-Let's take your mobile Twitter app as an example. When a user want to send a tweet
+Let's take your mobile Twitter app as an example. When a user wants to send a tweet
 through your application, he/she needs to authenticate at first. When the app is
-opened and the login button is clicked:
+opened, and the login button is clicked:
 
 1. **Client** uses its **client credentials** to make a request to server, asking
    the server for a temporary credential.
@@ -61,14 +60,14 @@ opened and the login button is clicked:
 4. When access is granted, **Server** responds with a **verifier** to client.
 5. **Client** uses this **verifier and temporary credential** to make a request to
    the server asking for **token credentials**.
-6. **Server** responds with access token if it verified every thing.
+6. **Server** responds with access token if it verified everything.
 
 And then **Client** can send tweets with the **token credentials**.
 
 Signature
 ---------
 
-In OAuth 1.0, every request **client** send to **server** requires a signature.
+In OAuth 1.0, every request **client** sending to **server** requires a signature.
 The signature is calculated from:
 
 1. credentials (client, temporary, token)
