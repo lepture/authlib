@@ -23,10 +23,10 @@ keys of :ref:`specs/rfc7517`::
     {'alg': 'RS256', 'typ': 'JWT'}
     >>> claims.validate()
 
-The imported ``jwt`` is a instance of :class:`JWT`. It has all supported JWS
+The imported ``jwt`` is an instance of :class:`JWT`. It has all supported JWS
 algorithms, and it can handle JWK automatically. When :meth:`JWT.encode` a
 payload, JWT will check payload claims for security, if you really want to
-expose them, you can always turn if off via ``check=False``.
+expose them, you can always turn it off via ``check=False``.
 
 .. important::
     JWT payload with JWS is not encrypted, it is just signed. Anyone can
@@ -40,14 +40,14 @@ expose them, you can always turn if off via ``check=False``.
 JWT Payload Claims Validation
 -----------------------------
 
-:meth:`JWT.decode` accepts 3 claims related parameters: ``claims_cls``,
+:meth:`JWT.decode` accepts 3 claims-related parameters: ``claims_cls``,
 ``claims_option`` and ``claims_params``. The default ``claims_cls`` is
-:class:`JWTClaims`. The ``decode`` method equals::
+:class:`JWTClaims`. The ``decode`` method returns::
 
     >>> JWTClaims(payload, header, options=claims_options, params=claims_params)
 
 Claims validation is actually handled by :meth:`JWTClaims.validate`, which
-validate payload claims with ``claims_option`` and ``claims_params``. For
+validates payload claims with ``claims_option`` and ``claims_params``. For
 standard JWTClaims, ``claims_params`` value is not used, but it is used in
 :class:`~authlib.specs.oidc.IDToken`.
 
