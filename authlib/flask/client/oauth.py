@@ -271,13 +271,13 @@ def _generate_oauth2_access_token_params(name):
         params = {'code': request.form['code']}
         request_state = request.form.get('state')
 
-    # verify state
     state_key = _state_tpl.format(name)
     state = session.pop(state_key, None)
-    if state != request_state:
-        raise MismatchingStateError()
-
     if state:
+        # verify state
+        if state != request_state:
+            raise MismatchingStateError()
+
         params['state'] = state
 
     vf_key = _code_verifier_tpl.format(name)
