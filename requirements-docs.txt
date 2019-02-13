@@ -2,4 +2,4 @@
 Flask
 Django
 SQLAlchemy
-sphinx-typlog-theme==0.7.1
+sphinx-typlog-theme==0.7.2
