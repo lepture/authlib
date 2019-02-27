@@ -34,7 +34,7 @@ class RefreshTokenGrant(BaseGrant):
         # client that was issued client credentials (or with other
         # authentication requirements)
         client = self.authenticate_token_endpoint_client()
-        log.debug('Validate token request of {!r}'.format(client))
+        log.debug('Validate token request of %r', client)
 
         if client.check_client_type('public'):
             raise UnauthorizedClientError()
@@ -133,7 +133,7 @@ class RefreshTokenGrant(BaseGrant):
             expires_in=expires_in,
             scope=scope,
         )
-        log.debug('Issue token {!r} to {!r}'.format(token, client))
+        log.debug('Issue token %r to %r', token, client)
 
         self.request.user = user
         self.server.save_token(token, self.request)

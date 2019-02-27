@@ -64,7 +64,7 @@ class ClientCredentialsGrant(BaseGrant):
         # ignore validate for grant_type, since it is validated by
         # check_token_endpoint
         client = self.authenticate_token_endpoint_client()
-        log.debug('Validate token request of {!r}'.format(client))
+        log.debug('Validate token request of %r', client)
 
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError()
@@ -103,7 +103,7 @@ class ClientCredentialsGrant(BaseGrant):
             scope=self.request.scope,
             include_refresh_token=False,
         )
-        log.debug('Issue token {!r} to {!r}'.format(token, client))
+        log.debug('Issue token %r to %r', token, client)
         self.server.save_token(token, self.request)
         self.execute_hook('process_token', self, token=token)
         return 200, token, self.TOKEN_RESPONSE_HEADER

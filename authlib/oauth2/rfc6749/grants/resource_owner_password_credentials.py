@@ -87,7 +87,7 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
         # ignore validate for grant_type, since it is validated by
         # check_token_endpoint
         client = self.authenticate_token_endpoint_client()
-        log.debug('Validate token request of {!r}'.format(client))
+        log.debug('Validate token request of %r', client)
 
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError()
@@ -98,7 +98,7 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
         if 'password' not in params:
             raise InvalidRequestError('Missing "password" in request.')
 
-        log.debug('Authenticate user of {!r}'.format(params['username']))
+        log.debug('Authenticate user of %r', params['username'])
         user = self.authenticate_user(
             params['username'],
             params['password']
@@ -143,7 +143,7 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
             user=self.request.user,
             scope=self.request.scope,
         )
-        log.debug('Issue token {!r} to {!r}'.format(token, client))
+        log.debug('Issue token %r to %r', token, client)
         self.server.save_token(token, self.request)
         self.execute_hook('process_token', token=token)
         return 200, token, self.TOKEN_RESPONSE_HEADER

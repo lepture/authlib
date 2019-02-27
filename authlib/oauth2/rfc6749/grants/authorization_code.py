@@ -108,7 +108,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         # ignore validate for response_type, since it is validated by
         # check_authorization_endpoint
         client_id = self.request.client_id
-        log.debug('Validate authorization request of {!r}'.format(client_id))
+        log.debug('Validate authorization request of %r', client_id)
 
         if client_id is None:
             raise InvalidClientError(
@@ -235,7 +235,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         # authenticate the client if client authentication is included
         client = self.authenticate_token_endpoint_client()
 
-        log.debug('Validate token request of {!r}'.format(client))
+        log.debug('Validate token request of %r', client)
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError()
 
@@ -251,7 +251,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
             raise InvalidRequestError('Invalid "code" in request.')
 
         # validate redirect_uri parameter
-        log.debug('Validate token redirect_uri of {!r}'.format(client))
+        log.debug('Validate token redirect_uri of %r', client)
         redirect_uri = self.request.redirect_uri
         _redirect_uri = authorization_code.get_redirect_uri()
         original_redirect_uri = _redirect_uri or None
@@ -308,7 +308,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
             scope=scope,
             include_refresh_token=client.check_client_type('confidential'),
         )
-        log.debug('Issue token {!r} to {!r}'.format(token, client))
+        log.debug('Issue token %r to %r', token, client)
 
         self.request.user = user
         self.server.save_token(token, self.request)
