@@ -132,7 +132,7 @@ def _generate_id_token_payload(
         'iss': iss,
         'aud': aud,
         'iat': now,
-        'exp': now + exp,
+        'exp': now + int(exp),
         'auth_time': auth_time,
     }
     if nonce:
