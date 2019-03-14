@@ -1,5 +1,6 @@
 import time
 import random
+import os
 from authlib.oauth2.rfc6749 import InvalidRequestError
 from authlib.oauth2.rfc6749.util import scope_to_list
 from authlib.jose import JWT
@@ -79,7 +80,7 @@ def generate_id_token(
 
 def create_response_mode_response(redirect_uri, params, response_mode=None):
     if response_mode is None:
-        response_mode = 'fragment'
+        response_mode = os.getenv('AUTHLIB_DEFAULT_RESPONSE_CODE', 'fragment')
 
     if response_mode == 'form_post':
         tpl = (
