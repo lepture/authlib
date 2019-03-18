@@ -21,7 +21,7 @@ class OAuth2ClientMixin(ClientMixin):
     )
     expires_at = Column(Integer, nullable=False, default=0)
 
-    redirect_uri = Column(Text, nullable=False, default='')
+    redirect_uri = Column(Text)
     token_endpoint_auth_method = Column(
         String(48), default='client_secret_basic')
     grant_type = Column(Text, nullable=False, default='')
