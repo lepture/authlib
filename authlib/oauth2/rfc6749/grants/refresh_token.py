@@ -14,6 +14,7 @@ from ..util import scope_to_list
 from ..errors import (
     InvalidRequestError,
     InvalidScopeError,
+    InvalidGrantError,
     UnauthorizedClientError,
 )
 log = logging.getLogger(__name__)
@@ -53,9 +54,7 @@ class RefreshTokenGrant(BaseGrant):
 
         token = self.authenticate_refresh_token(refresh_token)
         if not token:
-            raise InvalidRequestError(
-                'Invalid "refresh_token" in request.',
-            )
+            raise InvalidGrantError()
         return token
 
     def _validate_token_scope(self, token):
