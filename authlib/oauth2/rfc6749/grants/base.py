@@ -1,3 +1,4 @@
+from authlib.common.urls import add_params_to_uri
 from ..errors import (
     InvalidRequestError,
     InvalidScopeError,
@@ -102,6 +103,8 @@ class BaseGrant(object):
 
 
 class RedirectAuthGrant(BaseGrant):
+    ERROR_RESPONSE_FRAGMENT = False
+
     @classmethod
     def check_authorization_endpoint(cls, request):
         return request.response_type == cls.RESPONSE_TYPE
@@ -128,3 +131,8 @@ class RedirectAuthGrant(BaseGrant):
                     'Missing "redirect_uri" in request.'
                 )
             self.redirect_uri = redirect_uri
+
+    def create_authorization_error_response(self, error):
+        params = error.get_body()
+        loc = add_params_to_uri(self.redirect_uri, params, self.ERROR_RESPONSE_FRAGMENT)
+        return 302, '', [('Location', loc)]

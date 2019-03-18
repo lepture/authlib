@@ -72,6 +72,7 @@ class ImplicitGrant(RedirectAuthGrant):
 
     RESPONSE_TYPE = 'token'
     GRANT_TYPE = 'implicit'
+    ERROR_RESPONSE_FRAGMENT = True
 
     def validate_authorization_request(self):
         """The client constructs the request URI by adding the following

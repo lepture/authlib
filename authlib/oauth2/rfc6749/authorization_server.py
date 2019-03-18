@@ -167,10 +167,8 @@ class AuthorizationServer(object):
 
         except OAuth2Error as error:
             if grant.redirect_uri:
-                params = error.get_body()
-                loc = add_params_to_uri(grant.redirect_uri, params)
-                headers = [('Location', loc)]
-                return self.handle_response(302, '', headers)
+                data = grant.create_authorization_error_response(error)
+                return self.handle_response(*data)
             return self.handle_error_response(request, error)
 
     def create_token_response(self, request=None):
