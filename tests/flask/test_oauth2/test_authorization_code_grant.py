@@ -137,7 +137,8 @@ class AuthorizationCodeTest(TestCase):
         self.prepare_data()
         uri = self.authorize_url + '&redirect_uri=https%3A%2F%2Fa.c'
         rv = self.client.post(uri, data={'user_id': '1'})
-        self.assertIn('error=invalid_request', rv.location)
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['error'], 'invalid_request')
 
         uri = self.authorize_url + '&redirect_uri=https%3A%2F%2Fa.b'
         rv = self.client.post(uri, data={'user_id': '1'})

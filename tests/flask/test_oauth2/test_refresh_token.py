@@ -94,7 +94,7 @@ class RefreshTokenTest(TestCase):
             'refresh_token': 'foo',
         }, headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_request')
+        self.assertEqual(resp['error'], 'invalid_grant')
 
     def test_invalid_scope(self):
         self.prepare_data()

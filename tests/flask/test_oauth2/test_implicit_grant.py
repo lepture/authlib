@@ -54,10 +54,10 @@ class ImplicitTest(TestCase):
     def test_invalid_authorize(self):
         self.prepare_data()
         rv = self.client.post(self.authorize_url)
-        self.assertIn('error=access_denied', rv.location)
+        self.assertIn('#error=access_denied', rv.location)
 
         rv = self.client.post(self.authorize_url + '&scope=invalid')
-        self.assertIn('error=invalid_scope', rv.location)
+        self.assertIn('#error=invalid_scope', rv.location)
 
     def test_authorize_token(self):
         self.prepare_data()
