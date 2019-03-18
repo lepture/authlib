@@ -116,6 +116,7 @@ class RedirectAuthGrant(BaseGrant):
     def validate_authorization_redirect_uri(self, client):
         if self.redirect_uri:
             if not client.check_redirect_uri(self.redirect_uri):
+                self.redirect_uri = None
                 raise InvalidRequestError(
                     'Invalid "redirect_uri" in request.',
                     state=self.request.state,
