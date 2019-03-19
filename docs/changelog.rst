@@ -25,6 +25,11 @@ Small changes and bug fixes in this release:
 - Fixed Flask OAuth client cache detection via :gh:`issue#98`.
 - Enabled ssl certificates for ``OAuth2Session`` via :gh:`PR#100`, thanks
   to pingz.
+- Fixed error response for invalid/expired refresh token via :gh:`issue#112`.
+- Fixed error handle for invalid redirect uri via :gh:`issue#113`.
+- Fixed error response redirect to fragment via :gh:`issue#114`.
+
+**Deprecate Changes**: find how to solve the deprecate issues via https://git.io/fjvpt
 
 Version 0.10: Kluke
 -------------------
