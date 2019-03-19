@@ -82,7 +82,9 @@ Current available algorithms for ``alg``:
 4. A128KW: AES Key Wrap with default initial value using 128-bit key
 5. A192KW: AES Key Wrap with default initial value using 192-bit key
 6. A256KW: AES Key Wrap with default initial value using 256-bit key
-
+7. A128GCMKW: Key wrapping with AES GCM using 128-bit key
+8. A192GCMKW: Key wrapping with AES GCM using 192-bit key
+9. A256GCMKW: Key wrapping with AES GCM using 256-bit key
 
 Current available algorithms for ``enc``:
 
@@ -92,6 +94,10 @@ Current available algorithms for ``enc``:
 4. A128GCM
 5. A192GCM
 6. A256GCM
+
+Current available algorithms for ``zip``:
+
+1. DEF
 
 Algorithms for JWK
 ------------------
