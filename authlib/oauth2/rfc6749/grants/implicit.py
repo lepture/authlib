@@ -120,7 +120,7 @@ class ImplicitGrant(RedirectAuthGrant):
 
         # The implicit grant type is optimized for public clients
         client = self.authenticate_token_endpoint_client()
-        log.debug('Validate authorization request of {!r}'.format(client))
+        log.debug('Validate authorization request of %r', client)
 
         response_type = self.request.response_type
         if not client.check_response_type(response_type):
@@ -200,7 +200,7 @@ class ImplicitGrant(RedirectAuthGrant):
                 scope=self.request.scope,
                 include_refresh_token=False
             )
-            log.debug('Grant token {!r} to {!r}'.format(token, client))
+            log.debug('Grant token %r to %r', token, client)
 
             self.server.save_token(token, self.request)
             self.execute_hook('process_token', token=token)

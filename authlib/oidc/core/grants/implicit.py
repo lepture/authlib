@@ -52,7 +52,7 @@ class OpenIDImplicitGrant(ImplicitGrant):
                 }
                 token = self._process_implicit_token(token)
             else:
-                log.debug('Grant token {!r} to {!r}'.format(token, client))
+                log.debug('Grant token %r to %r', token, client)
                 self.server.save_token(token, self.request)
                 token = self._process_implicit_token(token)
             params = [(k, token[k]) for k in token]

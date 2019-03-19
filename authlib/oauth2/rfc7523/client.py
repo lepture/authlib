@@ -30,7 +30,7 @@ class JWTBearerClientAssertion(object):
             resolve_key = self.create_resolve_key_func(query_client, request)
             self.process_assertion_claims(assertion, resolve_key)
             return self.authenticate_client(request.client)
-        log.debug('Authenticate via "{}" failed'.format(self.CLIENT_AUTH_METHOD))
+        log.debug('Authenticate via %r failed', self.CLIENT_AUTH_METHOD)
 
     def create_claims_options(self):
         """Create a claims_options for verify JWT payload claims. Developers
@@ -65,7 +65,7 @@ class JWTBearerClientAssertion(object):
             )
             claims.validate()
         except JoseError as e:
-            log.debug('Assertion Error: {!r}'.format(e))
+            log.debug('Assertion Error: %r', e)
             raise InvalidClientError()
         return claims
 

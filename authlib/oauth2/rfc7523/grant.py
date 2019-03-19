@@ -53,7 +53,7 @@ class JWTBearerGrant(BaseGrant):
         try:
             claims.validate()
         except JoseError as e:
-            log.debug('Assertion Error: {!r}'.format(e))
+            log.debug('Assertion Error: %r', e)
             raise InvalidGrantError(description=e.description)
         return claims
 
@@ -94,7 +94,7 @@ class JWTBearerGrant(BaseGrant):
 
         claims = self.process_assertion_claims(assertion)
         client = self.authenticate_client(claims)
-        log.debug('Validate token request of {!r}'.format(client))
+        log.debug('Validate token request of %s', client)
 
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError()
@@ -113,7 +113,7 @@ class JWTBearerGrant(BaseGrant):
             scope=self.request.scope,
             include_refresh_token=False,
         )
-        log.debug('Issue token {!r} to {!r}'.format(token, client))
+        log.debug('Issue token %r to %r', token, client)
         self.server.save_token(token, self.request)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 

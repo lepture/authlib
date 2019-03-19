@@ -61,13 +61,13 @@ def authenticate_client_secret_basic(query_client, request):
         if client.check_token_endpoint_auth_method('client_secret_basic') \
                 and client.check_client_secret(client_secret):
             log.debug(
-                'Authenticate {} via "client_secret_basic" '
-                'success'.format(client_id)
+                'Authenticate %s via "client_secret_basic" '
+                'success', client_id
             )
             return client
     log.debug(
-        'Authenticate {} via "client_secret_basic" '
-        'failed'.format(client_id)
+        'Authenticate %s via "client_secret_basic" '
+        'failed', client_id
     )
 
 
@@ -83,13 +83,13 @@ def authenticate_client_secret_post(query_client, request):
         if client.check_token_endpoint_auth_method('client_secret_post') \
                 and client.check_client_secret(client_secret):
             log.debug(
-                'Authenticate {} via "client_secret_post" '
-                'success'.format(client_id)
+                'Authenticate %s via "client_secret_post" '
+                'success', client_id
             )
             return client
     log.debug(
-        'Authenticate {} via "client_secret_post" '
-        'failed'.format(client_id)
+        'Authenticate %s via "client_secret_post" '
+        'failed', client_id
     )
 
 
@@ -103,8 +103,8 @@ def authenticate_none(query_client, request):
         if client.check_token_endpoint_auth_method('none') \
                 and client.check_client_type('public'):
             log.debug(
-                'Authenticate {} via "none" '
-                'success'.format(client_id)
+                'Authenticate %s via "none" '
+                'success', client_id
             )
             return client
     log.debug(

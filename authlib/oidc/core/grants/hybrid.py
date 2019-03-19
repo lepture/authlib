@@ -77,7 +77,7 @@ class OpenIDHybridGrant(grants.AuthorizationCodeGrant):
 
         response_types = self.request.response_type.split()
         if 'token' in response_types:
-            log.debug('Grant token {!r} to {!r}'.format(token, client))
+            log.debug('Grant token %r to %r', token, client)
             self.server.save_token(token, self.request)
             if 'id_token' in response_types:
                 token = self._process_implicit_token(token, code)
