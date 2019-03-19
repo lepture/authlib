@@ -14,6 +14,7 @@ log = logging.getLogger(__name__)
 class OpenIDHybridGrant(grants.AuthorizationCodeGrant):
     TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic']
     RESPONSE_TYPES = ['code id_token', 'code token', 'code id_token token']
+    DEFAULT_RESPONSE_MODE = 'fragment'
 
     def __init__(self, *args, **kwargs):
         super(OpenIDHybridGrant, self).__init__(*args, **kwargs)
@@ -52,10 +53,11 @@ class OpenIDHybridGrant(grants.AuthorizationCodeGrant):
             params = error.get_body()
 
         # http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#ResponseModes
+        response_mode = self.request.data.get('response_mode', self.DEFAULT_RESPONSE_MODE)
         return create_response_mode_response(
             redirect_uri=self.redirect_uri,
             params=params,
-            response_mode=self.request.data.get('response_mode'),
+            response_mode=response_mode,
         )
 
     def _create_granted_params(self, grant_user):

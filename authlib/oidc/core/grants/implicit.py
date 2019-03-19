@@ -14,6 +14,7 @@ log = logging.getLogger(__name__)
 
 class OpenIDImplicitGrant(ImplicitGrant):
     RESPONSE_TYPES = ['id_token token', 'id_token']
+    DEFAULT_RESPONSE_MODE = 'fragment'
 
     @classmethod
     def check_authorization_endpoint(cls, request):
@@ -62,10 +63,11 @@ class OpenIDImplicitGrant(ImplicitGrant):
             params = error.get_body()
 
         # http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#ResponseModes
+        response_mode = self.request.data.get('response_mode', self.DEFAULT_RESPONSE_MODE)
         return create_response_mode_response(
             redirect_uri=self.redirect_uri,
             params=params,
-            response_mode=self.request.data.get('response_mode'),
+            response_mode=response_mode,
         )
 
     def _process_implicit_token(self, token):

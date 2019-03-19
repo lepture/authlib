@@ -77,10 +77,7 @@ def generate_id_token(
     return _jwt_encode(alg, payload, key)
 
 
-def create_response_mode_response(redirect_uri, params, response_mode=None):
-    if response_mode is None:
-        response_mode = 'fragment'
-
+def create_response_mode_response(redirect_uri, params, response_mode):
     if response_mode == 'form_post':
         tpl = (
             '<html><head><title>Authlib</title></head>'
