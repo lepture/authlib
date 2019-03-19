@@ -94,7 +94,7 @@ Only allowed :ref:`client_auth_methods`: ``none``.
 Resource Owner Password Credentials Grant
 -----------------------------------------
 
-Resource owner uses his username and password to exchange an access token,
+Resource owner uses their username and password to exchange an access token,
 this grant type should be used only when the client is trustworthy, implement
 it with a subclass of :class:`ResourceOwnerPasswordCredentialsGrant`::
 

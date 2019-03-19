@@ -190,7 +190,7 @@ Lovely features that Authlib has built-in:
 
 <details>
   <summary>⏳ OpenID Connect Discovery 1.0</summary>
-  <p>Developers can create a JSON file himself.</p>
+  <p>Developers can create a JSON file themselves.</p>
 </details>
 
 And more will be added.
