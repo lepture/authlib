@@ -1,4 +1,3 @@
-from authlib.common.urls import add_params_to_uri
 from authlib.deprecate import deprecate
 from .authenticate_client import ClientAuthentication
 from .errors import InvalidGrantError, OAuth2Error
@@ -59,9 +58,9 @@ class AuthorizationServer(object):
         return None
 
     def get_error_uris(self, request):
-        """Return registered error URIs. Framework SHOULD implement
-        this function."""
-        return None
+        error_uris = self.config.get('error_uris')
+        if error_uris:
+            return dict(error_uris)
 
     def send_signal(self, name, *args, **kwargs):
         raise NotImplementedError()

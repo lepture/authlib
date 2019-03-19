@@ -49,7 +49,6 @@ class AuthorizationServer(_AuthorizationServer):
     def __init__(self, app=None, query_client=None, save_token=None, **config):
         super(AuthorizationServer, self).__init__(
             query_client, None, save_token, **config)
-        self.app = app
         if app is not None:
             self.init_app(app)
 
@@ -61,8 +60,9 @@ class AuthorizationServer(_AuthorizationServer):
         if save_token is not None:
             self.save_token = save_token
 
-        self.app = app
+        self.config.setdefault('error_uris', app.config.get('OAUTH2_ERROR_URIS'))
         self.generate_token = self.create_bearer_token_generator(app)
+
         if app.config.get('OAUTH2_JWT_ENABLED'):
             self.init_jwt_config(app)
 
@@ -102,11 +102,6 @@ class AuthorizationServer(_AuthorizationServer):
             payload = json.dumps(payload)
         return Response(payload, status=status_code, headers=headers)
 
-    def get_error_uris(self, request):
-        error_uris = self.app.config.get('OAUTH2_ERROR_URIS')
-        if error_uris:
-            return dict(error_uris)
-
     def send_signal(self, name, *args, **kwargs):
         if name == 'after_authenticate_client':
             client_authenticated.send(self, *args, **kwargs)
@@ -125,14 +120,8 @@ class AuthorizationServer(_AuthorizationServer):
                 'urn:ietf:params:oauth:grant-type:jwt-bearer': 3600,
             }
         """
-        expires_conf = {}
-        expires_conf.update(GRANT_TYPES_EXPIRES)
-        expires_conf.update(app.config.get('OAUTH2_TOKEN_EXPIRES_IN', {}))
-
-        def expires_in(client, grant_type):
-            return expires_conf.get(grant_type, BearerToken.DEFAULT_EXPIRES_IN)
-
-        return expires_in
+        expires_conf = app.config.get('OAUTH2_TOKEN_EXPIRES_IN')
+        return create_token_expires_in_generator(expires_conf)
 
     def create_bearer_token_generator(self, app):
         """Create a generator function for generating ``token`` value. This
@@ -141,24 +130,11 @@ class AuthorizationServer(_AuthorizationServer):
         generate ``refresh_token``, which can be turn on by configuration
         ``OAUTH2_REFRESH_TOKEN_GENERATOR=True``.
         """
-        access_token_generator = app.config.get(
-            'OAUTH2_ACCESS_TOKEN_GENERATOR', True)
+        conf = app.config.get('OAUTH2_ACCESS_TOKEN_GENERATOR', True)
+        access_token_generator = create_token_generator(conf, 42)
 
-        if isinstance(access_token_generator, str):
-            access_token_generator = import_string(access_token_generator)
-        elif not callable(access_token_generator):
-            def access_token_generator(*args, **kwargs):
-                return generate_token(42)
-
-        refresh_token_generator = app.config.get(
-            'OAUTH2_REFRESH_TOKEN_GENERATOR', False)
-        if isinstance(refresh_token_generator, str):
-            refresh_token_generator = import_string(refresh_token_generator)
-        elif refresh_token_generator is True:
-            def refresh_token_generator(*args, **kwargs):
-                return generate_token(48)
-        elif not callable(refresh_token_generator):
-            refresh_token_generator = None
+        conf = app.config.get('OAUTH2_REFRESH_TOKEN_GENERATOR', False)
+        refresh_token_generator = create_token_generator(conf, 48)
 
         expires_generator = self.create_token_expires_in_generator(app)
         return BearerToken(
@@ -194,3 +170,27 @@ class AuthorizationServer(_AuthorizationServer):
         if not hasattr(grant, 'prompt'):
             grant.prompt = None
         return grant
+
+
+def create_token_expires_in_generator(expires_in_conf=None):
+    data = {}
+    data.update(GRANT_TYPES_EXPIRES)
+    if expires_in_conf:
+        data.update(expires_in_conf)
+
+    def expires_in(client, grant_type):
+        return data.get(grant_type, BearerToken.DEFAULT_EXPIRES_IN)
+
+    return expires_in
+
+
+def create_token_generator(token_generator_conf, length=42):
+    if callable(token_generator_conf):
+        return token_generator_conf
+
+    if isinstance(token_generator_conf, str):
+        return import_string(token_generator_conf)
+    elif token_generator_conf is True:
+        def token_generator(*args, **kwargs):
+            return generate_token(length)
+        return token_generator
