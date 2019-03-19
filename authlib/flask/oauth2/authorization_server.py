@@ -128,11 +128,6 @@ class AuthorizationServer(_AuthorizationServer):
         """
         expires_conf = {}
         expires_conf.update(GRANT_TYPES_EXPIRES)
-
-        _old_expires = app.config.get('OAUTH2_EXPIRES_IN')
-        if _old_expires:  # pragma: no cover
-            deprecate('Deprecate "OAUTH2_EXPIRES_IN".', '0.11', 'vhL75', 'ae')
-            expires_conf.update(_old_expires)
         expires_conf.update(app.config.get('OAUTH2_TOKEN_EXPIRES_IN', {}))
 
         def expires_in(client, grant_type):

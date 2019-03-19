@@ -158,20 +158,12 @@ class AuthorizationServer(_AuthorizationServer):
         return super(AuthorizationServer, self)\
             .create_temporary_credentials_response(request)
 
-    def create_temporary_credential_response(self):  # pragma: no cover
-        deprecate('Use "create_temporary_credentials_response" instead', '0.11')
-        return self.create_temporary_credentials_response()
-
     def check_authorization_request(self):
         req = self.create_oauth1_request(None)
         self.validate_authorization_request(req)
         return req
 
     def create_authorization_response(self, request=None, grant_user=None):
-        if request and not grant_user:  # pragma: no cover
-            deprecate('Use "create_authorization_response(grant_user=user)" instead', '0.11')
-            grant_user = request
-            request = None
         return super(AuthorizationServer, self)\
             .create_authorization_response(request, grant_user)
 

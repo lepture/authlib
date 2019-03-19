@@ -83,12 +83,7 @@ class BearerToken(object):
 
     def __call__(self, client, grant_type, user=None, scope=None,
                  expires_in=None, include_refresh_token=True):
-
-        access_token = _gen_token(
-            self.access_token_generator,
-            client, grant_type, user, scope
-        )
-
+        access_token = self.access_token_generator(client, grant_type, user, scope)
         if expires_in is None:
             expires_in = self._get_expires_in(client, grant_type)
 
@@ -98,27 +93,8 @@ class BearerToken(object):
             'expires_in': expires_in
         }
         if include_refresh_token and self.refresh_token_generator:
-            token['refresh_token'] = _gen_token(
-                self.refresh_token_generator,
-                client, grant_type, user, scope
-            )
+            token['refresh_token'] = self.refresh_token_generator(
+                client, grant_type, user, scope)
         if scope:
             token['scope'] = scope
         return token
-
-
-def _gen_token(func, client, grant_type, user, scope):
-    if hasattr(inspect, 'getfullargspec'):
-        spec = inspect.getfullargspec(func)
-        no_args = not spec.args and not spec.varkw
-    else:
-        spec = inspect.getargspec(func)
-        no_args = not spec.args and not spec.keywords
-    if no_args:
-        deprecate('Token generator now accepts parameters', '0.11', 'vhL75', 'tg')
-        return func()
-
-    return func(
-        client=client, grant_type=grant_type,
-        user=user, scope=scope,
-    )
