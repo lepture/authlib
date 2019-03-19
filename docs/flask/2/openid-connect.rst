@@ -99,7 +99,7 @@ OpenID Connect Code flow looks like the standard Authorization Code flow, and
 the implementation for :class:`OpenIDCodeGrant` is actually a subclass of
 :ref:`flask_oauth2_code_grant`. And the implementation is the same::
 
-    from authlib.specs.oidc import grants
+    from authlib.oidc.core import grants
     from authlib.common.security import generate_token
 
     class OpenIDCodeGrant(grants.OpenIDCodeGrant):
@@ -165,7 +165,7 @@ Implicit Flow
 Implicit flow is simple, there is no missing methods should be implemented,
 we can simply import it and register it::
 
-    from authlib.specs.oidc import grants
+    from authlib.oidc.core import grants
     server.register_grant(grants.OpenIDImplicitGrant)
 
 .. _flask_odic_hybrid:
@@ -176,7 +176,7 @@ Hybrid Flow
 Hybrid flow is a mix of the code flow and implicit flow. The missing methods
 are the same with code flow::
 
-    from authlib.specs.oidc import grants
+    from authlib.oidc.core import grants
     from authlib.common.security import generate_token
 
     class OpenIDHybridGrant(grants.OpenIDHybridGrant):

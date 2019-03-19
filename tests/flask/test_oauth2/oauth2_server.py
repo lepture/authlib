@@ -6,12 +6,11 @@ from authlib.common.security import generate_token
 from authlib.common.encoding import to_bytes, to_unicode
 from authlib.common.urls import url_encode
 from authlib.flask.oauth2.sqla import (
-    create_bearer_token_validator,
     create_query_client_func,
     create_save_token_func,
 )
 from authlib.flask.oauth2 import AuthorizationServer
-from authlib.specs.rfc6749 import OAuth2Error
+from authlib.oauth2 import OAuth2Error
 from .models import db, User, Client, Token
 
 os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'

@@ -1,4 +1,4 @@
-from authlib.specs.rfc6749.grants import ImplicitGrant
+from authlib.oauth2.rfc6749.grants import ImplicitGrant
 from .models import db, User, Client
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server

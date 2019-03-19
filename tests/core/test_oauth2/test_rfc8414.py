@@ -1,6 +1,6 @@
 import unittest
-from authlib.specs.rfc8414 import WELL_KNOWN_URL, get_well_known_url
-from authlib.specs.rfc8414 import AuthorizationServerMetadata
+from authlib.oauth2.rfc8414 import WELL_KNOWN_URL, get_well_known_url
+from authlib.oauth2.rfc8414 import AuthorizationServerMetadata
 
 
 class WellKnownTest(unittest.TestCase):

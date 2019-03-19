@@ -7,7 +7,7 @@ from authlib.oauth2.rfc6749 import (
     TokenMixin,
     AuthorizationCodeMixin,
 )
-from authlib.specs.oidc import (
+from authlib.oidc.core import (
     AuthorizationCodeMixin as OIDCCodeMixin
 )
 

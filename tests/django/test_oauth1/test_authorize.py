@@ -1,4 +1,4 @@
-from authlib.specs.rfc5849 import errors
+from authlib.oauth1.rfc5849 import errors
 from django.test import override_settings
 from tests.util import decode_response
 from .models import User, Client

@@ -6,7 +6,7 @@ from authlib.flask.oauth2.sqla import (
     OAuth2TokenMixin,
     OIDCAuthorizationCodeMixin,
 )
-from authlib.specs.oidc import UserInfo
+from authlib.oidc.core import UserInfo
 db = SQLAlchemy()
 
 

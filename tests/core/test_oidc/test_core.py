@@ -1,7 +1,7 @@
 import unittest
-from authlib.specs.rfc7519 import MissingClaimError, InvalidClaimError
-from authlib.specs.oidc import CodeIDToken, ImplicitIDToken, HybridIDToken
-from authlib.specs.oidc import UserInfo, get_claim_cls_by_response_type
+from authlib.jose.errors import MissingClaimError, InvalidClaimError
+from authlib.oidc.core import CodeIDToken, ImplicitIDToken, HybridIDToken
+from authlib.oidc.core import UserInfo, get_claim_cls_by_response_type
 
 
 class IDTokenTest(unittest.TestCase):

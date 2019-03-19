@@ -1,7 +1,7 @@
 from flask import json
 from authlib.common.urls import urlparse, url_decode
 from authlib.flask.oauth2 import register_cache_authorization_code
-from authlib.specs.rfc6749.grants import (
+from authlib.oauth2.rfc6749.grants import (
     AuthorizationCodeGrant as _AuthorizationCodeGrant,
 )
 from .models import db, User, Client, AuthorizationCode

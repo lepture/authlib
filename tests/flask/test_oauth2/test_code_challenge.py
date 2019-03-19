@@ -1,7 +1,7 @@
 from flask import json
 from authlib.common.urls import urlparse, url_decode
-from authlib.specs.rfc6749 import grants
-from authlib.specs.rfc7636 import (
+from authlib.oauth2.rfc6749 import grants
+from authlib.oauth2.rfc7636 import (
     CodeChallenge as _CodeChallenge,
     create_s256_code_challenge,
 )

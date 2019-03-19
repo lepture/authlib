@@ -1,5 +1,5 @@
 from flask import json
-from authlib.specs.rfc7523 import JWTBearerGrant as _JWTBearerGrant
+from authlib.oauth2.rfc7523 import JWTBearerGrant as _JWTBearerGrant
 from .models import db, User, Client
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server

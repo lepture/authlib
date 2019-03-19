@@ -1,5 +1,5 @@
 import time
-from authlib.specs.rfc5849 import signature
+from authlib.oauth1.rfc5849 import signature
 from tests.util import read_file_path, decode_response
 from django.test import override_settings
 from django.core.cache import cache

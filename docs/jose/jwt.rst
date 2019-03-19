@@ -49,7 +49,7 @@ JWT Payload Claims Validation
 Claims validation is actually handled by :meth:`JWTClaims.validate`, which
 validates payload claims with ``claims_option`` and ``claims_params``. For
 standard JWTClaims, ``claims_params`` value is not used, but it is used in
-:class:`~authlib.specs.oidc.IDToken`.
+:class:`~authlib.oidc.core.IDToken`.
 
 Here is an example of ``claims_option``::
 

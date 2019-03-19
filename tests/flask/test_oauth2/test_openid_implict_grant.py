@@ -1,6 +1,6 @@
-from authlib.specs.rfc7519 import JWT
-from authlib.specs.oidc import ImplicitIDToken
-from authlib.specs.oidc.grants import (
+from authlib.jose import JWT
+from authlib.oidc.core import ImplicitIDToken
+from authlib.oidc.core.grants import (
     OpenIDImplicitGrant as _OpenIDImplicitGrant
 )
 from authlib.common.urls import urlparse, url_decode

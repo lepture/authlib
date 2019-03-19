@@ -1,5 +1,5 @@
 from flask import json
-from authlib.specs.rfc6749.grants import (
+from authlib.oauth2.rfc6749.grants import (
     ResourceOwnerPasswordCredentialsGrant as _PasswordGrant,
 )
 from .models import db, User, Client

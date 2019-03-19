@@ -8,7 +8,6 @@ from authlib.oauth2 import (
 from authlib.oauth2.rfc6750 import BearerToken
 from authlib.common.security import generate_token
 from authlib.common.encoding import to_unicode
-from authlib.deprecate import deprecate
 from .signals import client_authenticated, token_revoked
 from ..helpers import create_oauth_request
 
@@ -148,7 +147,7 @@ class AuthorizationServer(_AuthorizationServer):
         if isinstance(access_token_generator, str):
             access_token_generator = import_string(access_token_generator)
         elif not callable(access_token_generator):
-            def access_token_generator(**kwargs):
+            def access_token_generator(*args, **kwargs):
                 return generate_token(42)
 
         refresh_token_generator = app.config.get(
@@ -156,7 +155,7 @@ class AuthorizationServer(_AuthorizationServer):
         if isinstance(refresh_token_generator, str):
             refresh_token_generator = import_string(refresh_token_generator)
         elif refresh_token_generator is True:
-            def refresh_token_generator(**kwargs):
+            def refresh_token_generator(*args, **kwargs):
                 return generate_token(48)
         elif not callable(refresh_token_generator):
             refresh_token_generator = None

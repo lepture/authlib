@@ -1,8 +1,8 @@
 from flask import json
 from authlib.common.urls import urlparse, url_decode
-from authlib.specs.rfc7519 import JWT
-from authlib.specs.oidc import HybridIDToken
-from authlib.specs.oidc.grants import (
+from authlib.jose import JWT
+from authlib.oidc.core import HybridIDToken
+from authlib.oidc.core.grants import (
     OpenIDHybridGrant as _OpenIDHybridGrant,
 )
 from .models import db, User, Client, exists_nonce

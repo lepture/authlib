@@ -1,7 +1,7 @@
 import json
 import time
 from authlib.common.encoding import to_unicode
-from authlib.specs.rfc5849 import signature
+from authlib.oauth1.rfc5849 import signature
 from authlib.common.urls import add_params_to_uri
 from authlib.django.oauth1 import ResourceProtector
 from django.http import JsonResponse

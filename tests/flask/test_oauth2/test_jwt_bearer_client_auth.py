@@ -1,6 +1,6 @@
 from flask import json
-from authlib.specs.rfc6749.grants import ClientCredentialsGrant
-from authlib.specs.rfc7523 import (
+from authlib.oauth2.rfc6749.grants import ClientCredentialsGrant
+from authlib.oauth2.rfc7523 import (
     JWTBearerClientAssertion,
     client_secret_jwt_sign,
     private_key_jwt_sign,

@@ -7,10 +7,10 @@ from unittest import TestCase
 from authlib.common.urls import url_encode
 from authlib.client import OAuth2Session
 from authlib.client.errors import OAuthError
-from authlib.specs.rfc6749 import (
+from authlib.oauth2.rfc6749 import (
     MismatchingStateException,
 )
-from authlib.specs.rfc7523 import register_session_client_auth_method
+from authlib.oauth2.rfc7523 import register_session_client_auth_method
 from tests.util import read_file_path
 from tests.client_base import mock_json_response
 

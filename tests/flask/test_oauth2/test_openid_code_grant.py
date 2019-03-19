@@ -1,8 +1,8 @@
 from flask import json
 from authlib.common.urls import urlparse, url_decode, url_encode
-from authlib.specs.rfc7519 import JWT
-from authlib.specs.oidc import CodeIDToken
-from authlib.specs.oidc.grants import (
+from authlib.jose import JWT
+from authlib.oidc.core import CodeIDToken
+from authlib.oidc.core.grants import (
     OpenIDCodeGrant as _OpenIDCodeGrant,
 )
 from tests.util import get_file_path
