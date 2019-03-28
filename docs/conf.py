@@ -70,9 +70,9 @@ html_static_path = ['_static']
 _sidebar_templates = [
     'logo.html',
     'github.html',
+    'sponsors.html',
     'globaltoc.html',
     'links.html',
-    'sponsors.html',
     'searchbox.html',
 ]
 if '.dev' not in release:
