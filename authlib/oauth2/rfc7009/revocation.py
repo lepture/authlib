@@ -1,6 +1,8 @@
 from ..rfc6749 import TokenEndpoint
 from ..rfc6749 import (
-    OAuth2Error, InvalidRequestError, UnsupportedTokenTypeError
+    OAuth2Error,
+    InvalidRequestError,
+    UnsupportedTokenTypeError,
 )
 
 
@@ -37,8 +39,6 @@ class RevocationEndpoint(TokenEndpoint):
             raise UnsupportedTokenTypeError()
         token = self.query_token(
             params['token'], token_type, self.request.client)
-        if not token:
-            raise InvalidRequestError()
         self.request.credential = token
 
     def create_endpoint_response(self):
@@ -62,12 +62,13 @@ class RevocationEndpoint(TokenEndpoint):
             # the revocation request
             self.validate_endpoint_request()
             # the authorization server invalidates the token
-            self.revoke_token(self.request.credential)
-            self.server.send_signal(
-                'after_revoke_token',
-                token=self.request.credential,
-                client=self.request.client,
-            )
+            if self.request.credential:
+                self.revoke_token(self.request.credential)
+                self.server.send_signal(
+                    'after_revoke_token',
+                    token=self.request.credential,
+                    client=self.request.client,
+                )
             status = 200
             body = {}
             headers = [

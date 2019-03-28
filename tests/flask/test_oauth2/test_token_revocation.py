@@ -76,8 +76,7 @@ class RevokeTokenTest(TestCase):
         rv = self.client.post('/oauth/revoke', data={
             'token': 'invalid-token',
         }, headers=headers)
-        resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_request')
+        self.assertEqual(rv.status_code, 200)
 
         rv = self.client.post('/oauth/revoke', data={
             'token': 'a1',
@@ -90,8 +89,7 @@ class RevokeTokenTest(TestCase):
             'token': 'a1',
             'token_type_hint': 'refresh_token',
         }, headers=headers)
-        resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_request')
+        self.assertEqual(rv.status_code, 200)
 
     def test_revoke_token_with_hint(self):
         self.prepare_data()
@@ -104,13 +102,6 @@ class RevokeTokenTest(TestCase):
             'token_type_hint': 'access_token',
         }, headers=headers)
         self.assertEqual(rv.status_code, 200)
-
-        rv = self.client.post('/oauth/revoke', data={
-            'token': 'a1',
-            'token_type_hint': 'access_token',
-        }, headers=headers)
-        resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_request')
 
     def test_revoke_token_without_hint(self):
         self.prepare_data()

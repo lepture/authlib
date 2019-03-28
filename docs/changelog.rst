@@ -28,6 +28,7 @@ Small changes and bug fixes in this release:
 - Fixed error response for invalid/expired refresh token via :gh:`issue#112`.
 - Fixed error handle for invalid redirect uri via :gh:`issue#113`.
 - Fixed error response redirect to fragment via :gh:`issue#114`.
+- Fixed non-compliant responses from RFC7009 via :gh:`issue#119`.
 
 **Deprecate Changes**: find how to solve the deprecate issues via https://git.io/fjvpt
 
