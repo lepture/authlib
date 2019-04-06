@@ -6,12 +6,15 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
-Version 0.11
-------------
+Version 0.11: Kaori
+-------------------
 
-**Release Date not decided yet.**
+**Released on Apr 6, 2019.**
 
-**BIG NEWS**: Authlib has changed its open source license from AGPL to BSD.
+**BIG NEWS**: Authlib has changed its open source license **from AGPL to BSD**.
+
+**Important Changes**: Authlib specs module has been split into jose, oauth1,
+oauth2, and oidc. Find how to solve the deprecate issues via https://git.io/fjvpt
 
 RFC implementations and updates in this release:
 
@@ -30,7 +33,8 @@ Small changes and bug fixes in this release:
 - Fixed error response redirect to fragment via :gh:`issue#114`.
 - Fixed non-compliant responses from RFC7009 via :gh:`issue#119`.
 
-**Deprecate Changes**: find how to solve the deprecate issues via https://git.io/fjvpt
+**Experiment Features**: There is an experiment ``aiohttp`` client for OAuth1
+and OAuth2 in ``authlib.client.aiohttp``.
 
 Version 0.10: Kluke
 -------------------
@@ -263,24 +267,11 @@ contributors.
 
     Currently, they are backward compatible. You will be notified by warnings.
 
-Version 0.3: Nagato
--------------------
-
-**Released on Dec 24, 2017. Merry Christmas!**
-
-This is a feature releasing for OAuth 2 server. Since this is the first
-release of the server implementation, you would expect that there are bugs,
-security vulnerabilities, and uncertainties. Try it bravely.
-
-- :ref:`RFC6749 <specs/rfc6749>`, all grant types, refresh token, authorization server.
-- :ref:`RFC6750 <specs/rfc6750>`, bearer token creation and validation.
-- :ref:`RFC7009 <specs/rfc7009>`, token revocation.
-- :ref:`Flask implementation <flask_oauth2_server>` of authorization server and resource protector.
-- Mixin of SQLAlchemy models for easy integration with OAuth 2.
 
 Old Versions
 ------------
 
+- Version 0.3: Released on Dec 24, 2017
 - Version 0.2.1: Released on Dec 6, 2017
 - Version 0.2: Released on Nov 25, 2017
 - Version 0.1: Released on Nov 18, 2017

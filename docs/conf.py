@@ -56,7 +56,7 @@ html_theme_options = {
     'analytics_id': 'UA-34098939-7',
     'meta_html': (
         '<link rel="apple-touch-icon" sizes="180x180" '
-        'href="//authlib.org/apple-touch-icon.png">'
+        'href="https://authlib.org/apple-touch-icon.png">'
     )
 }
 
