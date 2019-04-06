@@ -229,5 +229,13 @@ You can also find it at <https://keybase.io/lepture>.
 
 Authlib is licensed under BSD. Please see LICENSE for licensing details.
 
-If this license does not fit your company, consider to purchase a commercial
-license. Find more information on [Authlib Plans](https://authlib.org/plans).
+There is also a commercial license which you can purchase at
+[Authlib Plans](https://authlib.org/plans) page.
+
+## Support
+
+If you need any help, you can always ask questions on StackOverflow with
+a tag of "Authlib". DO NOT ASK HELP IN GITHUB ISSUES.
+
+We also provide commercial consulting and supports. You can find more
+information at <https://authlib.org/support>.
