@@ -5,7 +5,9 @@ from copy import deepcopy
 from unittest import TestCase
 
 from authlib.common.urls import url_encode
+from authlib.oauth2.client import OAuth2Client
 from authlib.client import OAuth2Session
+from authlib.client import OAuth2Auth
 from authlib.client.errors import OAuthError
 from authlib.oauth2.rfc6749 import (
     MismatchingStateException,
@@ -13,6 +15,7 @@ from authlib.oauth2.rfc6749 import (
 from authlib.oauth2.rfc7523 import register_session_client_auth_method
 from tests.util import read_file_path
 from tests.client_base import mock_json_response
+import requests
 
 
 class OAuth2SessionTest(TestCase):
@@ -395,3 +398,33 @@ class OAuth2SessionTest(TestCase):
         sess.send = fake_send
         token = sess.fetch_access_token('https://i.b/token')
         self.assertEqual(token, self.token)
+
+
+class OAuth2AuthTest(TestCase):
+
+    def setUp(self):
+        self.token = {
+            'token_type': 'Bearer',
+            'access_token': 'a',
+            'refresh_token': 'b',
+            'expires_in': '3600',
+            'expires_at': int(time.time()) + 3600,
+        }
+        self.client_id = 'foo'
+
+    def test_add_token_to_header(self):
+        token = 'Bearer ' + self.token['access_token']
+
+        def verifier(r, **kwargs):
+            auth_header = r.headers.get(str('Authorization'), None)
+            self.assertEqual(auth_header, token)
+            resp = mock.MagicMock()
+            return resp
+
+        auth_sess = requests.Session()
+        client = OAuth2Client(auth_sess, client_id=self.client_id, token=self.token)
+
+        sess = requests.Session()
+        sess.send = verifier
+        auth = OAuth2Auth(token=client.token, client=client)
+        sess.get('https://i.b', auth=auth)
