@@ -426,5 +426,5 @@ class OAuth2AuthTest(TestCase):
 
         sess = requests.Session()
         sess.send = verifier
-        auth = OAuth2Auth(token=client.token, client=client)
+        auth = OAuth2Auth(client=client)
         sess.get('https://i.b', auth=auth)

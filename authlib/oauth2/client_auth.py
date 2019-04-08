@@ -83,9 +83,15 @@ class TokenAuth(object):
     def register_sign_method(cls, sign_type, func):
         cls.SIGN_METHODS[sign_type] = func
 
-    def __init__(self, token, token_placement='header', client=None):
-        self.token = OAuth2Token.from_dict(token)
-        self.token_placement = token_placement
+    def __init__(self, token=None, token_placement=None, client=None):
+        if client and hasattr(client, 'token_auth'):
+            default_token = client.token_auth.token
+            default_token_placement = client.token_auth.token_placement
+        else:
+            default_token = None
+            default_token_placement = 'header'
+        self.token = OAuth2Token.from_dict(token or default_token)
+        self.token_placement = token_placement or default_token_placement
         self.client = client
         self.hooks = set()
 
