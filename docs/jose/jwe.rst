@@ -55,13 +55,13 @@ Generate a JWE compact serialization would be easy with
     from authlib.jose import JWE
     from authlib.jose import JWE_ALGORITHMS
 
-    jws = JWS(algorithms=JWS_ALGORITHMS)
+    jwe = JWE(algorithms=JWE_ALGORITHMS)
     protected = {'alg': 'RSA-OAEP', 'enc': 'A256GCM'}
     payload = b'hello'
     with open('rsa_public.pem', 'rb') as f:
         key = f.read()
 
-    s = jws.serialize_compact(protected, payload, key)
+    s = jwe.serialize_compact(protected, payload, key)
 
 There are two required algorithms in protected header: ``alg`` and ``enc``.
 
@@ -81,7 +81,7 @@ More ``alg`` and ``enc`` will be added in the future.
 It is also available to compress the payload with ``zip`` header::
 
     protected = {'alg': 'RSA-OAEP', 'enc': 'A256GCM', 'zip': 'DEF'}
-    s = jws.serialize_compact(protected, payload, key)
+    s = jwe.serialize_compact(protected, payload, key)
 
 To deserialize a JWE Compact Serialization, use
 :meth:`JWE.deserialize_compact`::
