@@ -157,8 +157,9 @@ class OAuth2Client(object):
         elif username and password:
             if 'scope' not in kwargs and self.scope:
                 kwargs['scope'] = self.scope
+            grant_type = kwargs.pop('grant_type', 'password')
             body = prepare_token_request(
-                'password', body, username=username,
+                grant_type, body, username=username,
                 password=password, **kwargs)
         else:
             grant_type = kwargs.pop('grant_type', 'client_credentials')
