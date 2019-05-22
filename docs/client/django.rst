@@ -274,3 +274,38 @@ When :meth:`OAuth.register` a remote app, pass it in the parameters::
     )
 
 Find all the available compliance hooks at :ref:`compliance_fix_oauth2`.
+
+
+Loginpass
+---------
+
+There are many built-in integrations served by loginpass_, checkout the
+``django_example`` in loginpass project. Here is an example of GitHub::
+
+    from authlib.django.client import OAuth
+    from loginpass import create_django_urlpatterns, GitHub
+
+    oauth = OAuth()
+
+    def handle_authorize(request, remote, token, user_info):
+        if token:
+            save_token(request, remote.name, token)
+        if user_info:
+            save_user(request, user_info)
+            return user_page
+        raise some_error
+
+    oauth_urls = create_django_urlpatterns(GitHub, oauth, handle_authorize)
+
+
+    # Register it in ``urls.py``
+    from django.urls import include, path
+
+    urlpatterns = [...]
+    urlpatterns.append(path('/github/', include(oauth_urls)))
+    # Now, there are: ``/github/login`` and ``/github/auth``
+
+The source code of loginpass is very simple, they are just preconfigured
+services integrations.
+
+.. _loginpass: https://github.com/authlib/loginpass
