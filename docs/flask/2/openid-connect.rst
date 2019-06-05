@@ -65,7 +65,7 @@ OAUTH2_JWT_KEY / OAUTH2_JWT_KEY_PATH
 A private key is required to generate JWT. The value can be configured with
 either ``OAUTH2_JWT_KEY`` or ``OAUTH2_JWT_KEY_PATH``. The key that you are
 going to use dependents on the ``alg`` you are using. For instance, the alg
-is ``RS256``, you need to use a RSA private key. It can be set with::
+is ``RS256``, you need to use an RSA private key. It can be set with::
 
     OAUTH2_JWT_KEY = '''-----BEGIN RSA PRIVATE KEY-----\nMIIEog...'''
 
@@ -94,6 +94,20 @@ For example, Google is using::
 
 Code Flow
 ---------
+
+OpenID Connect authorization code flow relies on the OAuth2 authorization code flow and extends it.
+Basically, all you have to do is to extend :class:`OIDCAuthorizationCodeMixin` instead
+of :class:`AuthorizationCodeMixin` in your ``AuthorizationCode`` class. This will add a ``nonce`` attribute
+and its getter to it which will be required in this new code flow::
+
+    from authlib.flask.oauth2.sqla import OIDCAuthorizationCodeMixin
+
+    class AuthorizationCode(db.Model, OIDCAuthorizationCodeMixin):
+        id = db.Column(db.Integer, primary_key=True)
+        user_id = db.Column(
+            db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')
+        )
+        user = db.relationship('User')
 
 OpenID Connect Code flow looks like the standard Authorization Code flow, and
 the implementation for :class:`OpenIDCodeGrant` is actually a subclass of
@@ -148,6 +162,24 @@ OpenID Connect request has a scope of "openid":
     &state=af0ifjsldkj
     &redirect_uri=https%3A%2F%2Fclient.example.org%2Fcb HTTP/1.1
     Host: server.example.com
+
+With the example above, you will also have to change the scope of your client
+in your application to something like ``openid profile email``.
+
+Now that you added the ``openid`` scope to your application, an OpenID token
+will be provided to this app whenever a client asks for a token with an
+``openid`` scope. In order to generate this token, your app's User should implement a
+``generate_user_info(scopes)`` method::
+
+    from authlib.oidc.core import UserInfo
+    
+    class User:
+        generate_user_info(scopes):
+            user_info = {}
+            # gather whatever info you need here, depending on the requested scopes or not
+            return UserInfo(user_info)
+
+See https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims for more info about the standard claims of a UserInfo object.
 
 :class:`OpenIDCodeGrant` can handle the standard code flow too. You **MUST NOT**
 use them together.
