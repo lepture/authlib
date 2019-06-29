@@ -54,7 +54,9 @@ class RefreshTokenGrant(BaseGrant):
             )
 
         token = self.authenticate_refresh_token(refresh_token)
-        if not token:
+        client = self.request.client
+        
+        if (client and client.client_id != credential.client_id) or not token:
             raise InvalidGrantError()
         return token
 
@@ -124,10 +126,6 @@ class RefreshTokenGrant(BaseGrant):
         scope = self.request.scope
         if not scope:
             scope = credential.get_scope()
-
-        client = self.request.client
-        if client and client.client_id != credential.client_id:
-            raise InvalidClientError('Invalid client for refresh token')
         
         expires_in = credential.get_expires_in()
         token = self.generate_token(
