@@ -15,6 +15,7 @@ from ..errors import (
     InvalidRequestError,
     InvalidScopeError,
     InvalidGrantError,
+    InvalidClientError,
     UnauthorizedClientError,
 )
 log = logging.getLogger(__name__)
@@ -125,6 +126,9 @@ class RefreshTokenGrant(BaseGrant):
             scope = credential.get_scope()
 
         client = self.request.client
+        if client.client_id != credential.client_id:
+            raise InvalidClientError('Invalid client for refresh token')
+        
         expires_in = credential.get_expires_in()
         token = self.generate_token(
             client, self.GRANT_TYPE,
