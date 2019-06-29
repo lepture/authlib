@@ -126,7 +126,6 @@ class RefreshTokenGrant(BaseGrant):
         scope = self.request.scope
         if not scope:
             scope = credential.get_scope()
-        
         expires_in = credential.get_expires_in()
         token = self.generate_token(
             client, self.GRANT_TYPE,
