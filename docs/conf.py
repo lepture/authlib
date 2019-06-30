@@ -74,6 +74,7 @@ _sidebar_templates = [
     'globaltoc.html',
     'links.html',
     'searchbox.html',
+    'tidelift.html',
 ]
 if '.dev' not in release:
     _sidebar_templates.remove('sponsors.html')
