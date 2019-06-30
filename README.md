@@ -4,12 +4,11 @@
 
 # Authlib
 
-<a href="https://lepture.com/donate"><img src="https://badgen.net/badge/donate/lepture/ff69b4" /></a>
-<a href="https://travis-ci.com/lepture/authlib"><img src="https://api.travis-ci.com/lepture/authlib.svg?branch=master" alt="Build Status"></a>
-<a href="https://codecov.io/gh/lepture/authlib?branch=master"><img src="https://codecov.io/gh/lepture/authlib/branch/master/graph/badge.svg" alt="Coverage Status"></a>
+<a href="https://lepture.com/donate"><img src="https://badgen.net/badge/donate/lepture/ff69b4?icon=patreon" /></a>
+<a href="https://travis-ci.com/lepture/authlib"><img src="https://badgen.net/travis/lepture/authlib" alt="Build Status"></a>
+<a href="https://codecov.io/gh/lepture/authlib?branch=master"><img src="https://badgen.net/codecov/c/github/lepture/authlib" alt="Coverage Status"></a>
 <a href="https://pypi.org/project/Authlib/"><img src="https://badgen.net/pypi/v/authlib" alt="PyPI Version"></a>
-<a href="https://pypi.org/project/Authlib/"><img src="https://img.shields.io/pypi/status/authlib.svg?maxAge=3600" alt="Release Stage"></a>
-<a href="https://codeclimate.com/github/lepture/authlib/maintainability"><img src="https://api.codeclimate.com/v1/badges/8c09859e1ab803f7b9ac/maintainability" alt="Maintainability" /></a>
+<a href="https://codeclimate.com/github/lepture/authlib/maintainability"><img src="https://badgen.net/codeclimate/maintainability/lepture/authlib?icon=codeclimate" alt="Maintainability" /></a>
 <a href="https://twitter.com/intent/follow?screen_name=authlib"><img src="https://img.shields.io/twitter/follow/authlib.svg?maxAge=3600&style=social&logo=twitter&label=Follow" alt="Follow Twitter"></a>
 
 The ultimate Python library in building OAuth and OpenID Connect servers.
