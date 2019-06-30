@@ -125,3 +125,8 @@ class JWKTest(unittest.TestCase):
         }
         self.assertRaises(ValueError, jwk.loads, obj, 'invalid-kid')
         self.assertRaises(ValueError, jwk.loads, [obj], 'invalid-kid')
+
+    def test_jwk_dumps_ssh(self):
+        key = read_file_path('ssh_public.pem')
+        obj = jwk.dumps(key, kty='RSA')
+        self.assertEqual(obj['kty'], 'RSA')

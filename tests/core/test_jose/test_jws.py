@@ -59,14 +59,33 @@ class JWSTest(unittest.TestCase):
 
     def test_compact_rsa(self):
         jws = JWS(algorithms=JWS_ALGORITHMS)
-        s = jws.serialize(
-            {'alg': 'RS256'}, 'hello',
-            read_file_path('rsa_private.pem')
-        )
-        data = jws.deserialize(s, read_file_path('rsa_public.pem'))
+        private_key = read_file_path('rsa_private.pem')
+        public_key = read_file_path('rsa_public.pem')
+        s = jws.serialize({'alg': 'RS256'}, 'hello', private_key)
+        data = jws.deserialize(s, public_key)
         header, payload = data['header'], data['payload']
         self.assertEqual(payload, b'hello')
         self.assertEqual(header['alg'], 'RS256')
+
+        ssh_pub_key = read_file_path('ssh_public.pem')
+        self.assertRaises(errors.BadSignatureError, jws.deserialize, s, ssh_pub_key)
+
+    def test_compact_rsa_pss(self):
+        jws = JWS(algorithms=JWS_ALGORITHMS)
+        private_key = read_file_path('rsa_private.pem')
+        public_key = read_file_path('rsa_public.pem')
+        s = jws.serialize({'alg': 'PS256'}, 'hello', private_key)
+        data = jws.deserialize(s, public_key)
+        header, payload = data['header'], data['payload']
+        self.assertEqual(payload, b'hello')
+        self.assertEqual(header['alg'], 'PS256')
+        ssh_pub_key = read_file_path('ssh_public.pem')
+        self.assertRaises(errors.BadSignatureError, jws.deserialize, s, ssh_pub_key)
+
+    def test_compact_none(self):
+        jws = JWS(algorithms=JWS_ALGORITHMS)
+        s = jws.serialize({'alg': 'none'}, 'hello', '')
+        self.assertRaises(errors.BadSignatureError, jws.deserialize, s, '')
 
     def test_flattened_json_jws(self):
         jws = JWS(algorithms=JWS_ALGORITHMS)
