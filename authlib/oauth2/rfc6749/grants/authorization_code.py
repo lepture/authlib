@@ -253,9 +253,8 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         # validate redirect_uri parameter
         log.debug('Validate token redirect_uri of %r', client)
         redirect_uri = self.request.redirect_uri
-        _redirect_uri = authorization_code.get_redirect_uri()
-        original_redirect_uri = _redirect_uri or None
-        if redirect_uri != original_redirect_uri:
+        original_redirect_uri = authorization_code.get_redirect_uri()
+        if original_redirect_uri and redirect_uri != original_redirect_uri:
             raise InvalidRequestError('Invalid "redirect_uri" in request.')
 
         # save for create_token_response
