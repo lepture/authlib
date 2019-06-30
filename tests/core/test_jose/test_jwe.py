@@ -23,6 +23,33 @@ class JWETest(unittest.TestCase):
             s, None
         )
 
+    def test_invalid_header(self):
+        jwe = JWE(algorithms=JWE_ALGORITHMS)
+        public_key = read_file_path('rsa_public.pem')
+        self.assertRaises(
+            errors.MissingAlgorithmError,
+            jwe.serialize_compact, {}, 'a', public_key
+        )
+        self.assertRaises(
+            errors.UnsupportedAlgorithmError,
+            jwe.serialize_compact, {'alg': 'invalid'}, 'a', public_key
+        )
+        self.assertRaises(
+            errors.MissingEncryptionAlgorithmError,
+            jwe.serialize_compact, {'alg': 'RSA-OAEP'}, 'a', public_key
+        )
+        self.assertRaises(
+            errors.UnsupportedEncryptionAlgorithmError,
+            jwe.serialize_compact, {'alg': 'RSA-OAEP', 'enc': 'invalid'},
+            'a', public_key
+        )
+        self.assertRaises(
+            errors.UnsupportedCompressionAlgorithmError,
+            jwe.serialize_compact,
+            {'alg': 'RSA-OAEP', 'enc': 'A256GCM', 'zip': 'invalid'},
+            'a', public_key
+        )
+
     def test_compact_rsa(self):
         jwe = JWE(algorithms=JWE_ALGORITHMS)
         s = jwe.serialize_compact(
