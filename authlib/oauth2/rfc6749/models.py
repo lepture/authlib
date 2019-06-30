@@ -191,6 +191,17 @@ class AuthorizationCodeMixin(object):
 
 
 class TokenMixin(object):
+    def get_client_id(self):
+        """A method to return client_id of the token. For instance, the value
+        in database is saved in a column called ``client_id``::
+
+            def get_client_id(self):
+                return self.client_id
+
+        :return: string
+        """
+        raise NotImplementedError()
+
     def get_scope(self):
         """A method to get scope of the authorization code. For instance,
         the column is called ``scope``::
