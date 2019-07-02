@@ -395,3 +395,23 @@ class OAuth2SessionTest(TestCase):
         sess.send = fake_send
         token = sess.fetch_access_token('https://i.b/token')
         self.assertEqual(token, self.token)
+
+    def test_use_client_token_auth(self):
+        import requests
+
+        token = 'Bearer ' + self.token['access_token']
+
+        def verifier(r, **kwargs):
+            auth_header = r.headers.get(str('Authorization'), None)
+            self.assertEqual(auth_header, token)
+            resp = mock.MagicMock()
+            return resp
+
+        client = OAuth2Session(
+            client_id=self.client_id,
+            token=self.token
+        )
+
+        sess = requests.Session()
+        sess.send = verifier
+        sess.get('https://i.b', auth=client.token_auth)
