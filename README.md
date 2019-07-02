@@ -33,6 +33,11 @@ authorization_server.register_endpoint(IntrospectionEndpoint)
 
 <table>
   <tr>
+    <td><img align="middle" width="48" src="https://user-images.githubusercontent.com/2379650/45126032-50b69880-b13f-11e8-9c2c-abd16c433495.png"></td>
+    <td>Get professionally-supported Authlib with the <a href="https://tidelift.com/subscription/pkg/pypi-authlib?utm_source=pypi-authlib&utm_medium=referral&utm_campaign=readme">Tidelift Subscription</a>.
+    </td>
+  </tr>
+  <tr>
     <td><img align="middle" width="48" src="https://user-images.githubusercontent.com/290496/39297078-89d00928-497d-11e8-8119-0c53afe14cd0.png"></td>
     <td>If you want to quickly add secure token-based authentication to Python projects, feel free to check Auth0's Python SDK and free plan at <a href="https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=authlib&utm_content=auth">auth0.com/overview</a>.</td>
   </tr>
@@ -48,6 +53,7 @@ authorization_server.register_endpoint(IntrospectionEndpoint)
 4. Twitter: <https://twitter.com/authlib>.
 5. StackOverflow: <https://stackoverflow.com/questions/tagged/authlib>.
 6. Other Repositories: <https://github.com/authlib>.
+7. Subscribe Tidelift: [https://tidelift.com/subscription/pkg/pypi-authlib](https://tidelift.com/subscription/pkg/pypi-authlib?utm_source=pypi-authlib&utm_medium=referral&utm_campaign=links).
 
 ## Spec Implementations
 
