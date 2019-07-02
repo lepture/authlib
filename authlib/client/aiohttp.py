@@ -3,6 +3,7 @@ from aiohttp import ClientRequest
 from authlib.common.urls import url_decode
 from authlib.oauth1.client import OAuth1Client
 from authlib.oauth2.client import OAuth2Client
+from .assertion_client import AssertionClient
 from .errors import OAuthError
 
 
@@ -76,6 +77,14 @@ class AsyncOAuth1Client(AsyncClientMixin, OAuth1Client):
 
 
 class AsyncOAuth2Client(AsyncClientMixin, OAuth2Client):
+    """The OAuth 2.0 Client for ``aiohttp.ClientSession``. Here
+    is how it works::
+
+        from aiohttp import ClientSession
+
+        async with ClientSession(request_class=OAuthRequest) as session:
+            client = AsyncOAuth2Client(session, client_id, client_secret, ...)
+    """
     SESSION_REQUEST_PARAMS = (
         'timeout', 'allow_redirects', 'max_redirects',
         'expect100', 'read_until_eof',
@@ -119,6 +128,26 @@ class AsyncOAuth2Client(AsyncClientMixin, OAuth2Client):
             resp = await hook(resp)
         token = await resp.json()
         return token
+
+    async def _request(self, method, url, **kwargs):
+        await self.token_auth.ensure_refresh_token()
+        return self.session.request(
+            method, url, auth=self.token_auth, **kwargs)
+
+
+class AsyncAssertionClient(AsyncClientMixin, AssertionClient):
+    """The OAuth 2.0 Assertion Client for ``aiohttp.ClientSession``. Here
+    is how it works::
+
+        from aiohttp import ClientSession
+
+        async with ClientSession(request_class=OAuthRequest) as session:
+            client = AsyncAssertionClient(session, token_url, issuer, ...)
+    """
+    async def _refresh_token(self, data):
+        async with self.session.post(self.token_url, data=data) as resp:
+            self.token = await resp.json()
+            return self.token
 
     async def _request(self, method, url, **kwargs):
         await self.token_auth.ensure_refresh_token()

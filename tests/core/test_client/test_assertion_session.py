@@ -39,7 +39,6 @@ class AssertionSessionTest(TestCase):
         now = int(time.time())
         sess = AssertionSession(
             token_url='https://i.b/token',
-            grant_type=AssertionSession.JWT_BEARER_GRANT_TYPE,
             issuer='foo',
             subject=None,
             audience='foo',

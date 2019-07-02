@@ -34,5 +34,6 @@ Follow the documentation below to find out more in detail.
     oauth2
     flask
     django
+    aiohttp
     mixed
     api

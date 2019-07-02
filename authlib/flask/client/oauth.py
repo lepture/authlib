@@ -3,8 +3,8 @@ import functools
 from flask import request, redirect, session
 from flask import _app_ctx_stack
 from werkzeug.local import LocalProxy
+from authlib.client import OAuthClient, OAUTH_CLIENT_PARAMS
 from authlib.client.errors import MismatchingStateError
-from authlib.client.client import OAuthClient, OAUTH_CLIENT_PARAMS
 
 __all__ = ['OAuth', 'RemoteApp']
 
