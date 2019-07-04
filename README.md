@@ -219,16 +219,16 @@ Framework integrations with current specification implementations:
 
 ## Security Reporting
 
-If you found security bugs which can not be public, please send me
-email at <me@lepture.com>. Attachment with patch is welcome. My PGP
-Key fingerprint is:
+If you found security bugs, please do not send a public issue or patch.
+You can send me email at <me@lepture.com>. Attachment with patch is welcome.
+My PGP Key fingerprint is:
 
 ```
 72F8 E895 A70C EBDF 4F2A DFE0 7E55 E3E0 118B 2B4C
 ```
 
-You can also find it at <https://keybase.io/lepture>.
-
+Or, you can use the [Tidelift security contact](https://tidelift.com/security).
+Tidelift will coordinate the fix and disclosure.
 
 ## License
 

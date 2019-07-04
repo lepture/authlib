@@ -1,3 +1,6 @@
+> DO NOT SEND ANY SECURITY FIX HERE. Please read "Security Reporting" section
+> on README.
+
 **What kind of change does this PR introduce?** (check at least one)
 
 - [ ] Bugfix
