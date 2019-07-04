@@ -44,10 +44,6 @@ class OAuth1Session(OAuth1Client, Session):
             signature_method=signature_method, signature_type=signature_type,
             force_include_body=force_include_body, **kwargs)
 
-    def authorization_url(self, url, request_token=None, **kwargs):  # pragma: no cover
-        deprecate('Use "create_authorization_url" instead', '0.12')
-        return self.create_authorization_url(url, request_token, **kwargs)
-
     def rebuild_auth(self, prepared_request, response):
         """When being redirected we should always strip Authorization
         header, since nonce may not be reused as per OAuth spec.

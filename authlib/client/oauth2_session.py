@@ -93,10 +93,6 @@ class OAuth2Session(OAuth2Client, Session):
         """
         self.client_auth.register(self.token_endpoint_auth_method, func)
 
-    def authorization_url(self, url, state=None, **kwargs):  # pragma: no cover
-        deprecate('Use "create_authorization_url" instead', '0.12')
-        return self.create_authorization_url(url, state, **kwargs)
-
     def fetch_access_token(self, url=None, **kwargs):
         """Alias for fetch_token."""
         return self.fetch_token(url, **kwargs)
