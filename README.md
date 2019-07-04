@@ -133,8 +133,10 @@ Lovely features that Authlib has built-in:
 </details>
 
 <details>
-  <summary>⏳ RFC7521: Assertion Framework for OAuth 2.0 Client Authentication and Authorization Grants</summary>
-  <p>RFC7521 implementation is in plan.</p>
+  <summary>🎉 RFC7521: Assertion Framework for OAuth 2.0 Client Authentication and Authorization Grants</summary>
+
+- [x] Common Client for Assertion Framework
+- [ ] Common Server for Assertion Framework
 </details>
 
 <details>
