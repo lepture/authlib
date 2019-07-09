@@ -24,7 +24,6 @@ class AuthorizationServer(object):
 
         self._authorization_grants = []
         self._token_grants = []
-        self._hooks = {}
         self._endpoints = {}
 
     def register_client_auth_method(self, method, func):
@@ -193,19 +192,6 @@ class AuthorizationServer(object):
             translations=self.get_translations(request),
             error_uris=self.get_error_uris(request)
         ))
-
-    def register_hook(self, name, func):  # pragma: no cover
-        deprecate('.register_hook is deprecated', '0.12', 'fAmW1', 'OC')
-        if name in self._hooks:
-            raise ValueError('"{}" is already in hooks'.format(name))
-        self._hooks[name] = func
-
-    def execute_hook(self, name, *args, **kwargs):  # pragma: no cover
-        deprecate('.execute_hook is deprecated', '0.12', 'fAmW1', 'OC')
-        if name not in self._hooks:
-            raise RuntimeError('"{}" hook is not registered.'.format(name))
-        func = self._hooks[name]
-        return func(*args, **kwargs)
 
 
 def _create_grant(grant_cls, extensions, request, server):
