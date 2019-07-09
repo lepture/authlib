@@ -167,7 +167,7 @@ class AuthorizationCodeTest(TestCase):
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'unauthorized_client')
 
-    def test_public_authorize_token(self):
+    def test_authorize_token_no_refresh_token(self):
         self.app.config.update({'OAUTH2_REFRESH_TOKEN_GENERATOR': True})
         self.prepare_data(False, token_endpoint_auth_method='none')
 
@@ -185,10 +185,10 @@ class AuthorizationCodeTest(TestCase):
         self.assertIn('access_token', resp)
         self.assertNotIn('refresh_token', resp)
 
-    def test_authorize_token(self):
+    def test_authorize_token_has_refresh_token(self):
         # generate refresh token
         self.app.config.update({'OAUTH2_REFRESH_TOKEN_GENERATOR': True})
-        self.prepare_data()
+        self.prepare_data(grant_type='authorization_code\nrefresh_token')
         url = self.authorize_url + '&state=bar'
         rv = self.client.post(url, data={'user_id': '1'})
         self.assertIn('code=', rv.location)
@@ -208,7 +208,10 @@ class AuthorizationCodeTest(TestCase):
 
     def test_client_secret_post(self):
         self.app.config.update({'OAUTH2_REFRESH_TOKEN_GENERATOR': True})
-        self.prepare_data(token_endpoint_auth_method='client_secret_post')
+        self.prepare_data(
+            grant_type='authorization_code\nrefresh_token',
+            token_endpoint_auth_method='client_secret_post',
+        )
         url = self.authorize_url + '&state=bar'
         rv = self.client.post(url, data={'user_id': '1'})
         self.assertIn('code=', rv.location)
