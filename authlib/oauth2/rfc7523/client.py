@@ -23,7 +23,7 @@ class JWTBearerClientAssertion(object):
         self._validate_jti = validate_jti
 
     def __call__(self, query_client, request):
-        data = dict(request.body_params)
+        data = request.form
         assertion_type = data.get('client_assertion_type')
         assertion = data.get('client_assertion')
         if assertion_type == ASSERTION_TYPE and assertion:

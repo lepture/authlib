@@ -59,12 +59,13 @@ class CodeChallenge(object):
         )
 
     def validate_code_challenge(self, grant):
-        challenge = grant.request.data.get('code_challenge')
-        method = grant.request.data.get('code_challenge_method')
+        request = grant.request
+        challenge = request.args.get('code_challenge')
+        method = request.args.get('code_challenge_method')
         if not self.required and not challenge and not method:
             return
 
-        client = grant.request.client
+        client = request.client
         if client.check_client_type('public') and not challenge:
             raise InvalidRequestError('Missing "code_challenge"')
 
@@ -73,14 +74,15 @@ class CodeChallenge(object):
                 description='Unsupported "code_challenge_method"')
 
     def validate_code_verifier(self, grant):
-        verifier = grant.request.data.get('code_verifier')
-        client = grant.request.client
+        request = grant.request
+        verifier = request.form.get('code_verifier')
+        client = request.client
 
         # public client MUST verify code challenge
         if self.required and client.check_client_type('public') and not verifier:
             raise InvalidRequestError('Missing "code_verifier"')
 
-        authorization_code = grant.request.credential
+        authorization_code = request.credential
         challenge = self.get_authorization_code_challenge(authorization_code)
 
         # ignore, it is the normal RFC6749 authorization_code request

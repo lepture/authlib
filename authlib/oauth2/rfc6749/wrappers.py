@@ -41,14 +41,14 @@ class OAuth2Request(object):
         self.query_params = url_decode(self.query)
         self.body_params = extract_params(body) or []
 
-        params = {}
-        if self.query_params:
-            params.update(dict(self.query_params))
-        if self.body_params:
-            params.update(dict(self.body_params))
+        self.args = dict(self.query_params)
+        self.form = dict(self.body_params)
 
         #: dict of query and body params
-        self.data = params
+        data = {}
+        data.update(self.args)
+        data.update(self.form)
+        self.data = data
 
         #: authenticated user on this request
         self.user = None

@@ -75,7 +75,7 @@ def authenticate_client_secret_post(query_client, request):
     """Authenticate client by ``client_secret_post`` method. The client
     uses POST parameters for authentication.
     """
-    data = dict(request.body_params)
+    data = request.form
     client_id = data.get('client_id')
     client_secret = data.get('client_secret')
     if client_id and client_secret:

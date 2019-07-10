@@ -35,11 +35,7 @@ class IntrospectionEndpoint(TokenEndpoint):
             **OPTIONAL**  A hint about the type of the token submitted for
             introspection.
         """
-        if self.request.body_params:
-            params = dict(self.request.body_params)
-        else:
-            raise InvalidRequestError()
-
+        params = self.request.form
         if 'token' not in params:
             raise InvalidRequestError()
 

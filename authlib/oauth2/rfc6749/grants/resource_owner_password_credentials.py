@@ -90,7 +90,7 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant, TokenEndpointMixin):
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError()
 
-        params = self.request.data
+        params = self.request.form
         if 'username' not in params:
             raise InvalidRequestError('Missing "username" in request.')
         if 'password' not in params:

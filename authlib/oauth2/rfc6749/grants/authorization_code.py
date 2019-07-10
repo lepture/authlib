@@ -244,7 +244,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError()
 
-        code = self.request.data.get('code')
+        code = self.request.form.get('code')
         if code is None:
             raise InvalidRequestError('Missing "code" in request.')
 

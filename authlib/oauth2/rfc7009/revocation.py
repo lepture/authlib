@@ -27,18 +27,14 @@ class RevocationEndpoint(TokenEndpoint):
             OPTIONAL.  A hint about the type of the token submitted for
             revocation.
         """
-        if self.request.body_params:
-            params = dict(self.request.body_params)
-        else:
-            params = dict(self.request.query_params)
-        if 'token' not in params:
+        if 'token' not in self.request.form:
             raise InvalidRequestError()
 
-        token_type = params.get('token_type_hint')
+        token_type = self.request.form.get('token_type_hint')
         if token_type and token_type not in self.SUPPORTED_TOKEN_TYPES:
             raise UnsupportedTokenTypeError()
         token = self.query_token(
-            params['token'], token_type, self.request.client)
+            self.request.form['token'], token_type, self.request.client)
         self.request.credential = token
 
     def create_endpoint_response(self):

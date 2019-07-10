@@ -41,7 +41,7 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
         return client
 
     def _validate_request_token(self, client):
-        refresh_token = self.request.data.get('refresh_token')
+        refresh_token = self.request.form.get('refresh_token')
         if refresh_token is None:
             raise InvalidRequestError(
                 'Missing "refresh_token" in request.',

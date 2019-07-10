@@ -86,7 +86,7 @@ class JWTBearerGrant(BaseGrant, TokenEndpointMixin):
 
         .. _`Section 2.1`: https://tools.ietf.org/html/rfc7523#section-2.1
         """
-        assertion = self.request.data.get('assertion')
+        assertion = self.request.form.get('assertion')
         if not assertion:
             raise InvalidRequestError('Missing "assertion" in request')
 
