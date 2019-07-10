@@ -75,7 +75,7 @@ class OpenIDProviderMetadataTest(unittest.TestCase):
             ['RS256'], required=True,
         )
         metadata = OpenIDProviderMetadata({
-            'id_token_signing_alg_values_supported': []
+            'id_token_signing_alg_values_supported': ['none']
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_id_token_signing_alg_values_supported()
@@ -185,7 +185,7 @@ class OpenIDProviderMetadataTest(unittest.TestCase):
 
         metadata = OpenIDProviderMetadata()
         _validate(metadata)
-        self.assertEqual(metadata[key], default_value)
+        self.assertEqual(getattr(metadata, key), default_value)
 
         metadata = OpenIDProviderMetadata({key: 'str'})
         with self.assertRaises(ValueError) as cm:

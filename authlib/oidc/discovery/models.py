@@ -45,7 +45,7 @@ class OpenIDProviderMetadata(AuthorizationServerMetadata):
     def validate_jwks_uri(self):
         # REQUIRED in OpenID Connect
         jwks_uri = self.get('jwks_uri')
-        if not jwks_uri:
+        if jwks_uri is None:
             raise ValueError('"jwks_uri" is required')
         return super(OpenIDProviderMetadata, self).validate_jwks_uri()
 
@@ -53,9 +53,7 @@ class OpenIDProviderMetadata(AuthorizationServerMetadata):
         """OPTIONAL. JSON array containing a list of the Authentication
         Context Class References that this OP supports.
         """
-        values = self.get('acr_values_supported')
-        if values and not isinstance(values, list):
-            raise ValueError('"acr_values_supported" MUST be JSON array')
+        _validate_array_value(self, 'acr_values_supported')
 
     def validate_subject_types_supported(self):
         """REQUIRED. JSON array containing a list of the Subject Identifier
@@ -63,7 +61,7 @@ class OpenIDProviderMetadata(AuthorizationServerMetadata):
         """
         # 1. REQUIRED
         values = self.get('subject_types_supported')
-        if not values:
+        if values is None:
             raise ValueError('"subject_types_supported" is required')
 
         # 2. JSON array
@@ -87,7 +85,7 @@ class OpenIDProviderMetadata(AuthorizationServerMetadata):
         """
         # 1. REQUIRED
         values = self.get('id_token_signing_alg_values_supported')
-        if not values:
+        if values is None:
             raise ValueError('"id_token_signing_alg_values_supported" is required')
 
         # 2. JSON array
@@ -104,45 +102,35 @@ class OpenIDProviderMetadata(AuthorizationServerMetadata):
         algorithms (alg values) supported by the OP for the ID Token to
         encode the Claims in a JWT.
         """
-        values = self.get('id_token_encryption_alg_values_supported')
-        if values and not isinstance(values, list):
-            raise ValueError('"id_token_encryption_alg_values_supported" MUST be JSON array')
+        _validate_array_value(self, 'id_token_encryption_alg_values_supported')
 
     def validate_id_token_encryption_enc_values_supported(self):
         """OPTIONAL. JSON array containing a list of the JWE encryption
         algorithms (enc values) supported by the OP for the ID Token to
         encode the Claims in a JWT.
         """
-        values = self.get('id_token_encryption_enc_values_supported')
-        if values and not isinstance(values, list):
-            raise ValueError('"id_token_encryption_enc_values_supported" MUST be JSON array')
+        _validate_array_value(self, 'id_token_encryption_enc_values_supported')
 
     def validate_userinfo_signing_alg_values_supported(self):
         """OPTIONAL. JSON array containing a list of the JWS signing
         algorithms (alg values) [JWA] supported by the UserInfo Endpoint
         to encode the Claims in a JWT. The value none MAY be included.
         """
-        values = self.get('userinfo_signing_alg_values_supported')
-        if values and not isinstance(values, list):
-            raise ValueError('"userinfo_signing_alg_values_supported" MUST be JSON array')
+        _validate_array_value(self, 'userinfo_signing_alg_values_supported')
 
     def validate_userinfo_encryption_alg_values_supported(self):
         """OPTIONAL. JSON array containing a list of the JWE encryption
         algorithms (alg values) [JWA] supported by the UserInfo Endpoint
         to encode the Claims in a JWT.
         """
-        values = self.get('userinfo_encryption_alg_values_supported')
-        if values and not isinstance(values, list):
-            raise ValueError('"userinfo_encryption_alg_values_supported" MUST be JSON array')
+        _validate_array_value(self, 'userinfo_encryption_alg_values_supported')
 
     def validate_userinfo_encryption_enc_values_supported(self):
         """OPTIONAL. JSON array containing a list of the JWE encryption
         algorithms (enc values) [JWA] supported by the UserInfo Endpoint
         to encode the Claims in a JWT.
         """
-        values = self.get('userinfo_encryption_enc_values_supported')
-        if values and not isinstance(values, list):
-            raise ValueError('"userinfo_encryption_enc_values_supported" MUST be JSON array')
+        _validate_array_value(self, 'userinfo_encryption_enc_values_supported')
 
     def validate_request_object_signing_alg_values_supported(self):
         """OPTIONAL. JSON array containing a list of the JWS signing
@@ -172,10 +160,7 @@ class OpenIDProviderMetadata(AuthorizationServerMetadata):
         These algorithms are used both when the Request Object is passed
         by value and when it is passed by reference.
         """
-        values = self.get('request_object_encryption_alg_values_supported')
-        if values and not isinstance(values, list):
-            raise ValueError(
-                '"request_object_encryption_alg_values_supported" MUST be JSON array')
+        _validate_array_value(self, 'request_object_encryption_alg_values_supported')
 
     def validate_request_object_encryption_enc_values_supported(self):
         """OPTIONAL. JSON array containing a list of the JWE encryption
@@ -183,10 +168,7 @@ class OpenIDProviderMetadata(AuthorizationServerMetadata):
         These algorithms are used both when the Request Object is passed
         by value and when it is passed by reference.
         """
-        values = self.get('request_object_encryption_enc_values_supported')
-        if values and not isinstance(values, list):
-            raise ValueError(
-                '"request_object_encryption_enc_values_supported" MUST be JSON array')
+        _validate_array_value(self, 'request_object_encryption_enc_values_supported')
 
     def validate_display_values_supported(self):
         """OPTIONAL. JSON array containing a list of the display parameter
@@ -230,9 +212,7 @@ class OpenIDProviderMetadata(AuthorizationServerMetadata):
         for. Note that for privacy or other reasons, this might not be an
         exhaustive list.
         """
-        values = self.get('claims_supported')
-        if values and not isinstance(values, list):
-            raise ValueError('"claims_supported" MUST be JSON array')
+        _validate_array_value(self, 'claims_supported')
 
     def validate_claims_locales_supported(self):
         """OPTIONAL. Languages and scripts supported for values in Claims
@@ -240,30 +220,28 @@ class OpenIDProviderMetadata(AuthorizationServerMetadata):
         language tag values. Not all languages and scripts are necessarily
         supported for all Claim values.
         """
-        values = self.get('claims_locales_supported')
-        if values and not isinstance(values, list):
-            raise ValueError('"claims_locales_supported" MUST be JSON array')
+        _validate_array_value(self, 'claims_locales_supported')
 
     def validate_claims_parameter_supported(self):
         """OPTIONAL. Boolean value specifying whether the OP supports use of
         the claims parameter, with true indicating support. If omitted, the
         default value is false.
         """
-        _validate_boolean_value(self, 'claims_parameter_supported', False)
+        _validate_boolean_value(self, 'claims_parameter_supported')
 
     def validate_request_parameter_supported(self):
         """OPTIONAL. Boolean value specifying whether the OP supports use of
         the request parameter, with true indicating support. If omitted, the
         default value is false.
         """
-        _validate_boolean_value(self, 'request_parameter_supported', False)
+        _validate_boolean_value(self, 'request_parameter_supported')
 
     def validate_request_uri_parameter_supported(self):
         """OPTIONAL. Boolean value specifying whether the OP supports use of
         the request_uri parameter, with true indicating support. If omitted,
         the default value is true.
         """
-        _validate_boolean_value(self, 'request_uri_parameter_supported', True)
+        _validate_boolean_value(self, 'request_uri_parameter_supported')
 
     def validate_require_request_uri_registration(self):
         """OPTIONAL. Boolean value specifying whether the OP requires any
@@ -271,11 +249,36 @@ class OpenIDProviderMetadata(AuthorizationServerMetadata):
         registration parameter. Pre-registration is REQUIRED when the value
         is true. If omitted, the default value is false.
         """
-        _validate_boolean_value(self, 'require_request_uri_registration', False)
+        _validate_boolean_value(self, 'require_request_uri_registration')
 
+    @property
+    def claims_parameter_supported(self):
+        # If omitted, the default value is false.
+        return self.get('claims_parameter_supported', False)
 
-def _validate_boolean_value(metadata, key, default_value):
+    @property
+    def request_parameter_supported(self):
+        # If omitted, the default value is false.
+        return self.get('request_parameter_supported', False)
+
+    @property
+    def request_uri_parameter_supported(self):
+        # If omitted, the default value is true.
+        return self.get('request_uri_parameter_supported', True)
+
+    @property
+    def require_request_uri_registration(self):
+        # If omitted, the default value is false.
+        return self.get('require_request_uri_registration', False)
+
+def _validate_boolean_value(metadata, key):
     if key not in metadata:
-        metadata[key] = default_value
+        return
     if metadata[key] not in (True, False):
         raise ValueError('"{}" MUST be boolean'.format(key))
+
+
+def _validate_array_value(metadata, key):
+    values = metadata.get(key)
+    if values is not None and not isinstance(values, list):
+        raise ValueError('"{}" MUST be JSON array'.format(key))

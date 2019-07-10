@@ -49,17 +49,17 @@ class OpenIDCode(object):
         :param request: OAuth2Request instance
         :return: Boolean
         """
-        deprecate('Missing "OpenIDCode.exists_nonce"', '1.0', 'TODO', 'oi')
+        deprecate('Missing "OpenIDCode.exists_nonce"', '1.0', 'fjPsV', 'oi')
         return self._exists_nonce(nonce, request)
 
     def get_jwt_config(self, grant):  # pragma: no cover
         # TODO: developers MUST re-implement this method
-        deprecate('Missing "OpenIDCode.get_jwt_config"', '1.0', 'TODO', 'oi')
+        deprecate('Missing "OpenIDCode.get_jwt_config"', '1.0', 'fjPsV', 'oi')
         return dict(key=self.key, alg=self.alg, iss=self.iss, exp=self.exp)
 
     def generate_user_info(self, user, scopes):  # pragma: no cover
         # TODO: developers MUST re-implement this method
-        deprecate('Missing "OpenIDCode.generate_user_info"', '1.0', 'TODO', 'oi')
+        deprecate('Missing "OpenIDCode.generate_user_info"', '1.0', 'fjPsV', 'oi')
         return _generate_user_info(user, scopes)
 
     def process_token(self, grant, token):
@@ -101,8 +101,7 @@ class OpenIDCodeGrant(grants.AuthorizationCodeGrant):  # pragma: no cover
     TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic']
 
     def __init__(self, *args, **kwargs):
-        # TODO: update deprecate message
-        deprecate('Deprecate "OpenIDCodeGrant".', '1.0', 'TODO', 'oi')
+        deprecate('Deprecate "OpenIDCodeGrant".', '1.0', 'fjPsV', 'oi')
 
         super(OpenIDCodeGrant, self).__init__(*args, **kwargs)
         config = self.server.config

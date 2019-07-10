@@ -41,7 +41,7 @@ class OpenIDImplicitGrant(ImplicitGrant):
 
     def get_jwt_config(self):  # pragma: no cover
         # TODO: developers MUST re-implement this method
-        deprecate('Missing "OpenIDImplicitGrant.get_jwt_config"', '1.0', 'TODO', 'oi')
+        deprecate('Missing "OpenIDImplicitGrant.get_jwt_config"', '1.0', 'fjPsV', 'oi')
         config = self.server.config
         key = config['jwt_key']
         alg = config['jwt_alg']
@@ -51,7 +51,7 @@ class OpenIDImplicitGrant(ImplicitGrant):
 
     def generate_user_info(self, user, scopes):  # pragma: no cover
         # TODO: developers MUST re-implement this method
-        deprecate('Missing "OpenIDImplicitGrant.generate_user_info"', '1.0', 'TODO', 'oi')
+        deprecate('Missing "OpenIDImplicitGrant.generate_user_info"', '1.0', 'fjPsV', 'oi')
         return _generate_user_info(user, scopes)
 
     def validate_authorization_request(self):

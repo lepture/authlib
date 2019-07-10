@@ -107,9 +107,7 @@ class AuthorizationServerMetadata(dict):
         Servers MAY choose not to advertise some supported scope values
         even when this parameter is used.
         """
-        scopes_supported = self.get('scopes_supported')
-        if scopes_supported and not isinstance(scopes_supported, list):
-            raise ValueError('"scopes_supported" MUST be JSON array')
+        _validate_array_value(self, 'scopes_supported')
 
     def validate_response_types_supported(self):
         """REQUIRED.  JSON array containing a list of the OAuth 2.0
@@ -132,9 +130,7 @@ class AuthorizationServerMetadata(dict):
         "fragment"]".  The response mode value "form_post" is also defined
         in "OAuth 2.0 Form Post Response Mode" [OAuth.Post].
         """
-        value = self.get('response_modes_supported')
-        if value and not isinstance(value, list):
-            raise ValueError('"response_modes_supported" MUST be JSON array')
+        _validate_array_value(self, 'response_modes_supported')
 
     def validate_grant_types_supported(self):
         """OPTIONAL. JSON array containing a list of the OAuth 2.0 grant
@@ -144,9 +140,7 @@ class AuthorizationServerMetadata(dict):
         Protocol" [RFC7591].  If omitted, the default value is
         "["authorization_code", "implicit"]".
         """
-        value = self.get('grant_types_supported')
-        if value and not isinstance(value, list):
-            raise ValueError('"grant_types_supported" MUST be JSON array')
+        _validate_array_value(self, 'grant_types_supported')
 
     def validate_token_endpoint_auth_methods_supported(self):
         """OPTIONAL.  JSON array containing a list of client authentication
@@ -156,10 +150,7 @@ class AuthorizationServerMetadata(dict):
         default is "client_secret_basic" -- the HTTP Basic Authentication
         Scheme specified in Section 2.3.1 of OAuth 2.0 [RFC6749].
         """
-        value = self.get('token_endpoint_auth_methods_supported')
-        if value and not isinstance(value, list):
-            raise ValueError(
-                '"token_endpoint_auth_methods_supported" MUST be JSON array')
+        _validate_array_value(self, 'token_endpoint_auth_methods_supported')
 
     def validate_token_endpoint_auth_signing_alg_values_supported(self):
         """OPTIONAL.  JSON array containing a list of the JWS signing
@@ -196,9 +187,7 @@ class AuthorizationServerMetadata(dict):
         [RFC5646].  If omitted, the set of supported languages and scripts
         is unspecified.
         """
-        value = self.get('ui_locales_supported')
-        if value and not isinstance(value, list):
-            raise ValueError('"ui_locales_supported" MUST be JSON array')
+        _validate_array_value(self, 'ui_locales_supported')
 
     def validate_op_policy_uri(self):
         """OPTIONAL.  URL that the authorization server provides to the
@@ -245,12 +234,7 @@ class AuthorizationServerMetadata(dict):
         "client_secret_basic" -- the HTTP Basic Authentication Scheme
         specified in Section 2.3.1 of OAuth 2.0 [RFC6749].
         """
-        value = self.get('revocation_endpoint_auth_methods_supported')
-        if value and not isinstance(value, list):
-            raise ValueError(
-                '"revocation_endpoint_auth_methods_supported" '
-                'MUST be JSON array'
-            )
+        _validate_array_value(self, 'revocation_endpoint_auth_methods_supported')
 
     def validate_revocation_endpoint_auth_signing_alg_values_supported(self):
         """OPTIONAL.  JSON array containing a list of the JWS signing
@@ -289,12 +273,7 @@ class AuthorizationServerMetadata(dict):
         omitted, the set of supported authentication methods MUST be
         determined by other means.
         """
-        value = self.get('introspection_endpoint_auth_methods_supported')
-        if value and not isinstance(value, list):
-            raise ValueError(
-                '"introspection_endpoint_auth_methods_supported" '
-                'MUST be JSON array'
-            )
+        _validate_array_value(self, 'introspection_endpoint_auth_methods_supported')
 
     def validate_introspection_endpoint_auth_signing_alg_values_supported(self):
         """OPTIONAL.  JSON array containing a list of the JWS signing
@@ -323,12 +302,7 @@ class AuthorizationServerMetadata(dict):
         [IANA.OAuth.Parameters].  If omitted, the authorization server
         does not support PKCE.
         """
-        value = self.get('code_challenge_methods_supported')
-        if value and not isinstance(value, list):
-            raise ValueError(
-                '"code_challenge_methods_supported" '
-                'MUST be JSON array'
-            )
+        _validate_array_value(self, 'code_challenge_methods_supported')
 
     @property
     def response_modes_supported(self):
@@ -400,3 +374,9 @@ def _validate_alg_values(data, key, auth_methods_supported):
     if value and 'none' in value:
         raise ValueError(
             'the value "none" MUST NOT be used in "{}"'.format(key))
+
+
+def _validate_array_value(metadata, key):
+    values = metadata.get(key)
+    if values is not None and not isinstance(values, list):
+        raise ValueError('"{}" MUST be JSON array'.format(key))

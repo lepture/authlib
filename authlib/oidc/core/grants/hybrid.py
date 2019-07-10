@@ -16,6 +16,7 @@ log = logging.getLogger(__name__)
 
 class OpenIDHybridGrant(OpenIDImplicitGrant):
     RESPONSE_TYPES = {'code id_token', 'code token', 'code id_token token'}
+    GRANT_TYPE = 'code'
     DEFAULT_RESPONSE_MODE = 'fragment'
 
     def create_authorization_code(self, client, grant_user, request):
