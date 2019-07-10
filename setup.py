@@ -30,7 +30,10 @@ setup(
     platforms='any',
     long_description=readme,
     license='BSD',
-    install_requires=client_requires + crypto_requires,
+    install_requires=crypto_requires,
+    extras_require={
+        'client': client_requires,
+    },
     project_urls={
         'Documentation': 'https://docs.authib.org/',
         'Bug Tracker': 'https://github.com/lepture/authlib/issues',
