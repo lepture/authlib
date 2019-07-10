@@ -1,6 +1,9 @@
 import unittest
-from authlib.oauth2.rfc8414 import WELL_KNOWN_URL, get_well_known_url
+from authlib.oauth2.rfc8414 import get_well_known_url
 from authlib.oauth2.rfc8414 import AuthorizationServerMetadata
+
+
+WELL_KNOWN_URL = '/.well-known/oauth-authorization-server'
 
 
 class WellKnownTest(unittest.TestCase):
@@ -23,6 +26,24 @@ class WellKnownTest(unittest.TestCase):
             get_well_known_url('https://authlib.org/a/b/c'),
             WELL_KNOWN_URL + '/a/b/c'
         )
+
+    def test_with_external(self):
+        self.assertEqual(
+            get_well_known_url('https://authlib.org', external=True),
+            'https://authlib.org' + WELL_KNOWN_URL
+        )
+
+    def test_with_changed_suffix(self):
+        url = get_well_known_url(
+            'https://authlib.org',
+            suffix='openid-configuration')
+        self.assertEqual(url, '/.well-known/openid-configuration')
+        url = get_well_known_url(
+            'https://authlib.org',
+            external=True,
+            suffix='openid-configuration'
+        )
+        self.assertEqual(url, 'https://authlib.org/.well-known/openid-configuration')
 
 
 class AuthorizationServerMetadataTest(unittest.TestCase):
