@@ -1,4 +1,3 @@
-from authlib.deprecate import deprecate
 from .authenticate_client import ClientAuthentication
 from .errors import InvalidGrantError, OAuth2Error
 
@@ -91,9 +90,9 @@ class AuthorizationServer(object):
         :param grant_cls: a grant class.
         :param extensions: extensions for the grant class.
         """
-        if grant_cls.AUTHORIZATION_ENDPOINT:
+        if hasattr(grant_cls, 'check_authorization_endpoint'):
             self._authorization_grants.append((grant_cls, extensions))
-        if grant_cls.TOKEN_ENDPOINT:
+        if hasattr(grant_cls, 'check_token_endpoint'):
             self._token_grants.append((grant_cls, extensions))
 
     def register_endpoint(self, endpoint_cls):
@@ -159,14 +158,10 @@ class AuthorizationServer(object):
             return self.handle_error_response(request, error)
 
         try:
-            grant.validate_authorization_request()
-            args = grant.create_authorization_response(grant_user)
+            redirect_uri = grant.validate_authorization_request()
+            args = grant.create_authorization_response(redirect_uri, grant_user)
             return self.handle_response(*args)
-
         except OAuth2Error as error:
-            if grant.redirect_uri:
-                data = grant.create_authorization_error_response(error)
-                return self.handle_response(*data)
             return self.handle_error_response(request, error)
 
     def create_token_response(self, request=None):

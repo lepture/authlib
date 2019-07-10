@@ -1,4 +1,3 @@
-from authlib.common.urls import add_params_to_uri
 from ..errors import (
     InvalidRequestError,
     InvalidScopeError,
@@ -7,16 +6,10 @@ from ..util import scope_to_list
 
 
 class BaseGrant(object):
-    SPECIFICATION = 'rfc6749'
-    #: If this grant type has authorization endpoint
-    AUTHORIZATION_ENDPOINT = False
-    #: If this grant type has token endpoint
-    TOKEN_ENDPOINT = False
-    #: Allowed HTTP methods of this token endpoint
-    TOKEN_ENDPOINT_HTTP_METHODS = ['POST']
     #: Allowed client auth methods for token endpoint
     TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic']
-    RESPONSE_TYPE = None
+
+    #: Designed for which "grant_type"
     GRANT_TYPE = None
 
     # NOTE: there is no charset for application/json, since
@@ -31,7 +24,6 @@ class BaseGrant(object):
 
     def __init__(self, request, server):
         self.request = request
-        self.redirect_uri = request.redirect_uri
         self.server = server
         self._hooks = {
             'after_validate_authorization_request': set(),
@@ -39,10 +31,6 @@ class BaseGrant(object):
             'after_validate_token_request': set(),
             'process_token': set(),
         }
-
-    @classmethod
-    def check_token_endpoint(cls, request):
-        return request.grant_type == cls.GRANT_TYPE
 
     @property
     def client(self):
@@ -102,37 +90,55 @@ class BaseGrant(object):
             hook(self, *args, **kwargs)
 
 
-class RedirectAuthGrant(BaseGrant):
+class TokenEndpointMixin(object):
+    #: Allowed HTTP methods of this token endpoint
+    TOKEN_ENDPOINT_HTTP_METHODS = ['POST']
+
+    #: Designed for which "grant_type"
+    GRANT_TYPE = None
+
+    @classmethod
+    def check_token_endpoint(cls, request):
+        return request.grant_type == cls.GRANT_TYPE
+
+    def validate_token_request(self):
+        raise NotImplementedError()
+
+    def create_token_response(self):
+        raise NotImplementedError()
+
+
+class AuthorizationEndpointMixin(object):
+    RESPONSE_TYPES = set()
     ERROR_RESPONSE_FRAGMENT = False
 
     @classmethod
     def check_authorization_endpoint(cls, request):
-        return request.response_type == cls.RESPONSE_TYPE
+        return request.response_type in cls.RESPONSE_TYPES
 
-    def validate_authorization_request(self):
-        raise NotImplementedError()
-
-    def validate_consent_request(self):
-        self.validate_authorization_request()
-        self.execute_hook('after_validate_consent_request')
-
-    def validate_authorization_redirect_uri(self, client):
-        if self.redirect_uri:
-            if not client.check_redirect_uri(self.redirect_uri):
-                self.redirect_uri = None
+    @staticmethod
+    def validate_authorization_redirect_uri(request, client):
+        if request.redirect_uri:
+            if not client.check_redirect_uri(request.redirect_uri):
                 raise InvalidRequestError(
                     'Invalid "redirect_uri" in request.',
-                    state=self.request.state,
+                    state=request.state,
                 )
+            return request.redirect_uri
         else:
             redirect_uri = client.get_default_redirect_uri()
             if not redirect_uri:
                 raise InvalidRequestError(
                     'Missing "redirect_uri" in request.'
                 )
-            self.redirect_uri = redirect_uri
+            return redirect_uri
 
-    def create_authorization_error_response(self, error):
-        params = error.get_body()
-        loc = add_params_to_uri(self.redirect_uri, params, self.ERROR_RESPONSE_FRAGMENT)
-        return 302, '', [('Location', loc)]
+    def validate_consent_request(self):
+        redirect_uri = self.validate_authorization_request()
+        self.execute_hook('after_validate_consent_request', redirect_uri)
+
+    def validate_authorization_request(self):
+        raise NotImplementedError()
+
+    def create_authorization_response(self, redirect_uri, grant_user):
+        raise NotImplementedError()

@@ -1,7 +1,7 @@
 import logging
 from authlib.jose import jwt
 from authlib.jose.errors import JoseError
-from ..rfc6749.grants import BaseGrant
+from ..rfc6749.grants import BaseGrant, TokenEndpointMixin
 from ..rfc6749 import (
     UnauthorizedClientError,
     InvalidRequestError,
@@ -13,10 +13,8 @@ log = logging.getLogger(__name__)
 JWT_BEARER_GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:jwt-bearer'
 
 
-class JWTBearerGrant(BaseGrant):
-    SPECIFICATION = 'rfc7523'
+class JWTBearerGrant(BaseGrant, TokenEndpointMixin):
     GRANT_TYPE = JWT_BEARER_GRANT_TYPE
-    TOKEN_ENDPOINT = True
 
     @staticmethod
     def sign(key, issuer, audience, subject=None,

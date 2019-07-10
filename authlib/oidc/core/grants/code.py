@@ -9,26 +9,58 @@
 """
 
 import logging
+from authlib.deprecate import deprecate
 from authlib.oauth2.rfc6749 import grants
+from authlib.oauth2.rfc6749.util import scope_to_list
 from .util import (
     is_openid_scope,
     validate_nonce,
     validate_request_prompt,
     generate_id_token,
+    _generate_user_info,
 )
 
 log = logging.getLogger(__name__)
 
 
 class OpenIDCode(object):
-    def __init__(self, key, alg, iss, exp,
-                 exists_nonce, required_nonce=False):
+    """An extension from OpenID Connect for "grant_type=code" request.
+    """
+    def __init__(self, key=None, alg=None, iss=None, exp=None,
+                 exists_nonce=None, required_nonce=False):
         self.key = key
         self.alg = alg
         self.iss = iss
         self.exp = exp
-        self.exists_nonce = exists_nonce
+        self._exists_nonce = exists_nonce
         self.required_nonce = required_nonce
+
+    def exists_nonce(self, nonce, request):  # pragma: no cover
+        """Check if the given nonce is existing in your database. Developers
+        MUST implement this method in subclass, e.g.::
+
+            def exists_nonce(self, nonce, request):
+                exists = AuthorizationCode.query.filter_by(
+                    client_id=req.client_id, nonce=nonce
+                ).first()
+                return bool(exists)
+
+        :param nonce: A string of "nonce" parameter in request
+        :param request: OAuth2Request instance
+        :return: Boolean
+        """
+        deprecate('Missing "OpenIDCode.exists_nonce"', '1.0', 'TODO', 'oi')
+        return self._exists_nonce(nonce, request)
+
+    def get_jwt_config(self, grant):  # pragma: no cover
+        # TODO: developers MUST re-implement this method
+        deprecate('Missing "OpenIDCode.get_jwt_config"', '1.0', 'TODO', 'oi')
+        return dict(key=self.key, alg=self.alg, iss=self.iss, exp=self.exp)
+
+    def generate_user_info(self, user, scopes):  # pragma: no cover
+        # TODO: developers MUST re-implement this method
+        deprecate('Missing "OpenIDCode.generate_user_info"', '1.0', 'TODO', 'oi')
+        return _generate_user_info(user, scopes)
 
     def process_token(self, grant, token):
         scope = token.get('scope')
@@ -38,12 +70,14 @@ class OpenIDCode(object):
 
         request = grant.request
         credential = request.credential
-        id_token = generate_id_token(
-            key=self.key, token=token, request=request,
-            alg=self.alg, iss=self.iss, exp=self.exp,
-            nonce=credential.get_nonce(),
-            auth_time=credential.get_auth_time(),
-        )
+
+        scopes = scope_to_list(token['scope'])
+        user_info = self.generate_user_info(request.user, scopes)
+
+        config = self.get_jwt_config(grant)
+        config['nonce'] = credential.get_nonce()
+        config['auth_time'] = credential.get_auth_time()
+        id_token = generate_id_token(token, request, user_info, **config)
         token['id_token'] = id_token
         return token
 
@@ -63,10 +97,13 @@ class OpenIDCode(object):
             )
 
 
-class OpenIDCodeGrant(grants.AuthorizationCodeGrant):
+class OpenIDCodeGrant(grants.AuthorizationCodeGrant):  # pragma: no cover
     TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic']
 
     def __init__(self, *args, **kwargs):
+        # TODO: update deprecate message
+        deprecate('Deprecate "OpenIDCodeGrant".', '1.0', 'TODO', 'oi')
+
         super(OpenIDCodeGrant, self).__init__(*args, **kwargs)
         config = self.server.config
         extension = OpenIDCode(
@@ -78,5 +115,5 @@ class OpenIDCodeGrant(grants.AuthorizationCodeGrant):
         )
         extension(self)
 
-    def exists_nonce(self, nonce, request):  # pragma: no cover
-        return self.server.execute_hook('exists_nonce', nonce, request)
+    def exists_nonce(self, nonce, request):
+        raise NotImplementedError()

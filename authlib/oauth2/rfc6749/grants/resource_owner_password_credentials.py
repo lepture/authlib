@@ -1,5 +1,5 @@
 import logging
-from .base import BaseGrant
+from .base import BaseGrant, TokenEndpointMixin
 from ..errors import (
     UnauthorizedClientError,
     InvalidRequestError,
@@ -9,7 +9,7 @@ from ..errors import (
 log = logging.getLogger(__name__)
 
 
-class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
+class ResourceOwnerPasswordCredentialsGrant(BaseGrant, TokenEndpointMixin):
     """The resource owner password credentials grant type is suitable in
     cases where the resource owner has a trust relationship with the
     client, such as the device operating system or a highly privileged
@@ -43,8 +43,6 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant):
         |         |    (w/ Optional Refresh Token)   |               |
         +---------+                                  +---------------+
     """
-    #: authorization_code grant type has token endpoint
-    TOKEN_ENDPOINT = True
     GRANT_TYPE = 'password'
 
     def validate_token_request(self):

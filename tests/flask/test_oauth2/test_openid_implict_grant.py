@@ -10,19 +10,18 @@ from .oauth2_server import create_authorization_server
 
 
 class OpenIDImplicitGrant(_OpenIDImplicitGrant):
+    def get_jwt_config(self):
+        return dict(key='secret', alg='HS256', iss='Authlib', exp=3600)
+
+    def generate_user_info(self, user, scopes):
+        return user.generate_user_info(scopes)
+
     def exists_nonce(self, nonce, request):
         return exists_nonce(nonce, request)
 
 
 class ImplicitTest(TestCase):
     def prepare_data(self):
-        self.app.config.update({
-            'OAUTH2_JWT_ENABLED': True,
-            'OAUTH2_JWT_ISS': 'Authlib',
-            'OAUTH2_JWT_KEY': 'secret',
-            'OAUTH2_JWT_ALG': 'HS256',
-        })
-
         server = create_authorization_server(self.app)
         server.register_grant(OpenIDImplicitGrant)
 

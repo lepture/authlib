@@ -1,7 +1,8 @@
 import logging
 from authlib.common.urls import add_params_to_uri
-from .base import RedirectAuthGrant
+from .base import BaseGrant, AuthorizationEndpointMixin
 from ..errors import (
+    OAuth2Error,
     UnauthorizedClientError,
     AccessDeniedError,
 )
@@ -9,7 +10,7 @@ from ..errors import (
 log = logging.getLogger(__name__)
 
 
-class ImplicitGrant(RedirectAuthGrant):
+class ImplicitGrant(BaseGrant, AuthorizationEndpointMixin):
     """The implicit grant type is used to obtain access tokens (it does not
     support the issuance of refresh tokens) and is optimized for public
     clients known to operate a particular redirection URI.  These clients
@@ -70,7 +71,7 @@ class ImplicitGrant(RedirectAuthGrant):
     #: Allowed client auth methods for token endpoint
     TOKEN_ENDPOINT_AUTH_METHODS = ['none']
 
-    RESPONSE_TYPE = 'token'
+    RESPONSE_TYPES = {'token'}
     GRANT_TYPE = 'implicit'
     ERROR_RESPONSE_FRAGMENT = True
 
@@ -122,20 +123,30 @@ class ImplicitGrant(RedirectAuthGrant):
         client = self.authenticate_token_endpoint_client()
         log.debug('Validate authorization request of %r', client)
 
+        redirect_uri = self.validate_authorization_redirect_uri(
+            self.request, client)
+
         response_type = self.request.response_type
         if not client.check_response_type(response_type):
             raise UnauthorizedClientError(
                 'The client is not authorized to use '
                 '"response_type={}"'.format(response_type),
                 state=self.request.state,
+                redirect_uri=redirect_uri,
+                redirect_fragment=True,
             )
 
-        self.validate_authorization_redirect_uri(client)
-        self.validate_requested_scope(client)
-        self.request.client = client
-        self.execute_hook('after_validate_authorization_request')
+        try:
+            self.validate_requested_scope(client)
+            self.request.client = client
+            self.execute_hook('after_validate_authorization_request')
+        except OAuth2Error as error:
+            error.redirect_uri = redirect_uri
+            error.redirect_fragment = True
+            raise error
+        return redirect_uri
 
-    def create_authorization_response(self, grant_user):
+    def create_authorization_response(self, redirect_uri, grant_user):
         """If the resource owner grants the access request, the authorization
         server issues an access token and delivers it to the client by adding
         the following parameters to the fragment component of the redirection
@@ -186,6 +197,7 @@ class ImplicitGrant(RedirectAuthGrant):
 
         .. _`Section 4.2.2`: https://tools.ietf.org/html/rfc6749#section-4.2.2
 
+        :param redirect_uri: Redirect to the given URI for the authorization
         :param grant_user: if resource owner granted the request, pass this
             resource owner, otherwise pass None.
         :returns: (status_code, body, headers)
@@ -207,10 +219,13 @@ class ImplicitGrant(RedirectAuthGrant):
             params = [(k, token[k]) for k in token]
             if state:
                 params.append(('state', state))
-        else:
-            error = AccessDeniedError(state=state)
-            params = error.get_body()
 
-        uri = add_params_to_uri(self.redirect_uri, params, fragment=True)
-        headers = [('Location', uri)]
-        return 302, '', headers
+            uri = add_params_to_uri(redirect_uri, params, fragment=True)
+            headers = [('Location', uri)]
+            return 302, '', headers
+        else:
+            raise AccessDeniedError(
+                state=state,
+                redirect_uri=redirect_uri,
+                redirect_fragment=True
+            )

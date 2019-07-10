@@ -9,7 +9,7 @@
 """
 
 import logging
-from .base import BaseGrant
+from .base import BaseGrant, TokenEndpointMixin
 from ..util import scope_to_list
 from ..errors import (
     InvalidRequestError,
@@ -20,14 +20,12 @@ from ..errors import (
 log = logging.getLogger(__name__)
 
 
-class RefreshTokenGrant(BaseGrant):
+class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
     """A special grant endpoint for refresh_token grant_type. Refreshing an
     Access Token per `Section 6`_.
 
     .. _`Section 6`: https://tools.ietf.org/html/rfc6749#section-6
     """
-    #: authorization_code grant type has token endpoint
-    TOKEN_ENDPOINT = True
     GRANT_TYPE = 'refresh_token'
 
     def _validate_request_client(self):

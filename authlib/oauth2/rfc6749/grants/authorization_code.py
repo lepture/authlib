@@ -1,7 +1,8 @@
 import logging
 from authlib.common.urls import add_params_to_uri
-from .base import RedirectAuthGrant
+from .base import BaseGrant, AuthorizationEndpointMixin, TokenEndpointMixin
 from ..errors import (
+    OAuth2Error,
     UnauthorizedClientError,
     InvalidClientError,
     InvalidRequestError,
@@ -11,7 +12,7 @@ from ..errors import (
 log = logging.getLogger(__name__)
 
 
-class AuthorizationCodeGrant(RedirectAuthGrant):
+class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpointMixin):
     """The authorization code grant type is used to obtain both access
     tokens and refresh tokens and is optimized for confidential clients.
     Since this is a redirection-based flow, the client must be capable of
@@ -45,16 +46,12 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         |         |<---(E)----- Access Token -------------------'
         +---------+       (w/ Optional Refresh Token)
     """
-    #: authorization_code grant type has authorization endpoint
-    AUTHORIZATION_ENDPOINT = True
-    #: authorization_code grant type has token endpoint
-    TOKEN_ENDPOINT = True
     #: Allowed client auth methods for token endpoint
     TOKEN_ENDPOINT_AUTH_METHODS = [
         'client_secret_basic', 'client_secret_post', 'none'
     ]
 
-    RESPONSE_TYPE = 'code'
+    RESPONSE_TYPES = {'code'}
     GRANT_TYPE = 'authorization_code'
 
     def validate_authorization_request(self):
@@ -113,28 +110,36 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         if client_id is None:
             raise InvalidClientError(
                 state=self.request.state,
+                redirect_uri=self.request.redirect_uri,
             )
 
         client = self.server.query_client(client_id)
         if not client:
             raise InvalidClientError(
                 state=self.request.state,
+                redirect_uri=self.request.redirect_uri,
             )
 
+        redirect_uri = self.validate_authorization_redirect_uri(self.request, client)
         response_type = self.request.response_type
         if not client.check_response_type(response_type):
             raise UnauthorizedClientError(
                 'The client is not authorized to use '
                 '"response_type={}"'.format(response_type),
                 state=self.request.state,
+                redirect_uri=redirect_uri,
             )
 
-        self.validate_authorization_redirect_uri(client)
-        self.validate_requested_scope(client)
-        self.request.client = client
-        self.execute_hook('after_validate_authorization_request')
+        try:
+            self.validate_requested_scope(client)
+            self.request.client = client
+            self.execute_hook('after_validate_authorization_request')
+        except OAuth2Error as error:
+            error.redirect_uri = redirect_uri
+            raise error
+        return redirect_uri
 
-    def create_authorization_response(self, grant_user):
+    def create_authorization_response(self, redirect_uri, grant_user):
         """If the resource owner grants the access request, the authorization
         server issues an authorization code and delivers it to the client by
         adding the following parameters to the query component of the
@@ -168,6 +173,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
 
         .. _`Section 4.1.2`: https://tools.ietf.org/html/rfc6749#section-4.1.2
 
+        :param redirect_uri: Redirect to the given URI for the authorization
         :param grant_user: if resource owner granted the request, pass this
             resource owner, otherwise pass None.
         :returns: (status_code, body, headers)
@@ -181,13 +187,12 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
             params = [('code', code)]
             if state:
                 params.append(('state', state))
-        else:
-            error = AccessDeniedError(state=state)
-            params = error.get_body()
+            uri = add_params_to_uri(redirect_uri, params)
+            headers = [('Location', uri)]
+            return 302, '', headers
 
-        uri = add_params_to_uri(self.redirect_uri, params)
-        headers = [('Location', uri)]
-        return 302, '', headers
+        else:
+            raise AccessDeniedError(state=state, redirect_uri=redirect_uri)
 
     def validate_token_request(self):
         """The client makes a request to the token endpoint by sending the
@@ -260,9 +265,7 @@ class AuthorizationCodeGrant(RedirectAuthGrant):
         # save for create_token_response
         self.request.client = client
         self.request.credential = authorization_code
-
-        for hook in self._hooks['after_validate_token_request']:
-            hook(self)
+        self.execute_hook('after_validate_token_request')
 
     def create_token_response(self):
         """If the access token request is valid and authorized, the

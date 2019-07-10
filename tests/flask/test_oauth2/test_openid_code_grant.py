@@ -2,8 +2,9 @@ from flask import json
 from authlib.common.urls import urlparse, url_decode, url_encode
 from authlib.jose import JWT
 from authlib.oidc.core import CodeIDToken
-from authlib.oidc.core.grants import (
-    OpenIDCodeGrant as _OpenIDCodeGrant,
+from authlib.oidc.core.grants import OpenIDCode as _OpenIDCode
+from authlib.oauth2.rfc6749.grants import (
+    AuthorizationCodeGrant as _AuthorizationCodeGrant,
 )
 from tests.util import get_file_path
 from .models import db, User, Client, exists_nonce
@@ -12,14 +13,26 @@ from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
 
 
-class OpenIDCodeGrant(CodeGrantMixin, _OpenIDCodeGrant):
+class AuthorizationCodeGrant(CodeGrantMixin, _AuthorizationCodeGrant):
     def create_authorization_code(self, client, grant_user, request):
         nonce = request.data.get('nonce')
-        return generate_authorization_code(
-            client, grant_user, request, nonce=nonce)
+        return generate_authorization_code(client, grant_user, request, nonce=nonce)
+
+
+class OpenIDCode(_OpenIDCode):
+    def get_jwt_config(self, grant):
+        config = grant.server.config
+        key = config['jwt_key']
+        alg = config['jwt_alg']
+        iss = config['jwt_iss']
+        exp = config['jwt_exp']
+        return dict(key=key, alg=alg, iss=iss, exp=exp)
 
     def exists_nonce(self, nonce, request):
         return exists_nonce(nonce, request)
+
+    def generate_user_info(self, user, scopes):
+        return user.generate_user_info(scopes)
 
 
 class BaseTestCase(TestCase):
@@ -34,7 +47,7 @@ class BaseTestCase(TestCase):
     def prepare_data(self):
         self.config_app()
         server = create_authorization_server(self.app)
-        server.register_grant(OpenIDCodeGrant)
+        server.register_grant(AuthorizationCodeGrant, [OpenIDCode()])
 
         user = User(username='foo')
         db.session.add(user)

@@ -1,11 +1,11 @@
 import logging
-from .base import BaseGrant
+from .base import BaseGrant, TokenEndpointMixin
 from ..errors import UnauthorizedClientError
 
 log = logging.getLogger(__name__)
 
 
-class ClientCredentialsGrant(BaseGrant):
+class ClientCredentialsGrant(BaseGrant, TokenEndpointMixin):
     """The client can request an access token using only its client
     credentials (or other supported means of authentication) when the
     client is requesting access to the protected resources under its
@@ -25,8 +25,6 @@ class ClientCredentialsGrant(BaseGrant):
 
     https://tools.ietf.org/html/rfc6749#section-4.4
     """
-    #: authorization_code grant type has token endpoint
-    TOKEN_ENDPOINT = True
     GRANT_TYPE = 'client_credentials'
 
     def validate_token_request(self):

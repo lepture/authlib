@@ -19,7 +19,7 @@ def is_openid_scope(scope):
     return scopes and scopes[0] == 'openid'
 
 
-def validate_request_prompt(grant):
+def validate_request_prompt(grant, redirect_uri, redirect_fragment=False):
     prompt = grant.request.data.get('prompt')
     end_user = grant.request.user
     if not prompt:
@@ -28,15 +28,21 @@ def validate_request_prompt(grant):
         return grant
 
     if prompt == 'none' and not end_user:
-        raise LoginRequiredError()
+        raise LoginRequiredError(
+            redirect_uri=redirect_uri,
+            redirect_fragment=redirect_fragment)
 
     prompts = prompt.split()
     if 'none' in prompts and len(prompts) > 1:
         # If this parameter contains none with any other value,
         # an error is returned
-        raise InvalidRequestError('Invalid "prompt" parameter.')
+        raise InvalidRequestError(
+            'Invalid "prompt" parameter.',
+            redirect_uri=redirect_uri,
+            redirect_fragment=redirect_fragment)
 
-    prompt = _guess_prompt_value(end_user, prompts)
+    prompt = _guess_prompt_value(
+        end_user, prompts, redirect_uri, redirect_fragment=redirect_fragment)
     if prompt:
         grant.prompt = prompt
     return grant
@@ -56,14 +62,10 @@ def validate_nonce(request, exists_nonce, required=False):
 
 
 def generate_id_token(
-        key, token, request, alg, iss, exp,
+        token, request, user_info, key, alg, iss, exp,
         nonce=None, auth_time=None, code=None):
-    scopes = scope_to_list(token['scope'])
 
-    # TODO: merge scopes and claims
-    user_info = _generate_user_info(request.user, scopes)
     client = request.client
-
     payload = _generate_id_token_payload(
         alg, iss,
         [client.get_client_id()],
@@ -102,7 +104,7 @@ def create_response_mode_response(redirect_uri, params, response_mode):
     return 302, '', [('Location', uri)]
 
 
-def _guess_prompt_value(end_user, prompts):
+def _guess_prompt_value(end_user, prompts, redirect_uri, redirect_fragment):
     # http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
 
     if not end_user and 'login' in prompts:
@@ -110,11 +112,15 @@ def _guess_prompt_value(end_user, prompts):
 
     if 'consent' in prompts:
         if not end_user:
-            raise ConsentRequiredError()
+            raise ConsentRequiredError(
+                redirect_uri=redirect_uri,
+                redirect_fragment=redirect_fragment)
         return 'consent'
     elif 'select_account' in prompts:
         if not end_user:
-            raise AccountSelectionRequiredError()
+            raise AccountSelectionRequiredError(
+                redirect_uri=redirect_uri,
+                redirect_fragment=redirect_fragment)
         return 'select_account'
 
 
@@ -143,7 +149,7 @@ def _generate_id_token_payload(
     return payload
 
 
-def _generate_user_info(user, scopes):
+def _generate_user_info(user, scopes):  # pragma: no cover
     # OpenID Connect authorization code flow
     user_info = user.generate_user_info(scopes)
     if not isinstance(user_info, UserInfo):
