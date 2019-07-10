@@ -4,6 +4,15 @@ Client Guide
 This part of the documentation contains information on the client parts. For
 ``Requests.Session``, Flask integration and Django integration.
 
+In order to use Authlib client, you have to install ``requests`` yourself.
+You can either install requests with::
+
+    $ pip install requests
+
+Or you can install with::
+
+    $ pip install Authlib[client]
+
 Here is a simple overview of Flask OAuth client::
 
     from flask import Flask, jsonify

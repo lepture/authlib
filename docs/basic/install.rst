@@ -20,12 +20,19 @@ Installing Authlib is simple with `pip <http://www.pip-installer.org/>`_::
 
 It will also install the dependencies:
 
-- requests
 - cryptography
 
 .. note::
     You may enter problems when installing cryptography, check its official
     document at https://cryptography.io/en/latest/installation/
+
+.. versionchanged:: v0.12
+
+    "requests" is an optional dependency since v0.12. If you want to use
+    Authlib client, you have to install "requests" by yourself. Or, you can
+    install Authlib with::
+
+    $ pip install Authlib[client]
 
 Get the Source Code
 -------------------
