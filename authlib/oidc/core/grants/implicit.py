@@ -29,7 +29,7 @@ class OpenIDImplicitGrant(ImplicitGrant):
 
             def exists_nonce(self, nonce, request):
                 exists = AuthorizationCode.query.filter_by(
-                    client_id=req.client_id, nonce=nonce
+                    client_id=request.client_id, nonce=nonce
                 ).first()
                 return bool(exists)
 

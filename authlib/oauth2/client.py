@@ -151,21 +151,10 @@ class OAuth2Client(object):
         InsecureTransportError.check(url)
 
         session_kwargs = self._extract_session_request_params(kwargs)
-        if code or authorization_response:
-            body = self._prepare_authorization_code_body(
-                code, authorization_response, body, **kwargs)
-        elif username and password:
-            if 'scope' not in kwargs and self.scope:
-                kwargs['scope'] = self.scope
-            grant_type = kwargs.pop('grant_type', 'password')
-            body = prepare_token_request(
-                grant_type, body, username=username,
-                password=password, **kwargs)
-        else:
-            grant_type = kwargs.pop('grant_type', 'client_credentials')
-            if 'scope' not in kwargs and self.scope:
-                kwargs['scope'] = self.scope
-            body = prepare_token_request(grant_type, body, **kwargs)
+
+        body = self._prepare_token_endpoint_body(
+            code, authorization_response, body,
+            username, password, **kwargs)
 
         if auth is None:
             auth = self.client_auth
@@ -332,6 +321,25 @@ class OAuth2Client(object):
         return prepare_token_request(
             'authorization_code', body=body,
             code=code, state=state, **kwargs)
+
+    def _prepare_token_endpoint_body(self, code, authorization_response,
+                                         body, username, password, **kwargs):
+        if code or authorization_response:
+            body = self._prepare_authorization_code_body(
+                code, authorization_response, body, **kwargs)
+        elif username and password:
+            if 'scope' not in kwargs and self.scope:
+                kwargs['scope'] = self.scope
+            grant_type = kwargs.pop('grant_type', 'password')
+            body = prepare_token_request(
+                grant_type, body, username=username,
+                password=password, **kwargs)
+        else:
+            grant_type = kwargs.pop('grant_type', 'client_credentials')
+            if 'scope' not in kwargs and self.scope:
+                kwargs['scope'] = self.scope
+            body = prepare_token_request(grant_type, body, **kwargs)
+        return body
 
     def _extract_session_request_params(self, kwargs):
         """Extract parameters for session object from the passing ``**kwargs``."""

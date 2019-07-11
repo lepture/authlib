@@ -184,6 +184,7 @@ Lovely features that Authlib has built-in:
 <summary>🎉 RFC8414: OAuth 2.0 Authorization Server Metadata</summary>
 
 - [x] Authorization Server Metadata Model
+- [x] Well Known URI
 - [ ] Framework integrations
 </details>
 
@@ -196,8 +197,11 @@ Lovely features that Authlib has built-in:
 </details>
 
 <details>
-  <summary>⏳ OpenID Connect Discovery 1.0</summary>
-  <p>Developers can create a JSON file themselves.</p>
+  <summary>🎉 OpenID Connect Discovery 1.0</summary>
+
+- [x] OpenID Provider Metadata Model
+- [x] Well Known URI
+- [ ] Framework integrations
 </details>
 
 And more will be added.

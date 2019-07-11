@@ -1,4 +1,5 @@
 from authlib.oauth2.rfc8414 import AuthorizationServerMetadata
+from authlib.oauth2.rfc8414.models import validate_array_value
 
 
 class OpenIDProviderMetadata(AuthorizationServerMetadata):
@@ -53,7 +54,7 @@ class OpenIDProviderMetadata(AuthorizationServerMetadata):
         """OPTIONAL. JSON array containing a list of the Authentication
         Context Class References that this OP supports.
         """
-        _validate_array_value(self, 'acr_values_supported')
+        validate_array_value(self, 'acr_values_supported')
 
     def validate_subject_types_supported(self):
         """REQUIRED. JSON array containing a list of the Subject Identifier
@@ -102,35 +103,35 @@ class OpenIDProviderMetadata(AuthorizationServerMetadata):
         algorithms (alg values) supported by the OP for the ID Token to
         encode the Claims in a JWT.
         """
-        _validate_array_value(self, 'id_token_encryption_alg_values_supported')
+        validate_array_value(self, 'id_token_encryption_alg_values_supported')
 
     def validate_id_token_encryption_enc_values_supported(self):
         """OPTIONAL. JSON array containing a list of the JWE encryption
         algorithms (enc values) supported by the OP for the ID Token to
         encode the Claims in a JWT.
         """
-        _validate_array_value(self, 'id_token_encryption_enc_values_supported')
+        validate_array_value(self, 'id_token_encryption_enc_values_supported')
 
     def validate_userinfo_signing_alg_values_supported(self):
         """OPTIONAL. JSON array containing a list of the JWS signing
         algorithms (alg values) [JWA] supported by the UserInfo Endpoint
         to encode the Claims in a JWT. The value none MAY be included.
         """
-        _validate_array_value(self, 'userinfo_signing_alg_values_supported')
+        validate_array_value(self, 'userinfo_signing_alg_values_supported')
 
     def validate_userinfo_encryption_alg_values_supported(self):
         """OPTIONAL. JSON array containing a list of the JWE encryption
         algorithms (alg values) [JWA] supported by the UserInfo Endpoint
         to encode the Claims in a JWT.
         """
-        _validate_array_value(self, 'userinfo_encryption_alg_values_supported')
+        validate_array_value(self, 'userinfo_encryption_alg_values_supported')
 
     def validate_userinfo_encryption_enc_values_supported(self):
         """OPTIONAL. JSON array containing a list of the JWE encryption
         algorithms (enc values) [JWA] supported by the UserInfo Endpoint
         to encode the Claims in a JWT.
         """
-        _validate_array_value(self, 'userinfo_encryption_enc_values_supported')
+        validate_array_value(self, 'userinfo_encryption_enc_values_supported')
 
     def validate_request_object_signing_alg_values_supported(self):
         """OPTIONAL. JSON array containing a list of the JWS signing
@@ -160,7 +161,7 @@ class OpenIDProviderMetadata(AuthorizationServerMetadata):
         These algorithms are used both when the Request Object is passed
         by value and when it is passed by reference.
         """
-        _validate_array_value(self, 'request_object_encryption_alg_values_supported')
+        validate_array_value(self, 'request_object_encryption_alg_values_supported')
 
     def validate_request_object_encryption_enc_values_supported(self):
         """OPTIONAL. JSON array containing a list of the JWE encryption
@@ -168,7 +169,7 @@ class OpenIDProviderMetadata(AuthorizationServerMetadata):
         These algorithms are used both when the Request Object is passed
         by value and when it is passed by reference.
         """
-        _validate_array_value(self, 'request_object_encryption_enc_values_supported')
+        validate_array_value(self, 'request_object_encryption_enc_values_supported')
 
     def validate_display_values_supported(self):
         """OPTIONAL. JSON array containing a list of the display parameter
@@ -195,8 +196,6 @@ class OpenIDProviderMetadata(AuthorizationServerMetadata):
         """
         values = self.get('claim_types_supported')
         if not values:
-            # If omitted, the implementation supports only normal Claims
-            self['claim_types_supported'] = ['normal']
             return
 
         if not isinstance(values, list):
@@ -212,7 +211,7 @@ class OpenIDProviderMetadata(AuthorizationServerMetadata):
         for. Note that for privacy or other reasons, this might not be an
         exhaustive list.
         """
-        _validate_array_value(self, 'claims_supported')
+        validate_array_value(self, 'claims_supported')
 
     def validate_claims_locales_supported(self):
         """OPTIONAL. Languages and scripts supported for values in Claims
@@ -220,7 +219,7 @@ class OpenIDProviderMetadata(AuthorizationServerMetadata):
         language tag values. Not all languages and scripts are necessarily
         supported for all Claim values.
         """
-        _validate_array_value(self, 'claims_locales_supported')
+        validate_array_value(self, 'claims_locales_supported')
 
     def validate_claims_parameter_supported(self):
         """OPTIONAL. Boolean value specifying whether the OP supports use of
@@ -252,6 +251,11 @@ class OpenIDProviderMetadata(AuthorizationServerMetadata):
         _validate_boolean_value(self, 'require_request_uri_registration')
 
     @property
+    def claim_types_supported(self):
+        # If omitted, the implementation supports only normal Claims
+        return self.get('claim_types_supported', ['normal'])
+
+    @property
     def claims_parameter_supported(self):
         # If omitted, the default value is false.
         return self.get('claims_parameter_supported', False)
@@ -271,14 +275,9 @@ class OpenIDProviderMetadata(AuthorizationServerMetadata):
         # If omitted, the default value is false.
         return self.get('require_request_uri_registration', False)
 
+
 def _validate_boolean_value(metadata, key):
     if key not in metadata:
         return
     if metadata[key] not in (True, False):
         raise ValueError('"{}" MUST be boolean'.format(key))
-
-
-def _validate_array_value(metadata, key):
-    values = metadata.get(key)
-    if values is not None and not isinstance(values, list):
-        raise ValueError('"{}" MUST be JSON array'.format(key))

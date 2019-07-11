@@ -154,6 +154,8 @@ class OpenIDProviderMetadataTest(unittest.TestCase):
             'claim_types_supported',
             ['invalid']
         )
+        metadata = OpenIDProviderMetadata()
+        self.assertEqual(metadata.claim_types_supported, ['normal'])
 
     def test_validate_claims_supported(self):
         self._call_validate_array(

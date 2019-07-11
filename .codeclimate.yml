@@ -13,6 +13,9 @@ checks:
     config:
       threshold: 35
 
+  method-count:
+    enabled: false
+
   file-lines:
     config:
       threshold: 460
@@ -20,3 +23,6 @@ checks:
   return-statements:
     config:
       threshold: 6
+
+  similar-code:
+    enabled: false
