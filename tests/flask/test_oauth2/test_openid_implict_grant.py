@@ -3,7 +3,7 @@ from authlib.oidc.core import ImplicitIDToken
 from authlib.oidc.core.grants import (
     OpenIDImplicitGrant as _OpenIDImplicitGrant
 )
-from authlib.common.urls import urlparse, url_decode
+from authlib.common.urls import urlparse, url_decode, add_params_to_uri
 from .models import db, User, Client, exists_nonce
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
@@ -53,6 +53,19 @@ class ImplicitTest(TestCase):
         )
         claims.validate()
 
+    def test_consent_view(self):
+        self.prepare_data()
+        rv = self.client.get(add_params_to_uri('/oauth/authorize', {
+            'response_type': 'id_token',
+            'client_id': 'implicit-client',
+            'scope': 'openid profile',
+            'state': 'foo',
+            'redirect_uri': 'https://a.b/c',
+            'user_id': '1'
+        }))
+        self.assertIn('error=invalid_request', rv.data)
+        self.assertIn('nonce', rv.data)
+
     def test_require_nonce(self):
         self.prepare_data()
         rv = self.client.post('/oauth/authorize', data={
@@ -65,6 +78,19 @@ class ImplicitTest(TestCase):
         })
         self.assertIn('error=invalid_request', rv.location)
         self.assertIn('nonce', rv.location)
+
+    def test_missing_openid_in_scope(self):
+        self.prepare_data()
+        rv = self.client.post('/oauth/authorize', data={
+            'response_type': 'id_token token',
+            'client_id': 'implicit-client',
+            'scope': 'profile',
+            'state': 'bar',
+            'nonce': 'abc',
+            'redirect_uri': 'https://a.b/c',
+            'user_id': '1'
+        })
+        self.assertIn('error=invalid_scope', rv.location)
 
     def test_denied(self):
         self.prepare_data()

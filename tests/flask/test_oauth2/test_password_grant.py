@@ -1,4 +1,5 @@
 from flask import json
+from authlib.common.urls import add_params_to_uri
 from authlib.oauth2.rfc6749.grants import (
     ResourceOwnerPasswordCredentialsGrant as _PasswordGrant,
 )
@@ -74,9 +75,9 @@ class PasswordTest(TestCase):
             'password-client', 'password-secret'
         )
 
-        rv = self.client.get('/oauth/token', data={
+        rv = self.client.get(add_params_to_uri('/oauth/token', {
             'grant_type': 'password',
-        }, headers=headers)
+        }), headers=headers)
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'invalid_grant')
 

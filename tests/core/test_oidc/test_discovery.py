@@ -193,7 +193,8 @@ class OpenIDProviderMetadataTest(unittest.TestCase):
         with self.assertRaises(ValueError) as cm:
             _validate(metadata)
             self.assertIn('MUST be boolean', str(cm.exception))
-
+        metadata = OpenIDProviderMetadata({key: True})
+        _validate(metadata)
 
     def _call_validate_array(self, key, valid_value, required=False):
         def _validate(metadata):

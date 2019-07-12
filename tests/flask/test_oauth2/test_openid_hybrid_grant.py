@@ -81,6 +81,42 @@ class OpenIDCodeTest(TestCase):
         )
         claims.validate()
 
+    def test_invalid_client_id(self):
+        self.prepare_data()
+        rv = self.client.post('/oauth/authorize', data={
+            'response_type': 'code token',
+            'state': 'bar',
+            'nonce': 'abc',
+            'scope': 'openid profile',
+            'redirect_uri': 'https://a.b',
+            'user_id': '1',
+        })
+        self.assertIn('error=invalid_client', rv.location)
+
+        rv = self.client.post('/oauth/authorize', data={
+            'client_id': 'invalid-client',
+            'response_type': 'code token',
+            'state': 'bar',
+            'nonce': 'abc',
+            'scope': 'openid profile',
+            'redirect_uri': 'https://a.b',
+            'user_id': '1',
+        })
+        self.assertIn('error=invalid_client', rv.location)
+
+    def test_require_nonce(self):
+        self.prepare_data()
+        rv = self.client.post('/oauth/authorize', data={
+            'client_id': 'hybrid-client',
+            'response_type': 'code token',
+            'scope': 'openid profile',
+            'state': 'bar',
+            'redirect_uri': 'https://a.b',
+            'user_id': '1'
+        })
+        self.assertIn('error=invalid_request', rv.location)
+        self.assertIn('nonce', rv.location)
+
     def test_invalid_response_type(self):
         self.prepare_data()
         rv = self.client.post('/oauth/authorize', data={
