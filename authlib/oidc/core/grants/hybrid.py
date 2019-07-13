@@ -1,15 +1,10 @@
 import logging
-from authlib.oauth2.rfc6749 import (
-    OAuth2Error,
-    InvalidScopeError,
-    UnauthorizedClientError,
-    InvalidClientError,
+from authlib.oauth2.rfc6749 import InvalidScopeError
+from authlib.oauth2.rfc6749.grants.authorization_code import (
+    validate_code_authorization_request
 )
 from .implicit import OpenIDImplicitGrant
-from .util import (
-    is_openid_scope,
-    validate_nonce,
-)
+from .util import is_openid_scope, validate_nonce
 
 log = logging.getLogger(__name__)
 
@@ -55,43 +50,12 @@ class OpenIDHybridGrant(OpenIDImplicitGrant):
                 redirect_uri=self.request.redirect_uri,
                 redirect_fragment=True,
             )
-
-        client_id = self.request.client_id
-        log.debug('Validate authorization request of %r', client_id)
-
-        if client_id is None:
-            raise InvalidClientError(
-                state=self.request.state,
-                redirect_uri=self.request.redirect_uri,
-            )
-
-        client = self.server.query_client(client_id)
-        if not client:
-            raise InvalidClientError(
-                state=self.request.state,
-                redirect_uri=self.request.redirect_uri,
-            )
-
-        redirect_uri = self.validate_authorization_redirect_uri(self.request, client)
-        response_type = self.request.response_type
-        if not client.check_response_type(response_type):
-            raise UnauthorizedClientError(
-                'The client is not authorized to use '
-                '"response_type={}"'.format(response_type),
-                state=self.request.state,
-                redirect_uri=redirect_uri,
-            )
-
-        try:
-            self.validate_requested_scope(client)
-            self.request.client = client
-            validate_nonce(self.request, self.exists_nonce, required=True)
-            self.execute_hook('after_validate_authorization_request')
-        except OAuth2Error as error:
-            error.redirect_uri = redirect_uri
-            error.redirect_fragment = True
-            raise error
-        return redirect_uri
+        self.register_hook(
+            'after_validate_authorization_request',
+            lambda grant: validate_nonce(
+                grant.request, grant.exists_nonce, required=True)
+        )
+        return validate_code_authorization_request(self)
 
     def create_granted_params(self, grant_user):
         self.request.user = grant_user
@@ -104,7 +68,7 @@ class OpenIDHybridGrant(OpenIDImplicitGrant):
         token = self.generate_token(
             client, 'implicit',
             user=grant_user,
-            scope=self.request.scope,
+            scope=client.get_allowed_scope(self.request.scope),
             include_refresh_token=False
         )
 
@@ -124,4 +88,3 @@ class OpenIDHybridGrant(OpenIDImplicitGrant):
 
         params.extend([(k, token[k]) for k in token])
         return params
-

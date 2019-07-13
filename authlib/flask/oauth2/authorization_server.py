@@ -46,9 +46,10 @@ class AuthorizationServer(_AuthorizationServer):
         server = AuthorizationServer()
         server.init_app(app, query_client, save_token)
     """
-    def __init__(self, app=None, query_client=None, save_token=None, **config):
-        super(AuthorizationServer, self).__init__(
-            query_client, None, save_token, **config)
+    def __init__(self, app=None, query_client=None, save_token=None):
+        super(AuthorizationServer, self).__init__(query_client, None, save_token)
+        self.config = {}
+        self.metadata = None
         if app is not None:
             self.init_app(app)
 
@@ -93,6 +94,11 @@ class AuthorizationServer(_AuthorizationServer):
         self.config.setdefault('jwt_key', jwt_key)
         self.config.setdefault('jwt_alg', jwt_alg)
         self.config.setdefault('jwt_exp', jwt_exp)
+
+    def get_error_uris(self, request):
+        error_uris = self.config.get('error_uris')
+        if error_uris:
+            return dict(error_uris)
 
     def create_oauth2_request(self, request):
         return create_oauth_request(request, OAuth2Request)

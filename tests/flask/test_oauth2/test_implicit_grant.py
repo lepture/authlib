@@ -8,6 +8,7 @@ class ImplicitTest(TestCase):
     def prepare_data(self, is_confidential=False, response_type='token'):
         server = create_authorization_server(self.app)
         server.register_grant(ImplicitGrant)
+        self.server = server
 
         user = User(username='foo')
         db.session.add(user)
@@ -56,6 +57,7 @@ class ImplicitTest(TestCase):
         rv = self.client.post(self.authorize_url)
         self.assertIn('#error=access_denied', rv.location)
 
+        self.server.metadata = {'scopes_supported': ['profile']}
         rv = self.client.post(self.authorize_url + '&scope=invalid')
         self.assertIn('#error=invalid_scope', rv.location)
 

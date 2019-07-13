@@ -40,6 +40,21 @@ class ClientMixin(object):
         """
         raise NotImplementedError()
 
+    def get_allowed_scope(self, scope):
+        """A method to return a list of requested scopes which are supported by
+        this client. For instance, there is a ``scope`` column::
+
+            def get_allowed_scope(self, scope):
+                if not scope:
+                    return ''
+                allowed = set(scope_to_list(self.scope))
+                return list_to_scope([s for s in scope.split() if s in allowed])
+
+        :param scope: the requested scope.
+        :return: string of scope
+        """
+        raise NotImplementedError()
+
     def check_redirect_uri(self, redirect_uri):
         """Validate redirect_uri parameter in Authorization Endpoints. For
         instance, in the client table, there is an ``allowed_redirect_uris``
@@ -121,18 +136,6 @@ class ClientMixin(object):
                 return grant_type in self.grant_types
 
         :param grant_type: the requested grant_type string.
-        :return: bool
-        """
-        raise NotImplementedError()
-
-    def check_requested_scopes(self, scopes):
-        """Validate if the request scopes are supported by this client. It can
-        always be ``True``. For instance, there is a ``scope`` column::
-
-            def check_requested_scopes(self, scopes):
-                return set(self.scope.split()).issuperset(scopes)
-
-        :param scopes: the requested scopes set.
         :return: bool
         """
         raise NotImplementedError()

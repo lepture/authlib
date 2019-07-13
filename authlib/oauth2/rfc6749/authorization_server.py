@@ -9,18 +9,20 @@ class AuthorizationServer(object):
     :param query_client: A function to get client by client_id. The client
         model class MUST implement the methods described by
         :class:`~authlib.oauth2.rfc6749.ClientMixin`.
-    :param token_generator: A method to generate tokens.
+    :param generate_token: A method to generate tokens.
+    :param save_token: A method to save tokens.
+    :param metadata: A dict of Authorization Server Metadata
     """
-    def __init__(self, query_client, generate_token, save_token, **config):
+    def __init__(self, query_client, generate_token, save_token, metadata=None):
         self.query_client = query_client
         self.generate_token = generate_token
         self.save_token = save_token
-        self.config = config
         if query_client:
             self.authenticate_client = ClientAuthentication(query_client)
         else:
             self.authenticate_client = None
 
+        self.metadata = metadata
         self._authorization_grants = []
         self._token_grants = []
         self._endpoints = {}
@@ -56,9 +58,9 @@ class AuthorizationServer(object):
         return None
 
     def get_error_uris(self, request):
-        error_uris = self.config.get('error_uris')
-        if error_uris:
-            return dict(error_uris)
+        """Return a dict of error uris mapping. Framework SHOULD implement
+        this function."""
+        return None
 
     def send_signal(self, name, *args, **kwargs):
         raise NotImplementedError()

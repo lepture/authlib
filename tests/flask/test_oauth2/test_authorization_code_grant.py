@@ -28,6 +28,7 @@ class AuthorizationCodeTest(TestCase):
             token_endpoint_auth_method='client_secret_basic'):
         server = create_authorization_server(self.app, self.LAZY_INIT)
         self.register_grant(server)
+        self.server = server
 
         user = User(username='foo')
         db.session.add(user)
@@ -74,6 +75,7 @@ class AuthorizationCodeTest(TestCase):
         rv = self.client.post(self.authorize_url)
         self.assertIn('error=access_denied', rv.location)
 
+        self.server.metadata = {'scopes_supported': ['profile']}
         rv = self.client.post(self.authorize_url + '&scope=invalid&state=foo')
         self.assertIn('error=invalid_scope', rv.location)
         self.assertIn('state=foo', rv.location)

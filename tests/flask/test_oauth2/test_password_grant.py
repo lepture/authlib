@@ -19,6 +19,7 @@ class PasswordTest(TestCase):
     def prepare_data(self, grant_type='password'):
         server = create_authorization_server(self.app)
         server.register_grant(PasswordGrant)
+        self.server = server
 
         user = User(username='foo')
         db.session.add(user)
@@ -57,6 +58,7 @@ class PasswordTest(TestCase):
 
     def test_invalid_scope(self):
         self.prepare_data()
+        self.server.metadata = {'scopes_supported': ['profile']}
         headers = self.create_basic_header(
             'password-client', 'password-secret'
         )

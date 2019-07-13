@@ -7,6 +7,7 @@ from authlib.oauth2.rfc6749 import (
     TokenMixin,
     AuthorizationCodeMixin,
 )
+from authlib.oauth2.rfc6749.util import scope_to_list, list_to_scope
 from authlib.oidc.core import (
     AuthorizationCodeMixin as OIDCCodeMixin
 )
@@ -143,6 +144,13 @@ class OAuth2ClientMixin(ClientMixin):
         if self.redirect_uris:
             return self.redirect_uris[0]
 
+    def get_allowed_scope(self, scope):
+        if not scope:
+            return ''
+        allowed = set(self.scope.split())
+        scopes = scope_to_list(scope)
+        return list_to_scope([s for s in scopes if s in allowed])
+
     def check_redirect_uri(self, redirect_uri):
         return redirect_uri in self.redirect_uris
 
@@ -164,10 +172,6 @@ class OAuth2ClientMixin(ClientMixin):
         if self.grant_type:
             return grant_type in self.grant_types
         return False
-
-    def check_requested_scopes(self, scopes):
-        allowed = set(self.scope.split())
-        return allowed.issuperset(set(scopes))
 
 
 class OAuth2AuthorizationCodeMixin(AuthorizationCodeMixin):

@@ -102,42 +102,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
 
         .. _`Section 4.1.1`: https://tools.ietf.org/html/rfc6749#section-4.1.1
         """
-        # ignore validate for response_type, since it is validated by
-        # check_authorization_endpoint
-        client_id = self.request.client_id
-        log.debug('Validate authorization request of %r', client_id)
-
-        if client_id is None:
-            raise InvalidClientError(
-                state=self.request.state,
-                redirect_uri=self.request.redirect_uri,
-            )
-
-        client = self.server.query_client(client_id)
-        if not client:
-            raise InvalidClientError(
-                state=self.request.state,
-                redirect_uri=self.request.redirect_uri,
-            )
-
-        redirect_uri = self.validate_authorization_redirect_uri(self.request, client)
-        response_type = self.request.response_type
-        if not client.check_response_type(response_type):
-            raise UnauthorizedClientError(
-                'The client is not authorized to use '
-                '"response_type={}"'.format(response_type),
-                state=self.request.state,
-                redirect_uri=redirect_uri,
-            )
-
-        try:
-            self.validate_requested_scope(client)
-            self.request.client = client
-            self.execute_hook('after_validate_authorization_request')
-        except OAuth2Error as error:
-            error.redirect_uri = redirect_uri
-            raise error
-        return redirect_uri
+        return validate_code_authorization_request(self)
 
     def create_authorization_response(self, redirect_uri, grant_user):
         """If the resource owner grants the access request, the authorization
@@ -307,7 +272,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
             client,
             self.GRANT_TYPE,
             user=user,
-            scope=scope,
+            scope=client.get_allowed_scope(scope),
             include_refresh_token=client.check_grant_type('refresh_token'),
         )
         log.debug('Issue token %r to %r', token, client)
@@ -378,3 +343,40 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         :return: user
         """
         raise NotImplementedError()
+
+
+def validate_code_authorization_request(grant):
+    client_id = grant.request.client_id
+    log.debug('Validate authorization request of %r', client_id)
+
+    if client_id is None:
+        raise InvalidClientError(
+            state=grant.request.state,
+            redirect_uri=grant.request.redirect_uri,
+        )
+
+    client = grant.server.query_client(client_id)
+    if not client:
+        raise InvalidClientError(
+            state=grant.request.state,
+            redirect_uri=grant.request.redirect_uri,
+        )
+
+    redirect_uri = grant.validate_authorization_redirect_uri(grant.request, client)
+    response_type = grant.request.response_type
+    if not client.check_response_type(response_type):
+        raise UnauthorizedClientError(
+            'The client is not authorized to use '
+            '"response_type={}"'.format(response_type),
+            state=grant.request.state,
+            redirect_uri=redirect_uri,
+        )
+
+    try:
+        grant.validate_requested_scope()
+        grant.request.client = client
+        grant.execute_hook('after_validate_authorization_request')
+    except OAuth2Error as error:
+        error.redirect_uri = redirect_uri
+        raise error
+    return redirect_uri

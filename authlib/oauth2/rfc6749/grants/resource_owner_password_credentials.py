@@ -105,7 +105,7 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant, TokenEndpointMixin):
             raise InvalidGrantError(
                 'Invalid "username" or "password" in request.',
             )
-        self.validate_requested_scope(client)
+        self.validate_requested_scope()
         self.request.client = client
         self.request.user = user
 
@@ -139,7 +139,7 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant, TokenEndpointMixin):
         token = self.generate_token(
             client, self.GRANT_TYPE,
             user=self.request.user,
-            scope=self.request.scope,
+            scope=client.get_allowed_scope(self.request.scope),
         )
         log.debug('Issue token %r to %r', token, client)
         self.server.save_token(token, self.request)

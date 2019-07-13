@@ -9,6 +9,7 @@ class ClientCredentialsTest(TestCase):
     def prepare_data(self, grant_type='client_credentials'):
         server = create_authorization_server(self.app)
         server.register_grant(ClientCredentialsGrant)
+        self.server = server
 
         user = User(username='foo')
         db.session.add(user)
@@ -54,6 +55,7 @@ class ClientCredentialsTest(TestCase):
 
     def test_invalid_scope(self):
         self.prepare_data()
+        self.server.metadata = {'scopes_supported': ['profile']}
         headers = self.create_basic_header(
             'credential-client', 'credential-secret'
         )

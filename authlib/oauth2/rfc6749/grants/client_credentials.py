@@ -67,7 +67,7 @@ class ClientCredentialsGrant(BaseGrant, TokenEndpointMixin):
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError()
 
-        self.validate_requested_scope(client)
+        self.validate_requested_scope()
         self.request.client = client
 
     def create_token_response(self):

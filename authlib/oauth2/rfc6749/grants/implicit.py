@@ -137,7 +137,7 @@ class ImplicitGrant(BaseGrant, AuthorizationEndpointMixin):
             )
 
         try:
-            self.validate_requested_scope(client)
+            self.validate_requested_scope()
             self.request.client = client
             self.execute_hook('after_validate_authorization_request')
         except OAuth2Error as error:
@@ -209,7 +209,7 @@ class ImplicitGrant(BaseGrant, AuthorizationEndpointMixin):
             token = self.generate_token(
                 client, self.GRANT_TYPE,
                 user=grant_user,
-                scope=self.request.scope,
+                scope=client.get_allowed_scope(self.request.scope),
                 include_refresh_token=False
             )
             log.debug('Grant token %r to %r', token, client)
