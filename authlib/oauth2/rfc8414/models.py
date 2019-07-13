@@ -306,45 +306,30 @@ class AuthorizationServerMetadata(dict):
 
     @property
     def response_modes_supported(self):
-        value = self.get('response_modes_supported')
         #: If omitted, the default is ["query", "fragment"]
-        if value is None:
-            return ["query", "fragment"]
-        return value
+        return self.get('response_modes_supported', ["query", "fragment"])
 
     @property
     def grant_types_supported(self):
-        value = self.get('grant_types_supported')
         #: If omitted, the default value is ["authorization_code", "implicit"]
-        if value is None:
-            return ["authorization_code", "implicit"]
-        return value
+        return self.get('grant_types_supported', ["authorization_code", "implicit"])
 
     @property
     def token_endpoint_auth_methods_supported(self):
-        value = self.get('token_endpoint_auth_methods_supported')
         #: If omitted, the default is "client_secret_basic"
-        if value is None:
-            return ["client_secret_basic"]
-        return value
+        return self.get('token_endpoint_auth_methods_supported', ["client_secret_basic"])
 
     @property
     def revocation_endpoint_auth_methods_supported(self):
-        value = self.get('revocation_endpoint_auth_methods_supported')
         #: If omitted, the default is "client_secret_basic"
-        if value is None:
-            return ["client_secret_basic"]
-        return value
+        return self.get('revocation_endpoint_auth_methods_supported', ["client_secret_basic"])
 
     @property
     def introspection_endpoint_auth_methods_supported(self):
-        value = self.get('introspection_endpoint_auth_methods_supported')
         #: If omitted, the set of supported authentication methods MUST be
         #: determined by other means
         #: here, we use "client_secret_basic"
-        if value is None:
-            return ["client_secret_basic"]
-        return value
+        return self.get('introspection_endpoint_auth_methods_supported', ["client_secret_basic"])
 
     def validate(self):
         """Validate all server metadata value."""

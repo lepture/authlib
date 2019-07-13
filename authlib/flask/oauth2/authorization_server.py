@@ -49,7 +49,6 @@ class AuthorizationServer(_AuthorizationServer):
     def __init__(self, app=None, query_client=None, save_token=None):
         super(AuthorizationServer, self).__init__(query_client, None, save_token)
         self.config = {}
-        self.metadata = None
         if app is not None:
             self.init_app(app)
 

@@ -38,11 +38,9 @@ class OAuth2Request(object):
         self.headers = headers or {}
 
         self.query = urlparse.urlparse(uri).query
-        self.query_params = url_decode(self.query)
-        self.body_params = extract_params(body) or []
 
-        self.args = dict(self.query_params)
-        self.form = dict(self.body_params)
+        self.args = dict(url_decode(self.query))
+        self.form = self.body or {}
 
         #: dict of query and body params
         data = {}
