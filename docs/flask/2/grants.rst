@@ -179,27 +179,31 @@ supports two endpoints:
 1. Authorization Endpoint: which can handle requests with ``response_type``.
 2. Token Endpoint: which is the endpoint to issue tokens.
 
+.. versionchanged:: v0.12
+    Using ``AuthorizationEndpointMixin`` and ``TokenEndpointMixin`` instead of
+    ``AUTHORIZATION_ENDPOINT=True`` and ``TOKEN_ENDPOINT=True``.
+
 Creating a custom grant type with **BaseGrant**::
 
-    from authlib.oauth2.rfc6749 import grants
+    from authlib.oauth2.rfc6749.grants import (
+        BaseGrant, AuthorizationEndpointMixin, TokenEndpointMixin
+    )
 
 
-    class MyCustomGrant(grants.BaseGrant):
-        AUTHORIZATION_ENDPOINT = False  # if you want to support it
-        TOKEN_ENDPOINT = True  # if you want to support it
+    class MyCustomGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpointMixin):
         GRANT_TYPE = 'custom-grant-type-name'
 
         def validate_authorization_request(self):
-            # only needed if AUTHORIZATION_ENDPOINT = True
+            # only needed if using AuthorizationEndpointMixin
 
         def create_authorization_response(self, grant_user):
-            # only needed if AUTHORIZATION_ENDPOINT = True
+            # only needed if using AuthorizationEndpointMixin
 
         def validate_token_request(self):
-            # only needed if TOKEN_ENDPOINT = True
+            # only needed if using TokenEndpointMixin
 
         def create_token_response(self):
-            # only needed if TOKEN_ENDPOINT = True
+            # only needed if using TokenEndpointMixin
 
 For a better understanding, you can read the source code of the built-in
 grant types. And there are extended grant types defined by other specs:
