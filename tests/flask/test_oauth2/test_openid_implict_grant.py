@@ -63,8 +63,8 @@ class ImplicitTest(TestCase):
             'redirect_uri': 'https://a.b/c',
             'user_id': '1'
         }))
-        self.assertIn('error=invalid_request', rv.data)
-        self.assertIn('nonce', rv.data)
+        self.assertIn(b'error=invalid_request', rv.data)
+        self.assertIn(b'nonce', rv.data)
 
     def test_require_nonce(self):
         self.prepare_data()
