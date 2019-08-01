@@ -8,7 +8,6 @@ from .errors import (
     MissingTokenError,
     UnsupportedTokenTypeError,
 )
-from ..deprecate import deprecate
 
 __all__ = ['OAuth2Session', 'OAuth2Auth']
 
