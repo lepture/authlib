@@ -27,7 +27,7 @@ Create a registry with :class:`OAuth` object::
 
     oauth = OAuth(app)
 
-You can initialize it later with :meth:`~OAuth.init_app` method::
+You can also initialize it later with :meth:`~OAuth.init_app` method::
 
     oauth = OAuth()
     oauth.init_app(app)

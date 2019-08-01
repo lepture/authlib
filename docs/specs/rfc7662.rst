@@ -25,16 +25,20 @@ first, we need to implement the missing methods::
 
     class MyIntrospectionEndpoint(IntrospectionEndpoint):
         def query_token(self, token, token_type_hint, client):
-            q = Token.query.filter_by(client_id=client.client_id)
             if token_type_hint == 'access_token':
-                return q.filter_by(access_token=token).first()
+                tok = Token.query.filter_by(access_token=token).first()
             elif token_type_hint == 'refresh_token':
-                return q.filter_by(refresh_token=token).first()
-            # without token_type_hint
-            item = q.filter_by(access_token=token).first()
-            if item:
-                return item
-            return q.filter_by(refresh_token=token).first()
+                tok = Token.query.filter_by(refresh_token=token).first()
+            else:
+                # without token_type_hint
+                tok = Token.query.filter_by(access_token=token).first()
+                if not tok:
+                    tok = Token.query.filter_by(refresh_token=token).first()
+            if tok:
+                if tok.client_id == client.client_id:
+                    return tok
+                if has_introspect_permission(client):
+                    return tok
 
         def introspect_token(self, token):
             return {
