@@ -350,17 +350,11 @@ def validate_code_authorization_request(grant):
     log.debug('Validate authorization request of %r', client_id)
 
     if client_id is None:
-        raise InvalidClientError(
-            state=grant.request.state,
-            redirect_uri=grant.request.redirect_uri,
-        )
+        raise InvalidClientError(state=grant.request.state)
 
     client = grant.server.query_client(client_id)
     if not client:
-        raise InvalidClientError(
-            state=grant.request.state,
-            redirect_uri=grant.request.redirect_uri,
-        )
+        raise InvalidClientError(state=grant.request.state)
 
     redirect_uri = grant.validate_authorization_redirect_uri(grant.request, client)
     response_type = grant.request.response_type

@@ -91,7 +91,8 @@ class OpenIDCodeTest(TestCase):
             'redirect_uri': 'https://a.b',
             'user_id': '1',
         })
-        self.assertIn('error=invalid_client', rv.location)
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['error'], 'invalid_client')
 
         rv = self.client.post('/oauth/authorize', data={
             'client_id': 'invalid-client',
@@ -102,7 +103,8 @@ class OpenIDCodeTest(TestCase):
             'redirect_uri': 'https://a.b',
             'user_id': '1',
         })
-        self.assertIn('error=invalid_client', rv.location)
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['error'], 'invalid_client')
 
     def test_require_nonce(self):
         self.prepare_data()
