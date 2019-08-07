@@ -94,11 +94,16 @@ class IntrospectionEndpoint(TokenEndpoint):
 
             def query_token(self, token, token_type_hint, client):
                 if token_type_hint == 'access_token':
-                    return Token.query_by_access_token(token, client.client_id)
-                if token_type_hint == 'refresh_token':
-                    return Token.query_by_refresh_token(token, client.client_id)
-                return Token.query_by_access_token(token, client.client_id) or \
-                    Token.query_by_refresh_token(token, client.client_id)
+                    tok = Token.query_by_access_token(token)
+                elif token_type_hint == 'refresh_token':
+                    tok = Token.query_by_refresh_token(token)
+                else:
+                    tok = Token.query_by_access_token(token)
+                    if not tok:
+                        tok = Token.query_by_refresh_token(token)
+
+                if check_client_permission(client, tok):
+                    return tok
         """
         raise NotImplementedError()
 
