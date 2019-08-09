@@ -1,6 +1,6 @@
 """
-    authlib.oauth2.validator
-    ~~~~~~~~~~~~~~~~~~~~~~~~
+    authlib.oauth2.rfc6750.validator
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     Validate Bearer Token for in request, scope and token.
 """

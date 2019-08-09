@@ -11,12 +11,12 @@ from .errors import MissingAuthorizationError, UnsupportedTokenTypeError
 
 
 class ResourceProtector(object):
-    TOKEN_VALIDATORS = {}
+    def __init__(self):
+        self._token_validators = {}
 
-    @classmethod
-    def register_token_validator(cls, validator):
-        if validator.TOKEN_TYPE not in cls.TOKEN_VALIDATORS:
-            cls.TOKEN_VALIDATORS[validator.TOKEN_TYPE] = validator
+    def register_token_validator(self, validator):
+        if validator.TOKEN_TYPE not in self._token_validators:
+            self._token_validators[validator.TOKEN_TYPE] = validator
 
     def validate_request(self, scope, request, scope_operator='AND'):
         auth = request.headers.get('Authorization')
@@ -30,7 +30,7 @@ class ResourceProtector(object):
 
         token_type, token_string = token_parts
 
-        validator = self.TOKEN_VALIDATORS.get(token_type.lower())
+        validator = self._token_validators.get(token_type.lower())
         if not validator:
             raise UnsupportedTokenTypeError()
 
