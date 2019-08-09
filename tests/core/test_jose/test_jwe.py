@@ -1,13 +1,13 @@
 import os
 import unittest
 from authlib.jose import errors
-from authlib.jose import JWE, JWE_ALGORITHMS, JWS_ALGORITHMS
+from authlib.jose import JsonWebEncryption, JWE_ALGORITHMS, JWS_ALGORITHMS
 from tests.util import read_file_path
 
 
 class JWETest(unittest.TestCase):
     def test_register_invalid_algorithms(self):
-        jwe = JWE(algorithms=[])
+        jwe = JsonWebEncryption(algorithms=[])
         self.assertRaises(
             ValueError,
             jwe.register_algorithm,
@@ -16,7 +16,7 @@ class JWETest(unittest.TestCase):
 
     def test_not_enough_segments(self):
         s = 'a.b.c'
-        jwe = JWE(algorithms=JWE_ALGORITHMS)
+        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
         self.assertRaises(
             errors.DecodeError,
             jwe.deserialize_compact,
@@ -24,7 +24,7 @@ class JWETest(unittest.TestCase):
         )
 
     def test_invalid_header(self):
-        jwe = JWE(algorithms=JWE_ALGORITHMS)
+        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
         public_key = read_file_path('rsa_public.pem')
         self.assertRaises(
             errors.MissingAlgorithmError,
@@ -51,7 +51,7 @@ class JWETest(unittest.TestCase):
         )
 
     def test_compact_rsa(self):
-        jwe = JWE(algorithms=JWE_ALGORITHMS)
+        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
         s = jwe.serialize_compact(
             {'alg': 'RSA-OAEP', 'enc': 'A256GCM'},
             'hello',
@@ -63,7 +63,7 @@ class JWETest(unittest.TestCase):
         self.assertEqual(header['alg'], 'RSA-OAEP')
 
     def test_with_zip_header(self):
-        jwe = JWE(algorithms=JWE_ALGORITHMS)
+        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
         s = jwe.serialize_compact(
             {'alg': 'RSA-OAEP', 'enc': 'A128CBC-HS256', 'zip': 'DEF'},
             'hello',
@@ -74,8 +74,8 @@ class JWETest(unittest.TestCase):
         self.assertEqual(payload, b'hello')
         self.assertEqual(header['alg'], 'RSA-OAEP')
 
-    def test_aes_jwe(self):
-        jwe = JWE(algorithms=JWE_ALGORITHMS)
+    def test_aes_JsonWebEncryption(self):
+        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
         sizes = [128, 192, 256]
         _enc_choices = [
             'A128CBC-HS256', 'A192CBC-HS384', 'A256CBC-HS512',
@@ -91,7 +91,7 @@ class JWETest(unittest.TestCase):
                 self.assertEqual(rv['payload'], b'hello')
 
     def test_ase_jwe_invalid_key(self):
-        jwe = JWE(algorithms=JWE_ALGORITHMS)
+        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
         protected = {'alg': 'A128KW', 'enc': 'A128GCM'}
         self.assertRaises(
             ValueError,
@@ -115,8 +115,8 @@ class JWETest(unittest.TestCase):
         invalid_ek = b'a' + ek[1:]
         self.assertRaises(ValueError, alg.unwrap, invalid_ek, {}, private_key)
 
-    def test_aes_gcm_jwe(self):
-        jwe = JWE(algorithms=JWE_ALGORITHMS)
+    def test_aes_gcm_JsonWebEncryption(self):
+        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
         sizes = [128, 192, 256]
         _enc_choices = [
             'A128CBC-HS256', 'A192CBC-HS384', 'A256CBC-HS512',
@@ -132,7 +132,7 @@ class JWETest(unittest.TestCase):
                 self.assertEqual(rv['payload'], b'hello')
 
     def test_ase_gcm_jwe_invalid_key(self):
-        jwe = JWE(algorithms=JWE_ALGORITHMS)
+        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
         protected = {'alg': 'A128GCMKW', 'enc': 'A128GCM'}
         self.assertRaises(
             ValueError,

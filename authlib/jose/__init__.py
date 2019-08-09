@@ -7,12 +7,12 @@
 """
 
 from .rfc7515 import (
-    JWS, JWSAlgorithm, JWSHeader, JWSObject,
+    JWS, JsonWebSignature, JWSAlgorithm, JWSHeader, JWSObject,
 )
 from .rfc7516 import (
-    JWE, JWEAlgorithm, JWEEncAlgorithm, JWEZipAlgorithm,
+    JWE, JsonWebEncryption, JWEAlgorithm, JWEEncAlgorithm, JWEZipAlgorithm,
 )
-from .rfc7517 import JWK, JWKAlgorithm
+from .rfc7517 import JWK, JsonWebKey, JWKAlgorithm
 from .rfc7518 import (
     JWS_ALGORITHMS,
     JWE_ALGORITHMS,
@@ -21,16 +21,17 @@ from .rfc7518 import (
     JWE_ZIP_ALGORITHMS,
     JWK_ALGORITHMS,
 )
-from .rfc7519 import JWT, JWTClaims
+from .rfc7519 import JWT, JsonWebToken, JWTClaims
 from .jwk import jwk
 
-jwt = JWT()
+jwt = JsonWebToken()
 
 
 __all__ = [
-    'JWS', 'JWSAlgorithm', 'JWSHeader', 'JWSObject',
-    'JWE', 'JWEAlgorithm', 'JWEEncAlgorithm', 'JWEZipAlgorithm',
-    'JWK', 'JWKAlgorithm',
+    'JWS', 'JsonWebSignature', 'JWSAlgorithm', 'JWSHeader', 'JWSObject',
+    'JWE', 'JsonWebEncryption', 'JWEAlgorithm', 'JWEEncAlgorithm', 'JWEZipAlgorithm',
+
+    'JWK', 'JsonWebKey', 'JWKAlgorithm',
 
     'JWS_ALGORITHMS',
     'JWE_ALGORITHMS',
@@ -39,6 +40,6 @@ __all__ = [
     'JWE_ZIP_ALGORITHMS',
     'JWK_ALGORITHMS',
 
-    'JWT', 'JWTClaims',
+    'JWT', 'JsonWebToken', 'JWTClaims',
     'jwk', 'jwt',
 ]

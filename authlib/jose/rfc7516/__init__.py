@@ -8,7 +8,12 @@
     https://tools.ietf.org/html/rfc7516
 """
 
-from .jwe import JWE
+from .jwe import JsonWebEncryption
 from .models import JWEAlgorithm, JWEEncAlgorithm, JWEZipAlgorithm
 
-__all__ = ['JWE', 'JWEAlgorithm', 'JWEEncAlgorithm', 'JWEZipAlgorithm']
+JWE = JsonWebEncryption
+
+__all__ = [
+    'JWE', 'JsonWebEncryption',
+    'JWEAlgorithm', 'JWEEncAlgorithm', 'JWEZipAlgorithm'
+]

@@ -20,7 +20,7 @@ class JWKAlgorithm(object):
         raise NotImplementedError
 
 
-class JWK(object):
+class JsonWebKey(object):
     def __init__(self, algorithms):
         self._algorithms = {}
 

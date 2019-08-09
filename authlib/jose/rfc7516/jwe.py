@@ -17,7 +17,7 @@ from authlib.jose.errors import (
 )
 
 
-class JWE(object):
+class JsonWebEncryption(object):
     #: Registered Header Parameter Names defined by Section 4.1
     REGISTERED_HEADER_PARAMETER_NAMES = frozenset([
         'alg', 'enc', 'zip',

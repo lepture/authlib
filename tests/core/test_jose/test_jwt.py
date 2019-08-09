@@ -1,20 +1,20 @@
 import unittest
 import datetime
 from authlib.jose import errors
-from authlib.jose import JWT, JWTClaims, jwt
+from authlib.jose import JsonWebToken, JWTClaims, jwt
 from authlib.jose.errors import UnsupportedAlgorithmError
 from tests.util import read_file_path
 
 
 class JWTTest(unittest.TestCase):
     def test_init_algorithms(self):
-        _jwt = JWT(['RS256'])
+        _jwt = JsonWebToken(['RS256'])
         self.assertRaises(
             UnsupportedAlgorithmError,
             _jwt.encode, {'alg': 'HS256'}, {}, 'k'
         )
 
-        _jwt = JWT('RS256')
+        _jwt = JsonWebToken('RS256')
         self.assertRaises(
             UnsupportedAlgorithmError,
             _jwt.encode, {'alg': 'HS256'}, {}, 'k'

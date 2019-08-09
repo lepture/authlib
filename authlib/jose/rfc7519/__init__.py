@@ -9,8 +9,9 @@
     https://tools.ietf.org/html/rfc7519
 """
 
-from .jwt import JWT
+from .jwt import JsonWebToken
 from .claims import JWTClaims
 
+JWT = JsonWebToken
 
-__all__ = ['JWT', 'JWTClaims']
+__all__ = ['JWT', 'JsonWebToken', 'JWTClaims']

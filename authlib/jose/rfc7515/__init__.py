@@ -8,7 +8,12 @@
     https://tools.ietf.org/html/rfc7515
 """
 
-from .jws import JWS
+from .jws import JsonWebSignature
 from .models import JWSAlgorithm, JWSHeader, JWSObject
 
-__all__ = ['JWS', 'JWSAlgorithm', 'JWSHeader', 'JWSObject']
+JWS = JsonWebSignature
+
+__all__ = [
+    'JWS', 'JsonWebSignature',
+    'JWSAlgorithm', 'JWSHeader', 'JWSObject'
+]

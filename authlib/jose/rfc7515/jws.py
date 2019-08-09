@@ -20,7 +20,7 @@ from authlib.jose.errors import (
 from .models import JWSHeader, JWSObject
 
 
-class JWS(object):
+class JsonWebSignature(object):
 
     #: Registered Header Parameter Names defined by Section 4.1
     REGISTERED_HEADER_PARAMETER_NAMES = frozenset([

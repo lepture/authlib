@@ -6,8 +6,8 @@ from authlib.common.encoding import text_types, to_bytes, to_unicode
 from authlib.jose.jwk import load_key, create_key_func
 from authlib.jose.errors import DecodeError, InsecureClaimError
 from .claims import JWTClaims
-from ..rfc7515 import JWS
-from ..rfc7516 import JWE
+from ..rfc7515 import JsonWebSignature
+from ..rfc7516 import JsonWebEncryption
 from ..rfc7518 import JWS_ALGORITHMS, JWE_ALGORITHMS
 
 
@@ -20,7 +20,7 @@ _AVAILABLE_ALGORITHMS.update(
 )
 
 
-class JWT(object):
+class JsonWebToken(object):
     SENSITIVE_NAMES = ('password', 'token', 'secret', 'secret_key')
     # Thanks to sentry SensitiveDataFilter
     SENSITIVE_VALUES = re.compile(r'|'.join([
@@ -34,11 +34,11 @@ class JWT(object):
 
     def __init__(self, algorithms=None, private_headers=None):
         if algorithms is None:
-            self._jws = JWS(JWS_ALGORITHMS, private_headers)
-            self._jwe = JWE(JWE_ALGORITHMS, private_headers)
+            self._jws = JsonWebSignature(JWS_ALGORITHMS, private_headers)
+            self._jwe = JsonWebEncryption(JWE_ALGORITHMS, private_headers)
         else:
-            self._jws = JWS(None, private_headers)
-            self._jwe = JWE(None, private_headers)
+            self._jws = JsonWebSignature(None, private_headers)
+            self._jwe = JsonWebEncryption(None, private_headers)
 
             if isinstance(algorithms, (tuple, list)):
                 for algorithm in algorithms:
