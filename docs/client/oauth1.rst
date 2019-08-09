@@ -1,15 +1,11 @@
-OAuth 1 Client
-==============
+OAuth 1 Session
+===============
 
 .. meta::
     :description: An OAuth 1 protocol implementation for requests.Session
         powered by Authlib.
 
 .. module:: authlib.client
-
-
-OAuth1Session for requests
---------------------------
 
 The :class:`OAuth1Session` in Authlib is a subclass of ``requests.Session``.
 It shares the same API with ``requests.Session`` and extends it with OAuth 1
@@ -22,6 +18,9 @@ flow.
 
 If you are not familiar with OAuth 1.0, it is better to
 :ref:`understand_oauth1` now.
+
+OAuth1Session for requests
+--------------------------
 
 There are three steps in OAuth 1 to obtain an access token. Initialize
 the session for reuse::
