@@ -24,21 +24,26 @@ Create a registry with :class:`OAuth` object::
 
     oauth = OAuth()
 
-Configuration
--------------
+The common use case for OAuth is authentication, e.g. let your users log in
+with Twitter, GitHub, Google etc.
 
-To register a remote application on OAuth registry, using the
+Log In with OAuth 1.0
+---------------------
+
+For instance, Twitter is an OAuth 1.0 service, you want your users to log in
+your website with Twitter.
+
+The first step is register a remote application on the ``OAuth`` registry via
 :meth:`~OAuth.register` method::
 
     oauth.register(
-        'twitter',
-        client_id='Twitter Consumer Key',
-        client_secret='Twitter Consumer Secret',
+        name='twitter',
+        client_id='{{ your-twitter-consumer-key }}',
+        client_secret='{{ your-twitter-consumer-secret }}',
         request_token_url='https://api.twitter.com/oauth/request_token',
         request_token_params=None,
         access_token_url='https://api.twitter.com/oauth/access_token',
         access_token_params=None,
-        refresh_token_url=None,
         authorize_url='https://api.twitter.com/oauth/authenticate',
         api_base_url='https://api.twitter.com/1.1/',
         client_kwargs=None,
@@ -67,36 +72,24 @@ pair can be omit. They can be configured from your Django settings::
         }
     }
 
-client_kwargs
-~~~~~~~~~~~~~
-
 The ``client_kwargs`` is a dict configuration to pass extra parameters to
-``OAuth1Session`` or ``OAuth2Session``.
-
-For OAuth 1.0, you can pass extra parameters like::
+``OAuth1Session``. If you are using ``RSA-SHA1`` signature method::
 
     client_kwargs = {
-        'signature_method': 'HMAC-SHA1',
+        'signature_method': 'RSA-SHA1',
         'signature_type': 'HEADER',
         'rsa_key': 'Your-RSA-Key'
     }
 
-For OAuth 2.0, you can pass extra parameters like::
+Saving Temporary Credential
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    client_kwargs = {
-        'scope': 'profile',
-        'token_endpoint_auth_method': 'client_secret_basic',
-        'token_placement': 'header',
-    }
-
-There are several ``token_endpoint_auth_method``, get a deep inside the
-:ref:`client_auth_methods`.
-
-Sessions Middleware
--------------------
+In OAuth 1.0, we need to use a temporary credential to exchange access token,
+this temporary credential was created before redirecting to the provider (Twitter),
+we need to save this temporary credential somewhere in order to use it later.
 
 In OAuth 1, Django client will save the request token in sessions. In this
-case, you need to configure Session Middleware in Django::
+case, you just need to configure Session Middleware in Django::
 
     MIDDLEWARE = [
         'django.contrib.sessions.middleware.SessionMiddleware'
@@ -110,9 +103,140 @@ database backend or a cache backend would work well.
     Be aware, using secure cookie as session backend will expose your request
     token.
 
+Routes for Authorization
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-Database Design
----------------
+After configuration of ``OAuth`` registry and the remote application, the
+rest steps are much simpler. The only required parts are routes:
+
+1. redirect to 3rd party provider (Twitter) for authentication
+2. redirect back to your website to fetch access token and profile
+
+Here is the example for Twitter login::
+
+    def login(request):
+        # build a full authorize callback uri
+        redirect_uri = request.build_absolute_uri('/authorize')
+        return oauth.twitter.authorize_redirect(request, redirect_uri)
+
+    def authorize(request):
+        token = oauth.twitter.authorize_access_token(request)
+        resp = oauth.twitter.get('account/verify_credentials.json')
+        profile = resp.json()
+        # do something with the token and profile
+        return '...'
+
+After user confirmed on Twitter authorization page, it will redirect
+back to your website ``authorize`` page. In this route, you can get your
+user's twitter profile information, you can store the user information
+in your database, mark your user as logged in and etc.
+
+
+Using OAuth 2.0 to Log In
+-------------------------
+
+For instance, GitHub is an OAuth 2.0 service, you want your users to log in
+your website with GitHub.
+
+The first step is register a remote application on the ``OAuth`` registry via
+:meth:`~OAuth.register` method::
+
+    oauth.register(
+        name='github',
+        client_id='{{ your-github-client-id }}',
+        client_secret='{{ your-github-client-secret }}',
+        access_token_url='https://github.com/login/oauth/access_token',
+        authorize_url='https://github.com/login/oauth/authorize',
+        api_base_url='https://api.github.com/',
+        client_kwargs={'scope': 'user:email'},
+    )
+
+The first parameter in ``register`` method is the **name** of the remote
+application. You can access the remote application with::
+
+    oauth.github.get('user')
+
+The second parameter in ``register`` method is configuration. Every key value
+pair can be omit. They can be configured from your Django settings::
+
+    AUTHLIB_OAUTH_CLIENTS = {
+        'github': {
+            'client_id': 'GitHub Client ID',
+            'client_secret': 'GitHub Client Secret',
+            'access_token_url': 'https://github.com/login/oauth/access_token',
+            'authorize_url': 'https://github.com/login/oauth/authorize',
+            'api_base_url': 'https://api.github.com/',
+            'client_kwargs': {'scope': 'user:email'}
+        }
+    }
+
+The ``client_kwargs`` is a dict configuration to pass extra parameters to
+``OAuth2Session``, you can pass extra parameters like::
+
+    client_kwargs = {
+        'scope': 'profile',
+        'token_endpoint_auth_method': 'client_secret_basic',
+        'token_placement': 'header',
+    }
+
+There are several ``token_endpoint_auth_method``, get a deep inside the
+:ref:`client_auth_methods`.
+
+
+Routes for Authorization
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+After configuration of ``OAuth`` registry and the remote application, the
+rest steps are much simpler. The only required parts are routes:
+
+1. redirect to 3rd party provider (GitHub) for authentication
+2. redirect back to your website to fetch access token and profile
+
+Here is the example for GitHub login::
+
+
+    def login(request):
+        # build a full authorize callback uri
+        redirect_uri = request.build_absolute_uri('/authorize')
+        return oauth.github.authorize_redirect(request, redirect_uri)
+
+    def authorize(request):
+        token = oauth.github.authorize_access_token(request)
+        resp = oauth.github.get('user')
+        profile = resp.json()
+        # do something with the token and profile
+        return '...'
+
+After user confirmed on GitHub authorization page, it will redirect
+back to your website ``authorize``. In this route, you can get your
+user's GitHub profile information, you can store the user information
+in your database, mark your user as logged in and etc.
+
+
+Accessing OAuth Resources
+-------------------------
+
+There are also chances that you need to access your user's 3rd party
+OAuth provider resources. For instance, you want to display your user's
+GitHub profile::
+
+    def github_profile(request):
+        token = OAuth2Token.objects.get(
+            name='github',
+            user=request.user
+        )
+        # API URL: https://api.github.com/user
+        resp = oauth.github.get('user', token=token.to_token())
+        profile = resp.json()
+        return render_template('github.html', profile=profile)
+
+In this case, we need a place to store the access token in order to use
+it later. Take an example, we want to save user's access token into
+database.
+
+
+Design Database
+~~~~~~~~~~~~~~~
 
 Authlib Django client has no built-in database model. You need to design the
 Token model by yourself. This is designed by intention.
@@ -148,34 +272,35 @@ Here are some hints on how to design your schema::
                 expires_at=self.expires_at,
             )
 
-
-Implement the Server
---------------------
-
-There are two views to be completed, no matter it is OAuth 1 or OAuth 2::
-
-    def login(request):
-        # build a full authorize callback uri
-        redirect_uri = request.build_absolute_uri('/authorize')
-        return oauth.twitter.authorize_redirect(request, redirect_uri)
+And then we can save user's access token into database when user was redirected
+back to our ``authorize`` page, like::
 
     def authorize(request):
-        token = oauth.twitter.authorize_access_token(request)
-        # save_token_to_db(token)
-        return '...'
+        token = oauth.github.authorize_access_token(request)
+        # OAuth2Token.save('github', token)
+        return redirect('/')
 
-    def fetch_resource(request):
-        token = get_user_token_from_db(request.user)
-        # remember to assign user's token to the client
-        resp = oauth.twitter.get('account/verify_credentials.json', token=token)
-        profile = resp.json()
-        # ...
+Connect Token to Current User
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. versionadded:: v0.10
+You can always pass a ``token`` parameter to the remote application request
+methods, like::
 
-When using the oauth client to make HTTP requests, developers will always need
-to get the ``token`` and pass the ``token`` into the requests. Here is an improved
-way to handle this issue with ``fetch_token`` feature::
+    oauth.twitter.get(url, token=token)
+    oauth.twitter.post(url, token=token)
+    oauth.twitter.put(url, token=token)
+    oauth.twitter.delete(url, token=token)
+
+But it is a little waste of code each time to fetch the token like::
+
+    data = OAuth2Token.objects.get(
+            name='github',
+            user=request.user
+    )
+    token = data.to_token()
+
+Instead, you can implement a ``fetch_token`` method to do that. You don't have
+to fetch token every time, you can just pass the ``request`` instance::
 
     def fetch_twitter_token(request):
         item = OAuth1Token.objects.get(
@@ -187,17 +312,7 @@ way to handle this issue with ``fetch_token`` feature::
     # we can registry this ``fetch_token`` with oauth.register
     oauth.register(
         'twitter',
-        client_id='Twitter Consumer Key',
-        client_secret='Twitter Consumer Secret',
-        request_token_url='https://api.twitter.com/oauth/request_token',
-        request_token_params=None,
-        access_token_url='https://api.twitter.com/oauth/access_token',
-        access_token_params=None,
-        refresh_token_url=None,
-        authorize_url='https://api.twitter.com/oauth/authenticate',
-        api_base_url='https://api.twitter.com/1.1/',
-        client_kwargs=None,
-        # NOTICE HERE
+        # ...
         fetch_token=fetch_twitter_token,
     )
 

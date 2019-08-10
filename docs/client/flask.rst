@@ -52,7 +52,6 @@ The first step is register a remote application on the ``OAuth`` registry via
         request_token_params=None,
         access_token_url='https://api.twitter.com/oauth/access_token',
         access_token_params=None,
-        refresh_token_url=None,
         authorize_url='https://api.twitter.com/oauth/authenticate',
         api_base_url='https://api.twitter.com/1.1/',
         client_kwargs=None,
@@ -305,7 +304,7 @@ it later. Take an example, we want to save user's access token into
 database.
 
 Design Database
-~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~
 
 Here is an example on database schema design with Flask-SQLAlchemy. We designed
 two tables, one is for OAuth 1, one is for OAuth 2::
