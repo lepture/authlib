@@ -6,6 +6,25 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 0.12
+------------
+
+**Release Date not Decided**
+
+**Breaking Change**: Authlib Grant system has been redesigned. If you
+are creating OpenID Connect providers, please read the new documentation
+for OpenID Connect.
+
+RFC implementations and updates in this release:
+
+- RFC6749: Fixed scope validation, omit the invalid scope
+- RFC7521: Added a common ``AssertionClient`` for the assertion framework
+- OpenID Connect Discover: Added discovery model based on RFC8414
+
+Refactor and bug fixes in this release:
+
+- Rewrite lots of code for ``authlib.client``, no breaking changes
+
 Version 0.11: Kaori
 -------------------
 
@@ -197,81 +216,16 @@ Besides that, there are more changes:
 .. _`RFC7591`: https://tools.ietf.org/html/rfc7591
 
 
-Version 0.5.1
--------------
-
-**Released on Feb 11, 2018.**
-
-Just a quick bug fix release.
-
-- Fixed ``OAuth2Session.request`` with auth.
-
-
-Version 0.5: Kirie
-------------------
-
-**Released on Feb 11, 2018. Breaking Changes!**
-
-This version breaks a lot of things. There are many redesigns in order to
-get a better stable API. It is still in Alpha stage, with these breaking
-changes, I hope Authlib will go into Beta in the next version.
-
-- Added :meth:`~authlib.oauth2.rfc6749.register_error_uri` and its Flask
-  integration.
-- :class:`~authlib.client.OAuth2Session` supports more grant types.
-- Deprecate built-in cache. Read more on :gh:`issue#23`.
-- **Redesigned OAuth 1 Flask server**. Read the docs :ref:`flask_oauth1_server`.
-- Deprecate ``client_model``. Read more on :gh:`issue#27`.
-- **Breaking change** on ``AuthorizationCodeGrant.create_authorization_code``,
-  last parameter is changed to an `OAuth2Request` instance.
-- Rename ``callback_uri`` to ``redirect_uri`` in client.
-
-Version 0.4.1
--------------
-
-**Released on Feb 2, 2018. A Quick Bugfix**
-
-- Fixed missing code params when fetching access token. This bug is
-  introduced when fixing :gh:`issue#16`.
-
-Version 0.4: Tsukino
---------------------
-
-**Released on Jan 31, 2018. Enjoy the Super Blue Blood Moon!**
-
-This is a feature releasing for OAuth 1 server. Things are not settled yet,
-there will still be breaking changes in the future. Some of the breaking
-changes are compatible with deprecated messages, a few are not. I'll keep the
-deprecated message for 2 versions. Here is the main features:
-
-- :ref:`RFC5847 <specs/rfc5849>`, OAuth 1 client and server
-- :ref:`Flask implementation <flask_oauth1_server>` of OAuth 1 authorization
-  server and resource protector.
-- Mixin of SQLAlchemy models for easy integration with OAuth 1.
-
-In version 0.4, there is also several bug fixes. Thanks for the early
-contributors.
-
-- Allow Flask OAuth register ``fetch_token`` and ``update_token``.
-- Bug fix for OAuthClient when ``refresh_token_params`` is None via :gh:`PR#14`.
-- Don't pass everything in request args for Flask OAuth client via :gh:`issue#16`.
-- Bug fix for ``IDToken.validate_exp`` via :gh:`issue#17`.
-
-.. admonition:: Deprecated Changes
-
-    There are parameters naming changes in the client part:
-
-    * ``client_key`` has been changed to ``client_id``
-    * ``resource_owner_key`` has been changed to ``token``
-    * ``resource_owner_secret`` has been changed to ``token_secret``
-
-    Currently, they are backward compatible. You will be notified by warnings.
-
-
 Old Versions
 ------------
 
-- Version 0.3: Released on Dec 24, 2017
+Find old changelog at https://github.com/lepture/authlib/releases
+
+- Version 0.5.1: Released on Feb 11, 2018
+- Version 0.5.0: Released on Feb 11, 2018
+- Version 0.4.1: Released on Feb 2, 2018
+- Version 0.4.0: Released on Jan 31, 2018
+- Version 0.3.0: Released on Dec 24, 2017
 - Version 0.2.1: Released on Dec 6, 2017
-- Version 0.2: Released on Nov 25, 2017
-- Version 0.1: Released on Nov 18, 2017
+- Version 0.2.0: Released on Nov 25, 2017
+- Version 0.1.0: Released on Nov 18, 2017
