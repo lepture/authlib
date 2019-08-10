@@ -53,13 +53,42 @@ class OpenIDCode(object):
         return self._exists_nonce(nonce, request)
 
     def get_jwt_config(self, grant):  # pragma: no cover
-        # TODO: developers MUST re-implement this method
+        """Get the JWT configuration for OpenIDCode extension. The JWT
+        configuration will be used to generate ``id_token``. Developers
+        MUST implement this method in subclass, e.g.::
+
+            def get_jwt_config(self, grant):
+                return {
+                    'key': read_private_key_file(key_path),
+                    'alg': 'RS512',
+                    'iss': 'issuer-identity',
+                    'exp': 3600
+                }
+
+        :param grant: AuthorizationCodeGrant instance
+        :return: dict
+        """
         deprecate('Missing "OpenIDCode.get_jwt_config"', '1.0', 'fjPsV', 'oi')
         return dict(key=self.key, alg=self.alg, iss=self.iss, exp=self.exp)
 
-    def generate_user_info(self, user, scopes):  # pragma: no cover
-        # TODO: developers MUST re-implement this method
+    def generate_user_info(self, user, scope):  # pragma: no cover
+        """Provide user information for the given scope. Developers
+        MUST implement this method in subclass, e.g.::
+
+            from authlib.oidc.core import UserInfo
+
+            def generate_user_info(self, user, scope):
+                user_info = UserInfo(sub=user.id, name=user.name)
+                if 'email' in scope:
+                    user_info['email'] = user.email
+                return user_info
+
+        :param user: user instance
+        :param scope: scope of the token
+        :return: ``authlib.oidc.core.UserInfo`` instance
+        """
         deprecate('Missing "OpenIDCode.generate_user_info"', '1.0', 'fjPsV', 'oi')
+        scopes = scope_to_list(scope)
         return _generate_user_info(user, scopes)
 
     def process_token(self, grant, token):
@@ -71,12 +100,11 @@ class OpenIDCode(object):
         request = grant.request
         credential = request.credential
 
-        scopes = scope_to_list(token['scope'])
-        user_info = self.generate_user_info(request.user, scopes)
-
         config = self.get_jwt_config(grant)
         config['nonce'] = credential.get_nonce()
         config['auth_time'] = credential.get_auth_time()
+
+        user_info = self.generate_user_info(request.user, token['scope'])
         id_token = generate_id_token(token, request, user_info, **config)
         token['id_token'] = id_token
         return token

@@ -40,9 +40,6 @@ class OpenIDHybridGrant(OpenIDImplicitGrant):
         """
         raise NotImplementedError()
 
-    def generate_user_info(self, user, scopes):
-        raise NotImplementedError()
-
     def validate_authorization_request(self):
         if not is_openid_scope(self.request.scope):
             raise InvalidScopeError(

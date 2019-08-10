@@ -40,7 +40,20 @@ class OpenIDImplicitGrant(ImplicitGrant):
         raise NotImplementedError()
 
     def get_jwt_config(self):  # pragma: no cover
-        # TODO: developers MUST re-implement this method
+        """Get the JWT configuration for OpenIDImplicitGrant. The JWT
+        configuration will be used to generate ``id_token``. Developers
+        MUST implement this method in subclass, e.g.::
+
+            def get_jwt_config(self):
+                return {
+                    'key': read_private_key_file(key_path),
+                    'alg': 'RS512',
+                    'iss': 'issuer-identity',
+                    'exp': 3600
+                }
+
+        :return: dict
+        """
         deprecate('Missing "OpenIDImplicitGrant.get_jwt_config"', '1.0', 'fjPsV', 'oi')
         config = self.server.config
         key = config['jwt_key']
@@ -49,9 +62,24 @@ class OpenIDImplicitGrant(ImplicitGrant):
         exp = config['jwt_exp']
         return dict(key=key, alg=alg, iss=iss, exp=exp)
 
-    def generate_user_info(self, user, scopes):  # pragma: no cover
-        # TODO: developers MUST re-implement this method
+    def generate_user_info(self, user, scope):  # pragma: no cover
+        """Provide user information for the given scope. Developers
+        MUST implement this method in subclass, e.g.::
+
+            from authlib.oidc.core import UserInfo
+
+            def generate_user_info(self, user, scope):
+                user_info = UserInfo(sub=user.id, name=user.name)
+                if 'email' in scope:
+                    user_info['email'] = user.email
+                return user_info
+
+        :param user: user instance
+        :param scope: scope of the token
+        :return: ``authlib.oidc.core.UserInfo`` instance
+        """
         deprecate('Missing "OpenIDImplicitGrant.generate_user_info"', '1.0', 'fjPsV', 'oi')
+        scopes = scope_to_list(scope)
         return _generate_user_info(user, scopes)
 
     def validate_authorization_request(self):
@@ -121,9 +149,7 @@ class OpenIDImplicitGrant(ImplicitGrant):
         if code is not None:
             config['code'] = code
 
-        scopes = scope_to_list(token['scope'])
-        user_info = self.generate_user_info(self.request.user, scopes)
-
+        user_info = self.generate_user_info(self.request.user, token['scope'])
         id_token = generate_id_token(token, self.request, user_info, **config)
         token['id_token'] = id_token
         return token
