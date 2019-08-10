@@ -42,6 +42,15 @@ Client Model
 
 .. _specs/rfc6949-errors:
 
+Token Model
+~~~~~~~~~~~
+
+.. autoclass:: AuthorizationCodeMixin
+    :members:
+
+.. autoclass:: TokenMixin
+    :members:
+
 Errors
 ~~~~~~
 

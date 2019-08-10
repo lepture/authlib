@@ -14,25 +14,27 @@ Since OpenID Connect is built on OAuth 2.0 frameworks, you need to read
 
 .. module:: authlib.oauth2.rfc6749.grants
 
-Configuration
--------------
 
-OpenID Connect 1.0 requires JWT. It can be enabled by setting::
+.. versionchanged:: v0.12
 
-    OAUTH2_JWT_ENABLED = True
+    The Grant system has been redesigned from v0.12. This documentation ONLY
+    works for Authlib >=v0.12.
 
-When JWT is enabled, these configurations are available:
+Understand JWT
+--------------
 
-==================== =================================
-OAUTH2_JWT_ALG       Algorithm for JWT
-OAUTH2_JWT_KEY       Private key (in text) for JWT
-OAUTH2_JWT_KEY_PATH  Private key path for JWT
-OAUTH2_JWT_ISS       Issuer value for JWT
-OAUTH2_JWT_EXP       JWT expires time, default is 3600
-==================== =================================
+OpenID Connect 1.0 uses JWT a lot. Make sure you have the basic understanding
+of :ref:`jose`.
 
-OAUTH2_JWT_ALG
-~~~~~~~~~~~~~~
+For OpenID Connect, we need to understand at lease four concepts:
+
+1. **alg**: Algorithm for JWT
+2. **key**: Private key for JWT
+3. **iss**: Issuer value for JWT
+4. **exp**: JWT expires time
+
+alg
+~~~
 
 The algorithm to sign a JWT. This is the ``alg`` value defined in header
 part of a JWS:
@@ -60,31 +62,20 @@ The HMAC using SHA algorithms are not suggested since you need to share
 secrets between server and client. Most OpenID Connect services are using
 ``RS256``.
 
-OAUTH2_JWT_KEY / OAUTH2_JWT_KEY_PATH
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+key
+~~~
 
-A private key is required to generate JWT. The value can be configured with
-either ``OAUTH2_JWT_KEY`` or ``OAUTH2_JWT_KEY_PATH``. The key that you are
-going to use dependents on the ``alg`` you are using. For instance, the alg
-is ``RS256``, you need to use an RSA private key. It can be set with::
+A private key is required to generate JWT. The key that you are going to use
+dependents on the ``alg`` you are using. For instance, the alg is ``RS256``,
+you need to use an RSA private key. It can be set with::
 
-    OAUTH2_JWT_KEY = '''-----BEGIN RSA PRIVATE KEY-----\nMIIEog...'''
+    key = '''-----BEGIN RSA PRIVATE KEY-----\nMIIEog...'''
 
     # or in JWK format
-    OAUTH2_JWT_KEY = {"kty": "RSA", "n": ...}
+    key = {"kty": "RSA", "n": ...}
 
-    # or in JWK set format
-    OAUTH2_JWT_KEY = {"keys": [{"kty": "RSA", "kid": "uu-id", ...}, ...]}
-
-If you are using JWK set format, that would be better. Authlib will randomly
-choose a key among them to sign the JWT. To make it easier for maintenance,
-``OAUTH2_JWT_KEY_PATH`` is a good choice::
-
-    OAUTH2_JWT_KEY_PATH = '/path/to/rsa_private.pem'
-    OAUTH2_JWT_KEY_PATH = '/path/to/jwk_set_private.json'
-
-OAUTH2_JWT_ISS
-~~~~~~~~~~~~~~
+iss
+~~~
 
 The ``iss`` value in JWT payload. The value can be your website name or URL.
 For example, Google is using::
@@ -96,9 +87,10 @@ For example, Google is using::
 Code Flow
 ---------
 
-OpenID Connect authorization code flow relies on the OAuth2 authorization code flow and extends it.
-Basically, all you have to do is to extend :class:`OIDCAuthorizationCodeMixin` instead
-of :class:`AuthorizationCodeMixin` in your ``AuthorizationCode`` class. This will add a ``nonce`` attribute
+OpenID Connect authorization code flow relies on the OAuth2 authorization code
+flow and extends it. Basically, all you have to do is to extend
+:class:`OIDCAuthorizationCodeMixin` instead of :class:`AuthorizationCodeMixin`
+in your ``AuthorizationCode`` class. This will add a ``nonce`` attribute
 and its getter to it which will be required in this new code flow::
 
     from authlib.flask.oauth2.sqla import OIDCAuthorizationCodeMixin
@@ -110,16 +102,41 @@ and its getter to it which will be required in this new code flow::
         )
         user = db.relationship('User')
 
-OpenID Connect Code flow looks like the standard Authorization Code flow, and
-the implementation for :class:`OpenIDCodeGrant` is actually a subclass of
-:ref:`flask_oauth2_code_grant`. And the implementation is the same::
+OpenID Connect Code flow is the same as Authorization Code flow, but with
+extended features. We can apply the :class:`OpenIDCode` extension to
+:ref:`flask_oauth2_code_grant`.
 
-    from authlib.oidc.core import grants
-    from authlib.common.security import generate_token
+First, we need to implement the missing methods for ``OpenIDCode``::
 
-    class OpenIDCodeGrant(grants.OpenIDCodeGrant):
+    from authlib.oidc.core import grants, UserInfo
+
+    class OpenIDCode(grants.OpenIDCode):
+        def exists_nonce(self, nonce, request):
+            exists = AuthorizationCode.query.filter_by(
+                client_id=request.client_id, nonce=nonce
+            ).first()
+            return bool(exists)
+
+        def get_jwt_config(self, grant):
+            return {
+                'key': read_private_key_file(key_path),
+                'alg': 'RS512',
+                'iss': 'https://example.com',
+                'exp': 3600
+            }
+
+        def generate_user_info(self, user, scope):
+            user_info = UserInfo(sub=user.id, name=user.name)
+            if 'email' in scope:
+                user_info['email'] = user.email
+            return user_info
+
+Second, since there is one more ``nonce`` value in ``AuthorizationCode`` data,
+we need to save this value into database. In this case, we have to update our
+:ref:`flask_oauth2_code_grant` ``create_authorization_code`` method::
+
+    class AuthorizationCodeGrant(_AuthorizationCodeGrant):
         def create_authorization_code(self, client, grant_user, request):
-            # you can use other method to generate this code
             code = generate_token(48)
             # openid request MAY have "nonce" parameter
             nonce = request.data.get('nonce')
@@ -128,28 +145,20 @@ the implementation for :class:`OpenIDCodeGrant` is actually a subclass of
                 client_id=client.client_id,
                 redirect_uri=request.redirect_uri,
                 scope=request.scope,
+                user_id=grant_user.id,
                 nonce=nonce,
-                user_id=grant_user.get_user_id(),
             )
             db.session.add(item)
             db.session.commit()
             return code
 
-        def parse_authorization_code(self, code, client):
-            item = AuthorizationCode.query.filter_by(
-                code=code, client_id=client.client_id).first()
-            if item and not item.is_expired():
-                return item
+        # ...
 
-        def delete_authorization_code(self, authorization_code):
-            db.session.delete(authorization_code)
-            db.session.commit()
-
-        def authenticate_user(self, authorization_code):
-            return User.query.get(authorization_code.user_id)
+Finally, you can register ``AuthorizationCodeGrant`` with ``OpenIDCode``
+extension::
 
     # register it to grant endpoint
-    server.register_grant(OpenIDCodeGrant)
+    server.register_grant(OpenIDCodeGrant, [OpenIDCode(require_nonce=True)])
 
 The difference between OpenID Code flow and the standard code flow is that
 OpenID Connect request has a scope of "openid":
@@ -169,79 +178,97 @@ in your application to something like ``openid profile email``.
 
 Now that you added the ``openid`` scope to your application, an OpenID token
 will be provided to this app whenever a client asks for a token with an
-``openid`` scope. In order to generate this token, your app's User should implement a
-``generate_user_info(scopes)`` method::
-
-    from authlib.oidc.core import UserInfo
-
-    class User:
-        generate_user_info(scopes):
-            user_info = {}
-            # gather whatever info you need here, depending on the requested scopes or not
-            return UserInfo(user_info)
-
-See https://openid.net/specs/openid-connect-core-1_0.html#StandardClaims for more info about the standard claims of a UserInfo object.
-
-:class:`OpenIDCodeGrant` can handle the standard code flow too. You **MUST NOT**
-use them together.
-
-.. important::
-
-    If the server can handle OpenID requests, use :class:`OpenIDCodeGrant`.
-    DON'T ``register_grant(AuthorizationCodeGrant)``.
+``openid`` scope.
 
 .. _flask_odic_implicit:
 
 Implicit Flow
 -------------
 
-Implicit flow is simple, there is no missing methods should be implemented,
-we can simply import it and register it::
+The Implicit Flow is mainly used by Clients implemented in a browser using
+a scripting language. You need to implement the missing methods of
+:class:`OpenIDImplicitGrant` before register it::
 
     from authlib.oidc.core import grants
-    server.register_grant(grants.OpenIDImplicitGrant)
+
+    class OpenIDImplicitGrant(grants.OpenIDImplicitGrant):
+        def exists_nonce(self, nonce, request):
+            exists = AuthorizationCode.query.filter_by(
+                client_id=request.client_id, nonce=nonce
+            ).first()
+            return bool(exists)
+
+        def get_jwt_config(self):
+            return {
+                'key': read_private_key_file(key_path),
+                'alg': 'RS512',
+                'iss': 'https://example.com',
+                'exp': 3600
+            }
+
+        def generate_user_info(self, user, scope):
+            user_info = UserInfo(sub=user.id, name=user.name)
+            if 'email' in scope:
+                user_info['email'] = user.email
+            return user_info
+
+    server.register_grant(OpenIDImplicitGrant)
 
 .. _flask_odic_hybrid:
 
 Hybrid Flow
 ------------
 
-Hybrid flow is a mix of the code flow and implicit flow. The missing methods
-are the same with code flow::
+Hybrid flow is a mix of the code flow and implicit flow. You only need to
+implement the authorization endpoint part, token endpoint will be handled
+by Authorization Code Flow.
+
+OpenIDHybridGrant is a subclass of OpenIDImplicitGrant, so the missing methods
+are the same, except that OpenIDHybridGrant has one more missing method, that
+is ``create_authorization_code``. You can implement it like this::
 
     from authlib.oidc.core import grants
     from authlib.common.security import generate_token
 
     class OpenIDHybridGrant(grants.OpenIDHybridGrant):
         def create_authorization_code(self, client, grant_user, request):
-            # you can use other method to generate this code
             code = generate_token(48)
-            # openid request MAY have "nonce" parameter
             nonce = request.data.get('nonce')
             item = AuthorizationCode(
                 code=code,
                 client_id=client.client_id,
                 redirect_uri=request.redirect_uri,
                 scope=request.scope,
+                user_id=grant_user.id,
                 nonce=nonce,
-                user_id=grant_user.get_user_id(),
             )
             db.session.add(item)
             db.session.commit()
             return code
 
-        def parse_authorization_code(self, code, client):
-            item = AuthorizationCode.query.filter_by(
-                code=code, client_id=client.client_id).first()
-            if item and not item.is_expired():
-                return item
+        def exists_nonce(self, nonce, request):
+            exists = AuthorizationCode.query.filter_by(
+                client_id=request.client_id, nonce=nonce
+            ).first()
+            return bool(exists)
 
-        def delete_authorization_code(self, authorization_code):
-            db.session.delete(authorization_code)
-            db.session.commit()
+        def get_jwt_config(self):
+            return {
+                'key': read_private_key_file(key_path),
+                'alg': 'RS512',
+                'iss': 'https://example.com',
+                'exp': 3600
+            }
 
-        def authenticate_user(self, authorization_code):
-            return User.query.get(authorization_code.user_id)
+        def generate_user_info(self, user, scope):
+            user_info = UserInfo(sub=user.id, name=user.name)
+            if 'email' in scope:
+                user_info['email'] = user.email
+            return user_info
 
     # register it to grant endpoint
     server.register_grant(OpenIDHybridGrant)
+
+
+Since all OpenID Connect Flow requires ``exists_nonce``, ``get_jwt_config``
+and ``generate_user_info`` methods, you can create shared functions for them.

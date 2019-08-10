@@ -15,7 +15,7 @@ OpenID Grants
 
 .. module:: authlib.oidc.core.grants
 
-.. autoclass:: OpenIDCodeGrant
+.. autoclass:: OpenIDCode
     :show-inheritance:
     :members:
 
@@ -49,4 +49,7 @@ OpenID Claims
 
 .. autoclass:: HybridIDToken
     :show-inheritance:
+    :members:
+
+.. autoclass:: UserInfo
     :members:

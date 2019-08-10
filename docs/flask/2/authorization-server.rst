@@ -81,6 +81,9 @@ With the SQLAlchemy mixin provided by Authlib::
 A token is associated with a resource owner. There is no certain name for
 it, here we call it ``user``, but it can be anything else.
 
+If you decide to implement all the missing methods by yourself, get a deep
+inside with :class:`~authlib.oauth2.rfc6749.TokenMixin` API reference.
+
 Server
 ------
 
@@ -92,7 +95,7 @@ which has built-in tools to handle requests and responses::
     def query_client(client_id):
         return Client.query.filter_by(client_id=client_id).first()
 
-    def save_token(token, request):
+    def save_token(token_data, request):
         if request.user:
             user_id = request.user.get_user_id()
         else:
@@ -100,12 +103,12 @@ which has built-in tools to handle requests and responses::
             user_id = request.client.user_id
             # or, depending on how you treat client_credentials
             user_id = None
-        item = Token(
+        token = Token(
             client_id=request.client.client_id,
             user_id=user_id,
-            **token
+            **token_data
         )
-        db.session.add(item)
+        db.session.add(token)
         db.session.commit()
 
     # or with the helper
@@ -177,12 +180,12 @@ Now define an endpoint for authorization. This endpoint is used by
         confirmed = request.form['confirm']
         if confirmed:
             # granted by resource owner
-            return server.create_authorization_response(current_user)
+            return server.create_authorization_response(grant_user=current_user)
         # denied by resource owner
-        return server.create_authorization_response(None)
+        return server.create_authorization_response(grant_user=None)
 
-This is a simple demo, the real case should be more complex. There is a demo
-in `authlib/playground`_, get a real taste with Authlib Playground.
+This is a simple demo, the real case should be more complex. There is a little
+more complex demo in https://github.com/authlib/example-oauth2-server.
 
 The token endpoint is much easier::
 
@@ -193,7 +196,6 @@ The token endpoint is much easier::
 However, the routes will not work properly. We need to register supported
 grants for them.
 
-.. _`authlib/playground`: https://github.com/authlib/playground
 
 Register Error URIs
 -------------------

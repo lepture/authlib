@@ -75,6 +75,8 @@ You can change it in the subclass, e.g. remove the ``none`` authentication metho
     class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
         TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic', 'client_secret_post']
 
+.. note:: This is important when you want to support OpenID Connect.
+
 Implicit Grant
 --------------
 
@@ -150,8 +152,9 @@ provides it as a grant type, implement it with a subclass of
     class RefreshTokenGrant(grants.RefreshTokenGrant):
         def authenticate_refresh_token(self, refresh_token):
             item = Token.query.filter_by(refresh_token=refresh_token).first()
-            # define is_refresh_token_expired by yourself
-            if item and not item.is_refresh_token_expired():
+            # define is_refresh_token_valid by yourself
+            # usually, you should check if refresh token is expired and revoked
+            if item and item.is_refresh_token_valid():
                 return item
 
         def authenticate_user(self, credential):

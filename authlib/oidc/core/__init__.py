@@ -10,3 +10,4 @@
 
 from .models import AuthorizationCodeMixin
 from .claims import *
+from .grants import *

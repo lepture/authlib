@@ -1,3 +1,5 @@
+.. _jose:
+
 JOSE Guide
 ==========
 
