@@ -61,17 +61,17 @@ class AuthorizationServer(_AuthorizationServer):
             self.save_token = save_token
 
         self.config.setdefault('error_uris', app.config.get('OAUTH2_ERROR_URIS'))
-        self.generate_token = self.create_bearer_token_generator(app)
 
+        self.generate_token = self.create_bearer_token_generator(app.config)
         if app.config.get('OAUTH2_JWT_ENABLED'):
-            self.init_jwt_config(app)
+            self.init_jwt_config(app.config)
 
-    def init_jwt_config(self, app):
+    def init_jwt_config(self, config):
         """Initialize JWT related configuration."""
-        jwt_iss = app.config.get('OAUTH2_JWT_ISS')
+        jwt_iss = config.get('OAUTH2_JWT_ISS')
         if not jwt_iss:
             raise RuntimeError('Missing "OAUTH2_JWT_ISS" configuration.')
-        jwt_key_path = app.config.get('OAUTH2_JWT_KEY_PATH')
+        jwt_key_path = config.get('OAUTH2_JWT_KEY_PATH')
         if jwt_key_path:
             with open(jwt_key_path, 'r') as f:
                 if jwt_key_path.endswith('.json'):
@@ -79,16 +79,16 @@ class AuthorizationServer(_AuthorizationServer):
                 else:
                     jwt_key = to_unicode(f.read())
         else:
-            jwt_key = app.config.get('OAUTH2_JWT_KEY')
+            jwt_key = config.get('OAUTH2_JWT_KEY')
 
         if not jwt_key:
             raise RuntimeError('Missing "OAUTH2_JWT_KEY" configuration.')
 
-        jwt_alg = app.config.get('OAUTH2_JWT_ALG')
+        jwt_alg = config.get('OAUTH2_JWT_ALG')
         if not jwt_alg:
             raise RuntimeError('Missing "OAUTH2_JWT_ALG" configuration.')
 
-        jwt_exp = app.config.get('OAUTH2_JWT_EXP', 3600)
+        jwt_exp = config.get('OAUTH2_JWT_EXP', 3600)
         self.config.setdefault('jwt_iss', jwt_iss)
         self.config.setdefault('jwt_key', jwt_key)
         self.config.setdefault('jwt_alg', jwt_alg)
@@ -113,7 +113,7 @@ class AuthorizationServer(_AuthorizationServer):
         elif name == 'after_revoke_token':
             token_revoked.send(self, *args, **kwargs)
 
-    def create_token_expires_in_generator(self, app):
+    def create_token_expires_in_generator(self, config):
         """Create a generator function for generating ``expires_in`` value.
         Developers can re-implement this method with a subclass if other means
         required. The default expires_in value is defined by ``grant_type``,
@@ -125,23 +125,23 @@ class AuthorizationServer(_AuthorizationServer):
                 'urn:ietf:params:oauth:grant-type:jwt-bearer': 3600,
             }
         """
-        expires_conf = app.config.get('OAUTH2_TOKEN_EXPIRES_IN')
+        expires_conf = config.get('OAUTH2_TOKEN_EXPIRES_IN')
         return create_token_expires_in_generator(expires_conf)
 
-    def create_bearer_token_generator(self, app):
+    def create_bearer_token_generator(self, config):
         """Create a generator function for generating ``token`` value. This
         method will create a Bearer Token generator with
         :class:`authlib.oauth2.rfc6750.BearerToken`. By default, it will not
         generate ``refresh_token``, which can be turn on by configuration
         ``OAUTH2_REFRESH_TOKEN_GENERATOR=True``.
         """
-        conf = app.config.get('OAUTH2_ACCESS_TOKEN_GENERATOR', True)
+        conf = config.get('OAUTH2_ACCESS_TOKEN_GENERATOR', True)
         access_token_generator = create_token_generator(conf, 42)
 
-        conf = app.config.get('OAUTH2_REFRESH_TOKEN_GENERATOR', False)
+        conf = config.get('OAUTH2_REFRESH_TOKEN_GENERATOR', False)
         refresh_token_generator = create_token_generator(conf, 48)
 
-        expires_generator = self.create_token_expires_in_generator(app)
+        expires_generator = self.create_token_expires_in_generator(config)
         return BearerToken(
             access_token_generator,
             refresh_token_generator,
