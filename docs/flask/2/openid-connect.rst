@@ -272,3 +272,5 @@ is ``create_authorization_code``. You can implement it like this::
 
 Since all OpenID Connect Flow requires ``exists_nonce``, ``get_jwt_config``
 and ``generate_user_info`` methods, you can create shared functions for them.
+
+Find the `example of OpenID Connect server <https://github.com/authlib/example-oidc-server>`_.

@@ -16,7 +16,7 @@ If you need a quick example, here are the official tutorial guide and examples
 on GitHub:
 
 1. `Example of OAuth 2.0 server <https://github.com/authlib/example-oauth2-server>`_
-2. Example of OpenID Connect server (not ready)
+2. `Example of OpenID Connect server <https://github.com/authlib/example-oidc-server>`_
 
 At the very beginning, we need to have some basic understanding of
 :ref:`the OAuth 2.0 <understand_oauth2>`.
