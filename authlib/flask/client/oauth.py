@@ -184,7 +184,7 @@ class RemoteApp(OAuthClient):
         self._save_request_token = save_request_token
 
         if kwargs.get('refresh_token_url'):
-            self.client_kwargs['token_updater'] = update_token
+            self.client_kwargs['token_updater'] = _wrap_token_updater(self, update_token)
 
     @property
     def token(self):
@@ -285,3 +285,13 @@ def _generate_oauth2_access_token_params(name):
     if code_verifier:
         params['code_verifier'] = code_verifier
     return params
+
+
+def _wrap_token_updater(remote, func):
+
+    def _save_token(token):
+        remote.token = token
+        if callable(func):
+            return func(token)
+
+    return _save_token

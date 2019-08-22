@@ -1,7 +1,6 @@
 import mock
 from unittest import TestCase
 from flask import Flask, session
-from authlib.client import OAuthError
 from authlib.flask.client import OAuth
 from .cache import SimpleCache
 from ..client_base import (
@@ -260,6 +259,48 @@ class FlaskOAuthTest(TestCase):
 
                 # trigger ctx.authlib_client_oauth_token
                 resp = client.get('/api/user')
+                self.assertEqual(resp.text, 'hi')
+
+    def test_request_with_refresh_token(self):
+        app = Flask(__name__)
+        app.secret_key = '!'
+        oauth = OAuth()
+
+        expired_token = {
+            'token_type': 'Bearer',
+            'access_token': 'expired-a',
+            'refresh_token': 'expired-b',
+            'expires_in': '3600',
+            'expires_at': 1566465749,
+        }
+        oauth.init_app(app, fetch_token=lambda name: expired_token)
+        client = oauth.register(
+            'dev',
+            client_id='dev',
+            client_secret='dev',
+            api_base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+            refresh_token_url='https://i.b/token',
+            authorize_url='https://i.b/authorize'
+        )
+
+        def fake_send(sess, req, **kwargs):
+            if req.url == 'https://i.b/token':
+                auth = req.headers['Authorization']
+                self.assertIn('Basic', auth)
+                resp = mock.MagicMock()
+                resp.json = get_bearer_token
+                resp.status_code = 200
+                return resp
+
+            resp = mock.MagicMock()
+            resp.text = 'hi'
+            resp.status_code = 200
+            return resp
+
+        with app.test_request_context():
+            with mock.patch('requests.sessions.Session.send', fake_send):
+                resp = client.get('/api/user', token=expired_token)
                 self.assertEqual(resp.text, 'hi')
 
     def test_request_withhold_token(self):
