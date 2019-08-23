@@ -17,6 +17,7 @@ from ..rfc7515 import JWSAlgorithm
 
 class NoneAlgorithm(JWSAlgorithm):
     name = 'none'
+    description = 'No digital signature or MAC performed'
 
     def prepare_private_key(self, key):
         return None
@@ -44,6 +45,7 @@ class HMACAlgorithm(JWSAlgorithm):
 
     def __init__(self, sha_type):
         self.name = 'HS{}'.format(sha_type)
+        self.description = 'HMAC using SHA-{}'.format(sha_type)
         self.hash_alg = getattr(self, 'SHA{}'.format(sha_type))
 
     def prepare_private_key(self, key):

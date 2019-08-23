@@ -33,6 +33,7 @@ class RSAAlgorithm(RSAKey, JWSAlgorithm):
 
     def __init__(self, sha_type):
         self.name = 'RS{}'.format(sha_type)
+        self.description = 'RSASSA-PKCS1-v1_5 using SHA-{}'.format(sha_type)
         self.hash_alg = getattr(self, 'SHA{}'.format(sha_type))
         self.padding = padding.PKCS1v15()
 
@@ -60,6 +61,7 @@ class ECAlgorithm(ECKey, JWSAlgorithm):
 
     def __init__(self, sha_type):
         self.name = 'ES{}'.format(sha_type)
+        self.description = 'ECDSA using P-{} and SHA-{}'.format(sha_type, sha_type)
         self.hash_alg = getattr(self, 'SHA{}'.format(sha_type))
 
     def sign(self, msg, key):
@@ -99,6 +101,8 @@ class RSAPSSAlgorithm(RSAKey, JWSAlgorithm):
 
     def __init__(self, sha_type):
         self.name = 'PS{}'.format(sha_type)
+        tpl = 'RSASSA-PSS using SHA-{} and MGF1 with SHA-{}'
+        self.description = tpl.format(sha_type, sha_type)
         self.hash_alg = getattr(self, 'SHA{}'.format(sha_type))
 
     def sign(self, msg, key):
@@ -128,13 +132,13 @@ class RSAPSSAlgorithm(RSAKey, JWSAlgorithm):
 
 
 JWS_ALGORITHMS = [
-    RSAAlgorithm(256),
-    RSAAlgorithm(384),
-    RSAAlgorithm(512),
-    ECAlgorithm(256),
-    ECAlgorithm(384),
-    ECAlgorithm(512),
-    RSAPSSAlgorithm(256),
-    RSAPSSAlgorithm(384),
-    RSAPSSAlgorithm(512),
+    RSAAlgorithm(256),  # RS256
+    RSAAlgorithm(384),  # RS384
+    RSAAlgorithm(512),  # RS512
+    ECAlgorithm(256),  # ES256
+    ECAlgorithm(384),  # ES384
+    ECAlgorithm(512),  # ES512
+    RSAPSSAlgorithm(256),  # PS256
+    RSAPSSAlgorithm(384),  # PS384
+    RSAPSSAlgorithm(512),  # PS512
 ]

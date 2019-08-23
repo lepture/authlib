@@ -23,8 +23,9 @@ class RSAAlgorithm(RSAKey, JWEAlgorithm):
     #: RSA1_5, RSA-OAEP, RSA-OAEP-256
     key_size = 2048
 
-    def __init__(self, name, pad_fn):
-        super(RSAAlgorithm, self).__init__(name)
+    def __init__(self, name, description, pad_fn):
+        self.name = name
+        self.description = description
         self.padding = pad_fn
 
     def wrap(self, cek, headers, key):
@@ -40,8 +41,8 @@ class RSAAlgorithm(RSAKey, JWEAlgorithm):
 
 class AESAlgorithm(JWEAlgorithm):
     def __init__(self, key_size):
-        name = 'A{}KW'.format(key_size)
-        super(AESAlgorithm, self).__init__(name)
+        self.name = 'A{}KW'.format(key_size)
+        self.description = 'AES Key Wrap using {}-bit key'.format(key_size)
         self.key_size = key_size
 
     def _check_key(self, key):
@@ -70,8 +71,8 @@ class AESGCMAlgorithm(JWEAlgorithm):
     EXTRA_HEADERS = frozenset(['iv', 'tag'])
 
     def __init__(self, key_size):
-        name = 'A{}GCMKW'.format(key_size)
-        super(AESGCMAlgorithm, self).__init__(name)
+        self.name = 'A{}GCMKW'.format(key_size)
+        self.description = 'Key wrapping with AES GCM using {}-bit key'.format(key_size)
         self.key_size = key_size
 
     def _check_key(self, key):
@@ -124,22 +125,21 @@ class AESGCMAlgorithm(JWEAlgorithm):
         return cek
 
 
-A128KW = AESAlgorithm(128)
-A192KW = AESAlgorithm(192)
-A256KW = AESAlgorithm(256)
 JWE_ALG_ALGORITHMS = [
-    RSAAlgorithm('RSA1_5', padding.PKCS1v15()),
+    RSAAlgorithm('RSA1_5', 'RSAES-PKCS1-v1_5', padding.PKCS1v15()),
     RSAAlgorithm(
-        'RSA-OAEP',
+        'RSA-OAEP', 'RSAES OAEP using default parameters',
         padding.OAEP(padding.MGF1(hashes.SHA1()), hashes.SHA1(), None)),
     RSAAlgorithm(
-        'RSA-OAEP-256',
+        'RSA-OAEP-256', 'RSAES OAEP using SHA-256 and MGF1 with SHA-256',
         padding.OAEP(padding.MGF1(hashes.SHA256()), hashes.SHA256(), None)),
 
-    A128KW, A192KW, A256KW,
-    AESGCMAlgorithm(128),
-    AESGCMAlgorithm(192),
-    AESGCMAlgorithm(256),
+    AESAlgorithm(128),  # A128KW
+    AESAlgorithm(192),  # A192KW
+    AESAlgorithm(256),  # A256KW
+    AESGCMAlgorithm(128),  # A128GCMKW
+    AESGCMAlgorithm(192),  # A192GCMKW
+    AESGCMAlgorithm(256),  # A256GCMKW
 ]
 
 # 'dir': '',

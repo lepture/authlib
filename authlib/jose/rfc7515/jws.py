@@ -38,7 +38,7 @@ class JsonWebSignature(object):
                 self.register_algorithm(algorithm)
 
     def register_algorithm(self, algorithm):
-        if algorithm.TYPE != 'JWS':
+        if algorithm.algorithm_type != 'JWS':
             raise ValueError(
                 'Invalid algorithm for JWS, {!r}'.format(algorithm))
         self._algorithms[algorithm.name] = algorithm

@@ -26,6 +26,9 @@ class CBCHS2EncAlgorithm(JWEEncAlgorithm):
 
     def __init__(self, key_size, hash_type):
         self.name = 'A{}CBC-HS{}'.format(key_size, hash_type)
+        tpl = 'AES_{}_CBC_HMAC_SHA_{} authenticated encryption algorithm'
+        self.description = tpl.format(key_size, hash_type)
+
         self.key_size = key_size
         self.key_bytes_length = key_size // 8
         self.CEK_SIZE = key_size * 2
@@ -91,6 +94,7 @@ class GCMEncAlgorithm(JWEEncAlgorithm):
 
     def __init__(self, key_size):
         self.name = 'A{}GCM'.format(key_size)
+        self.description = 'AES GCM using {}-bit key'.format(key_size)
         self.key_size = key_size
         self.CEK_SIZE = key_size
 
@@ -128,10 +132,10 @@ class GCMEncAlgorithm(JWEEncAlgorithm):
 
 
 JWE_ENC_ALGORITHMS = [
-    CBCHS2EncAlgorithm(128, 256),
-    CBCHS2EncAlgorithm(192, 384),
-    CBCHS2EncAlgorithm(256, 512),
-    GCMEncAlgorithm(128),
-    GCMEncAlgorithm(192),
-    GCMEncAlgorithm(256),
+    CBCHS2EncAlgorithm(128, 256),  # A128CBC-HS256
+    CBCHS2EncAlgorithm(192, 384),  # A192CBC-HS384
+    CBCHS2EncAlgorithm(256, 512),  # A256CBC-HS512
+    GCMEncAlgorithm(128),  # A128GCM
+    GCMEncAlgorithm(192),  # A192GCM
+    GCMEncAlgorithm(256),  # A256GCM
 ]

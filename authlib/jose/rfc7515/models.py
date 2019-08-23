@@ -2,8 +2,10 @@ class JWSAlgorithm(object):
     """Interface for JWS algorithm. JWA specification (RFC7518) SHOULD
     implement the algorithms for JWS with this base implementation.
     """
-    TYPE = 'JWS'
-    HEADER_KEY = 'alg'
+    name = None
+    description = None
+    algorithm_type = 'JWS'
+    algorithm_location = 'alg'
 
     def prepare_private_key(self, key):
         """Prepare key for sign signature."""

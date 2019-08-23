@@ -50,9 +50,9 @@ class JsonWebToken(object):
         if isinstance(algorithm, text_types):
             algorithm = _AVAILABLE_ALGORITHMS.get(algorithm)
 
-        if algorithm.TYPE == 'JWS':
+        if algorithm.algorithm_type == 'JWS':
             self._jws.register_algorithm(algorithm)
-        elif algorithm.TYPE == 'JWE':
+        elif algorithm.algorithm_type == 'JWE':
             self._jwe.register_algorithm(algorithm)
 
     def check_sensitive_data(self, payload):

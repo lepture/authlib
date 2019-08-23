@@ -38,15 +38,15 @@ class JsonWebEncryption(object):
 
     def register_algorithm(self, algorithm):
         """Register an algorithm for ``alg`` or ``enc`` or ``zip`` of JWE."""
-        if algorithm.TYPE != 'JWE':
+        if algorithm.algorithm_type != 'JWE':
             raise ValueError(
                 'Invalid algorithm for JWE, {!r}'.format(algorithm))
 
-        if algorithm.HEADER_KEY == 'alg':
+        if algorithm.algorithm_location == 'alg':
             self._alg_algorithms[algorithm.name] = algorithm
-        elif algorithm.HEADER_KEY == 'enc':
+        elif algorithm.algorithm_location == 'enc':
             self._enc_algorithms[algorithm.name] = algorithm
-        elif algorithm.HEADER_KEY == 'zip':
+        elif algorithm.algorithm_location == 'zip':
             self._zip_algorithms[algorithm.name] = algorithm
 
     def serialize_compact(self, protected, payload, key):
