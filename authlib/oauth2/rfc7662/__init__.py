@@ -12,5 +12,6 @@
 # flake8: noqa
 
 from .introspection import IntrospectionEndpoint
+from .models import IntrospectionToken
 
-__all__ = ['IntrospectionEndpoint']
+__all__ = ['IntrospectionEndpoint', 'IntrospectionToken']

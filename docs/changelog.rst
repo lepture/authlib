@@ -19,6 +19,7 @@ RFC implementations and updates in this release:
 
 - RFC6749: Fixed scope validation, omit the invalid scope
 - RFC7521: Added a common ``AssertionClient`` for the assertion framework
+- RFC7662: Added ``IntrospectionToken`` for introspection token endpoint
 - OpenID Connect Discover: Added discovery model based on RFC8414
 
 Refactor and bug fixes in this release:
