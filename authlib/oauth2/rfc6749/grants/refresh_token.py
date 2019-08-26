@@ -131,7 +131,7 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
         log.debug('Issue token %r to %r', token, client)
 
         self.request.user = user
-        self.server.save_token(token, self.request)
+        self.save_token(token)
         self.execute_hook('process_token', token=token)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 

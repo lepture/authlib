@@ -1,6 +1,3 @@
-import inspect
-from authlib.deprecate import deprecate
-
 
 class BearerToken(object):
     """Bearer Token generator which can create the payload for token response

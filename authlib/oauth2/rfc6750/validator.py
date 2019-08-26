@@ -62,12 +62,19 @@ class BearerTokenValidator(object):
 
     def token_expired(self, token):
         expires_at = token.get_expires_at()
+        if not expires_at:
+            return False
         return expires_at < time.time()
 
     def scope_insufficient(self, token, scope, operator='AND'):
         if not scope:
             return False
-        token_scopes = set(scope_to_list(token.get_scope()))
+
+        token_scopes = scope_to_list(token.get_scope())
+        if not token_scopes:
+            return True
+
+        token_scopes = set(token_scopes)
         resource_scopes = set(scope_to_list(scope))
         if operator == 'AND':
             return not token_scopes.issuperset(resource_scopes)
@@ -78,11 +85,11 @@ class BearerTokenValidator(object):
         raise ValueError('Invalid operator value')
 
     def __call__(self, token_string, scope, request, scope_operator='AND'):
+        if self.request_invalid(request):
+            raise InvalidRequestError()
         token = self.authenticate_token(token_string)
         if not token:
             raise InvalidTokenError(realm=self.realm)
-        if self.request_invalid(request):
-            raise InvalidRequestError()
         if self.token_expired(token):
             raise InvalidTokenError(realm=self.realm)
         if self.token_revoked(token):

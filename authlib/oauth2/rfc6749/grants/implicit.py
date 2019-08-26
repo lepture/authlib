@@ -214,7 +214,7 @@ class ImplicitGrant(BaseGrant, AuthorizationEndpointMixin):
             )
             log.debug('Grant token %r to %r', token, client)
 
-            self.server.save_token(token, self.request)
+            self.save_token(token)
             self.execute_hook('process_token', token=token)
             params = [(k, token[k]) for k in token]
             if state:

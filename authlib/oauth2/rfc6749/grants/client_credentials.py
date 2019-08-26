@@ -102,6 +102,6 @@ class ClientCredentialsGrant(BaseGrant, TokenEndpointMixin):
             include_refresh_token=False,
         )
         log.debug('Issue token %r to %r', token, client)
-        self.server.save_token(token, self.request)
+        self.save_token(token)
         self.execute_hook('process_token', self, token=token)
         return 200, token, self.TOKEN_RESPONSE_HEADER

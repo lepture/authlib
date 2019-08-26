@@ -1,5 +1,6 @@
 from .authenticate_client import ClientAuthentication
-from .errors import InvalidGrantError, OAuth2Error
+from .errors import InvalidGrantError, InvalidScopeError, OAuth2Error
+from .util import scope_to_list
 
 
 class AuthorizationServer(object):
@@ -59,11 +60,15 @@ class AuthorizationServer(object):
 
     def get_error_uris(self, request):
         """Return a dict of error uris mapping. Framework SHOULD implement
-        this function."""
+        this function.
+        """
         return None
 
     def send_signal(self, name, *args, **kwargs):
-        raise NotImplementedError()
+        """Framework integration can re-implement this method to support
+        signal system.
+        """
+        pass
 
     def create_oauth2_request(self, request):
         """This method MUST be implemented in framework integrations. It is
@@ -77,6 +82,16 @@ class AuthorizationServer(object):
     def handle_response(self, status, body, headers):
         """Return HTTP response. Framework MUST implement this function."""
         raise NotImplementedError()
+
+    def validate_requested_scope(self, request):
+        """Validate if requested scope is supported by Authorization Server.
+        Developers CAN re-write this method to meet your needs.
+        """
+        if request.scope and self.metadata:
+            scopes_supported = self.metadata.get('scopes_supported')
+            scopes = set(scope_to_list(request.scope))
+            if scopes_supported and not set(scopes_supported).issuperset(scopes):
+                raise InvalidScopeError(state=request.state)
 
     def register_grant(self, grant_cls, extensions=None):
         """Register a grant class into the endpoint registry. Developers

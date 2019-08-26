@@ -1,8 +1,4 @@
-from ..errors import (
-    InvalidRequestError,
-    InvalidScopeError,
-)
-from ..util import scope_to_list
+from ..errors import InvalidRequestError
 
 
 class BaseGrant(object):
@@ -74,12 +70,13 @@ class BaseGrant(object):
             client=client, grant=self)
         return client
 
+    def save_token(self, token):
+        """A method to save token into database."""
+        return self.server.save_token(token, self.request)
+
     def validate_requested_scope(self):
-        if self.request.scope and self.server.metadata:
-            scopes_supported = self.server.metadata.get('scopes_supported')
-            scopes = set(scope_to_list(self.request.scope))
-            if scopes_supported and not set(scopes_supported).issuperset(scopes):
-                raise InvalidScopeError(state=self.request.state)
+        """Validate if requested scope is supported by Authorization Server."""
+        return self.server.validate_requested_scope(self.request)
 
     def register_hook(self, hook_type, hook):
         if hook_type not in self._hooks:

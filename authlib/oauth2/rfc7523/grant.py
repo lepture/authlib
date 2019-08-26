@@ -112,7 +112,7 @@ class JWTBearerGrant(BaseGrant, TokenEndpointMixin):
             include_refresh_token=False,
         )
         log.debug('Issue token %r to %r', token, client)
-        self.server.save_token(token, self.request)
+        self.save_token(token)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_user(self, claims):

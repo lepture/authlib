@@ -11,13 +11,6 @@ from authlib.common.encoding import to_unicode
 from .signals import client_authenticated, token_revoked
 from ..helpers import create_oauth_request
 
-GRANT_TYPES_EXPIRES = {
-    'authorization_code': 864000,
-    'implicit': 3600,
-    'password': 864000,
-    'client_credentials': 864000
-}
-
 
 class AuthorizationServer(_AuthorizationServer):
     """Flask implementation of :class:`authlib.rfc6749.AuthorizationServer`.
@@ -179,7 +172,7 @@ class AuthorizationServer(_AuthorizationServer):
 
 def create_token_expires_in_generator(expires_in_conf=None):
     data = {}
-    data.update(GRANT_TYPES_EXPIRES)
+    data.update(BearerToken.GRANT_TYPES_EXPIRES_IN)
     if expires_in_conf:
         data.update(expires_in_conf)
 

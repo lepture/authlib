@@ -7,7 +7,6 @@ from authlib.oauth1 import (
 )
 from authlib.common.security import generate_token
 from authlib.common.urls import url_encode
-from authlib.deprecate import deprecate
 from ..helpers import create_oauth_request
 
 log = logging.getLogger(__name__)
