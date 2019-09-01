@@ -1,4 +1,6 @@
 import os
+import base64
+from authlib.common.encoding import to_bytes, to_unicode
 from authlib.django.oauth2 import AuthorizationServer
 from .models import Client, OAuth2Token
 from ..base import TestCase as _TestCase
@@ -11,5 +13,7 @@ class TestCase(_TestCase):
     def create_server(self):
         return AuthorizationServer(Client, OAuth2Token)
 
-    def setUp(self):
-        super(TestCase, self).setUp()
+    def create_basic_auth(self, username, password):
+        text = '{}:{}'.format(username, password)
+        auth = to_unicode(base64.b64encode(to_bytes(text)))
+        return 'Basic ' + auth

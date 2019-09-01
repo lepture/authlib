@@ -1,3 +1,4 @@
+import json
 from authlib.oauth2.rfc6749 import grants, errors
 from .models import User, Client
 from .models import CodeGrantMixin, generate_authorization_code
@@ -16,7 +17,7 @@ class AuthorizationCodeTest(TestCase):
         server.register_grant(AuthorizationCodeGrant)
         return server
 
-    def prepare_data(self, response_type='code', scope=''):
+    def prepare_data(self, response_type='code', grant_type='authorization_code', scope=''):
         user = User(username='foo')
         user.save()
         client = Client(
@@ -24,7 +25,9 @@ class AuthorizationCodeTest(TestCase):
             client_id='client',
             client_secret='secret',
             response_type=response_type,
+            grant_type=grant_type,
             scope=scope,
+            token_endpoint_auth_method='client_secret_basic',
             default_redirect_uri='https://a.b',
         )
         client.save()
@@ -71,3 +74,53 @@ class AuthorizationCodeTest(TestCase):
         request = self.factory.get(url)
         grant = server.validate_consent_request(request)
         self.assertIsInstance(grant, AuthorizationCodeGrant)
+
+    def test_validate_consent_request_scope(self):
+        server = self.create_server()
+        server.metadata = {'scopes_supported': ['profile']}
+
+        self.prepare_data()
+        base_url = '/authorize?response_type=code&client_id=client'
+        url = base_url + '&scope=invalid'
+        request = self.factory.get(url)
+        self.assertRaises(
+            errors.InvalidScopeError,
+            server.validate_consent_request,
+            request
+        )
+
+    def test_create_authorization_response(self):
+        server = self.create_server()
+        self.prepare_data()
+        data = {'response_type': 'code', 'client_id': 'client'}
+        request = self.factory.post('/authorize', data=data)
+        server.validate_consent_request(request)
+
+        resp = server.create_authorization_response(request)
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn('error=access_denied', resp['Location'])
+
+        grant_user = User.objects.get(username='foo')
+        resp = server.create_authorization_response(request, grant_user=grant_user)
+        self.assertEqual(resp.status_code, 302)
+        self.assertIn('code=', resp['Location'])
+
+    def test_create_token_response(self):
+        server = self.create_server()
+        self.prepare_data()
+
+        request = self.factory.post('/oauth/token', data={'grant_type': 'authorization_code'})
+        resp = server.create_token_response(request)
+        self.assertEqual(resp.status_code, 401)
+        data = json.loads(resp.content)
+        self.assertEqual(data['error'], 'invalid_client')
+
+        request = self.factory.post(
+            '/oauth/token',
+            data={'grant_type': 'authorization_code', 'code': 'invalid'},
+            HTTP_AUTHORIZATION=self.create_basic_auth('client', 'secret')
+        )
+        resp = server.create_token_response(request)
+        self.assertEqual(resp.status_code, 400)
+        data = json.loads(resp.content)
+        self.assertEqual(data['error'], 'invalid_request')

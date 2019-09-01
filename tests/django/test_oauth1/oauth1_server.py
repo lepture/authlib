@@ -11,6 +11,3 @@ os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
 class TestCase(_TestCase):
     def create_server(self):
         return CacheAuthorizationServer(Client, TokenCredential)
-
-    def setUp(self):
-        super(TestCase, self).setUp()

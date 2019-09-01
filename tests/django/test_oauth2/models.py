@@ -95,9 +95,9 @@ class OAuth2Code(Model, AuthorizationCodeMixin):
     user = ForeignKey(User, on_delete=CASCADE)
     client_id = CharField(max_length=48, db_index=True)
     code = CharField(max_length=120, unique=True, null=False)
-    redirect_uri = TextField(default='')
+    redirect_uri = TextField(default='', null=True)
     response_type = TextField(default='')
-    scope = TextField(default='')
+    scope = TextField(default='', null=True)
     auth_time = IntegerField(null=False, default=now_timestamp)
 
     def is_expired(self):
@@ -107,7 +107,7 @@ class OAuth2Code(Model, AuthorizationCodeMixin):
         return self.redirect_uri
 
     def get_scope(self):
-        return self.scope
+        return self.scope or ''
 
     def get_auth_time(self):
         return self.auth_time
@@ -115,8 +115,12 @@ class OAuth2Code(Model, AuthorizationCodeMixin):
 
 class CodeGrantMixin(object):
     def parse_authorization_code(self, code, client):
-        item = OAuth2Code.objects.get(code=code, client_id=client.client_id)
-        if item and not item.is_expired():
+        try:
+            item = OAuth2Code.objects.get(code=code, client_id=client.client_id)
+        except OAuth2Code.DoesNotExist:
+            return None
+
+        if not item.is_expired():
             return item
 
     def delete_authorization_code(self, authorization_code):
