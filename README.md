@@ -189,6 +189,11 @@ Lovely features that Authlib has built-in:
 </details>
 
 <details>
+<summary>⏳ RFC8628: OAuth 2.0 Device Authorization Grant</summary>
+<p>RFC8628 implementation is in plan.</p>
+</details>
+
+<details>
 <summary>🎉 OpenID Connect 1.0</summary>
 
 - [x] OpenID Claims validation
