@@ -14,7 +14,7 @@
 The ultimate Python library in building OAuth and OpenID Connect servers.
 JWS, JWK, JWA, JWT are included.
 
-Authlib is compatible with Python2.7+ and Python3.5+.
+Authlib is compatible with Python2.7+ and Python3.6+.
 
 ```python
 authorization_server.register_grant(AuthorizationCodeGrant)
