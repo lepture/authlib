@@ -8,6 +8,7 @@ OAuth 2 Session
         by Authlib.
 
 .. module:: authlib.client
+    :noindex:
 
 The :class:`OAuth2Session` in Authlib was designed to be compatible with
 the one in **requests-oauthlib**. But now, there are some differences.

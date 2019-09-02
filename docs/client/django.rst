@@ -8,11 +8,12 @@ Django OAuth Client
         OAuth 2.0 clients.
 
 .. module:: authlib.django.client
+    :noindex:
 
 Looking for OAuth providers?
 
 - :ref:`django_oauth1_server`
-- OAuth 2 provider is not ready
+- :ref:`django_oauth2_server`
 
 The Django client shares a similar API with Flask client. But there are
 differences, since Django has no request context, you need to pass ``request``

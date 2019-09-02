@@ -6,6 +6,7 @@ OAuth 1 Session
         powered by Authlib.
 
 .. module:: authlib.client
+    :noindex:
 
 The :class:`OAuth1Session` in Authlib is a subclass of ``requests.Session``.
 It shares the same API with ``requests.Session`` and extends it with OAuth 1
@@ -161,7 +162,7 @@ Create an instance of OAuth1Auth with an access token::
         ...
     )
 
-Pass this ``auth`` to ``requests` to access protected resources::
+Pass this ``auth`` to ``requests`` to access protected resources::
 
     import requests
 

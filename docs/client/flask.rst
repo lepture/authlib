@@ -9,6 +9,7 @@ Flask OAuth Client
 
 
 .. module:: authlib.flask.client
+    :noindex:
 
 Looking for OAuth providers?
 

@@ -1,13 +1,16 @@
 Register Grants
 ===============
 
+.. meta::
+    :description: Register Authorization Code Grant, Implicit Grant,
+        Resource Owner Password Credentials Grant, Client Credentials Grant
+        and Refresh Token Grant into Django OAuth 2.0 provider.
+
 .. module:: authlib.oauth2.rfc6749.grants
     :noindex:
 
 There are four grant types defined by RFC6749, you can also create your own
 extended grant. Register the supported grant types to the authorization server.
-
-.. _flask_oauth2_code_grant:
 
 Authorization Code Grant
 ------------------------
@@ -15,50 +18,74 @@ Authorization Code Grant
 Authorization Code Grant is a very common grant type, it is supported by almost
 every OAuth 2 providers. It uses an authorization code to exchange access
 token. In this case, we need a place to store the authorization code. It can be
-kept in a database or a cache like redis. Here is a SQLAlchemy mixin for
+kept in a database or a cache like redis. Here is an example of database
 **AuthorizationCode**::
 
-    from authlib.flask.oauth2.sqla import OAuth2AuthorizationCodeMixin
+    from django.db.models import ForeignKey, CASCADE
+    from django.contrib.auth.models import User
+    from authlib.oauth2.rfc6749 import AuthorizationCodeMixin
 
-    class AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):
-        id = db.Column(db.Integer, primary_key=True)
-        user_id = db.Column(
-            db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')
-        )
-        user = db.relationship('User')
+    def now_timestamp():
+        return int(time.time())
 
-Implement this grant by subclass :class:`AuthorizationCodeGrant`::
+    class AuthorizationCode(Model, AuthorizationCodeMixin):
+        user = ForeignKey(User, on_delete=CASCADE)
+        client_id = CharField(max_length=48, db_index=True)
+        code = CharField(max_length=120, unique=True, null=False)
+        redirect_uri = TextField(default='', null=True)
+        response_type = TextField(default='')
+        scope = TextField(default='', null=True)
+        auth_time = IntegerField(null=False, default=now_timestamp)
+
+        def is_expired(self):
+            return self.auth_time + 300 < time.time()
+
+        def get_redirect_uri(self):
+            return self.redirect_uri
+
+        def get_scope(self):
+            return self.scope or ''
+
+        def get_auth_time(self):
+            return self.auth_time
+
+Note here, you **MUST** implement the missing methods of
+:class:`~authlib.oauth2.rfc6749.AuthorizationCodeMixin` API interface.
+
+Later, you can use this ``AuthorizationCode`` database model to handle ``authorization_code``
+grant type. Here is how::
 
     from authlib.oauth2.rfc6749 import grants
     from authlib.common.security import generate_token
 
     class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
         def create_authorization_code(self, client, grant_user, request):
-            # you can use other method to generate this code
             code = generate_token(48)
             item = AuthorizationCode(
                 code=code,
                 client_id=client.client_id,
                 redirect_uri=request.redirect_uri,
+                response_type=request.response_type,
                 scope=request.scope,
-                user_id=grant_user.get_user_id(),
+                user=grant_user,
             )
-            db.session.add(item)
-            db.session.commit()
+            item.save()
             return code
 
         def parse_authorization_code(self, code, client):
-            item = AuthorizationCode.query.filter_by(
-                code=code, client_id=client.client_id).first()
-            if item and not item.is_expired():
+            try:
+                item = OAuth2Code.objects.get(code=code, client_id=client.client_id)
+            except OAuth2Code.DoesNotExist:
+                return None
+
+            if not item.is_expired():
                 return item
 
         def delete_authorization_code(self, authorization_code):
-            db.session.delete(authorization_code)
-            db.session.commit()
+            authorization_code.delete()
 
         def authenticate_user(self, authorization_code):
-            return User.query.get(authorization_code.user_id)
+            return authorization_code.user
 
     # register it to grant endpoint
     server.register_grant(AuthorizationCodeGrant)
@@ -102,16 +129,19 @@ this grant type should be used only when the client is trustworthy, implement
 it with a subclass of :class:`ResourceOwnerPasswordCredentialsGrant`::
 
     from authlib.oauth2.rfc6749 import grants
+    from django.contrib.auth.models import User
 
     class PasswordGrant(grants.ResourceOwnerPasswordCredentialsGrant):
         def authenticate_user(self, username, password):
-            user = User.query.filter_by(username=username).first()
-            if user.check_password(password):
-                return user
+            try:
+                user = User.objects.get(username=username)
+                if user.check_password(password):
+                    return user
+            except User.DoesNotExist:
+                return None
 
     # register it to grant endpoint
     server.register_grant(PasswordGrant)
-
 
 Default allowed :ref:`client_auth_methods`: ``client_secret_basic``.
 You can add more in the subclass::
@@ -124,9 +154,8 @@ You can add more in the subclass::
 Client Credentials Grant
 ------------------------
 
-Client credentials grant type can access public resources and MAYBE the
-client's creator's resources, depending on how you issue tokens to this
-grant type. It can be easily registered with::
+Client credentials grant type can access public resources and the
+client's creator's resources. It can be easily registered with::
 
     from authlib.oauth2.rfc6749 import grants
 
@@ -152,19 +181,19 @@ provides it as a grant type, implement it with a subclass of
 
     class RefreshTokenGrant(grants.RefreshTokenGrant):
         def authenticate_refresh_token(self, refresh_token):
-            item = Token.query.filter_by(refresh_token=refresh_token).first()
-            # define is_refresh_token_valid by yourself
-            # usually, you should check if refresh token is expired and revoked
-            if item and item.is_refresh_token_valid():
-                return item
+            try:
+                item = OAuth2Token.objects.get(refresh_token=refresh_token)
+                if item.is_refresh_token_active():
+                    return item
+            except OAuth2Token.DoesNotExist:
+                return None
 
         def authenticate_user(self, credential):
-            return User.query.get(credential.user_id)
+            return credential.user
 
         def revoke_old_credential(self, credential):
             credential.revoked = True
-            db.session.add(credential)
-            db.session.commit()
+            credential.save()
 
     # register it to grant endpoint
     server.register_grant(RefreshTokenGrant)
@@ -177,7 +206,6 @@ You can add more in the subclass::
             'client_secret_basic', 'client_secret_post'
         ]
 
-.. _flask_oauth2_custom_grant_types:
 
 Custom Grant Types
 ------------------
@@ -188,16 +216,11 @@ supports two endpoints:
 1. Authorization Endpoint: which can handle requests with ``response_type``.
 2. Token Endpoint: which is the endpoint to issue tokens.
 
-.. versionchanged:: v0.12
-    Using ``AuthorizationEndpointMixin`` and ``TokenEndpointMixin`` instead of
-    ``AUTHORIZATION_ENDPOINT=True`` and ``TOKEN_ENDPOINT=True``.
-
 Creating a custom grant type with **BaseGrant**::
 
     from authlib.oauth2.rfc6749.grants import (
         BaseGrant, AuthorizationEndpointMixin, TokenEndpointMixin
     )
-
 
     class MyCustomGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpointMixin):
         GRANT_TYPE = 'custom-grant-type-name'
@@ -220,17 +243,13 @@ grant types. And there are extended grant types defined by other specs:
 1. :ref:`jwt_grant_type`
 
 
-.. _flask_oauth2_grant_extensions:
-
 Grant Extensions
 ----------------
-
-.. versionadded:: 0.10
 
 Grant can accept extensions. Developers can pass extensions when registering
 grant::
 
-    authorization_server.register_grant(AuthorizationCodeGrant, [extension])
+    server.register_grant(AuthorizationCodeGrant, [extension])
 
 For instance, there is ``CodeChallenge`` extension in Authlib::
 

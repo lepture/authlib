@@ -4,6 +4,7 @@ JSON Web Encryption (JWE)
 =========================
 
 .. module:: authlib.jose.rfc7516
+    :noindex:
 
 JSON Web Encryption (JWE) represents encrypted content using
 JSON-based data structures.

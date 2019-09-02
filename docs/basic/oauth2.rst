@@ -66,6 +66,7 @@ Grant Types
 -----------
 
 .. module:: authlib.oauth2.rfc6749.grants
+    :noindex:
 
 Authorization server MAY supports several **grant types** during the **authorization**,
 step 1 and 2. A grant type defines a way of how the authorization server will verify

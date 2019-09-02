@@ -4,7 +4,7 @@ JSON Web Token (JWT)
 ====================
 
 .. module:: authlib.jose.rfc7519
-
+    :noindex:
 
 JSON Web Token (JWT) is structured by :ref:`specs/rfc7515` or :`specs/rfc7516`
 with certain payload claims. The JWT implementation in Authlib has all

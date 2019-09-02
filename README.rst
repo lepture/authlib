@@ -43,6 +43,8 @@ Implementations
 - Flask OAuth 2.0 Server
 - Flask OpenID Connect 1.0
 - Django OAuth 1.0 Server
+- Django OAuth 2.0 Server
+- Django OpenID Connect 1.0
 
 License
 -------

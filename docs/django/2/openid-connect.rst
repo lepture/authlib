@@ -1,24 +1,15 @@
-.. _flask_odic_server:
-
-Flask OpenID Connect 1.0
-========================
+Django OpenID Connect 1.0
+=========================
 
 .. meta::
-    :description: How to create an OpenID Connect server in Flask with Authlib.
+    :description: How to create an OpenID Connect server in Django with Authlib.
         And understand how OpenID Connect works.
 
-OpenID Connect 1.0 is supported since version 0.6. The integrations are built
-with :ref:`flask_oauth2_custom_grant_types` and :ref:`flask_oauth2_grant_extensions`.
-Since OpenID Connect is built on OAuth 2.0 frameworks, you need to read
-:ref:`flask_oauth2_server` at first.
+OpenID Connect 1.0 are built custom grant types and grant extensions. You need to
+read the Authorization Server chapter at first.
 
 .. module:: authlib.oauth2.rfc6749.grants
     :noindex:
-
-.. versionchanged:: v0.12
-
-    The Grant system has been redesigned from v0.12. This documentation ONLY
-    works for Authlib >=v0.12.
 
 Understand JWT
 --------------
@@ -82,29 +73,32 @@ For example, Google is using::
 
     {"iss": "https://accounts.google.com"}
 
-.. _flask_odic_code:
 
 Code Flow
 ---------
 
 OpenID Connect authorization code flow relies on the OAuth2 authorization code
-flow and extends it. Basically, all you have to do is to extend
-:class:`OIDCAuthorizationCodeMixin` instead of :class:`AuthorizationCodeMixin`
-in your ``AuthorizationCode`` class. This will add a ``nonce`` attribute
-and its getter to it which will be required in this new code flow::
+flow and extends it. In OpenID Connect, there will be a ``nonce`` parameter in
+request, we need to save it into database for later use. In this case, we have
+to rewrite our ``AuthorizationCode`` db model::
 
-    from authlib.flask.oauth2.sqla import OIDCAuthorizationCodeMixin
+    class AuthorizationCode(Model, AuthorizationCodeMixin):
+        user = ForeignKey(User, on_delete=CASCADE)
+        client_id = CharField(max_length=48, db_index=True)
+        code = CharField(max_length=120, unique=True, null=False)
+        redirect_uri = TextField(default='', null=True)
+        response_type = TextField(default='')
+        scope = TextField(default='', null=True)
+        auth_time = IntegerField(null=False, default=now_timestamp)
 
-    class AuthorizationCode(db.Model, OIDCAuthorizationCodeMixin):
-        id = db.Column(db.Integer, primary_key=True)
-        user_id = db.Column(
-            db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')
-        )
-        user = db.relationship('User')
+        # add nonce
+        nonce = CharField(max_length=120, default='', null=True)
+
+        # ... other fields and methods ...
 
 OpenID Connect Code flow is the same as Authorization Code flow, but with
 extended features. We can apply the :class:`OpenIDCode` extension to
-:ref:`flask_oauth2_code_grant`.
+``AuthorizationCodeGrant``.
 
 First, we need to implement the missing methods for ``OpenIDCode``::
 
@@ -112,10 +106,13 @@ First, we need to implement the missing methods for ``OpenIDCode``::
 
     class OpenIDCode(grants.OpenIDCode):
         def exists_nonce(self, nonce, request):
-            exists = AuthorizationCode.query.filter_by(
-                client_id=request.client_id, nonce=nonce
-            ).first()
-            return bool(exists)
+            try:
+                AuthorizationCode.objects.get(
+                    client_id=request.client_id, nonce=nonce)
+                )
+                return True
+            except AuthorizationCode.DoesNotExist:
+                return False
 
         def get_jwt_config(self, grant):
             return {
@@ -126,14 +123,14 @@ First, we need to implement the missing methods for ``OpenIDCode``::
             }
 
         def generate_user_info(self, user, scope):
-            user_info = UserInfo(sub=user.id, name=user.name)
+            user_info = UserInfo(sub=str(user.pk), name=user.name)
             if 'email' in scope:
                 user_info['email'] = user.email
             return user_info
 
 Second, since there is one more ``nonce`` value in ``AuthorizationCode`` data,
 we need to save this value into database. In this case, we have to update our
-:ref:`flask_oauth2_code_grant` ``create_authorization_code`` method::
+``AuthorizationCodeGrant.create_authorization_code`` method::
 
     class AuthorizationCodeGrant(_AuthorizationCodeGrant):
         def create_authorization_code(self, client, grant_user, request):
@@ -145,14 +142,11 @@ we need to save this value into database. In this case, we have to update our
                 client_id=client.client_id,
                 redirect_uri=request.redirect_uri,
                 scope=request.scope,
-                user_id=grant_user.id,
+                user=grant_user,
                 nonce=nonce,
             )
-            db.session.add(item)
-            db.session.commit()
+            item.save()
             return code
-
-        # ...
 
 Finally, you can register ``AuthorizationCodeGrant`` with ``OpenIDCode``
 extension::
@@ -180,7 +174,6 @@ Now that you added the ``openid`` scope to your application, an OpenID token
 will be provided to this app whenever a client asks for a token with an
 ``openid`` scope.
 
-.. _flask_odic_implicit:
 
 Implicit Flow
 -------------
@@ -193,10 +186,13 @@ a scripting language. You need to implement the missing methods of
 
     class OpenIDImplicitGrant(grants.OpenIDImplicitGrant):
         def exists_nonce(self, nonce, request):
-            exists = AuthorizationCode.query.filter_by(
-                client_id=request.client_id, nonce=nonce
-            ).first()
-            return bool(exists)
+            try:
+                AuthorizationCode.objects.get(
+                    client_id=request.client_id, nonce=nonce)
+                )
+                return True
+            except AuthorizationCode.DoesNotExist:
+                return False
 
         def get_jwt_config(self):
             return {
@@ -214,7 +210,6 @@ a scripting language. You need to implement the missing methods of
 
     server.register_grant(OpenIDImplicitGrant)
 
-.. _flask_odic_hybrid:
 
 Hybrid Flow
 ------------
@@ -233,24 +228,27 @@ is ``create_authorization_code``. You can implement it like this::
     class OpenIDHybridGrant(grants.OpenIDHybridGrant):
         def create_authorization_code(self, client, grant_user, request):
             code = generate_token(48)
+            # openid request MAY have "nonce" parameter
             nonce = request.data.get('nonce')
             item = AuthorizationCode(
                 code=code,
                 client_id=client.client_id,
                 redirect_uri=request.redirect_uri,
                 scope=request.scope,
-                user_id=grant_user.id,
+                user=grant_user,
                 nonce=nonce,
             )
-            db.session.add(item)
-            db.session.commit()
+            item.save()
             return code
 
         def exists_nonce(self, nonce, request):
-            exists = AuthorizationCode.query.filter_by(
-                client_id=request.client_id, nonce=nonce
-            ).first()
-            return bool(exists)
+            try:
+                AuthorizationCode.objects.get(
+                    client_id=request.client_id, nonce=nonce)
+                )
+                return True
+            except AuthorizationCode.DoesNotExist:
+                return False
 
         def get_jwt_config(self):
             return {
@@ -272,5 +270,3 @@ is ``create_authorization_code``. You can implement it like this::
 
 Since all OpenID Connect Flow requires ``exists_nonce``, ``get_jwt_config``
 and ``generate_user_info`` methods, you can create shared functions for them.
-
-Find the `example of OpenID Connect server <https://github.com/authlib/example-oidc-server>`_.

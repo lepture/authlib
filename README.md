@@ -76,7 +76,7 @@ Lovely features that Authlib has built-in:
 - [x] OAuth 2.0 Client for Flask
 - [x] OAuth 2.0 Client for Django
 - [x] OAuth 2.0 Server for Flask
-- [ ] OAuth 2.0 Server for Django
+- [x] OAuth 2.0 Server for Django
 </details>
 
 <details>
@@ -84,14 +84,14 @@ Lovely features that Authlib has built-in:
 
 - [x] Bearer Token for OAuth2Session
 - [x] Bearer Token for Flask OAuth 2.0 Server
-- [ ] Bearer Token for Django OAuth 2.0 Server
+- [x] Bearer Token for Django OAuth 2.0 Server
 </details>
 
 <details>
 <summary>🎉 RFC7009: OAuth 2.0 Token Revocation</summary>
 
 - [x] Token Revocation for Flask OAuth 2.0 Server
-- [ ] Token Revocation for Django OAuth 2.0 Server
+- [x] Token Revocation for Django OAuth 2.0 Server
 </details>
 
 <details>
@@ -172,7 +172,7 @@ Lovely features that Authlib has built-in:
 <summary>🎉 RFC7662: OAuth 2.0 Token Introspection</summary>
 
 - [x] Token Introspection for Flask OAuth 2.0 Server
-- [ ] Token Introspection for Django OAuth 2.0 Server
+- [x] Token Introspection for Django OAuth 2.0 Server
 </details>
 
 <details>
@@ -193,7 +193,7 @@ Lovely features that Authlib has built-in:
 
 - [x] OpenID Claims validation
 - [x] OpenID Connect for Flask OAuth 2.0 Server
-- [ ] OpenID Connect for Django OAuth 2.0 Server
+- [x] OpenID Connect for Django OAuth 2.0 Server
 </details>
 
 <details>
@@ -219,8 +219,8 @@ Framework integrations with current specification implementations:
 - [x] Flask OAuth 2.0 Server
 - [x] Flask OpenID Connect 1.0
 - [x] Django OAuth 1.0 Server
-- [ ] Django OAuth 2.0 Server
-- [ ] Django OpenID Connect Server
+- [x] Django OAuth 2.0 Server
+- [x] Django OpenID Connect 1.0
 
 
 ## Security Reporting

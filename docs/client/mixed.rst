@@ -13,6 +13,7 @@ OAuthClient
     and :ref:`django_client` instead.
 
 .. module:: authlib.client
+    :noindex:
 
 A mixed OAuth 1 and OAuth 2 client, one to control them both. With
 :class:`OAuthClient`, we make the authorization much similar. It is the

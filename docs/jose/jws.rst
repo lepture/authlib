@@ -4,6 +4,7 @@ JSON Web Signature (JWS)
 ========================
 
 .. module:: authlib.jose.rfc7515
+    :noindex:
 
 JSON Web Signature (JWS) represents content secured with digital
 signatures or Message Authentication Codes (MACs) using JSON-based

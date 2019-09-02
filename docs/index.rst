@@ -57,6 +57,7 @@ about Authlib, and installation of Authlib.
     flask/1/index
     flask/2/index
     django/1/index
+    django/2/index
     specs/index
     community/index
 
