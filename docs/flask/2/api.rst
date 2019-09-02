@@ -34,6 +34,18 @@ Server.
             # current token instance of the OAuth Token model
             return current_token.user_id
 
+.. data:: client_authenticated
+
+    Signal when client is authenticated
+
+.. data:: token_revoked
+
+    Signal when token is revoked
+
+.. data:: token_authenticated
+
+    Signal when token is authenticated
+
 Cache Helper Functions
 ----------------------
 
