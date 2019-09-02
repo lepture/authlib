@@ -3,7 +3,6 @@ from .base import BaseGrant, TokenEndpointMixin
 from ..errors import (
     UnauthorizedClientError,
     InvalidRequestError,
-    InvalidGrantError,
 )
 
 log = logging.getLogger(__name__)
@@ -102,7 +101,7 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant, TokenEndpointMixin):
             params['password']
         )
         if not user:
-            raise InvalidGrantError(
+            raise InvalidRequestError(
                 'Invalid "username" or "password" in request.',
             )
         self.validate_requested_scope()

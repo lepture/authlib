@@ -10,11 +10,16 @@ from .oauth2_server import create_authorization_server
 class RefreshTokenGrant(_RefreshTokenGrant):
     def authenticate_refresh_token(self, refresh_token):
         item = Token.query.filter_by(refresh_token=refresh_token).first()
-        if item and not item.is_refresh_token_expired():
+        if item and not item.revoked and not item.is_refresh_token_expired():
             return item
 
     def authenticate_user(self, credential):
         return User.query.get(credential.user_id)
+
+    def revoke_old_credential(self, credential):
+        credential.revoked = True
+        db.session.add(credential)
+        db.session.commit()
 
 
 class RefreshTokenTest(TestCase):
@@ -88,13 +93,15 @@ class RefreshTokenTest(TestCase):
         }, headers=headers)
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'invalid_request')
+        self.assertIn('Missing', resp['error_description'])
 
         rv = self.client.post('/oauth/token', data={
             'grant_type': 'refresh_token',
             'refresh_token': 'foo',
         }, headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_grant')
+        self.assertEqual(resp['error'], 'invalid_request')
+        self.assertIn('Invalid', resp['error_description'])
 
     def test_invalid_scope(self):
         self.prepare_data()
@@ -178,6 +185,29 @@ class RefreshTokenTest(TestCase):
         }, headers=headers)
         resp = json.loads(rv.data)
         self.assertIn('access_token', resp)
+
+    def test_revoke_old_credential(self):
+        self.prepare_data()
+        self.create_token()
+        headers = self.create_basic_header(
+            'refresh-client', 'refresh-secret'
+        )
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': 'refresh_token',
+            'refresh_token': 'r1',
+            'scope': 'profile',
+        }, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertIn('access_token', resp)
+
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': 'refresh_token',
+            'refresh_token': 'r1',
+            'scope': 'profile',
+        }, headers=headers)
+        self.assertEqual(rv.status_code, 400)
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['error'], 'invalid_request')
 
     def test_token_generator(self):
         m = 'tests.flask.test_oauth2.oauth2_server:token_generator'

@@ -149,7 +149,7 @@ class AuthorizationServer(object):
         """Validate endpoint request and create endpoint response.
 
         :param name: Endpoint name
-        :param request: OAuth2Request instance.
+        :param request: HTTP request instance.
         :return: Response
         """
         if name not in self._endpoints:
@@ -163,7 +163,7 @@ class AuthorizationServer(object):
     def create_authorization_response(self, request=None, grant_user=None):
         """Validate authorization request and create authorization response.
 
-        :param request: OAuth2Request instance.
+        :param request: HTTP request instance.
         :param grant_user: if granted, it is resource owner. If denied,
             it is None.
         :returns: Response
@@ -184,7 +184,7 @@ class AuthorizationServer(object):
     def create_token_response(self, request=None):
         """Validate token request and create token response.
 
-        :param request: OAuth2Request instance
+        :param request: HTTP request instance
         """
         request = self.create_oauth2_request(request)
         try:

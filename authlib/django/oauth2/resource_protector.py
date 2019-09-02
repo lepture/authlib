@@ -2,11 +2,14 @@ import functools
 from django.http import JsonResponse
 from authlib.oauth2 import (
     OAuth2Error,
-    ResourceProtector as _ResourceProtector
+    ResourceProtector as _ResourceProtector,
 )
 from authlib.oauth2.rfc6749 import (
     MissingAuthorizationError,
     TokenRequest,
+)
+from authlib.oauth2.rfc6750 import (
+    BearerTokenValidator as _BearerTokenValidator
 )
 from .signals import token_authenticated
 from ..helpers import parse_request_headers
@@ -53,10 +56,29 @@ class ResourceProtector(_ResourceProtector):
                     request.oauth_token = token
                 except MissingAuthorizationError as error:
                     if optional:
-                        return f(*args, **kwargs)
+                        request.oauth_token = None
+                        return f(request, *args, **kwargs)
                     return self.return_error_response(error)
                 except OAuth2Error as error:
                     return self.return_error_response(error)
-                return f(*args, **kwargs)
+                return f(request, *args, **kwargs)
             return decorated
         return wrapper
+
+
+class BearerTokenValidator(_BearerTokenValidator):
+    def __init__(self, token_model, realm=None):
+        self.token_model = token_model
+        super(BearerTokenValidator, self).__init__(realm)
+
+    def authenticate_token(self, token_string):
+        try:
+            return self.token_model.objects.get(access_token=token_string)
+        except self.token_model.DoesNotExist:
+            return None
+
+    def request_invalid(self, request):
+        return False
+
+    def token_revoked(self, token):
+        return token.revoked

@@ -14,7 +14,6 @@ from ..util import scope_to_list
 from ..errors import (
     InvalidRequestError,
     InvalidScopeError,
-    InvalidGrantError,
     UnauthorizedClientError,
 )
 log = logging.getLogger(__name__)
@@ -27,6 +26,9 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
     .. _`Section 6`: https://tools.ietf.org/html/rfc6749#section-6
     """
     GRANT_TYPE = 'refresh_token'
+
+    #: The authorization server MAY issue a new refresh token
+    INCLUDE_NEW_REFRESH_TOKEN = False
 
     def _validate_request_client(self):
         # require client authentication for confidential clients or for any
@@ -49,7 +51,9 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
 
         token = self.authenticate_refresh_token(refresh_token)
         if not token or token.get_client_id() != client.get_client_id():
-            raise InvalidGrantError()
+            raise InvalidRequestError(
+                'Invalid "refresh_token" in request.',
+            )
         return token
 
     def _validate_token_scope(self, token):
@@ -116,32 +120,38 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
         if not user:
             raise InvalidRequestError('There is no "user" for this token.')
 
-        scope = self.request.scope
-        if not scope:
-            scope = credential.get_scope()
-
         client = self.request.client
-        expires_in = credential.get_expires_in()
-        token = self.generate_token(
-            client, self.GRANT_TYPE,
-            user=user,
-            expires_in=expires_in,
-            scope=scope,
-        )
+        token = self.issue_token(client, user, credential)
         log.debug('Issue token %r to %r', token, client)
 
         self.request.user = user
         self.save_token(token)
         self.execute_hook('process_token', token=token)
+        self.revoke_old_credential(credential)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
+    def issue_token(self, client, user, credential):
+        expires_in = credential.get_expires_in()
+        scope = self.request.scope
+        if not scope:
+            scope = credential.get_scope()
+
+        token = self.generate_token(
+            client, self.GRANT_TYPE,
+            user=user,
+            expires_in=expires_in,
+            scope=scope,
+            include_refresh_token=self.INCLUDE_NEW_REFRESH_TOKEN,
+        )
+        return token
+
     def authenticate_refresh_token(self, refresh_token):
-        """Get token information with refresh_token string. Developers should
+        """Get token information with refresh_token string. Developers MUST
         implement this method in subclass::
 
             def authenticate_refresh_token(self, refresh_token):
                 item = Token.get(refresh_token=refresh_token)
-                if item and not item.is_refresh_token_expired():
+                if item and item.is_refresh_token_active():
                     return item
 
         :param refresh_token: The refresh token issued to the client
@@ -150,7 +160,7 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
         raise NotImplementedError()
 
     def authenticate_user(self, credential):
-        """Authenticate the user related to this credential. Developers should
+        """Authenticate the user related to this credential. Developers MUST
         implement this method in subclass::
 
             def authenticate_user(self, credential):
@@ -158,5 +168,18 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
 
         :param credential: Token object
         :return: user
+        """
+        raise NotImplementedError()
+
+    def revoke_old_credential(self, credential):
+        """The authorization server MAY revoke the old refresh token after
+        issuing a new refresh token to the client. Developers MUST implement
+        this method in subclass::
+
+            def revoke_old_credential(self, credential):
+                credential.revoked = True
+                credential.save()
+
+        :param credential: Token object
         """
         raise NotImplementedError()

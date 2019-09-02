@@ -1,5 +1,7 @@
 import json
 from authlib.oauth2.rfc6749 import grants, errors
+from authlib.common.urls import urlparse, url_decode
+from django.test import override_settings
 from .models import User, Client
 from .models import CodeGrantMixin, generate_authorization_code
 from .oauth2_server import TestCase
@@ -105,22 +107,72 @@ class AuthorizationCodeTest(TestCase):
         self.assertEqual(resp.status_code, 302)
         self.assertIn('code=', resp['Location'])
 
-    def test_create_token_response(self):
+    def test_create_token_response_invalid(self):
         server = self.create_server()
         self.prepare_data()
 
+        # case: no auth
         request = self.factory.post('/oauth/token', data={'grant_type': 'authorization_code'})
         resp = server.create_token_response(request)
         self.assertEqual(resp.status_code, 401)
         data = json.loads(resp.content)
         self.assertEqual(data['error'], 'invalid_client')
 
+        auth_header = self.create_basic_auth('client', 'secret')
+
+        # case: no code
         request = self.factory.post(
             '/oauth/token',
-            data={'grant_type': 'authorization_code', 'code': 'invalid'},
-            HTTP_AUTHORIZATION=self.create_basic_auth('client', 'secret')
+            data={'grant_type': 'authorization_code'},
+            HTTP_AUTHORIZATION=auth_header,
         )
         resp = server.create_token_response(request)
         self.assertEqual(resp.status_code, 400)
         data = json.loads(resp.content)
         self.assertEqual(data['error'], 'invalid_request')
+
+        # case: invalid code
+        request = self.factory.post(
+            '/oauth/token',
+            data={'grant_type': 'authorization_code', 'code': 'invalid'},
+            HTTP_AUTHORIZATION=auth_header,
+        )
+        resp = server.create_token_response(request)
+        self.assertEqual(resp.status_code, 400)
+        data = json.loads(resp.content)
+        self.assertEqual(data['error'], 'invalid_request')
+
+    def test_create_token_response_success(self):
+        self.prepare_data()
+        data = self.get_token_response()
+        self.assertIn('access_token', data)
+        self.assertNotIn('refresh_token', data)
+
+    @override_settings(
+        AUTHLIB_OAUTH2_PROVIDER={'refresh_token_generator': True})
+    def test_create_token_response_with_refresh_token(self):
+        self.prepare_data(grant_type='authorization_code\nrefresh_token')
+        data = self.get_token_response()
+        self.assertIn('access_token', data)
+        self.assertIn('refresh_token', data)
+
+    def get_token_response(self):
+        server = self.create_server()
+        data = {'response_type': 'code', 'client_id': 'client'}
+        request = self.factory.post('/authorize', data=data)
+        grant_user = User.objects.get(username='foo')
+        resp = server.create_authorization_response(request, grant_user=grant_user)
+        self.assertEqual(resp.status_code, 302)
+
+        params = dict(url_decode(urlparse.urlparse(resp['Location']).query))
+        code = params['code']
+
+        request = self.factory.post(
+            '/oauth/token',
+            data={'grant_type': 'authorization_code', 'code': code},
+            HTTP_AUTHORIZATION=self.create_basic_auth('client', 'secret'),
+        )
+        resp = server.create_token_response(request)
+        self.assertEqual(resp.status_code, 200)
+        data = json.loads(resp.content)
+        return data

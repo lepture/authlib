@@ -34,12 +34,11 @@ class AuthorizationServer(_AuthorizationServer):
             return None
 
     def save_oauth2_token(self, token, request):
+        client = request.client
         if request.user:
             user_id = request.user.pk
         else:
-            user_id = None
-
-        client = request.client
+            user_id = client.user_id
         item = self.token_model(
             client_id=client.client_id,
             user_id=user_id,

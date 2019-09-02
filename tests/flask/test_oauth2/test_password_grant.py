@@ -102,7 +102,7 @@ class PasswordTest(TestCase):
             'password': 'wrong',
         }, headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_grant')
+        self.assertEqual(resp['error'], 'invalid_request')
 
     def test_invalid_grant_type(self):
         self.prepare_data(grant_type='invalid')

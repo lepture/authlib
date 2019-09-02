@@ -112,8 +112,9 @@ class IntrospectionEndpoint(TokenEndpoint):
         dictionary following `Section 2.2`_::
 
             def introspect_token(self, token):
+                active = is_token_active(token)
                 return {
-                    'active': True,
+                    'active': active,
                     'client_id': token.client_id,
                     'token_type': token.token_type,
                     'username': get_token_username(token),

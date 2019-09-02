@@ -90,6 +90,13 @@ class OAuth2Token(Model, TokenMixin):
     def get_expires_at(self):
         return self.issued_at + self.expires_in
 
+    def is_refresh_token_active(self):
+        if self.revoked:
+            return False
+
+        expired_at = self.issued_at + self.expires_in * 2
+        return expired_at >= time.time()
+
 
 class OAuth2Code(Model, AuthorizationCodeMixin):
     user = ForeignKey(User, on_delete=CASCADE)

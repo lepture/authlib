@@ -105,7 +105,6 @@ class RevocationEndpoint(TokenEndpoint):
 
             def revoke_token(self, token):
                 token.revoked = True
-                session.add(token)
-                session.commit()
+                token.save()
         """
         raise NotImplementedError()
