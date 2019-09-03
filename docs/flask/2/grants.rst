@@ -177,6 +177,12 @@ You can add more in the subclass::
             'client_secret_basic', 'client_secret_post'
         ]
 
+By default, RefreshTokenGrant will not issue a ``refresh_token`` in the token
+response. Developers can change this behavior with::
+
+    class RefreshTokenGrant(grants.RefreshTokenGrant):
+        INCLUDE_NEW_REFRESH_TOKEN = True
+
 .. _flask_oauth2_custom_grant_types:
 
 Custom Grant Types

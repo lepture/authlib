@@ -9,11 +9,15 @@ Here you can see the full list of changes between each Authlib release.
 Version 0.12
 ------------
 
-**Release Date not Decided**
+**Released on Sep 3, 2019.**
 
 **Breaking Change**: Authlib Grant system has been redesigned. If you
 are creating OpenID Connect providers, please read the new documentation
 for OpenID Connect.
+
+**Important Update**: Django OAuth 2.0 server integration is ready now.
+You can create OAuth 2.0 provider and OpenID Connect 1.0 with Django
+framework.
 
 RFC implementations and updates in this release:
 
@@ -24,10 +28,16 @@ RFC implementations and updates in this release:
 
 Refactor and bug fixes in this release:
 
+- **Breaking Change**: add ``RefreshTokenGrant.revoke_old_credential`` method
 - Rewrite lots of code for ``authlib.client``, no breaking changes
+- Refactor ``OAuth2Request``, use explicit query and form
+- Change ``requests`` to optional dependency
+- Add ``AsyncAssertionClient`` for aiohttp
 
-Version 0.11: Kaori
--------------------
+**Deprecate Changes**: find how to solve the deprecate issues via https://git.io/fjPsV
+
+Version 0.11
+------------
 
 **Released on Apr 6, 2019.**
 
@@ -56,8 +66,8 @@ Small changes and bug fixes in this release:
 **Experiment Features**: There is an experiment ``aiohttp`` client for OAuth1
 and OAuth2 in ``authlib.client.aiohttp``.
 
-Version 0.10: Kluke
--------------------
+Version 0.10
+------------
 
 **Released on Oct 12, 2018.**
 
@@ -83,8 +93,8 @@ Besides that, there are other improvements:
 
 **Deprecate Changes**: find how to solve the deprecate issues via https://git.io/fAmW1
 
-Version 0.9: Ponyo
-------------------
+Version 0.9
+-----------
 
 **Released on Aug 12, 2018. Fun Dive.**
 
@@ -105,8 +115,8 @@ RFC implementations in this release:
 - Deprecated ``authlib.client.apps`` from v0.7 has been dropped.
 
 
-Version 0.8: Arutoria
----------------------
+Version 0.8
+-----------
 
 **Released on Jun 17, 2018. Try Django.**
 
@@ -135,8 +145,8 @@ in version 0.8:
 - Rename Flask OAuth 2.0 ``create_expires_generator`` to
   ``create_token_expires_in_generator``
 
-Version 0.7: Honami
--------------------
+Version 0.7
+-----------
 
 **Released on Apr 28, 2018. Better Beta.**
 
@@ -167,8 +177,8 @@ Besides that, there are more changes:
 .. _Loginpass: https://github.com/authlib/loginpass
 
 
-Version 0.6: Matoi
-------------------
+Version 0.6
+-----------
 
 **Released on Mar 20, 2018. Going Beta!**
 
