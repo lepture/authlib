@@ -2,7 +2,7 @@ import logging
 from requests import Session
 from requests.auth import AuthBase
 from authlib.oauth2.client import OAuth2Client
-from authlib.oauth2.client_auth import ClientAuth, TokenAuth
+from authlib.oauth2.auth import ClientAuth, TokenAuth
 from .errors import (
     OAuthError,
     MissingTokenError,
@@ -48,49 +48,58 @@ class OAuth2Session(OAuth2Client, Session):
 
     :param client_id: Client ID, which you get from client registration.
     :param client_secret: Client Secret, which you get from registration.
-    :param token_endpoint_auth_method: Client auth method for token endpoint.
-    :param refresh_token_url: Refresh Token endpoint for auto refresh token.
-    :param refresh_token_params: Extra parameters for refresh token endpoint.
+    :param authorization_endpoint: URL of the authorization server's
+        authorization endpoint.
+    :param token_endpoint: URL of the authorization server's token endpoint.
+    :param token_endpoint_auth_method: client authentication method for
+        token endpoint.
+    :param revocation_endpoint: URL of the authorization server's OAuth 2.0
+        revocation endpoint.
+    :param revocation_endpoint_auth_method: client authentication method for
+        revocation endpoint.
     :param scope: Scope that you needed to access user resources.
     :param redirect_uri: Redirect URI you registered as callback.
     :param token: A dict of token attributes such as ``access_token``,
-                  ``token_type`` and ``expires_at``.
+        ``token_type`` and ``expires_at``.
     :param token_placement: The place to put token in HTTP request. Available
-                            values: "header", "body", "uri".
-    :param state: State string used to prevent CSRF. This will be given
-                  when creating the authorization url and must be
-                  supplied when parsing the authorization response.
+        values: "header", "body", "uri".
     :param token_updater: A function for you to update token. It accept a
-                          :class:`OAuth2Token` as parameter.
+        :class:`OAuth2Token` as parameter.
     """
     client_auth_class = OAuth2ClientAuth
     token_auth_class = OAuth2Auth
 
     def __init__(self, client_id=None, client_secret=None,
-                 token_endpoint_auth_method=None,
-                 refresh_token_url=None, refresh_token_params=None,
-                 scope=None, redirect_uri=None, token=None,
-                 token_placement='header', state=None,
-                 token_updater=None, **kwargs):
+                 authorization_endpoint=None,
+                 token_endpoint=None, token_endpoint_auth_method=None,
+                 revocation_endpoint=None, revocation_endpoint_auth_method=None,
+                 scope=None, redirect_uri=None,
+                 token=None, token_placement='header', token_updater=None, **kwargs):
+
+        refresh_token_url = kwargs.pop('refresh_token_url', None)
+        if refresh_token_url is not None and token_endpoint is None:
+            token_endpoint = refresh_token_url
+
         Session.__init__(self)
         OAuth2Client.__init__(
             self, session=self,
             client_id=client_id, client_secret=client_secret,
-            client_auth_method=token_endpoint_auth_method,
-            refresh_token_url=refresh_token_url,
-            refresh_token_params=refresh_token_params,
+            authorization_endpoint=authorization_endpoint,
+            token_endpoint=token_endpoint,
+            token_endpoint_auth_method=token_endpoint_auth_method,
+            revocation_endpoint=revocation_endpoint,
+            revocation_endpoint_auth_method=revocation_endpoint_auth_method,
             scope=scope, redirect_uri=redirect_uri,
             token=token, token_placement=token_placement,
-            state=state, token_updater=token_updater, **kwargs
+            token_updater=token_updater, **kwargs
         )
-        self.token_endpoint_auth_method = token_endpoint_auth_method
 
     def register_client_auth_method(self, func):
         """Extend client authenticate for token endpoint.
 
         :param func: a function to sign the request
         """
-        self.client_auth.register(self.token_endpoint_auth_method, func)
+        self.client_auth_class.register_auth_method(self.token_endpoint_auth_method, func)
 
     def fetch_access_token(self, url=None, **kwargs):
         """Alias for fetch_token."""

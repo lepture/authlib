@@ -33,7 +33,7 @@ setup(
     include_package_data=True,
     platforms='any',
     long_description=readme,
-    license='BSD',
+    license='BSD-3-Clause',
     install_requires=crypto_requires,
     extras_require={
         'client': client_requires,

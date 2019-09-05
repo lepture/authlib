@@ -1,6 +1,5 @@
 from authlib.common.security import generate_token
 from authlib.common.urls import url_decode
-from .rfc6749 import InsecureTransportError
 from .rfc6749.parameters import (
     prepare_grant_uri,
     prepare_token_request,
@@ -8,7 +7,7 @@ from .rfc6749.parameters import (
     parse_implicit_response,
 )
 from .rfc7009 import prepare_revoke_token_request
-from .client_auth import TokenAuth, ClientAuth
+from .auth import TokenAuth, ClientAuth
 
 DEFAULT_HEADERS = {
     'Accept': 'application/json',
@@ -23,20 +22,23 @@ class OAuth2Client(object):
                     authorization server.
     :param client_id: Client ID, which you get from client registration.
     :param client_secret: Client Secret, which you get from registration.
-    :param client_auth_method: Client auth method for token endpoint.
-    :param refresh_token_url: Refresh Token endpoint for auto refresh token.
-    :param refresh_token_params: Extra parameters for refresh token endpoint.
+    :param authorization_endpoint: URL of the authorization server's
+        authorization endpoint.
+    :param token_endpoint: URL of the authorization server's token endpoint.
+    :param token_endpoint_auth_method: client authentication method for
+        token endpoint.
+    :param revocation_endpoint: URL of the authorization server's OAuth 2.0
+        revocation endpoint.
+    :param revocation_endpoint_auth_method: client authentication method for
+        revocation endpoint.
     :param scope: Scope that you needed to access user resources.
     :param redirect_uri: Redirect URI you registered as callback.
     :param token: A dict of token attributes such as ``access_token``,
-                  ``token_type`` and ``expires_at``.
+        ``token_type`` and ``expires_at``.
     :param token_placement: The place to put token in HTTP request. Available
-                            values: "header", "body", "uri".
-    :param state: State string used to prevent CSRF. This will be given
-                  when creating the authorization url and must be
-                  supplied when parsing the authorization response.
+        values: "header", "body", "uri".
     :param token_updater: A function for you to update token. It accept a
-                          :class:`OAuth2Token` as parameter.
+        :class:`OAuth2Token` as parameter.
     """
     client_auth_class = ClientAuth
     token_auth_class = TokenAuth
@@ -49,42 +51,49 @@ class OAuth2Client(object):
         'proxies', 'hooks', 'stream', 'verify', 'cert', 'json'
     )
 
-    def __init__(self, session, client_id=None,
-                 client_secret=None, client_auth_method=None,
-                 refresh_token_url=None, refresh_token_params=None,
-                 scope=None, redirect_uri=None, token=None,
-                 token_placement='header', state=None,
-                 token_updater=None, **kwargs):
+    def __init__(self, session, client_id=None, client_secret=None,
+                 authorization_endpoint=None,
+                 token_endpoint=None, token_endpoint_auth_method=None,
+                 revocation_endpoint=None, revocation_endpoint_auth_method=None,
+                 scope=None, redirect_uri=None,
+                 token=None, token_placement='header', token_updater=None, **metadata):
 
         self.session = session
         self.client_id = client_id
+        self.client_secret = client_secret
+        self.authorization_endpoint = authorization_endpoint
 
-        if client_auth_method is None:
+        if token_endpoint_auth_method is None:
             if client_secret:
-                client_auth_method = 'client_secret_basic'
+                token_endpoint_auth_method = 'client_secret_basic'
             else:
-                client_auth_method = 'none'
+                token_endpoint_auth_method = 'none'
 
-        self.client_auth = self.client_auth_class(
-            client_id, client_secret, auth_method=client_auth_method)
+        self.token_endpoint = token_endpoint
+        self.token_endpoint_auth_method = token_endpoint_auth_method
 
-        self.refresh_token_url = refresh_token_url
-        self.refresh_token_params = refresh_token_params
+        if revocation_endpoint_auth_method is None:
+            if client_secret:
+                revocation_endpoint_auth_method = 'client_secret_basic'
+            else:
+                revocation_endpoint_auth_method = 'none'
+
+        self.revocation_endpoint = revocation_endpoint
+        self.revocation_endpoint_auth_method = revocation_endpoint_auth_method
 
         self.scope = scope
         self.redirect_uri = redirect_uri
 
-        self.state = state
+        self.token_auth = self.token_auth_class(token, token_placement, self)
         self.token_updater = token_updater
-
-        self._kwargs = kwargs
+        self.metadata = metadata
 
         self.compliance_hook = {
             'access_token_response': set(),
+            'refresh_token_request': set(),
             'refresh_token_response': set(),
             'revoke_token_request': set(),
         }
-        self.token_auth = self.token_auth_class(token, token_placement, self)
 
     @property
     def token(self):
@@ -94,7 +103,7 @@ class OAuth2Client(object):
     def token(self, token):
         self.token_auth.set_token(token)
 
-    def create_authorization_url(self, url, state=None, **kwargs):
+    def create_authorization_url(self, url=None, state=None, **kwargs):
         """Generate an authorization URL and state.
 
         :param url: Authorization endpoint url, must be HTTPS.
@@ -103,11 +112,13 @@ class OAuth2Client(object):
         :param kwargs: Extra parameters to include.
         :return: authorization_url, state
         """
-        state = state or self.state
+        if url is None:
+            url = self.authorization_endpoint
+
         if state is None:
             state = generate_token()
 
-        response_type = self._kwargs.get('response_type', 'code')
+        response_type = self.metadata.get('response_type', 'code')
         response_type = kwargs.pop('response_type', response_type)
         if 'redirect_uri' not in kwargs:
             kwargs['redirect_uri'] = self.redirect_uri
@@ -115,49 +126,60 @@ class OAuth2Client(object):
             kwargs['scope'] = self.scope
 
         for k in self.EXTRA_AUTHORIZE_PARAMS:
-            if k not in kwargs and k in self._kwargs:
-                kwargs[k] = self._kwargs[k]
+            if k not in kwargs and k in self.metadata:
+                kwargs[k] = self.metadata[k]
 
         uri = prepare_grant_uri(
             url, client_id=self.client_id, response_type=response_type,
             state=state, **kwargs)
         return uri, state
 
-    def fetch_token(self, url=None, code=None, authorization_response=None,
-                    body='', auth=None, username=None, password=None,
-                    method='POST', headers=None, **kwargs):
+    def fetch_token(self, url=None, body='', method='POST', headers=None,
+                    auth=None, grant_type=None, **kwargs):
         """Generic method for fetching an access token from the token endpoint.
 
         :param url: Access Token endpoint URL, if not configured,
                     ``authorization_response`` is used to extract token from
                     its fragment (implicit way).
-        :param code: Authorization code (if any)
-        :param authorization_response: Authorization response URL, the callback
-                                       URL of the request back to you. We can
-                                       extract authorization code from it.
         :param body: Optional application/x-www-form-urlencoded body to add the
                      include in the token request. Prefer kwargs over body.
-        :param auth: An auth tuple or method as accepted by requests.
-        :param username: Username of the resource owner for password grant.
-        :param password: Password of the resource owner for password grant.
         :param method: The HTTP method used to make the request. Defaults
                        to POST, but may also be GET. Other methods should
                        be added as needed.
         :param headers: Dict to default request headers with.
+        :param auth: An auth tuple or method as accepted by requests.
+        :param grant_type: Use specified grant_type to fetch token
         :return: A :class:`OAuth2Token` object (a dict too).
         """
-        if url is None and authorization_response:
-            return self.token_from_fragment(authorization_response)
-        InsecureTransportError.check(url)
+        # implicit  grant_type
+        authorization_response = kwargs.pop('authorization_response', None)
+        if authorization_response and '#' in authorization_response:
+            return self.token_from_fragment(authorization_response, kwargs.get('state'))
+
+        if url is None:
+            url = self.token_endpoint
 
         session_kwargs = self._extract_session_request_params(kwargs)
 
-        body = self._prepare_token_endpoint_body(
-            code, authorization_response, body,
-            username, password, **kwargs)
+        if authorization_response and 'code=' in authorization_response:
+            grant_type = 'authorization_code'
+            params = parse_authorization_code_response(
+                authorization_response,
+                state=kwargs.get('state'),
+            )
+            kwargs['code'] = params['code']
+
+        if grant_type is None:
+            grant_type = self.metadata.get('grant_type')
+
+        body = self._prepare_token_endpoint_body(body, grant_type, **kwargs)
 
         if auth is None:
-            auth = self.client_auth
+            auth = self.client_auth_class(
+                client_id=self.client_id,
+                client_secret=self.client_secret,
+                auth_method=self.token_endpoint_auth_method,
+            )
 
         if headers is None:
             headers = DEFAULT_HEADERS
@@ -183,8 +205,8 @@ class OAuth2Client(object):
 
         return self.parse_response_token(resp.json())
 
-    def token_from_fragment(self, authorization_response):
-        token = parse_implicit_response(authorization_response, self.state)
+    def token_from_fragment(self, authorization_response, state=None):
+        token = parse_implicit_response(authorization_response, state)
         return self.parse_response_token(token)
 
     def refresh_token(self, url=None, refresh_token=None, body='',
@@ -200,22 +222,29 @@ class OAuth2Client(object):
         :return: A :class:`OAuth2Token` object (a dict too).
         """
         if url is None:
-            url = self.refresh_token_url
-
-        refresh_token = refresh_token or self.token.get('refresh_token')
-        if self.refresh_token_params is not None:
-            kwargs.update(self.refresh_token_params)
+            url = self.token_endpoint
 
         session_kwargs = self._extract_session_request_params(kwargs)
+        refresh_token = refresh_token or self.token.get('refresh_token')
+        if 'scope' not in kwargs and self.scope:
+            kwargs['scope'] = self.scope
         body = prepare_token_request(
-            'refresh_token', body=body, scope=self.scope,
-            refresh_token=refresh_token, **kwargs)
+            'refresh_token', body,
+            refresh_token=refresh_token, **kwargs
+        )
 
         if headers is None:
             headers = DEFAULT_HEADERS
 
+        for hook in self.compliance_hook['refresh_token_request']:
+            url, headers, body = hook(url, headers, body)
+
         if auth is None:
-            auth = self.client_auth
+            auth = self.client_auth_class(
+                self.client_id,
+                self.client_secret,
+                self.token_endpoint_auth_method,
+            )
 
         return self._refresh_token(
             url, refresh_token=refresh_token, body=body, headers=headers,
@@ -239,7 +268,7 @@ class OAuth2Client(object):
 
         return self.token
 
-    def revoke_token(self, url, token, token_type_hint=None,
+    def revoke_token(self, url=None, token=None, token_type_hint=None,
                      body=None, auth=None, headers=None, **kwargs):
         """Revoke token method defined via `RFC7009`_.
 
@@ -255,6 +284,12 @@ class OAuth2Client(object):
 
         .. _`RFC7009`: https://tools.ietf.org/html/rfc7009
         """
+        if url is None:
+            url = self.revocation_endpoint
+
+        if token is None and self.token:
+            token = self.token.get('refresh_token') or self.token.get('access_token')
+
         if body is None:
             body = ''
 
@@ -265,7 +300,11 @@ class OAuth2Client(object):
             url, headers, body = hook(url, headers, body)
 
         if auth is None:
-            auth = self.client_auth
+            auth = self.client_auth_class(
+                self.client_id,
+                self.client_secret,
+                self.revocation_endpoint_auth_method,
+            )
 
         session_kwargs = self._extract_session_request_params(kwargs)
         return self._revoke_token(
@@ -282,6 +321,7 @@ class OAuth2Client(object):
         Available hooks are:
 
         * access_token_response: invoked before token parsing.
+        * refresh_token_request: invoked before refreshing token.
         * refresh_token_response: invoked before refresh token parsing.
         * protected_request: invoked before making a request.
         * revoke_token_request: invoked before revoking a token.
@@ -304,38 +344,20 @@ class OAuth2Client(object):
         description = token.get('error_description', error)
         self.handle_error(error, description)
 
-    def _prepare_authorization_code_body(self, code, authorization_response,
-                                         body, **kwargs):
-        state = kwargs.pop('state', None)
-        if not state:
-            state = self.state
+    def _prepare_token_endpoint_body(self, body, grant_type, **kwargs):
+        if grant_type is None:
+            if 'code' in kwargs:
+                grant_type = 'authorization_code'
+            elif 'username' in kwargs and 'password' in kwargs:
+                grant_type = 'password'
+            else:
+                grant_type = 'client_credentials'
 
-        if not code and authorization_response:
-            params = parse_authorization_code_response(
-                authorization_response,
-                state=state
-            )
-            code = params['code']
-        if 'redirect_uri' not in kwargs:
-            kwargs['redirect_uri'] = self.redirect_uri
-        return prepare_token_request(
-            'authorization_code', body=body,
-            code=code, state=state, **kwargs)
-
-    def _prepare_token_endpoint_body(self, code, authorization_response,
-                                         body, username, password, **kwargs):
-        if code or authorization_response:
-            body = self._prepare_authorization_code_body(
-                code, authorization_response, body, **kwargs)
-        elif username and password:
-            if 'scope' not in kwargs and self.scope:
-                kwargs['scope'] = self.scope
-            grant_type = kwargs.pop('grant_type', 'password')
-            body = prepare_token_request(
-                grant_type, body, username=username,
-                password=password, **kwargs)
+        if grant_type == 'authorization_code':
+            if 'redirect_uri' not in kwargs:
+                kwargs['redirect_uri'] = self.redirect_uri
+            body = prepare_token_request(grant_type, body, **kwargs)
         else:
-            grant_type = kwargs.pop('grant_type', 'client_credentials')
             if 'scope' not in kwargs and self.scope:
                 kwargs['scope'] = self.scope
             body = prepare_token_request(grant_type, body, **kwargs)

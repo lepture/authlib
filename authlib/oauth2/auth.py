@@ -6,41 +6,6 @@ from .rfc6750 import add_bearer_token
 from .rfc6750 import InvalidTokenError
 
 
-class ClientAuth(object):
-    """Attaches OAuth Client Information to HTTP requests.
-
-    :param client_id: Client ID, which you get from client registration.
-    :param client_secret: Client Secret, which you get from registration.
-    :param auth_method: Client auth method for token endpoint. The supported
-        methods for now:
-
-        * client_secret_basic (default)
-        * client_secret_post
-        * none
-    """
-    def __init__(self, client_id, client_secret, auth_method=None):
-        if auth_method is None:
-            auth_method = 'client_secret_basic'
-
-        self.client_id = client_id
-        self.client_secret = client_secret
-        self.auth_method = auth_method
-
-        self._auth_methods = {
-            'client_secret_basic': encode_client_secret_basic,
-            'client_secret_post': encode_client_secret_post,
-            'none': encode_none,
-        }
-
-    def register(self, method, func):
-        assert method not in self._auth_methods
-        self._auth_methods[method] = func
-
-    def prepare(self, method, uri, headers, body):
-        func = self._auth_methods.get(self.auth_method)
-        return func(self, method, uri, headers, body)
-
-
 def encode_client_secret_basic(client, method, uri, headers, body):
     text = '{}:{}'.format(client.client_id, client.client_secret)
     auth = to_native(base64.urlsafe_b64encode(to_bytes(text, 'latin1')))
@@ -62,6 +27,42 @@ def encode_none(client, method, uri, headers, body):
         return uri, headers, body
     body = add_params_to_qs(body, [('client_id', client.client_id)])
     return uri, headers, body
+
+
+class ClientAuth(object):
+    """Attaches OAuth Client Information to HTTP requests.
+
+    :param client_id: Client ID, which you get from client registration.
+    :param client_secret: Client Secret, which you get from registration.
+    :param auth_method: Client auth method for token endpoint. The supported
+        methods for now:
+
+        * client_secret_basic (default)
+        * client_secret_post
+        * none
+    """
+    AUTH_METHODS = {
+        'client_secret_basic': encode_client_secret_basic,
+        'client_secret_post': encode_client_secret_post,
+        'none': encode_none,
+    }
+
+    @classmethod
+    def register_auth_method(cls, method, func):
+        assert method not in cls.AUTH_METHODS
+        cls.AUTH_METHODS[method] = func
+
+    def __init__(self, client_id, client_secret, auth_method=None):
+        if auth_method is None:
+            auth_method = 'client_secret_basic'
+
+        self.client_id = client_id
+        self.client_secret = client_secret
+        self.auth_method = auth_method
+
+    def prepare(self, method, uri, headers, body):
+        func = self.AUTH_METHODS.get(self.auth_method)
+        return func(self, method, uri, headers, body)
 
 
 class TokenAuth(object):
@@ -92,13 +93,14 @@ class TokenAuth(object):
     def set_token(self, token):
         self.token = OAuth2Token.from_dict(token)
 
-    def ensure_refresh_token(self):
+    def ensure_refresh_token(self, **kwargs):
         if self.client and self.token.is_expired():
-            refresh_token_url = getattr(self.client, 'refresh_token_url')
             refresh_token = self.token.get('refresh_token')
-            if refresh_token_url and refresh_token:
-                return self.client.refresh_token(
-                    refresh_token_url, refresh_token)
+            client = self.client
+            if refresh_token:
+                return client.refresh_token(refresh_token=refresh_token, **kwargs)
+            elif client.metadata.get('grant_type') == 'client_credentials':
+                return client.fetch_token(grant_type='client_credentials', **kwargs)
             else:
                 raise InvalidTokenError()
 

@@ -1,4 +1,4 @@
-from authlib.oauth2.client_auth import TokenAuth
+from authlib.oauth2.auth import TokenAuth
 from authlib.oauth2.rfc7521 import AssertionClient as _AssertionClient
 from authlib.oauth2.rfc7523 import JWTBearerGrant
 

@@ -25,7 +25,7 @@ class OAuth1Client(object):
             raise ValueError('Missing "client_id"')
 
         self.session = session
-        self._client = self.auth_class(
+        self.auth = self.auth_class(
             client_id, client_secret=client_secret,
             token=token, token_secret=token_secret,
             redirect_uri=redirect_uri,
@@ -36,22 +36,21 @@ class OAuth1Client(object):
             force_include_body=force_include_body
         )
         self._kwargs = kwargs
-        self.auth = self._client
 
     @property
     def redirect_uri(self):
-        return self._client.redirect_uri
+        return self.auth.redirect_uri
 
     @redirect_uri.setter
     def redirect_uri(self, uri):
-        self._client.redirect_uri = uri
+        self.auth.redirect_uri = uri
 
     @property
     def token(self):
         return dict(
-            oauth_token=self._client.token,
-            oauth_token_secret=self._client.token_secret,
-            oauth_verifier=self._client.verifier
+            oauth_token=self.auth.token,
+            oauth_token_secret=self.auth.token_secret,
+            oauth_verifier=self.auth.verifier
         )
 
     @token.setter
@@ -61,15 +60,15 @@ class OAuth1Client(object):
         have token setters.
         """
         if token is None:
-            self._client.token = None
-            self._client.token_secret = None
-            self._client.verifier = None
+            self.auth.token = None
+            self.auth.token_secret = None
+            self.auth.verifier = None
         elif 'oauth_token' in token:
-            self._client.token = token['oauth_token']
+            self.auth.token = token['oauth_token']
             if 'oauth_token_secret' in token:
-                self._client.token_secret = token['oauth_token_secret']
+                self.auth.token_secret = token['oauth_token_secret']
             if 'oauth_verifier' in token:
-                self._client.verifier = token['oauth_verifier']
+                self.auth.verifier = token['oauth_verifier']
         else:
             message = 'oauth_token is missing: {!r}'.format(token)
             self.handle_error('missing_token', message)
@@ -88,9 +87,9 @@ class OAuth1Client(object):
         :param kwargs: Optional parameters to append to the URL.
         :returns: The authorization URL with new parameters embedded.
         """
-        kwargs['oauth_token'] = request_token or self._client.token
-        if self._client.redirect_uri:
-            kwargs['oauth_callback'] = self._client.redirect_uri
+        kwargs['oauth_token'] = request_token or self.auth.token
+        if self.auth.redirect_uri:
+            kwargs['oauth_callback'] = self.auth.redirect_uri
         return add_params_to_uri(url, kwargs.items())
 
     def fetch_request_token(self, url, realm=None, **kwargs):
@@ -115,13 +114,13 @@ class OAuth1Client(object):
         if realm:
             if isinstance(realm, (tuple, list)):
                 realm = ' '.join(realm)
-            self._client.realm = realm
+            self.auth.realm = realm
         else:
-            self._client.realm = None
+            self.auth.realm = None
 
         token = self._fetch_token(url, **kwargs)
-        self._client.redirect_uri = None
-        self._client.realm = None
+        self.auth.redirect_uri = None
+        self.auth.realm = None
         return token
 
     def fetch_access_token(self, url, verifier=None, **kwargs):
@@ -137,11 +136,11 @@ class OAuth1Client(object):
         :return: A token dict.
         """
         if verifier:
-            self._client.verifier = verifier
-        if not self._client.verifier:
+            self.auth.verifier = verifier
+        if not self.auth.verifier:
             self.handle_error('missing_verifier', 'Missing "verifier" value')
         token = self._fetch_token(url, **kwargs)
-        self._client.verifier = None
+        self.auth.verifier = None
         return token
 
     def parse_authorization_response(self, url):

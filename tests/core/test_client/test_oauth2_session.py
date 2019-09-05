@@ -260,12 +260,13 @@ class OAuth2SessionTest(TestCase):
             self.assertEqual(sess.fetch_access_token(url), new_token)
 
     def test_mis_match_state(self):
-        sess = OAuth2Session('foo', state='somestate')
+        sess = OAuth2Session('foo')
         self.assertRaises(
             MismatchingStateException,
             sess.fetch_token,
             'https://i.b/token',
-            authorization_response='https://i.b/no-state?code=abc'
+            authorization_response='https://i.b/no-state?code=abc',
+            state='somestate',
         )
 
     def test_token_status(self):

@@ -35,8 +35,6 @@ class OAuthClient(object):
     :param request_token_params: Extra parameters for Request Token endpoint
     :param access_token_url: Access Token endpoint for OAuth 1 and OAuth 2
     :param access_token_params: Extra parameters for Access Token endpoint
-    :param refresh_token_url: Refresh Token endpoint for OAuth 2 (if any)
-    :param refresh_token_params: Extra parameters for Refresh Token endpoint
     :param authorize_url: Endpoint for user authorization of OAuth 1 ro OAuth 2
     :param authorize_params: Extra parameters for Authorization Endpoint
     :param api_base_url: The base API endpoint to make requests simple
@@ -71,10 +69,9 @@ class OAuthClient(object):
             self, client_id=None, client_secret=None,
             request_token_url=None, request_token_params=None,
             access_token_url=None, access_token_params=None,
-            refresh_token_url=None, refresh_token_params=None,
             authorize_url=None, authorize_params=None,
             api_base_url=None, client_kwargs=None,
-            server_metadata_url=None,
+            server_metadata_url=None, code_challenge_method=None,
             compliance_fix=None, **kwargs):
 
         self.client_id = client_id
@@ -83,22 +80,21 @@ class OAuthClient(object):
         self.request_token_params = request_token_params
         self.access_token_url = access_token_url
         self.access_token_params = access_token_params
-        self.refresh_token_url = refresh_token_url
-        self.refresh_token_params = refresh_token_params
         self.authorize_url = authorize_url
         self.authorize_params = authorize_params
         self.api_base_url = api_base_url
 
         self.client_kwargs = client_kwargs or {}
+        self.code_challenge_method = code_challenge_method
         self.compliance_fix = compliance_fix
 
-        self.server_metadata = {}
-
         self._fetch_token = None
-        self._kwargs = kwargs
 
         if server_metadata_url:
-            self._fetch_server_metadata(server_metadata_url)
+            metadata = self._fetch_server_metadata(server_metadata_url)
+            kwargs.update(metadata)
+
+        self.server_metadata = kwargs
 
     def generate_authorize_redirect(
             self, redirect_uri=None, save_request_token=None, **kwargs):
@@ -171,7 +167,7 @@ class OAuthClient(object):
                 if self.access_token_params:
                     kwargs.update(self.access_token_params)
                 kwargs.update(params)
-                token = session.fetch_access_token(token_endpoint, **kwargs)
+                token = session.fetch_token(token_endpoint, **kwargs)
             return token
 
     def _get_session(self):
@@ -181,12 +177,15 @@ class OAuthClient(object):
                 **self.client_kwargs
             )
         else:
+            kwargs = {}
+            kwargs.update(self.client_kwargs)
+            kwargs.update(self.server_metadata)
             session = OAuth2Session(
                 client_id=self.client_id,
                 client_secret=self.client_secret,
-                refresh_token_url=self.refresh_token_url,
-                refresh_token_params=self.refresh_token_params,
-                **self.client_kwargs
+                token_endpoint=self.access_token_url,
+                authorization_endpoint=self.authorize_url,
+                **kwargs
             )
             # only OAuth2 has compliance_fix currently
             if self.compliance_fix:
@@ -196,7 +195,7 @@ class OAuthClient(object):
         return session
 
     def add_code_challenge(self, save_code_verifier, kwargs):
-        code_challenge_method = self._kwargs.get('code_challenge_method')
+        code_challenge_method = self.code_challenge_method
         # only support S256
         if code_challenge_method == 'S256':
             verifier = kwargs.get('code_verifier')
@@ -271,5 +270,4 @@ class OAuthClient(object):
 
     def _fetch_server_metadata(self, url):
         resp = self.get(url, withhold_token=True)
-        data = resp.json()
-        self.server_metadata = data
+        return resp.json()

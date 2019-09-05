@@ -26,14 +26,18 @@ log = logging.getLogger(__name__)
 class OpenIDCode(object):
     """An extension from OpenID Connect for "grant_type=code" request.
     """
-    def __init__(self, key=None, alg=None, iss=None, exp=None,
-                 exists_nonce=None, required_nonce=False):
-        self.key = key
-        self.alg = alg
-        self.iss = iss
-        self.exp = exp
-        self._exists_nonce = exists_nonce
-        self.required_nonce = required_nonce
+    def __init__(self, require_nonce=False, **kwargs):
+        self.require_nonce = require_nonce
+        if 'required_nonce' in kwargs:
+            deprecate('Use "require_nonce" instead', '1.0')
+            if kwargs['required_nonce']:
+                self.require_nonce = True
+
+        self.key = kwargs.get('key')
+        self.alg = kwargs.get('alg')
+        self.iss = kwargs.get('iss')
+        self.exp = kwargs.get('exp')
+        self._exists_nonce = kwargs.get('exists_nonce')
 
     def exists_nonce(self, nonce, request):  # pragma: no cover
         """Check if the given nonce is existing in your database. Developers
@@ -110,7 +114,7 @@ class OpenIDCode(object):
         return token
 
     def validate_openid_authorization_request(self, grant):
-        validate_nonce(grant.request, self.exists_nonce, self.required_nonce)
+        validate_nonce(grant.request, self.exists_nonce, self.require_nonce)
 
     def __call__(self, grant):
         grant.register_hook('process_token', self.process_token)
