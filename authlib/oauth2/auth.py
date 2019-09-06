@@ -3,7 +3,6 @@ from authlib.common.urls import add_params_to_qs
 from authlib.common.encoding import to_bytes, to_native
 from .rfc6749 import OAuth2Token
 from .rfc6750 import add_bearer_token
-from .rfc6750 import InvalidTokenError
 
 
 def encode_client_secret_basic(client, method, uri, headers, body):
@@ -92,17 +91,6 @@ class TokenAuth(object):
 
     def set_token(self, token):
         self.token = OAuth2Token.from_dict(token)
-
-    def ensure_refresh_token(self, **kwargs):
-        if self.client and self.token.is_expired():
-            refresh_token = self.token.get('refresh_token')
-            client = self.client
-            if refresh_token:
-                return client.refresh_token(refresh_token=refresh_token, **kwargs)
-            elif client.metadata.get('grant_type') == 'client_credentials':
-                return client.fetch_token(grant_type='client_credentials', **kwargs)
-            else:
-                raise InvalidTokenError()
 
     def prepare(self, uri, headers, body):
         token_type = self.token['token_type']

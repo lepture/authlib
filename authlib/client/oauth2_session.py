@@ -5,6 +5,7 @@ from authlib.oauth2.client import OAuth2Client
 from authlib.oauth2.auth import ClientAuth, TokenAuth
 from .errors import (
     OAuthError,
+    InvalidTokenError,
     MissingTokenError,
     UnsupportedTokenTypeError,
 )
@@ -20,6 +21,18 @@ DEFAULT_HEADERS = {
 
 class OAuth2Auth(AuthBase, TokenAuth):
     """Sign requests for OAuth 2.0, currently only bearer token is supported."""
+
+    def ensure_refresh_token(self, **kwargs):
+        if self.client and self.token.is_expired():
+            refresh_token = self.token.get('refresh_token')
+            client = self.client
+            if refresh_token:
+                return client.refresh_token(refresh_token=refresh_token, **kwargs)
+            elif client.metadata.get('grant_type') == 'client_credentials':
+                return client.fetch_token(grant_type='client_credentials', **kwargs)
+            else:
+                raise InvalidTokenError()
+
     def __call__(self, req):
         if not self.token:
             raise MissingTokenError()

@@ -1,10 +1,16 @@
 from requests import Session
 from requests.auth import AuthBase
-from .assertion_client import AssertionTokenAuth, AssertionClient
+from authlib.oauth2.auth import TokenAuth
+from authlib.oauth2.rfc7521 import AssertionClient
+from authlib.oauth2.rfc7523 import JWTBearerGrant
 from .errors import UnsupportedTokenTypeError
 
 
-class AssertionAuth(AuthBase, AssertionTokenAuth):
+class AssertionAuth(AuthBase, TokenAuth):
+    def ensure_refresh_token(self):
+        if not self.token or self.token.is_expired() and self.client:
+            return self.client.refresh_token()
+
     def __call__(self, req):
         self.ensure_refresh_token()
         try:
@@ -23,6 +29,11 @@ class AssertionSession(AssertionClient, Session):
     .. _RFC7521: https://tools.ietf.org/html/rfc7521
     """
     token_auth_class = AssertionAuth
+    JWT_BEARER_GRANT_TYPE = JWTBearerGrant.GRANT_TYPE
+    ASSERTION_METHODS = {
+        JWT_BEARER_GRANT_TYPE: JWTBearerGrant.sign,
+    }
+    DEFAULT_GRANT_TYPE = JWT_BEARER_GRANT_TYPE
 
     def __init__(self, token_url, issuer, subject, audience, grant_type=None,
                  claims=None, token_placement='header', scope=None, **kwargs):

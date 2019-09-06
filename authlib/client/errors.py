@@ -16,6 +16,10 @@ class TokenExpiredError(OAuthError):
     error = 'token_expired'
 
 
+class InvalidTokenError(OAuthError):
+    error = 'token_invalid'
+
+
 class UnsupportedTokenTypeError(OAuthError):
     error = 'unsupported_token_type'
 
