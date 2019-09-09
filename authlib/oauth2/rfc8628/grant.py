@@ -2,6 +2,7 @@ import time
 import logging
 from ..rfc6749.errors import (
     InvalidRequestError,
+    InvalidClientError,
     UnauthorizedClientError,
     AccessDeniedError,
 )
@@ -107,6 +108,15 @@ class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
             raise SlowDownError()
 
         raise AuthorizationPendingError()
+
+    def authenticate_token_endpoint_client(self):
+        client = self.server.query_client(self.request.client_id)
+        if not client:
+            raise InvalidClientError()
+        self.server.send_signal(
+            'after_authenticate_client',
+            client=client, grant=self)
+        return client
 
     def query_device_credential(self, device_code):
         raise NotImplementedError()
