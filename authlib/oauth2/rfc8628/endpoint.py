@@ -1,5 +1,6 @@
 from authlib.common.security import generate_token
-from authlib.common.urls import add_params_to_qs
+from authlib.common.urls import add_params_to_uri
+from ..rfc6749.errors import InvalidRequestError
 
 
 class DeviceAuthorizationEndpoint(object):
@@ -22,18 +23,25 @@ class DeviceAuthorizationEndpoint(object):
         self.server = server
         self.verification_uri = verification_uri
 
-    def validate_authorization_request(self, request):
-        # https://tools.ietf.org/html/rfc8628#section-3.1
-        self.server.validate_requested_scope(request.scope)
-        self.server.authenticate_client(request, ['none'])
+    def create_http_response(self, request):
+        request = self.server.create_oauth2_request(request)
+        try:
+            args = self.create_authorization_response(request)
+            return self.server.handle_response(*args)
+        except InvalidRequestError as error:
+            return self.server.handle_error_response(request, error)
 
     def create_authorization_response(self, request):
-        self.validate_authorization_request(request)
+        # https://tools.ietf.org/html/rfc8628#section-3.1
+        if not request.client_id:
+            raise InvalidRequestError('Missing "client_id" in payload')
+
+        self.server.validate_requested_scope(request.scope)
 
         device_code = self.create_device_code()
         user_code = self.create_user_code()
         verification_uri = self.verification_uri
-        verification_uri_complete = add_params_to_qs(
+        verification_uri_complete = add_params_to_uri(
             verification_uri, [('user_code', user_code)])
 
         data = {

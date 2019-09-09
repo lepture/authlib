@@ -18,10 +18,38 @@ DEVICE_CODE_GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:device_code'
 
 
 class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
-    TOKEN_ENDPOINT_AUTH_METHODS = ['none']
+    """This OAuth 2.0 [RFC6749] protocol extension enables OAuth clients to
+    request user authorization from applications on devices that have
+    limited input capabilities or lack a suitable browser.  Such devices
+    include smart TVs, media consoles, picture frames, and printers,
+    which lack an easy input method or a suitable browser required for
+    traditional OAuth interactions. Here is the authorization flow::
+
+        +----------+                                +----------------+
+        |          |>---(A)-- Client Identifier --->|                |
+        |          |                                |                |
+        |          |<---(B)-- Device Code,      ---<|                |
+        |          |          User Code,            |                |
+        |  Device  |          & Verification URI    |                |
+        |  Client  |                                |                |
+        |          |  [polling]                     |                |
+        |          |>---(E)-- Device Code       --->|                |
+        |          |          & Client Identifier   |                |
+        |          |                                |  Authorization |
+        |          |<---(F)-- Access Token      ---<|     Server     |
+        +----------+   (& Optional Refresh Token)   |                |
+              v                                     |                |
+              :                                     |                |
+             (C) User Code & Verification URI       |                |
+              :                                     |                |
+              v                                     |                |
+        +----------+                                |                |
+        | End User |                                |                |
+        |    at    |<---(D)-- End user reviews  --->|                |
+        |  Browser |          authorization request |                |
+        +----------+                                +----------------+
+    """
     GRANT_TYPE = DEVICE_CODE_GRANT_TYPE
-    #: The authorization server MAY contain a refresh token
-    INCLUDE_REFRESH_TOKEN = False
 
     def validate_token_request(self):
         """After displaying instructions to the user, the client creates an
@@ -53,14 +81,14 @@ class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
         """
         device_code = self.request.data.get('device_code')
         if not device_code:
-            raise InvalidRequestError('Missing "device_code"')
+            raise InvalidRequestError('Missing "device_code" in payload')
 
         if not self.request.client_id:
-            raise InvalidRequestError('Missing "client_id"')
+            raise InvalidRequestError('Missing "client_id" in payload')
 
         credential = self.query_device_credential(device_code)
         if not credential:
-            raise InvalidRequestError('Invalid "device_code"')
+            raise InvalidRequestError('Invalid "device_code" in payload')
 
         if credential.get_client_id() != self.request.client_id:
             raise UnauthorizedClientError()
@@ -75,13 +103,17 @@ class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
         self.request.credential = credential
 
     def create_token_response(self):
+        """If the access token request is valid and authorized, the
+        authorization server issues an access token and optional refresh
+        token.
+        """
         client = self.request.client
         scope = self.request.credential.get_scope()
         token = self.generate_token(
             client, self.GRANT_TYPE,
             user=self.request.user,
             scope=client.get_allowed_scope(scope),
-            include_refresh_token=self.INCLUDE_REFRESH_TOKEN,
+            include_refresh_token=client.check_grant_type('refresh_token'),
         )
         log.debug('Issue token %r to %r', token, client)
         self.save_token(token)
@@ -93,10 +125,9 @@ class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
         user_grant = self.query_user_grant(user_code)
 
         if user_grant is not None:
-            user_id, approved = user_grant
+            user, approved = user_grant
             if not approved:
                 raise AccessDeniedError()
-            user = self.authenticate_user(user_id)
             return user
 
         exp = credential.get_expires_at()
@@ -119,12 +150,33 @@ class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
         return client
 
     def query_device_credential(self, device_code):
+        """Get device credential from previously savings via ``DeviceAuthorizationEndpoint``.
+        Developers MUST implement it in subclass::
+
+            def query_device_credential(self, device_code):
+                return DeviceCredential.query.get(device_code)
+
+        :param device_code: a string represent the code.
+        :return: DeviceCredential instance
+        """
         raise NotImplementedError()
 
     def query_user_grant(self, user_code):
-        raise NotImplementedError()
+        """Get user and grant via the given user code. Developers MUST
+        implement it in subclass::
 
-    def authenticate_user(self, user_id):
+            def query_user_grant(self, user_code):
+                # e.g. we saved user grant info in redis
+                data = redis.get('oauth_user_grant:' + user_code)
+                if not data:
+                    return None
+
+                user_id, allowed = data.split()
+                user = User.query.get(user_id)
+                return user, bool(allowed)
+
+        Note, user grant information is saved by verification endpoint.
+        """
         raise NotImplementedError()
 
     def should_slow_down(self, credential, now):

@@ -1,6 +1,7 @@
 import time
-from flask import json
+from flask import json, request
 from authlib.oauth2.rfc8628 import (
+    DeviceAuthorizationEndpoint as _DeviceAuthorizationEndpoint,
     DeviceCodeGrant as _DeviceCodeGrant,
     DeviceCredentialDict,
 )
@@ -58,13 +59,10 @@ class DeviceCodeGrant(_DeviceCodeGrant):
 
     def query_user_grant(self, user_code):
         if user_code == 'code':
-            return 1, True
+            return User.query.get(1), True
         if user_code == 'denied':
-            return 1, False
+            return User.query.get(1), False
         return None
-
-    def authenticate_user(self, user_id):
-        return db.session.query(User).get(user_id)
 
     def should_slow_down(self, credential, now):
         return False
@@ -189,3 +187,46 @@ class DeviceCodeGrantTest(TestCase):
         })
         resp = json.loads(rv.data)
         self.assertIn('access_token', resp)
+
+
+class DeviceAuthorizationEndpoint(_DeviceAuthorizationEndpoint):
+    def save_device_credential(self, client_id, scope, data):
+        pass
+
+
+class DeviceAuthorizationEndpointTest(TestCase):
+    def create_server(self):
+        server = create_authorization_server(self.app)
+        self.server = server
+
+        endpoint = DeviceAuthorizationEndpoint(server, 'https://example.com/activate')
+
+        @self.app.route('/device_authorize', methods=['POST'])
+        def device_authorize():
+            return endpoint.create_http_response(request)
+
+        return server
+
+    def test_missing_client_id(self):
+        self.create_server()
+        rv = self.client.post('/device_authorize', data={
+            'scope': 'profile'
+        })
+        self.assertEqual(rv.status_code, 400)
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['error'], 'invalid_request')
+
+    def test_create_authorization_response(self):
+        self.create_server()
+        rv = self.client.post('/device_authorize', data={
+            'client_id': 'client',
+        })
+        self.assertEqual(rv.status_code, 200)
+        resp = json.loads(rv.data)
+        self.assertIn('device_code', resp)
+        self.assertIn('user_code', resp)
+        self.assertEqual(resp['verification_uri'], 'https://example.com/activate')
+        self.assertEqual(
+            resp['verification_uri_complete'],
+            'https://example.com/activate?user_code=' + resp['user_code']
+        )

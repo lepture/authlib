@@ -216,7 +216,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         # ensure that the authorization code was issued to the authenticated
         # confidential client, or if the client is public, ensure that the
         # code was issued to "client_id" in the request
-        authorization_code = self.parse_authorization_code(code, client)
+        authorization_code = self.query_authorization_code(code, client)
         if not authorization_code:
             raise InvalidRequestError('Invalid "code" in request.')
 
@@ -284,7 +284,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def create_authorization_code(self, client, grant_user, request):
-        """Save authorization_code for later use. Developers should implement
+        """Save authorization_code for later use. Developers MUST implement
         it in subclass. Here is an example::
 
             from authlib.common.security import generate_token
@@ -308,21 +308,23 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         """
         raise NotImplementedError()
 
-    def parse_authorization_code(self, code, client):
-        """Get authorization_code from previously savings. Developers should
+    def query_authorization_code(self, code, client):
+        """Get authorization_code from previously savings. Developers MUST
         implement it in subclass::
 
-            def parse_authorization_code(self, code, client):
+            def query_authorization_code(self, code, client):
                 return Authorization.get(code=code, client_id=client.client_id)
 
         :param code: a string represent the code.
         :param client: client related to this code.
         :return: authorization_code object
         """
+        if hasattr(self, 'parse_authorization_code'):
+            return self.parse_authorization_code(code, client)
         raise NotImplementedError()
 
     def delete_authorization_code(self, authorization_code):
-        """Delete authorization code from database or cache. Developers should
+        """Delete authorization code from database or cache. Developers MUST
         implement it in subclass, e.g.::
 
             def delete_authorization_code(self, authorization_code):
@@ -334,7 +336,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
 
     def authenticate_user(self, authorization_code):
         """Authenticate the user related to this authorization_code. Developers
-        should implement this method in subclass, e.g.::
+        MUST implement this method in subclass, e.g.::
 
             def authenticate_user(self, authorization_code):
                 return User.query.get(authorization_code.user_id)
