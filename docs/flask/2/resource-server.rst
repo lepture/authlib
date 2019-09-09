@@ -109,6 +109,19 @@ It is also possible to pass a function as the scope operator. e.g.::
         return jsonify(user)
 
 
+Optional ``require_oauth``
+--------------------------
+
+There is one more parameter for ``require_oauth`` which is used to serve
+public endpoints::
+
+    @app.route('/timeline')
+    @require_oauth(optional=True)
+    def timeline_api():
+        if current_token:
+            return get_user_timeline(current_token.user)
+        return get_public_timeline()
+
 MethodView & Flask-Restful
 --------------------------
 

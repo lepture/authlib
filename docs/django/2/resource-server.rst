@@ -70,3 +70,16 @@ It is also possible to pass a function as the scope operator. e.g.::
     def user_profile(request):
         user = request.oauth_token.user
         return JsonResponse(dict(sub=user.pk, username=user.username))
+
+
+Optional ``require_oauth``
+--------------------------
+
+There is one more parameter for ``require_oauth`` which is used to serve
+public endpoints::
+
+    @require_oauth(optional=True)
+    def timeline_api(request):
+        if request.oauth_token:
+            return get_user_timeline(request.oauth_token.user)
+        return get_public_timeline(request)
