@@ -76,7 +76,9 @@ class BaseGrant(object):
 
     def validate_requested_scope(self):
         """Validate if requested scope is supported by Authorization Server."""
-        return self.server.validate_requested_scope(self.request)
+        scope = self.request.scope
+        state = self.request.state
+        return self.server.validate_requested_scope(scope, state)
 
     def register_hook(self, hook_type, hook):
         if hook_type not in self._hooks:

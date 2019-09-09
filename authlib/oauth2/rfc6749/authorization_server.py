@@ -83,15 +83,15 @@ class AuthorizationServer(object):
         """Return HTTP response. Framework MUST implement this function."""
         raise NotImplementedError()
 
-    def validate_requested_scope(self, request):
+    def validate_requested_scope(self, scope, state=None):
         """Validate if requested scope is supported by Authorization Server.
         Developers CAN re-write this method to meet your needs.
         """
-        if request.scope and self.metadata:
+        if scope and self.metadata:
             scopes_supported = self.metadata.get('scopes_supported')
-            scopes = set(scope_to_list(request.scope))
+            scopes = set(scope_to_list(scope))
             if scopes_supported and not set(scopes_supported).issuperset(scopes):
-                raise InvalidScopeError(state=request.state)
+                raise InvalidScopeError(state=state)
 
     def register_grant(self, grant_cls, extensions=None):
         """Register a grant class into the endpoint registry. Developers
