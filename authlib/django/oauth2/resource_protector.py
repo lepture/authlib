@@ -16,20 +16,6 @@ from ..helpers import parse_request_headers
 
 
 class ResourceProtector(_ResourceProtector):
-    def return_error_response(self, error):
-        """Raise HTTPException for OAuth2Error. Developers can re-implement
-        this method to customize the error response.
-
-        :param error: OAuth2Error
-        :raise: HTTPException
-        """
-        body = dict(error.get_body())
-        resp = JsonResponse(body, status=error.status_code)
-        headers = error.get_headers()
-        for k, v in headers:
-            resp[k] = v
-        return resp
-
     def acquire_token(self, request, scope=None, operator='AND'):
         """A method to acquire current valid token with the given scope.
 
@@ -58,9 +44,9 @@ class ResourceProtector(_ResourceProtector):
                     if optional:
                         request.oauth_token = None
                         return f(request, *args, **kwargs)
-                    return self.return_error_response(error)
+                    return return_error_response(error)
                 except OAuth2Error as error:
-                    return self.return_error_response(error)
+                    return return_error_response(error)
                 return f(request, *args, **kwargs)
             return decorated
         return wrapper
@@ -82,3 +68,12 @@ class BearerTokenValidator(_BearerTokenValidator):
 
     def token_revoked(self, token):
         return token.revoked
+
+
+def return_error_response(error):
+    body = dict(error.get_body())
+    resp = JsonResponse(body, status=error.status_code)
+    headers = error.get_headers()
+    for k, v in headers:
+        resp[k] = v
+    return resp

@@ -22,8 +22,8 @@ class AuthorizationServer(_AuthorizationServer):
 
         super(AuthorizationServer, self).__init__(
             query_client=self.get_client_by_id,
-            generate_token=generate_token,
             save_token=self.save_oauth2_token,
+            generate_token=generate_token,
             metadata=metadata,
         )
 

@@ -40,7 +40,10 @@ class AuthorizationServer(_AuthorizationServer):
         server.init_app(app, query_client, save_token)
     """
     def __init__(self, app=None, query_client=None, save_token=None):
-        super(AuthorizationServer, self).__init__(query_client, None, save_token)
+        super(AuthorizationServer, self).__init__(
+            query_client=query_client,
+            save_token=save_token,
+        )
         self.config = {}
         if app is not None:
             self.init_app(app)
