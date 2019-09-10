@@ -35,7 +35,7 @@ class OAuthClient(object):
     :param request_token_params: Extra parameters for Request Token endpoint
     :param access_token_url: Access Token endpoint for OAuth 1 and OAuth 2
     :param access_token_params: Extra parameters for Access Token endpoint
-    :param authorize_url: Endpoint for user authorization of OAuth 1 ro OAuth 2
+    :param authorize_url: Endpoint for user authorization of OAuth 1 or OAuth 2
     :param authorize_params: Extra parameters for Authorization Endpoint
     :param api_base_url: The base API endpoint to make requests simple
     :param client_kwargs: Extra keyword arguments for session
