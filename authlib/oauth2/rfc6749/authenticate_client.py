@@ -41,6 +41,7 @@ class ClientAuthentication(object):
             func = self._methods[method]
             client = func(self.query_client, request)
             if client:
+                request.auth_method = method
                 return client
 
         if 'client_secret_basic' in methods:
@@ -100,8 +101,7 @@ def authenticate_none(query_client, request):
     client_id = request.client_id
     if client_id and 'client_secret' not in request.data:
         client = _validate_client(query_client, client_id, request.state)
-        if client.check_token_endpoint_auth_method('none') \
-                and client.check_client_type('public'):
+        if client.check_token_endpoint_auth_method('none'):
             log.debug(
                 'Authenticate %s via "none" '
                 'success', client_id

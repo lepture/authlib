@@ -61,7 +61,7 @@ class CodeChallengeTest(TestCase):
 
     def test_missing_code_challenge(self):
         self.prepare_data()
-        rv = self.client.get(self.authorize_url)
+        rv = self.client.get(self.authorize_url + '&code_challenge_method=plain')
         self.assertIn(b'Missing', rv.data)
 
     def test_has_code_challenge(self):

@@ -62,24 +62,21 @@ class CodeChallenge(object):
         request = grant.request
         challenge = request.args.get('code_challenge')
         method = request.args.get('code_challenge_method')
-        if not self.required and not challenge and not method:
+        if not challenge and not method:
             return
 
-        client = request.client
-        if client.check_client_type('public') and not challenge:
+        if not challenge:
             raise InvalidRequestError('Missing "code_challenge"')
 
         if method and method not in self.SUPPORTED_CODE_CHALLENGE_METHOD:
-            raise InvalidRequestError(
-                description='Unsupported "code_challenge_method"')
+            raise InvalidRequestError('Unsupported "code_challenge_method"')
 
     def validate_code_verifier(self, grant):
         request = grant.request
         verifier = request.form.get('code_verifier')
-        client = request.client
 
         # public client MUST verify code challenge
-        if self.required and client.check_client_type('public') and not verifier:
+        if self.required and request.auth_method == 'none' and not verifier:
             raise InvalidRequestError('Missing "code_verifier"')
 
         authorization_code = request.credential

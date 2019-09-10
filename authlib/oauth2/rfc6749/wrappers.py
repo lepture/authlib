@@ -48,6 +48,8 @@ class OAuth2Request(object):
         data.update(self.form)
         self.data = data
 
+        #: authenticate method
+        self.auth_method = None
         #: authenticated user on this request
         self.user = None
         #: authorization_code or token model instance

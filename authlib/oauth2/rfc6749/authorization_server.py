@@ -10,14 +10,14 @@ class AuthorizationServer(object):
     :param query_client: A function to get client by client_id. The client
         model class MUST implement the methods described by
         :class:`~authlib.oauth2.rfc6749.ClientMixin`.
-    :param generate_token: A method to generate tokens.
     :param save_token: A method to save tokens.
+    :param generate_token: A method to generate tokens.
     :param metadata: A dict of Authorization Server Metadata
     """
-    def __init__(self, query_client, generate_token, save_token, metadata=None):
+    def __init__(self, query_client, save_token, generate_token=None, metadata=None):
         self.query_client = query_client
-        self.generate_token = generate_token
         self.save_token = save_token
+        self.generate_token = generate_token
         if query_client:
             self.authenticate_client = ClientAuthentication(query_client)
         else:

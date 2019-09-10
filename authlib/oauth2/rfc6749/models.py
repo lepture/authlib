@@ -140,33 +140,6 @@ class ClientMixin(object):
         """
         raise NotImplementedError()
 
-    def check_client_type(self, client_type):
-        """Validate if the client is the given ``client_type``. The available
-        choices are:
-
-        * public:
-            Clients incapable of maintaining the confidentiality of their
-            credentials (e.g., clients executing on the device used by the
-            resource owner, such as an installed native application or a web
-            browser-based application), and incapable of secure client
-            authentication via any other means.
-        * confidential:
-            Clients capable of maintaining the confidentiality of their
-            credentials (e.g., client implemented on a secure server with
-            restricted access to the client credentials), or capable of secure
-            client authentication using other means.
-
-        Developers can overwrite this method to implement a new logic.
-
-        :param client_type: string of "public" or "confidential"
-        :return: bool
-        """
-        if client_type == 'public':
-            return not self.has_client_secret()
-        if client_type == 'confidential':
-            return self.has_client_secret()
-        raise ValueError('Invalid client_type: {!r}'.format(client_type))
-
 
 class AuthorizationCodeMixin(object):
     def get_redirect_uri(self):
