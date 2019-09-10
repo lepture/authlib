@@ -1,9 +1,9 @@
-import json
 from authlib.common.encoding import (
     to_bytes,
     to_unicode,
     urlsafe_b64encode,
-    json_b64encode
+    json_b64encode,
+    json_loads,
 )
 from authlib.jose.util import (
     prepare_algorithm_key,
@@ -305,7 +305,7 @@ def _extract_payload(payload_segment):
 def _ensure_dict(s):
     if not isinstance(s, dict):
         try:
-            s = json.loads(to_unicode(s))
+            s = json_loads(to_unicode(s))
         except (ValueError, TypeError):
             raise DecodeError('Invalid JWS')
 

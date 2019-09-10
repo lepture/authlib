@@ -1,5 +1,4 @@
-import json
-from authlib.common.encoding import text_types
+from authlib.common.encoding import text_types, json_loads
 from .rfc7517 import JsonWebKey
 from .rfc7518 import JWK_ALGORITHMS
 
@@ -13,7 +12,7 @@ def _load_jwk(key, header):
         return jwk.loads(key, header.get('kid'))
     if isinstance(key, text_types) and \
             key.startswith('{') and key.endswith('}'):
-        return jwk.loads(json.loads(key), header.get('kid'))
+        return jwk.loads(json_loads(key), header.get('kid'))
     return key
 
 

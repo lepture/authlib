@@ -1,8 +1,10 @@
 import re
-import json
 import datetime
 import calendar
-from authlib.common.encoding import text_types, to_bytes, to_unicode
+from authlib.common.encoding import (
+    text_types, to_bytes, to_unicode,
+    json_loads, json_dumps,
+)
 from authlib.jose.jwk import load_key, create_key_func
 from authlib.jose.errors import DecodeError, InsecureClaimError
 from .claims import JWTClaims
@@ -88,7 +90,7 @@ class JsonWebToken(object):
             self.check_sensitive_data(payload)
 
         key = load_key(key, header, payload)
-        text = to_bytes(json.dumps(payload, separators=(',', ':')))
+        text = to_bytes(json_dumps(payload))
         if 'enc' in header:
             return self._jwe.serialize_compact(header, text, key)
         else:
@@ -130,7 +132,7 @@ class JsonWebToken(object):
 
 def decode_payload(bytes_payload):
     try:
-        payload = json.loads(to_unicode(bytes_payload))
+        payload = json_loads(to_unicode(bytes_payload))
     except ValueError:
         raise DecodeError('Invalid payload value')
     if not isinstance(payload, dict):

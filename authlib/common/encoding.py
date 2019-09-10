@@ -43,6 +43,14 @@ def to_native(x, encoding='ascii'):
     return x.decode(encoding)
 
 
+def json_loads(s):
+    return json.loads(s)
+
+
+def json_dumps(data, ensure_ascii=False):
+    return json.dumps(data, ensure_ascii=ensure_ascii, separators=(',', ':'))
+
+
 def urlsafe_b64decode(s):
     s += b'=' * (-len(s) % 4)
     return base64.urlsafe_b64decode(s)
@@ -76,5 +84,5 @@ def int_to_base64(num):
 
 def json_b64encode(text):
     if isinstance(text, dict):
-        text = json.dumps(text, separators=(',', ':'))
+        text = json_dumps(text)
     return urlsafe_b64encode(to_bytes(text))

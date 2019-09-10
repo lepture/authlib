@@ -1,6 +1,5 @@
 import binascii
-import json
-from authlib.common.encoding import urlsafe_b64decode
+from authlib.common.encoding import urlsafe_b64decode, json_loads
 
 
 def prepare_algorithm_key(algorithms, header, payload, key, private=False):
@@ -19,7 +18,7 @@ def extract_header(header_segment, error_cls):
     header_data = extract_segment(header_segment, error_cls, 'header')
 
     try:
-        header = json.loads(header_data.decode('utf-8'))
+        header = json_loads(header_data.decode('utf-8'))
     except ValueError as e:
         raise error_cls('Invalid header string: {}'.format(e))
 

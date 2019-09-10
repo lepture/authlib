@@ -1,4 +1,3 @@
-import json
 from django.http import HttpResponse
 from django.utils.module_loading import import_string
 from django.conf import settings
@@ -8,6 +7,7 @@ from authlib.oauth2 import (
 )
 from authlib.oauth2.rfc6750 import BearerToken
 from authlib.common.security import generate_token as _generate_token
+from authlib.common.encoding import json_dumps
 from .signals import client_authenticated, token_revoked
 from ..helpers import create_oauth_request
 
@@ -52,7 +52,7 @@ class AuthorizationServer(_AuthorizationServer):
 
     def handle_response(self, status_code, payload, headers):
         if isinstance(payload, dict):
-            payload = json.dumps(payload)
+            payload = json_dumps(payload)
         resp = HttpResponse(payload, status=status_code)
         for k, v in headers:
             resp[k] = v

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-import json
 from authlib.common.urls import (
     url_decode,
     add_params_to_uri,
     urlparse,
 )
+from authlib.common.encoding import json_loads
 from .rfc5849 import (
     SIGNATURE_HMAC_SHA1,
     SIGNATURE_TYPE_HEADER,
@@ -169,7 +169,7 @@ class OAuth1Client(object):
         try:
             text = text.strip()
             if text.startswith('{'):
-                token = json.loads(text)
+                token = json_loads(text)
             else:
                 token = dict(url_decode(text))
         except (TypeError, ValueError) as e:
