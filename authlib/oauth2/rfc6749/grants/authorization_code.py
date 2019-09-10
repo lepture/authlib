@@ -1,5 +1,6 @@
 import logging
 from authlib.common.urls import add_params_to_uri
+from authlib.common.security import generate_token
 from .base import BaseGrant, AuthorizationEndpointMixin, TokenEndpointMixin
 from ..errors import (
     OAuth2Error,
@@ -50,6 +51,9 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
     TOKEN_ENDPOINT_AUTH_METHODS = [
         'client_secret_basic', 'client_secret_post', 'none'
     ]
+
+    #: Generated "code" length
+    AUTHORIZATION_CODE_LENGTH = 48
 
     RESPONSE_TYPES = {'code'}
     GRANT_TYPE = 'authorization_code'
@@ -146,9 +150,15 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         state = self.request.state
         if grant_user:
             self.request.user = grant_user
-            client = self.request.client
-            code = self.create_authorization_code(
-                client, grant_user, self.request)
+
+            if hasattr(self, 'create_authorization_code'):
+                # TODO: deprecate
+                code = self.create_authorization_code(
+                    self.request.client, grant_user, self.request)
+            else:
+                code = self.generate_authorization_code()
+                self.save_authorization_code(code, self.request)
+
             params = [('code', code)]
             if state:
                 params.append(('state', state))
@@ -283,28 +293,29 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         self.delete_authorization_code(authorization_code)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
-    def create_authorization_code(self, client, grant_user, request):
+    def generate_authorization_code(self):
+        """"The method to generate "code" value for authorization code data.
+        Developers may rewrite this method, or customize the code length with::
+
+            class MyAuthorizationCodeGrant(AuthorizationCodeGrant):
+                AUTHORIZATION_CODE_LENGTH = 32  # default is 48
+        """
+        return generate_token(self.AUTHORIZATION_CODE_LENGTH)
+
+    def save_authorization_code(self, code, request):
         """Save authorization_code for later use. Developers MUST implement
         it in subclass. Here is an example::
 
-            from authlib.common.security import generate_token
-
-            def create_authorization_code(self, client, request):
-                code = generate_token(48)
+            def save_authorization_code(self, code, request):
+                client = request.client
                 item = AuthorizationCode(
                     code=code,
                     client_id=client.client_id,
                     redirect_uri=request.redirect_uri,
                     scope=request.scope,
-                    user_id=grant_user.get_user_id(),
+                    user_id=request.user.id,
                 )
                 item.save()
-                return code
-
-        :param client: the client that requesting the token.
-        :param grant_user: the resource owner that grant the permission.
-        :param request: OAuth2Request instance.
-        :return: code string
         """
         raise NotImplementedError()
 
@@ -320,6 +331,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         :return: authorization_code object
         """
         if hasattr(self, 'parse_authorization_code'):
+            # TODO: deprecate
             return self.parse_authorization_code(code, client)
         raise NotImplementedError()
 

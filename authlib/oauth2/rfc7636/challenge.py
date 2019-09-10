@@ -45,7 +45,7 @@ class CodeChallenge(object):
         'S256': compare_s256_code_challenge,
     }
 
-    def __init__(self, required=False):
+    def __init__(self, required=True):
         self.required = required
 
     def __call__(self, grant):
@@ -83,9 +83,10 @@ class CodeChallenge(object):
         challenge = self.get_authorization_code_challenge(authorization_code)
 
         # ignore, it is the normal RFC6749 authorization_code request
-        if challenge is None and verifier is None:
+        if not challenge:
             return
 
+        # challenge exists, code_verifier is required
         if not verifier:
             raise InvalidRequestError('Missing "code_verifier"')
 
