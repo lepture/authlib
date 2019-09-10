@@ -17,7 +17,7 @@ it in :ref:`JWK Guide <jwk_guide>`.
 API Reference
 -------------
 
-.. autoclass:: JWK
+.. autoclass:: JsonWebKey
    :member-order: bysource
    :members:
 

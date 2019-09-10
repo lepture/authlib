@@ -77,12 +77,12 @@ Compact Serialize and Deserialize
 ---------------------------------
 
 Generate a JWS compact serialization would be easy with
-:meth:`JWS.serialize_compact`, build a JWS instance with JWA::
+:meth:`JsonWebSignature.serialize_compact`, build a JWS instance with JWA::
 
-    from authlib.jose import JWS
+    from authlib.jose import JsonWebSignature
     from authlib.jose import JWS_ALGORITHMS
 
-    jws = JWS(algorithms=JWS_ALGORITHMS)
+    jws = JsonWebSignature(algorithms=JWS_ALGORITHMS)
     # alg is a required parameter name
     protected = {'alg': 'HS256'}
     payload = b'example'
@@ -99,7 +99,7 @@ algorithms:
 
 For example, a JWS with RS256 requires a private PEM key to sign the JWS::
 
-    jws = JWS(algorithms=JWS_ALGORITHMS)
+    jws = JsonWebSignature(algorithms=JWS_ALGORITHMS)
     protected = {'alg': 'RS256'}
     payload = b'example'
     with open('private.pem', 'rb') as f:
@@ -107,7 +107,7 @@ For example, a JWS with RS256 requires a private PEM key to sign the JWS::
     jws.serialize_compact(protected, payload, secret)
 
 To deserialize a JWS Compact Serialization, use
-:meth:`JWS.deserialize_compact`::
+:meth:`JsonWebSignature.deserialize_compact`::
 
     # if it is a RS256, we use public RSA key
     with open('public.pem', 'rb') as f:
@@ -132,10 +132,10 @@ Using **JWK** for keys? Find how to use JWK with :ref:`jwk_guide`.
 JSON Serialize and Deserialize
 ------------------------------
 
-:meth:`JWS.serialize_json` is used to generate a JWS JSON Serialization,
-:meth:`JWS.deserialize_json` is used to extract a JWS JSON Serialization.
-The usage is the same as "Compact Serialize and Deserialize", the only
-difference is the "header"::
+:meth:`JsonWebSignature.serialize_json` is used to generate a JWS JSON Serialization,
+:meth:`JsonWebSignature.deserialize_json` is used to extract a JWS JSON Serialization.
+The usage is the same as "Compact Serialize and Deserialize", the only difference is
+the "header"::
 
     # Flattened JSON serialization header syntax
     header = {'protected': {'alg': 'HS256'}, 'header': {'cty': 'JWT'}}
@@ -167,9 +167,9 @@ can use its own key, in this case the dynamical key would be useful::
 
     jws.deserialize_json(data, load_public_key)
 
-Actually, there is a :meth:`JWS.serialize` and :meth:`JWS.deserialize`,
-which can automatically serialize and deserialize Compact and JSON
-Serializations.
+Actually, there is a :meth:`JsonWebSignature.serialize` and
+:meth:`JsonWebSignature.deserialize`, which can automatically serialize
+and deserialize Compact and JSON Serializations.
 
 The result of the ``deserialize_json`` is a dict, which contains ``header``
 and ``payload``. The value of the ``header`` is a :class:`JWSHeader`.
@@ -179,15 +179,15 @@ Using **JWK** for keys? Find how to use JWK with :ref:`jwk_guide`.
 Header Parameter Names
 ~~~~~~~~~~~~~~~~~~~~~~
 
-:class:`JWS` has a validation on header parameter names. It will first check
-if the parameter name is in "Registered Header Parameter Names" defined by
-RFC7515 `Section 4.1`_. Then it will check if the parameter name is in your
-defined private headers.
+:class:`JsonWebSignature` has a validation on header parameter names. It will
+first check if the parameter name is in "Registered Header Parameter Names"
+defined by RFC7515 `Section 4.1`_. Then it will check if the parameter name is
+in your defined private headers.
 
 In this case, if there are header parameter names out of the registered header
 parameter names scope, you can pass the names::
 
     private_headers = ['h1', 'h2']
-    jws = JWS(algorithms=JWS_ALGORITHMS, private_headers=private_headers)
+    jws = JsonWebSignature(algorithms=JWS_ALGORITHMS, private_headers=private_headers)
 
 .. _`Section 4.1`: https://tools.ietf.org/html/rfc7515#section-4.1

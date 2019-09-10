@@ -19,16 +19,16 @@ that represents a cryptographic key. An example would help a lot::
 
 This is an Elliptic Curve Public Key represented by JSON data structure. How
 do we ``dumps`` a key into JWK, and ``loads`` JWK back into key? The interface
-of :class:`JWK` contains these two methods.
+of :class:`JsonWebKey` contains these two methods.
 
 Algorithms for ``kty`` (Key Type) is defined by :ref:`specs/rfc7518`.
 Available ``kty`` values are: **EC**, **RSA** and **oct**. Initialize a JWK
 instance with JWA::
 
-    from authlib.jose import JWK
+    from authlib.jose import JsonWebKey
     from authlib.jose import JWK_ALGORITHMS
 
-    jwk = JWK(algorithms=JWK_ALGORITHMS)
+    jwk = JsonWebKey(algorithms=JWK_ALGORITHMS)
     key = read_file('public.pem')
     obj = jwk.dumps(key, kty='RSA')
     # obj is a dict, you may turn it into JSON

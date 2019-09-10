@@ -18,7 +18,7 @@ it in :ref:`JWE Guide <jwe_guide>`.
 API Reference
 -------------
 
-.. autoclass:: JWE
+.. autoclass:: JsonWebEncryption
     :member-order: bysource
     :members:
 

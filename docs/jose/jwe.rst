@@ -51,12 +51,12 @@ Compact Serialize and Deserialize
 ---------------------------------
 
 Generate a JWE compact serialization would be easy with
-:meth:`JWE.serialize_compact`, build a JWE instance with JWA::
+:meth:`JsonWebEncryption.serialize_compact`, build a JWE instance with JWA::
 
-    from authlib.jose import JWE
+    from authlib.jose import JsonWebEncryption
     from authlib.jose import JWE_ALGORITHMS
 
-    jwe = JWE(algorithms=JWE_ALGORITHMS)
+    jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
     protected = {'alg': 'RSA-OAEP', 'enc': 'A256GCM'}
     payload = b'hello'
     with open('rsa_public.pem', 'rb') as f:
@@ -85,7 +85,7 @@ It is also available to compress the payload with ``zip`` header::
     s = jwe.serialize_compact(protected, payload, key)
 
 To deserialize a JWE Compact Serialization, use
-:meth:`JWE.deserialize_compact`::
+:meth:`JsonWebEncryption.deserialize_compact`::
 
     with open('rsa_private.pem', 'rb') as f:
         key = f.read()

@@ -18,7 +18,7 @@ it in :ref:`JWT Guide <jwt_guide>`.
 API Reference
 -------------
 
-.. autoclass:: JWT
+.. autoclass:: JsonWebToken
     :member-order: bysource
     :members:
 

@@ -16,7 +16,7 @@ it in :ref:`JWS Guide <jws_guide>`.
 API Reference
 -------------
 
-.. autoclass:: JWS
+.. autoclass:: JsonWebSignature
     :member-order: bysource
     :members:
 

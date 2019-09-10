@@ -6,7 +6,7 @@ JSON Web Token (JWT)
 .. module:: authlib.jose.rfc7519
     :noindex:
 
-JSON Web Token (JWT) is structured by :ref:`specs/rfc7515` or :`specs/rfc7516`
+JSON Web Token (JWT) is structured by :ref:`specs/rfc7515` or :ref:`specs/rfc7516`
 with certain payload claims. The JWT implementation in Authlib has all
 built-in algorithms via :ref:`specs/rfc7518`, it can also load private/public
 keys of :ref:`specs/rfc7517`::
@@ -23,10 +23,11 @@ keys of :ref:`specs/rfc7517`::
     {'alg': 'RS256', 'typ': 'JWT'}
     >>> claims.validate()
 
-The imported ``jwt`` is an instance of :class:`JWT`. It has all supported JWS
-algorithms, and it can handle JWK automatically. When :meth:`JWT.encode` a
-payload, JWT will check payload claims for security, if you really want to
-expose them, you can always turn it off via ``check=False``.
+The imported ``jwt`` is an instance of :class:`JsonWebToken`. It has all
+supported JWS algorithms, and it can handle JWK automatically. When
+:meth:`JsonWebToken.encode` a payload, JWT will check payload claims for
+security, if you really want to expose them, you can always turn it off
+via ``check=False``.
 
 .. important::
     JWT payload with JWS is not encrypted, it is just signed. Anyone can
@@ -40,7 +41,7 @@ expose them, you can always turn it off via ``check=False``.
 JWT Payload Claims Validation
 -----------------------------
 
-:meth:`JWT.decode` accepts 3 claims-related parameters: ``claims_cls``,
+:meth:`JsonWebToken.decode` accepts 3 claims-related parameters: ``claims_cls``,
 ``claims_option`` and ``claims_params``. The default ``claims_cls`` is
 :class:`JWTClaims`. The ``decode`` method returns::
 
