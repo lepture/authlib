@@ -1,9 +1,53 @@
+from authlib.consts import default_json_headers
 from authlib.common.security import generate_token
 from authlib.common.urls import add_params_to_uri
 from ..rfc6749.errors import InvalidRequestError
 
 
 class DeviceAuthorizationEndpoint(object):
+    """This OAuth 2.0 [RFC6749] protocol extension enables OAuth clients to
+    request user authorization from applications on devices that have
+    limited input capabilities or lack a suitable browser.  Such devices
+    include smart TVs, media consoles, picture frames, and printers,
+    which lack an easy input method or a suitable browser required for
+    traditional OAuth interactions. Here is the authorization flow::
+
+        +----------+                                +----------------+
+        |          |>---(A)-- Client Identifier --->|                |
+        |          |                                |                |
+        |          |<---(B)-- Device Code,      ---<|                |
+        |          |          User Code,            |                |
+        |  Device  |          & Verification URI    |                |
+        |  Client  |                                |                |
+        |          |  [polling]                     |                |
+        |          |>---(E)-- Device Code       --->|                |
+        |          |          & Client Identifier   |                |
+        |          |                                |  Authorization |
+        |          |<---(F)-- Access Token      ---<|     Server     |
+        +----------+   (& Optional Refresh Token)   |                |
+              v                                     |                |
+              :                                     |                |
+             (C) User Code & Verification URI       |                |
+              :                                     |                |
+              v                                     |                |
+        +----------+                                |                |
+        | End User |                                |                |
+        |    at    |<---(D)-- End user reviews  --->|                |
+        |  Browser |          authorization request |                |
+        +----------+                                +----------------+
+
+    This DeviceAuthorizationEndpoint is the implementation of step (A) and (B).
+
+    (A) The client requests access from the authorization server and
+        includes its client identifier in the request.
+
+    (B) The authorization server issues a device code and an end-user
+        code and provides the end-user verification URI.
+    """
+
+    ENDPOINT_NAME = 'device_authorization'
+
+    #: customize "user_code" type, string or digital
     USER_CODE_TYPE = 'string'
 
     #: The lifetime in seconds of the "device_code" and "user_code"
@@ -13,34 +57,27 @@ class DeviceAuthorizationEndpoint(object):
     #: wait between polling requests to the token endpoint.
     INTERVAL = 5
 
-    RESPONSE_HEADER = [
-        ('Content-Type', 'application/json'),
-        ('Cache-Control', 'no-store'),
-        ('Pragma', 'no-cache'),
-    ]
-
-    def __init__(self, server, verification_uri):
+    def __init__(self, server):
         self.server = server
-        self.verification_uri = verification_uri
 
-    def create_http_response(self, request):
-        request = self.server.create_oauth2_request(request)
-        try:
-            args = self.create_authorization_response(request)
-            return self.server.handle_response(*args)
-        except InvalidRequestError as error:
-            return self.server.handle_error_response(request, error)
+    def __call__(self, request):
+        # make it callable for authorization server
+        # ``create_endpoint_response``
+        return self.create_endpoint_response(request)
 
-    def create_authorization_response(self, request):
+    def create_endpoint_request(self, request):
+        return self.server.create_oauth2_request(request)
+
+    def create_endpoint_response(self, request):
         # https://tools.ietf.org/html/rfc8628#section-3.1
         if not request.client_id:
             raise InvalidRequestError('Missing "client_id" in payload')
 
         self.server.validate_requested_scope(request.scope)
 
-        device_code = self.create_device_code()
-        user_code = self.create_user_code()
-        verification_uri = self.verification_uri
+        device_code = self.generate_device_code()
+        user_code = self.generate_user_code()
+        verification_uri = self.get_verification_uri()
         verification_uri_complete = add_params_to_uri(
             verification_uri, [('user_code', user_code)])
 
@@ -54,18 +91,46 @@ class DeviceAuthorizationEndpoint(object):
         }
 
         self.save_device_credential(request.client_id, request.scope, data)
-        return 200, data, self.RESPONSE_HEADER
+        return 200, data, default_json_headers
 
-    def create_user_code(self):
+    def generate_user_code(self):
+        """A method to generate ``user_code`` value for device authorization
+        endpoint. This method will generate a random string like MQNA-JPOZ.
+        Developers can rewrite this  method to create their own ``user_code``.
+        """
         # https://tools.ietf.org/html/rfc8628#section-6.1
         if self.USER_CODE_TYPE == 'digital':
             return create_digital_user_code()
         return create_string_user_code()
 
-    def create_device_code(self):
+    def generate_device_code(self):
+        """A method to generate ``device_code`` value for device authorization
+        endpoint. This method will generate a random string of 42 characters.
+        Developers can rewrite this method to create their own ``device_code``.
+        """
         return generate_token(42)
 
+    def get_verification_uri(self):
+        """Define the ``verification_uri`` of device authorization endpoint.
+        Developers MUST implement this method in subclass::
+
+            def get_verification_uri(self):
+                return 'https://your-company.com/active'
+        """
+        raise NotImplementedError()
+
     def save_device_credential(self, client_id, scope, data):
+        """Save device token into database for later use. Developers MUST
+        implement this method in subclass::
+
+            def save_device_credential(self, client_id, scope, data):
+                item = DeviceCredential(
+                    client_id=client_id,
+                    scope=scope,
+                    **data
+                )
+                item.save()
+        """
         raise NotImplementedError()
 
 

@@ -1,7 +1,7 @@
 import time
+from authlib.consts import default_json_headers
 from ..rfc6749 import (
     TokenEndpoint,
-    OAuth2Error,
     InvalidRequestError,
     UnsupportedTokenTypeError,
 )
@@ -16,7 +16,7 @@ class IntrospectionEndpoint(TokenEndpoint):
     #: Endpoint name to be registered
     ENDPOINT_NAME = 'introspection'
 
-    def validate_endpoint_request(self):
+    def authenticate_endpoint_credential(self, request, client):
         """The protected resource calls the introspection endpoint using an HTTP
         ``POST`` request with parameters sent as
         "application/x-www-form-urlencoded" data. The protected resource sends a
@@ -35,7 +35,7 @@ class IntrospectionEndpoint(TokenEndpoint):
             **OPTIONAL**  A hint about the type of the token submitted for
             introspection.
         """
-        params = self.request.form
+        params = request.form
         if 'token' not in params:
             raise InvalidRequestError()
 
@@ -43,35 +43,23 @@ class IntrospectionEndpoint(TokenEndpoint):
         if token_type and token_type not in self.SUPPORTED_TOKEN_TYPES:
             raise UnsupportedTokenTypeError()
 
-        token = self.query_token(
-            params['token'], token_type, self.request.client)
-        if token:
-            self.request.credential = token
+        return self.query_token(params['token'], token_type, client)
 
-    def create_endpoint_response(self):
+    def create_endpoint_response(self, request):
         """Validate introspection request and create the response.
 
         :returns: (status_code, body, headers)
         """
-        try:
-            # The authorization server first validates the client credentials
-            self.authenticate_endpoint_client()
-            # then verifies whether the token was issued to the client making
-            # the revocation request
-            self.validate_endpoint_request()
-            # the authorization server invalidates the token
-            body = self.create_introspection_payload(self.request.credential)
-            status = 200
-            headers = [
-                ('Content-Type', 'application/json'),
-                ('Cache-Control', 'no-store'),
-                ('Pragma', 'no-cache'),
-            ]
-        except OAuth2Error as error:
-            status = error.status_code
-            body = dict(error.get_body())
-            headers = error.get_headers()
-        return status, body, headers
+        # The authorization server first validates the client credentials
+        client = self.authenticate_endpoint_client(request)
+
+        # then verifies whether the token was issued to the client making
+        # the revocation request
+        credential = self.authenticate_endpoint_credential(request, client)
+
+        # the authorization server invalidates the token
+        body = self.create_introspection_payload(credential)
+        return 200, body, default_json_headers
 
     def create_introspection_payload(self, token):
         # the token is not active, does not exist on this server, or the

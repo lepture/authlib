@@ -6,26 +6,29 @@ class TokenEndpoint(object):
     #: Allowed client authenticate methods
     CLIENT_AUTH_METHODS = ['client_secret_basic']
 
-    def __init__(self, request, server):
-        self.request = request
+    def __init__(self, server):
         self.server = server
 
-    def __call__(self):
+    def __call__(self, request):
         # make it callable for authorization server
         # ``create_endpoint_response``
-        return self.create_endpoint_response()
+        return self.create_endpoint_response(request)
 
-    def authenticate_endpoint_client(self):
+    def create_endpoint_request(self, request):
+        return self.server.create_oauth2_request(request)
+
+    def authenticate_endpoint_client(self, request):
         """Authentication client for endpoint with ``CLIENT_AUTH_METHODS``.
         """
         client = self.server.authenticate_client(
-            request=self.request,
+            request=request,
             methods=self.CLIENT_AUTH_METHODS,
         )
-        self.request.client = client
+        request.client = client
+        return client
 
-    def validate_endpoint_request(self):
+    def authenticate_endpoint_credential(self, request, client):
         raise NotImplementedError()
 
-    def create_endpoint_response(self):
+    def create_endpoint_response(self, request):
         raise NotImplementedError()

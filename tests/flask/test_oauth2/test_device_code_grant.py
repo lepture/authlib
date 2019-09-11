@@ -1,5 +1,5 @@
 import time
-from flask import json, request
+from flask import json
 from authlib.oauth2.rfc8628 import (
     DeviceAuthorizationEndpoint as _DeviceAuthorizationEndpoint,
     DeviceCodeGrant as _DeviceCodeGrant,
@@ -190,6 +190,9 @@ class DeviceCodeGrantTest(TestCase):
 
 
 class DeviceAuthorizationEndpoint(_DeviceAuthorizationEndpoint):
+    def get_verification_uri(self):
+        return 'https://example.com/activate'
+
     def save_device_credential(self, client_id, scope, data):
         pass
 
@@ -197,13 +200,13 @@ class DeviceAuthorizationEndpoint(_DeviceAuthorizationEndpoint):
 class DeviceAuthorizationEndpointTest(TestCase):
     def create_server(self):
         server = create_authorization_server(self.app)
+        server.register_endpoint(DeviceAuthorizationEndpoint)
         self.server = server
-
-        endpoint = DeviceAuthorizationEndpoint(server, 'https://example.com/activate')
 
         @self.app.route('/device_authorize', methods=['POST'])
         def device_authorize():
-            return endpoint.create_http_response(request)
+            name = DeviceAuthorizationEndpoint.ENDPOINT_NAME
+            return server.create_endpoint_response(name)
 
         return server
 

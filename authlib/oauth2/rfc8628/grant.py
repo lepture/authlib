@@ -48,6 +48,18 @@ class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
         |    at    |<---(D)-- End user reviews  --->|                |
         |  Browser |          authorization request |                |
         +----------+                                +----------------+
+
+    This DeviceCodeGrant is the implementation of step (E) and (F).
+
+    (E) While the end user reviews the client's request (step D), the
+        client repeatedly polls the authorization server to find out if
+        the user completed the user authorization step.  The client
+        includes the device code and its client identifier.
+
+    (F) The authorization server validates the device code provided by
+        the client and responds with the access token if the client is
+        granted access, an error if they are denied access, or an
+        indication that the client should continue to poll.
     """
     GRANT_TYPE = DEVICE_CODE_GRANT_TYPE
 

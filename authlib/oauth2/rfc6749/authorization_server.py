@@ -120,7 +120,7 @@ class AuthorizationServer(object):
 
         :param endpoint_cls: A token endpoint class
         """
-        self._endpoints[endpoint_cls.ENDPOINT_NAME] = endpoint_cls
+        self._endpoints[endpoint_cls.ENDPOINT_NAME] = endpoint_cls(self)
 
     def get_authorization_grant(self, request):
         """Find the authorization grant for current request.
@@ -155,10 +155,12 @@ class AuthorizationServer(object):
         if name not in self._endpoints:
             raise RuntimeError('There is no "{}" endpoint.'.format(name))
 
-        request = self.create_oauth2_request(request)
-        endpoint_cls = self._endpoints[name]
-        endpoint = endpoint_cls(request, self)
-        return self.handle_response(*endpoint())
+        endpoint = self._endpoints[name]
+        request = endpoint.create_endpoint_request(request)
+        try:
+            return self.handle_response(*endpoint(request))
+        except OAuth2Error as error:
+            return self.handle_error_response(request, error)
 
     def create_authorization_response(self, request=None, grant_user=None):
         """Validate authorization request and create authorization response.
