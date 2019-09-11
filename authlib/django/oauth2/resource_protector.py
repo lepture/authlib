@@ -6,7 +6,7 @@ from authlib.oauth2 import (
 )
 from authlib.oauth2.rfc6749 import (
     MissingAuthorizationError,
-    TokenRequest,
+    HttpRequest,
 )
 from authlib.oauth2.rfc6750 import (
     BearerTokenValidator as _BearerTokenValidator
@@ -26,7 +26,7 @@ class ResourceProtector(_ResourceProtector):
         """
         headers = parse_request_headers(request)
         url = request.get_raw_uri()
-        req = TokenRequest(request.method, url, request.body, headers)
+        req = HttpRequest(request.method, url, request.body, headers)
         if not callable(operator):
             operator = operator.upper()
         token = self.validate_request(scope, req, operator)

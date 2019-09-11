@@ -1,7 +1,5 @@
 import time
-from authlib.common.urls import (
-    urlparse, extract_params, url_decode,
-)
+from authlib.common.urls import urlparse, url_decode
 from .errors import InsecureTransportError
 
 
@@ -89,9 +87,9 @@ class OAuth2Request(object):
         return self.data.get('state')
 
 
-class TokenRequest(object):
-    def __init__(self, method, uri, body=None, headers=None):
+class HttpRequest(object):
+    def __init__(self, method, uri, data=None, headers=None):
         self.method = method
         self.uri = uri
-        self.body = body
+        self.data = data
         self.headers = headers or {}

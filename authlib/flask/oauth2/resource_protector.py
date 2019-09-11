@@ -10,7 +10,7 @@ from authlib.oauth2 import (
 )
 from authlib.oauth2.rfc6749 import (
     MissingAuthorizationError,
-    TokenRequest,
+    HttpRequest,
 )
 from .signals import token_authenticated
 from ..error import raise_http_exception
@@ -68,7 +68,7 @@ class ResourceProtector(_ResourceProtector):
         :param operator: value of "AND" or "OR"
         :return: token object
         """
-        request = TokenRequest(
+        request = HttpRequest(
             _req.method,
             _req.full_path,
             _req.data,

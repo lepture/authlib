@@ -43,7 +43,7 @@ class BearerTokenValidator(object):
         Usually, you don't have to detect if the request is valid or not,
         you can just return a ``False``.
 
-        :param request: instance of TokenRequest
+        :param request: instance of HttpRequest
         :return: Boolean
         """
         raise NotImplementedError()
