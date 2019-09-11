@@ -98,8 +98,8 @@ class JWTBearerGrant(BaseGrant, TokenEndpointMixin):
             raise UnauthorizedClientError()
 
         self.validate_requested_scope()
-        self.request.user = self.authenticate_user(claims)
         self.request.client = client
+        self.request.user = self.authenticate_user(client, claims)
 
     def create_token_response(self):
         """If valid and authorized, the authorization server issues an access
@@ -115,13 +115,16 @@ class JWTBearerGrant(BaseGrant, TokenEndpointMixin):
         self.save_token(token)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
-    def authenticate_user(self, claims):
+    def authenticate_user(self, client, claims):
         """Authenticate user with the given assertion claims. Developers MUST
         implement it in subclass, e.g.::
 
-            def authenticate_user(self, claims):
-                return User.get_by_sub(claims['sub'])
+            def authenticate_user(self, client, claims):
+                user = User.get_by_sub(claims['sub'])
+                if is_authorized_to_client(user, client):
+                    return user
 
+        :param client: OAuth Client instance
         :param claims: assertion payload claims
         :return: User instance
         """

@@ -32,7 +32,7 @@ methods in order to use it. Here is an example::
     from authlib.oauth2.rfc7523 import JWTBearerGrant as _JWTBearerGrant
 
     class JWTBearerGrant(_JWTBearerGrant):
-        def authenticate_user(self, claims):
+        def authenticate_user(self, client, claims):
             # get user from claims info, usually it is claims['sub']
             # for anonymous user, return None
             return None

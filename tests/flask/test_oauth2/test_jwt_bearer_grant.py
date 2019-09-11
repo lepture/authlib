@@ -6,7 +6,7 @@ from .oauth2_server import create_authorization_server
 
 
 class JWTBearerGrant(_JWTBearerGrant):
-    def authenticate_user(self, claims):
+    def authenticate_user(self, client, claims):
         return None
 
     def authenticate_client(self, claims):
