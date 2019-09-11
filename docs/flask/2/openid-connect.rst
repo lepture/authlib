@@ -1,4 +1,4 @@
-.. _flask_odic_server:
+.. _flask_oidc_server:
 
 Flask OpenID Connect 1.0
 ========================

@@ -8,7 +8,7 @@ OpenID Connect 1.0
         Learn how to create a OpenID Connect provider in Python.
 
 This part of the documentation covers the specification of OpenID Connect. Learn
-how to use it in :ref:`flask_odic_server`.
+how to use it in :ref:`flask_oidc_server` and :ref:`django_oidc_server`.
 
 OpenID Grants
 -------------

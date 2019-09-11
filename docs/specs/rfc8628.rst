@@ -1,0 +1,27 @@
+.. _specs/rfc8628:
+
+RFC8628: OAuth 2.0 Device Authorization Grant
+=============================================
+
+.. meta::
+    :description: API references on RFC8628 DeviceAuthorizationEndpoint
+        and DeviceCodeGrant with Authlib implementation.
+
+This section contains the generic implementation of RFC8628_.
+
+.. _RFC8628: https://tools.ietf.org/html/rfc8628
+
+.. module:: authlib.oauth2.rfc8628
+
+
+API Reference
+-------------
+
+.. autoclass:: DeviceAuthorizationEndpoint
+    :member-order: bysource
+    :members:
+
+.. autoclass:: DeviceCodeGrant
+    :member-order: bysource
+    :members:
+    :inherited-members:

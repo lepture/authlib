@@ -1,3 +1,5 @@
+.. _django_oidc_server:
+
 Django OpenID Connect 1.0
 =========================
 
