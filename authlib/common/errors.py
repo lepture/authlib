@@ -1,4 +1,5 @@
 #: coding: utf-8
+from authlib.consts import default_json_headers
 
 
 class AuthlibBaseError(Exception):
@@ -65,11 +66,7 @@ class AuthlibHTTPError(AuthlibBaseError):
         return error
 
     def get_headers(self):
-        return [
-            ('Content-Type', 'application/json'),
-            ('Cache-Control', 'no-store'),
-            ('Pragma', 'no-cache')
-        ]
+        return default_json_headers
 
     def __call__(self, translations=None, error_uris=None):
         self._translations = translations

@@ -1,3 +1,4 @@
+from authlib.consts import default_json_headers
 from ..errors import InvalidRequestError
 
 
@@ -12,11 +13,7 @@ class BaseGrant(object):
     # application/json should always in UTF-8.
     # The example on RFC is incorrect.
     # https://tools.ietf.org/html/rfc4627
-    TOKEN_RESPONSE_HEADER = [
-        ('Content-Type', 'application/json'),
-        ('Cache-Control', 'no-store'),
-        ('Pragma', 'no-cache'),
-    ]
+    TOKEN_RESPONSE_HEADER = default_json_headers
 
     def __init__(self, request, server):
         self.request = request

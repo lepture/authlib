@@ -56,10 +56,16 @@ class AuthorizationServer(_AuthorizationServer):
         if save_token is not None:
             self.save_token = save_token
 
-        self.config.setdefault('error_uris', app.config.get('OAUTH2_ERROR_URIS'))
-
         self.generate_token = self.create_bearer_token_generator(app.config)
+
+        metadata_file = app.config.get('OAUTH2_METADATA_PATH')
+        if metadata_file:
+            with open(metadata_file) as f:
+                self.metadata = json.load(f)
+
+        self.config.setdefault('error_uris', app.config.get('OAUTH2_ERROR_URIS'))
         if app.config.get('OAUTH2_JWT_ENABLED'):
+            # TODO: deprecate
             self.init_jwt_config(app.config)
 
     def init_jwt_config(self, config):
@@ -67,6 +73,7 @@ class AuthorizationServer(_AuthorizationServer):
         jwt_iss = config.get('OAUTH2_JWT_ISS')
         if not jwt_iss:
             raise RuntimeError('Missing "OAUTH2_JWT_ISS" configuration.')
+
         jwt_key_path = config.get('OAUTH2_JWT_KEY_PATH')
         if jwt_key_path:
             with open(jwt_key_path, 'r') as f:

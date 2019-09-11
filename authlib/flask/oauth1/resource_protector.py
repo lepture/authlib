@@ -3,14 +3,9 @@ from flask import json, Response
 from flask import request as _req
 from flask import _app_ctx_stack
 from werkzeug.local import LocalProxy
+from authlib.consts import default_json_headers
 from authlib.oauth1 import ResourceProtector as _ResourceProtector
 from authlib.oauth1.errors import OAuth1Error
-
-_JSON_HEADERS = [
-    ('Content-Type', 'application/json'),
-    ('Cache-Control', 'no-store'),
-    ('Pragma', 'no-cache'),
-]
 
 
 class ResourceProtector(_ResourceProtector):
@@ -104,7 +99,7 @@ class ResourceProtector(_ResourceProtector):
                     return Response(
                         json.dumps(body),
                         status=error.status_code,
-                        headers=_JSON_HEADERS
+                        headers=default_json_headers,
                     )
                 return f(*args, **kwargs)
             return decorated
