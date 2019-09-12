@@ -127,7 +127,7 @@ class OpenIDImplicitGrant(ImplicitGrant):
         token = self.generate_token(
             client, self.GRANT_TYPE,
             user=grant_user,
-            scope=self.request.scope,
+            scope=client.get_allowed_scope(self.request.scope),
             include_refresh_token=False
         )
         if self.request.response_type == 'id_token':
