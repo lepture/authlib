@@ -113,12 +113,12 @@ class AuthorizationServer(object):
             self._token_grants.append((grant_cls, extensions))
 
     def register_endpoint(self, endpoint_cls):
-        """Add token endpoint to authorization server. e.g.
+        """Add extra endpoint to authorization server. e.g.
         RevocationEndpoint::
 
             authorization_server.register_endpoint(RevocationEndpoint)
 
-        :param endpoint_cls: A token endpoint class
+        :param endpoint_cls: A endpoint class
         """
         self._endpoints[endpoint_cls.ENDPOINT_NAME] = endpoint_cls(self)
 

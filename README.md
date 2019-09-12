@@ -185,12 +185,14 @@ Lovely features that Authlib has built-in:
 
 - [x] Authorization Server Metadata Model
 - [x] Well Known URI
-- [ ] Framework integrations
+- [x] Framework integrations
 </details>
 
 <details>
-<summary>⏳ RFC8628: OAuth 2.0 Device Authorization Grant</summary>
-<p>RFC8628 implementation is in plan.</p>
+<summary>🎉 RFC8628: OAuth 2.0 Device Authorization Grant</summary>
+
+- [x] Device Authorization Endpoint
+- [x] Device Code Grant
 </details>
 
 <details>
@@ -206,7 +208,7 @@ Lovely features that Authlib has built-in:
 
 - [x] OpenID Provider Metadata Model
 - [x] Well Known URI
-- [ ] Framework integrations
+- [x] Framework integrations
 </details>
 
 And more will be added.

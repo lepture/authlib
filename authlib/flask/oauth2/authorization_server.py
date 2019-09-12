@@ -6,6 +6,7 @@ from authlib.oauth2 import (
     AuthorizationServer as _AuthorizationServer,
 )
 from authlib.oauth2.rfc6750 import BearerToken
+from authlib.oauth2.rfc8414 import AuthorizationServerMetadata
 from authlib.common.security import generate_token
 from authlib.common.encoding import to_unicode
 from .signals import client_authenticated, token_revoked
@@ -13,7 +14,7 @@ from ..helpers import create_oauth_request
 
 
 class AuthorizationServer(_AuthorizationServer):
-    """Flask implementation of :class:`authlib.rfc6749.AuthorizationServer`.
+    """Flask implementation of :class:`authlib.oauth2.rfc6749.AuthorizationServer`.
     Initialize it with ``query_client``, ``save_token`` methods and Flask
     app instance::
 
@@ -39,6 +40,8 @@ class AuthorizationServer(_AuthorizationServer):
         server = AuthorizationServer()
         server.init_app(app, query_client, save_token)
     """
+    metadata_class = AuthorizationServerMetadata
+
     def __init__(self, app=None, query_client=None, save_token=None):
         super(AuthorizationServer, self).__init__(
             query_client=query_client,
@@ -58,10 +61,12 @@ class AuthorizationServer(_AuthorizationServer):
 
         self.generate_token = self.create_bearer_token_generator(app.config)
 
-        metadata_file = app.config.get('OAUTH2_METADATA_PATH')
+        metadata_file = app.config.get('OAUTH2_METADATA_FILE')
         if metadata_file:
             with open(metadata_file) as f:
-                self.metadata = json.load(f)
+                metadata = self.metadata_class(json.load(f))
+                metadata.validate()
+                self.metadata = metadata
 
         self.config.setdefault('error_uris', app.config.get('OAUTH2_ERROR_URIS'))
         if app.config.get('OAUTH2_JWT_ENABLED'):
