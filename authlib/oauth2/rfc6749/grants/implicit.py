@@ -137,8 +137,8 @@ class ImplicitGrant(BaseGrant, AuthorizationEndpointMixin):
             )
 
         try:
-            self.validate_requested_scope()
             self.request.client = client
+            self.validate_requested_scope()
             self.execute_hook('after_validate_authorization_request')
         except OAuth2Error as error:
             error.redirect_uri = redirect_uri

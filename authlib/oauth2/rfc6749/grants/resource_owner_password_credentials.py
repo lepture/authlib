@@ -104,9 +104,9 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant, TokenEndpointMixin):
             raise InvalidRequestError(
                 'Invalid "username" or "password" in request.',
             )
-        self.validate_requested_scope()
         self.request.client = client
         self.request.user = user
+        self.validate_requested_scope()
 
     def create_token_response(self):
         """If the access token request is valid and authorized, the
