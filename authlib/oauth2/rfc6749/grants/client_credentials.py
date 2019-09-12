@@ -98,7 +98,7 @@ class ClientCredentialsGrant(BaseGrant, TokenEndpointMixin):
         client = self.request.client
         token = self.generate_token(
             client, self.GRANT_TYPE,
-            scope=self.request.scope,
+            scope=client.get_allowed_scope(self.request.scope),
             include_refresh_token=False,
         )
         log.debug('Issue token %r to %r', token, client)
