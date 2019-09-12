@@ -381,8 +381,8 @@ def validate_code_authorization_request(grant):
         )
 
     try:
-        grant.validate_requested_scope()
         grant.request.client = client
+        grant.validate_requested_scope()
         grant.execute_hook('after_validate_authorization_request')
     except OAuth2Error as error:
         error.redirect_uri = redirect_uri

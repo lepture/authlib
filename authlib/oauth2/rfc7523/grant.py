@@ -97,8 +97,8 @@ class JWTBearerGrant(BaseGrant, TokenEndpointMixin):
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError()
 
-        self.validate_requested_scope()
         self.request.client = client
+        self.validate_requested_scope()
         self.request.user = self.authenticate_user(client, claims)
 
     def create_token_response(self):
