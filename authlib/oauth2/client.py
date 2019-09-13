@@ -346,22 +346,16 @@ class OAuth2Client(object):
 
     def _prepare_token_endpoint_body(self, body, grant_type, **kwargs):
         if grant_type is None:
-            if 'code' in kwargs:
-                grant_type = 'authorization_code'
-            elif 'username' in kwargs and 'password' in kwargs:
-                grant_type = 'password'
-            else:
-                grant_type = 'client_credentials'
+            grant_type = _guess_grant_type(kwargs)
 
         if grant_type == 'authorization_code':
             if 'redirect_uri' not in kwargs:
                 kwargs['redirect_uri'] = self.redirect_uri
-            body = prepare_token_request(grant_type, body, **kwargs)
-        else:
-            if 'scope' not in kwargs and self.scope:
-                kwargs['scope'] = self.scope
-            body = prepare_token_request(grant_type, body, **kwargs)
-        return body
+            return prepare_token_request(grant_type, body, **kwargs)
+
+        if 'scope' not in kwargs and self.scope:
+            kwargs['scope'] = self.scope
+        return prepare_token_request(grant_type, body, **kwargs)
 
     def _extract_session_request_params(self, kwargs):
         """Extract parameters for session object from the passing ``**kwargs``."""
@@ -374,3 +368,13 @@ class OAuth2Client(object):
     @staticmethod
     def handle_error(error_type, error_description):
         raise ValueError('{}: {}'.format(error_type, error_description))
+
+
+def _guess_grant_type(kwargs):
+    if 'code' in kwargs:
+        grant_type = 'authorization_code'
+    elif 'username' in kwargs and 'password' in kwargs:
+        grant_type = 'password'
+    else:
+        grant_type = 'client_credentials'
+    return grant_type

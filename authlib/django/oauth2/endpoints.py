@@ -24,33 +24,36 @@ class RevocationEndpoint(_RevocationEndpoint):
 
     def query_token(self, token, token_type_hint, client):
         """Query requested token from database."""
-        client_id = client.get_client_id()
         token_model = self.server.token_model
         if token_type_hint == 'access_token':
-            try:
-                return token_model.objects.get(
-                    access_token=token, client_id=client_id)
-            except token_model.DoesNotExist:
-                return None
+            rv = _query_access_token(token_model, token)
+        elif token_type_hint == 'refresh_token':
+            rv = _query_refresh_token(token_model, token)
+        else:
+            rv = _query_access_token(token_model, token)
+            if not rv:
+                rv = _query_refresh_token(token_model, token)
 
-        if token_type_hint == 'refresh_token':
-            try:
-                return token_model.objects.get(
-                    refresh_token=token, client_id=client_id)
-            except token_model.DoesNotExist:
-                return None
-
-        try:
-            return token_model.objects.get(
-                access_token=token, client_id=client_id)
-        except token_model.DoesNotExist:
-            try:
-                return token_model.objects.get(
-                    refresh_token=token, client_id=client_id)
-            except token_model.DoesNotExist:
-                return None
+        client_id = client.get_client_id()
+        if rv and rv.client_id == client_id:
+            return rv
+        return None
 
     def revoke_token(self, token):
         """Mark the give token as revoked."""
         token.revoked = True
         token.save()
+
+
+def _query_access_token(token_model, token):
+    try:
+        return token_model.objects.get(access_token=token)
+    except token_model.DoesNotExist:
+        return None
+
+
+def _query_refresh_token(token_model, token):
+    try:
+        return token_model.objects.get(refresh_token=token)
+    except token_model.DoesNotExist:
+        return None

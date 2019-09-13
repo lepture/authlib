@@ -1,25 +1,13 @@
 from requests import Session
-from requests.auth import AuthBase
-from authlib.oauth2.auth import TokenAuth
 from authlib.oauth2.rfc7521 import AssertionClient
 from authlib.oauth2.rfc7523 import JWTBearerGrant
-from .errors import UnsupportedTokenTypeError
+from .oauth2_session import OAuth2Auth
 
 
-class AssertionAuth(AuthBase, TokenAuth):
-    def ensure_refresh_token(self):
+class AssertionAuth(OAuth2Auth):
+    def ensure_active_token(self):
         if not self.token or self.token.is_expired() and self.client:
             return self.client.refresh_token()
-
-    def __call__(self, req):
-        self.ensure_refresh_token()
-        try:
-            req.url, req.headers, req.body = self.prepare(
-                req.url, req.headers, req.body)
-        except KeyError as error:
-            description = 'Unsupported token_type: {}'.format(str(error))
-            raise UnsupportedTokenTypeError(description=description)
-        return req
 
 
 class AssertionSession(AssertionClient, Session):

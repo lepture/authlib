@@ -22,7 +22,10 @@ DEFAULT_HEADERS = {
 class OAuth2Auth(AuthBase, TokenAuth):
     """Sign requests for OAuth 2.0, currently only bearer token is supported."""
 
-    def ensure_refresh_token(self, **kwargs):
+    def ensure_active_token(self, **kwargs):
+        if not self.token:
+            raise MissingTokenError()
+
         if self.client and self.token.is_expired():
             refresh_token = self.token.get('refresh_token')
             client = self.client
@@ -34,9 +37,7 @@ class OAuth2Auth(AuthBase, TokenAuth):
                 raise InvalidTokenError()
 
     def __call__(self, req):
-        if not self.token:
-            raise MissingTokenError()
-        self.ensure_refresh_token()
+        self.ensure_active_token()
         try:
             req.url, req.headers, req.body = self.prepare(
                 req.url, req.headers, req.body)
