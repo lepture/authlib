@@ -46,10 +46,7 @@ class OAuth2Client(object):
     EXTRA_AUTHORIZE_PARAMS = (
         'response_mode', 'nonce', 'prompt', 'login_hint'
     )
-    SESSION_REQUEST_PARAMS = (
-        'allow_redirects', 'timeout', 'cookies', 'files',
-        'proxies', 'hooks', 'stream', 'verify', 'cert', 'json'
-    )
+    SESSION_REQUEST_PARAMS = []
 
     def __init__(self, session, client_id=None, client_secret=None,
                  authorization_endpoint=None,

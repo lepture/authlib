@@ -82,6 +82,10 @@ class OAuth2Session(OAuth2Client, Session):
     """
     client_auth_class = OAuth2ClientAuth
     token_auth_class = OAuth2Auth
+    SESSION_REQUEST_PARAMS = (
+        'allow_redirects', 'timeout', 'cookies', 'files',
+        'proxies', 'hooks', 'stream', 'verify', 'cert', 'json'
+    )
 
     def __init__(self, client_id=None, client_secret=None,
                  authorization_endpoint=None,
