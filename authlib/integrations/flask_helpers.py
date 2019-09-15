@@ -2,7 +2,7 @@ from flask import request as flask_req
 from authlib.common.encoding import to_unicode
 
 
-def create_oauth_request(request, request_cls):
+def create_oauth_request(request, request_cls, use_json=False):
     if isinstance(request, request_cls):
         return request
 
@@ -10,7 +10,10 @@ def create_oauth_request(request, request_cls):
         request = flask_req
 
     if request.method == 'POST':
-        body = request.form.to_dict(flat=True)
+        if use_json:
+            body = request.get_json()
+        else:
+            body = request.form.to_dict(flat=True)
     else:
         body = None
 

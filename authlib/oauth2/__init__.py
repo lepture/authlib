@@ -3,6 +3,7 @@ from .auth import ClientAuth, TokenAuth
 from .client import OAuth2Client
 from .rfc6749 import (
     OAuth2Request,
+    HttpRequest,
     AuthorizationServer,
     ClientAuthentication,
     ResourceProtector,
@@ -10,6 +11,6 @@ from .rfc6749 import (
 
 __all__ = [
     'OAuth2Error', 'ClientAuth', 'TokenAuth', 'OAuth2Client',
-    'OAuth2Request', 'AuthorizationServer',
+    'OAuth2Request', 'HttpRequest', 'AuthorizationServer',
     'ClientAuthentication', 'ResourceProtector',
 ]

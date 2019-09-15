@@ -2,15 +2,18 @@ try:
     from collections.abc import MutableMapping as DictMixin
 except ImportError:
     from collections import MutableMapping as DictMixin
-from authlib.common.encoding import to_unicode
+from authlib.common.encoding import to_unicode, json_loads
 
 
-def create_oauth_request(request, request_cls):
+def create_oauth_request(request, request_cls, use_json=False):
     if isinstance(request, request_cls):
         return request
 
     if request.method == 'POST':
-        body = request.POST.dict()
+        if use_json:
+            body = json_loads(request.body)
+        else:
+            body = request.POST.dict()
     else:
         body = None
 

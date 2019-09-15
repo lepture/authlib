@@ -3,7 +3,15 @@ import time
 import binascii
 from authlib.consts import default_json_headers
 from authlib.common.security import generate_token
+from authlib.jose import jwt
+from authlib.jose.errors import JoseError
+from ..rfc6749 import AccessDeniedError
 from .claims import ClientMetadataClaims
+from .errors import (
+    InvalidClientMetadataError,
+    UnapprovedSoftwareStatementError,
+    InvalidSoftwareStatementError,
+)
 
 
 class ClientRegistrationEndpoint(object):
@@ -11,13 +19,20 @@ class ClientRegistrationEndpoint(object):
     allow a client to be registered with the authorization server.
     """
     ENDPOINT_NAME = 'client_registration'
+
     claims_class = ClientMetadataClaims
+    enable_software_statement = False
 
     def __init__(self, server):
         self.server = server
 
     def create_registration_response(self, request):
-        user = self.authenticate_registration_user(request)
+        user = self.authenticate_user(request)
+        if not user:
+            raise AccessDeniedError()
+
+        request.user = user
+
         client_metadata = self.extract_client_metadata(request)
         client_info = self.generate_client_info()
         body = {}
@@ -29,16 +44,28 @@ class ClientRegistrationEndpoint(object):
     def extract_client_metadata(self, request):
         json_data = request.data.copy()
         software_statement = json_data.pop('software_statement', None)
-        if software_statement:
+        if software_statement and self.enable_software_statement:
             data = self.extract_software_statement(software_statement, request)
             json_data.update(data)
 
-        claims = ClientMetadataClaims(json_data, {})
-        # TODO: validate claims
+        claims = self.claims_class(json_data, {})
+        try:
+            claims.validate()
+        except JoseError:
+            raise InvalidClientMetadataError()
         return claims
 
     def extract_software_statement(self, software_statement, request):
-        return {}
+        key = self.resolve_public_key(request)
+        if not key:
+            raise UnapprovedSoftwareStatementError()
+
+        try:
+            claims = jwt.decode(software_statement, key)
+            # there is no need to validate claims
+            return claims
+        except JoseError:
+            raise InvalidSoftwareStatementError()
 
     def generate_client_info(self):
         # https://tools.ietf.org/html/rfc7591#section-3.2.1
@@ -53,17 +80,50 @@ class ClientRegistrationEndpoint(object):
             client_secret_expires_at=client_secret_expires_at,
         )
 
+    def create_endpoint_request(self, request):
+        return self.server.create_json_request(request)
+
     def generate_client_id(self):
         return generate_token(42)
 
     def generate_client_secret(self):
         return binascii.hexlify(os.urandom(24)).decode('ascii')
 
-    def create_endpoint_request(self, request=None):
+    def authenticate_user(self, request):
+        """Authenticate current user who is requesting to register a client.
+        Developers MUST implement this method in subclass::
+
+            def authenticate_user(self, request):
+                auth = request.headers.get('Authorization')
+                return get_user_by_auth(auth)
+
+        :return: user instance
+        """
         raise NotImplementedError()
 
-    def authenticate_registration_user(self, request):
+    def resolve_public_key(self, request):
+        """Resolve a public key for decoding ``software_statement``. If
+        ``enable_software_statement=True``, developers MUST implement this
+        method in subclass::
+
+            def resolve_public_key(self, request):
+                return get_public_key_from_user(request.user)
+
+        :return: JWK or Key string
+        """
         raise NotImplementedError()
 
     def save_client(self, client_info, client_metadata, user):
+        """Save client into database. Developers MUST implement this method
+        in subclass::
+
+            def save_client(self, client_info, client_metadata, user):
+                client = OAuthClient(
+                    user_id=user.id,
+                    client_id=client_info['client_id'],
+                    client_secret=client_info['client_secret'],
+                    ...
+                )
+                client.save()
+        """
         raise NotImplementedError()

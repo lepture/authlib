@@ -32,3 +32,6 @@ class ClientMetadataClaims(dict):
             if key in self.REGISTERED_CLAIMS:
                 return self.get(key)
             raise error
+
+    def validate(self):
+        pass

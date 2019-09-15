@@ -93,3 +93,4 @@ class HttpRequest(object):
         self.uri = uri
         self.data = data
         self.headers = headers or {}
+        self.user = None

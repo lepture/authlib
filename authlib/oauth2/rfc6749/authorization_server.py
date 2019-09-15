@@ -79,6 +79,15 @@ class AuthorizationServer(object):
         """
         raise NotImplementedError()
 
+    def create_json_request(self, request):
+        """This method MUST be implemented in framework integrations. It is
+        used to create an HttpRequest instance.
+
+        :param request: the "request" instance in framework
+        :return: HttpRequest instance
+        """
+        raise NotImplementedError()
+
     def handle_response(self, status, body, headers):
         """Return HTTP response. Framework MUST implement this function."""
         raise NotImplementedError()

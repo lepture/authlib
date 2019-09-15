@@ -2,6 +2,7 @@ from werkzeug.utils import import_string
 from flask import Response, json
 from authlib.oauth2 import (
     OAuth2Request,
+    HttpRequest,
     ClientAuthentication,
     AuthorizationServer as _AuthorizationServer,
 )
@@ -109,6 +110,9 @@ class AuthorizationServer(_AuthorizationServer):
 
     def create_oauth2_request(self, request):
         return create_oauth_request(request, OAuth2Request)
+
+    def create_json_request(self, request):
+        return create_oauth_request(request, HttpRequest, True)
 
     def handle_response(self, status_code, payload, headers):
         if isinstance(payload, dict):
