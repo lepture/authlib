@@ -198,7 +198,11 @@ Lovely features that Authlib has built-in:
 <details>
 <summary>🎉 OpenID Connect 1.0</summary>
 
+- [x] OpenID Code Flow
+- [x] OpenID Implicit Flow
+- [x] OpenID Hybrid Flow
 - [x] OpenID Claims validation
+- [x] Form Post Response Mode
 - [x] OpenID Connect for Flask OAuth 2.0 Server
 - [x] OpenID Connect for Django OAuth 2.0 Server
 </details>
