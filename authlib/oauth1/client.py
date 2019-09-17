@@ -139,9 +139,7 @@ class OAuth1Client(object):
             self.auth.verifier = verifier
         if not self.auth.verifier:
             self.handle_error('missing_verifier', 'Missing "verifier" value')
-        token = self._fetch_token(url, **kwargs)
-        self.auth.verifier = None
-        return token
+        return self._fetch_token(url, **kwargs)
 
     def parse_authorization_response(self, url):
         """Extract parameters from the post authorization redirect
@@ -159,6 +157,7 @@ class OAuth1Client(object):
         resp = self.session.post(url, auth=self.auth, **kwargs)
         token = self.parse_response_token(resp.status_code, resp.text)
         self.token = token
+        self.auth.verifier = None
         return token
 
     def parse_response_token(self, status_code, text):
