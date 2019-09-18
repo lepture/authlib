@@ -229,18 +229,15 @@ class RemoteApp(OAuthClient):
         :return: A HTTP redirect response.
         """
         if self.request_token_url:
-            save_request_token = self._save_request_token
+            save_temporary_data = self._save_request_token
         else:
-            save_request_token = None
+            def save_temporary_data(code_verifier):
+                vf_key = _code_verifier_tpl.format(self.name)
+                session[vf_key] = code_verifier
 
-        def _save_code_verifier(code):
-            vf_key = _code_verifier_tpl.format(self.name)
-            session[vf_key] = code
-
-        kwargs = self.add_code_challenge(_save_code_verifier, kwargs)
         uri, state = self.generate_authorize_redirect(
             redirect_uri,
-            save_request_token,
+            save_temporary_data,
             **kwargs)
 
         self.save_authorize_state(redirect_uri, state)

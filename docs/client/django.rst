@@ -347,7 +347,7 @@ Code Challenge
 --------------
 
 Adding ``code_challenge`` provided by :ref:`specs/rfc7636` is simple. You
-register your remote app with a ``code_challenge_method``::
+register your remote app with a ``code_challenge_method`` in ``client_kwargs``::
 
     oauth.register(
         'example',
@@ -356,8 +356,7 @@ register your remote app with a ``code_challenge_method``::
         access_token_url='https://example.com/oauth/access_token',
         authorize_url='https://example.com/oauth/authorize',
         api_base_url='https://api.example.com/',
-        client_kwargs=None,
-        code_challenge_method='S256',
+        client_kwargs={'code_challenge_method': 'S256'},
     )
 
 Note, the only supportted ``code_challenge_method`` is ``S256``.

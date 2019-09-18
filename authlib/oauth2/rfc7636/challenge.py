@@ -106,7 +106,7 @@ class CodeChallenge(object):
 
     def get_authorization_code_challenge(self, authorization_code):
         """Get "code_challenge" associated with this authorization code.
-        Developers CAN re-implement it in subclass, the default logic::
+        Developers MAY re-implement it in subclass, the default logic::
 
             def get_authorization_code_challenge(self, authorization_code):
                 return authorization_code.code_challenge
@@ -117,7 +117,7 @@ class CodeChallenge(object):
 
     def get_authorization_code_challenge_method(self, authorization_code):
         """Get "code_challenge_method" associated with this authorization code.
-        Developers CAN re-implement it in subclass, the default logic::
+        Developers MAY re-implement it in subclass, the default logic::
 
             def get_authorization_code_challenge_method(self, authorization_code):
                 return authorization_code.code_challenge_method

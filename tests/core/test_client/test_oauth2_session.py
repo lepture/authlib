@@ -85,6 +85,15 @@ class OAuth2SessionTest(TestCase):
         self.assertIn('profile', auth_url)
         self.assertIn('prompt=none', auth_url)
 
+    def test_code_challenge(self):
+        sess = OAuth2Session(client_id=self.client_id, code_challenge_method='S256')
+
+        url = 'https://example.com/authorize'
+        auth_url, _ = sess.create_authorization_url(
+            url, code_verifier='hello')
+        self.assertIn('code_challenge', auth_url)
+        self.assertIn('code_challenge_method=S256', auth_url)
+
     def test_token_from_fragment(self):
         sess = OAuth2Session(self.client_id)
         response_url = 'https://i.b/callback#' + url_encode(self.token.items())

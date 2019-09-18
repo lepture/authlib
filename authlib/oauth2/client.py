@@ -7,6 +7,7 @@ from .rfc6749.parameters import (
     parse_implicit_response,
 )
 from .rfc7009 import prepare_revoke_token_request
+from .rfc7636 import create_s256_code_challenge
 from .auth import TokenAuth, ClientAuth
 
 DEFAULT_HEADERS = {
@@ -33,6 +34,7 @@ class OAuth2Client(object):
         revocation endpoint.
     :param scope: Scope that you needed to access user resources.
     :param redirect_uri: Redirect URI you registered as callback.
+    :param code_challenge_method: PKCE method name, only S256 is supportted.
     :param token: A dict of token attributes such as ``access_token``,
         ``token_type`` and ``expires_at``.
     :param token_placement: The place to put token in HTTP request. Available
@@ -52,7 +54,7 @@ class OAuth2Client(object):
                  authorization_endpoint=None,
                  token_endpoint=None, token_endpoint_auth_method=None,
                  revocation_endpoint=None, revocation_endpoint_auth_method=None,
-                 scope=None, redirect_uri=None,
+                 scope=None, redirect_uri=None, code_challenge_method=None,
                  token=None, token_placement='header', token_updater=None, **metadata):
 
         self.session = session
@@ -80,6 +82,7 @@ class OAuth2Client(object):
 
         self.scope = scope
         self.redirect_uri = redirect_uri
+        self.code_challenge_method = code_challenge_method
 
         self.token_auth = self.token_auth_class(token, token_placement, self)
         self.token_updater = token_updater
@@ -100,12 +103,13 @@ class OAuth2Client(object):
     def token(self, token):
         self.token_auth.set_token(token)
 
-    def create_authorization_url(self, url=None, state=None, **kwargs):
+    def create_authorization_url(self, url=None, state=None, code_verifier=None, **kwargs):
         """Generate an authorization URL and state.
 
         :param url: Authorization endpoint url, must be HTTPS.
         :param state: An optional state string for CSRF protection. If not
                       given it will be generated for you.
+        :param code_verifier: An optional code_verifier for code challenge.
         :param kwargs: Extra parameters to include.
         :return: authorization_url, state
         """
@@ -121,6 +125,10 @@ class OAuth2Client(object):
             kwargs['redirect_uri'] = self.redirect_uri
         if 'scope' not in kwargs:
             kwargs['scope'] = self.scope
+
+        if code_verifier and response_type == 'code' and self.code_challenge_method == 'S256':
+            kwargs['code_challenge'] = create_s256_code_challenge(code_verifier)
+            kwargs['code_challenge_method'] = self.code_challenge_method
 
         for k in self.EXTRA_AUTHORIZE_PARAMS:
             if k not in kwargs and k in self.metadata:

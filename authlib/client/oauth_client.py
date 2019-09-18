@@ -6,7 +6,6 @@ from .errors import (
     MissingRequestTokenError,
     MissingTokenError,
 )
-from ..oauth2.rfc7636 import create_s256_code_challenge
 from ..common.urls import urlparse
 from ..common.security import generate_token
 from ..consts import default_user_agent
@@ -71,8 +70,7 @@ class OAuthClient(object):
             access_token_url=None, access_token_params=None,
             authorize_url=None, authorize_params=None,
             api_base_url=None, client_kwargs=None,
-            server_metadata_url=None, code_challenge_method=None,
-            compliance_fix=None, **kwargs):
+            server_metadata_url=None, compliance_fix=None, **kwargs):
 
         self.client_id = client_id
         self.client_secret = client_secret
@@ -85,7 +83,6 @@ class OAuthClient(object):
         self.api_base_url = api_base_url
 
         self.client_kwargs = client_kwargs or {}
-        self.code_challenge_method = code_challenge_method
         self.compliance_fix = compliance_fix
 
         self._fetch_token = None
@@ -97,11 +94,11 @@ class OAuthClient(object):
         self.server_metadata = kwargs
 
     def generate_authorize_redirect(
-            self, redirect_uri=None, save_request_token=None, **kwargs):
+            self, redirect_uri=None, save_temporary_data=None, **kwargs):
         """Generate the authorization url and state for HTTP redirect.
 
         :param redirect_uri: Callback or redirect URI for authorization.
-        :param save_request_token: A function to save request token.
+        :param save_temporary_data: A function to save request token.
         :param kwargs: Extra parameters to include.
         :return: (url, state)
         """
@@ -125,14 +122,18 @@ class OAuthClient(object):
                     self.request_token_url, **params
                 )
                 # remember oauth_token, oauth_token_secret
-                save_request_token(token)
+                save_temporary_data(token)
                 url = session.create_authorization_url(
                     authorization_endpoint,  **kwargs)
                 return url, None
-
-            session.redirect_uri = redirect_uri
-            return session.create_authorization_url(
-                authorization_endpoint, **kwargs)
+            else:
+                session.redirect_uri = redirect_uri
+                if session.code_challenge_method:
+                    code_verifier = generate_token(20)
+                    save_temporary_data(code_verifier)
+                    kwargs['code_verifier'] = code_verifier
+                return session.create_authorization_url(
+                    authorization_endpoint, **kwargs)
 
     def fetch_access_token(self, redirect_uri=None, request_token=None,
                            **params):
@@ -193,19 +194,6 @@ class OAuthClient(object):
 
         session.headers['User-Agent'] = self.DEFAULT_USER_AGENT
         return session
-
-    def add_code_challenge(self, save_code_verifier, kwargs):
-        code_challenge_method = self.code_challenge_method
-        # only support S256
-        if code_challenge_method == 'S256':
-            verifier = kwargs.get('code_verifier')
-            if not verifier:
-                verifier = generate_token(20)
-
-            save_code_verifier(verifier)
-            kwargs['code_challenge'] = create_s256_code_challenge(verifier)
-            kwargs['code_challenge_method'] = code_challenge_method
-        return kwargs
 
     def request(self, method, url, token=None, **kwargs):
         if self.api_base_url and not url.startswith(('https://', 'http://')):

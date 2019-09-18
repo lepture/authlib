@@ -122,7 +122,7 @@ class DjangoOAuthTest(TestCase):
             api_base_url='https://i.b/api',
             access_token_url='https://i.b/token',
             authorize_url='https://i.b/authorize',
-            code_challenge_method='S256',
+            client_kwargs={'code_challenge_method': 'S256'},
         )
         rv = client.authorize_redirect(request, 'https://a.b/c')
         self.assertEqual(rv.status_code, 302)

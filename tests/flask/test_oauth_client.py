@@ -180,7 +180,7 @@ class FlaskOAuthTest(TestCase):
             api_base_url='https://i.b/api',
             access_token_url='https://i.b/token',
             authorize_url='https://i.b/authorize',
-            code_challenge_method='S256',
+            client_kwargs={'code_challenge_method': 'S256'},
         )
 
         with app.test_request_context():
