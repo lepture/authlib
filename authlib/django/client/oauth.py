@@ -74,7 +74,7 @@ class RemoteApp(OAuthClient):
 
         self.name = name
         self._fetch_token = fetch_token
-        if self.client_kwargs.get('refresh_token_url'):
+        if kwargs.get('refresh_token_url'):
             self.client_kwargs['token_updater'] = self._send_token_update
 
     def _send_token_update(self, token):
