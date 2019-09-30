@@ -1,4 +1,3 @@
-import logging
 from requests import Session
 from requests.auth import AuthBase
 from authlib.oauth2.client import OAuth2Client
@@ -11,12 +10,6 @@ from .errors import (
 )
 
 __all__ = ['OAuth2Session', 'OAuth2Auth']
-
-log = logging.getLogger(__name__)
-DEFAULT_HEADERS = {
-    'Accept': 'application/json',
-    'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-}
 
 
 class OAuth2Auth(AuthBase, TokenAuth):

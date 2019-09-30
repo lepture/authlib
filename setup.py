@@ -39,7 +39,7 @@ setup(
         'client': client_requires,
     },
     project_urls={
-        'Documentation': 'https://docs.authib.org/',
+        'Documentation': 'https://docs.authlib.org/',
         'Bug Tracker': 'https://github.com/lepture/authlib/issues',
         'Source Code': 'https://github.com/lepture/authlib',
         'Blog': 'https://blog.authlib.org/',
