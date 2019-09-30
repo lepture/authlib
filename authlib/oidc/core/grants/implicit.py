@@ -82,6 +82,13 @@ class OpenIDImplicitGrant(ImplicitGrant):
         scopes = scope_to_list(scope)
         return _generate_user_info(user, scopes)
 
+    def get_audiences(self, request):
+        """Parse `aud` value for id_token, default value is client id. Developers
+        MAY rewrite this method to provide a customized audience value.
+        """
+        client = request.client
+        return [client.get_client_id()]
+
     def validate_authorization_request(self):
         if not is_openid_scope(self.request.scope):
             raise InvalidScopeError(
@@ -145,11 +152,12 @@ class OpenIDImplicitGrant(ImplicitGrant):
 
     def process_implicit_token(self, token, code=None):
         config = self.get_jwt_config()
+        config['aud'] = self.get_audiences(self.request)
         config['nonce'] = self.request.data.get('nonce')
         if code is not None:
             config['code'] = code
 
         user_info = self.generate_user_info(self.request.user, token['scope'])
-        id_token = generate_id_token(token, self.request, user_info, **config)
+        id_token = generate_id_token(token, user_info, **config)
         token['id_token'] = id_token
         return token

@@ -95,6 +95,13 @@ class OpenIDCode(object):
         scopes = scope_to_list(scope)
         return _generate_user_info(user, scopes)
 
+    def get_audiences(self, request):
+        """Parse `aud` value for id_token, default value is client id. Developers
+        MAY rewrite this method to provide a customized audience value.
+        """
+        client = request.client
+        return [client.get_client_id()]
+
     def process_token(self, grant, token):
         scope = token.get('scope')
         if not scope or not is_openid_scope(scope):
@@ -105,11 +112,12 @@ class OpenIDCode(object):
         credential = request.credential
 
         config = self.get_jwt_config(grant)
+        config['aud'] = self.get_audiences(request)
         config['nonce'] = credential.get_nonce()
         config['auth_time'] = credential.get_auth_time()
 
         user_info = self.generate_user_info(request.user, token['scope'])
-        id_token = generate_id_token(token, request, user_info, **config)
+        id_token = generate_id_token(token, user_info, **config)
         token['id_token'] = id_token
         return token
 

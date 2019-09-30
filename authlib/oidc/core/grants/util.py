@@ -62,17 +62,12 @@ def validate_nonce(request, exists_nonce, required=False):
 
 
 def generate_id_token(
-        token, request, user_info, key, alg, iss, exp,
+        token, user_info, key, alg, iss, aud, exp,
         nonce=None, auth_time=None, code=None):
 
-    client = request.client
     payload = _generate_id_token_payload(
-        alg, iss,
-        [client.get_client_id()],
-        exp=exp,
-        nonce=nonce,
-        auth_time=auth_time,
-        code=code,
+        alg=alg, iss=iss, aud=aud, exp=exp, nonce=nonce,
+        auth_time=auth_time, code=code,
         access_token=token.get('access_token'),
     )
     payload.update(user_info)
