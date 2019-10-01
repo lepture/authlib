@@ -5,7 +5,7 @@ from authlib.consts import default_json_headers
 from authlib.common.security import generate_token
 from authlib.jose import jwt
 from authlib.jose.errors import JoseError
-from ..rfc6749 import AccessDeniedError
+from ..rfc6749 import AccessDeniedError, InvalidRequestError
 from .claims import ClientMetadataClaims
 from .errors import (
     InvalidClientMetadataError,
@@ -26,6 +26,9 @@ class ClientRegistrationEndpoint(object):
     def __init__(self, server):
         self.server = server
 
+    def __call__(self, request):
+        return self.create_registration_response(request)
+
     def create_registration_response(self, request):
         user = self.authenticate_user(request)
         if not user:
@@ -42,6 +45,9 @@ class ClientRegistrationEndpoint(object):
         return 201, body, default_json_headers
 
     def extract_client_metadata(self, request):
+        if not request.data:
+            raise InvalidRequestError()
+
         json_data = request.data.copy()
         software_statement = json_data.pop('software_statement', None)
         if software_statement and self.enable_software_statement:

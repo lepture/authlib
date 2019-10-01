@@ -10,8 +10,13 @@ RevocationEndpoint = create_revocation_endpoint(db.session, Token)
 
 class RevokeTokenTest(TestCase):
     def prepare_data(self):
-        server = create_authorization_server(self.app)
+        app = self.app
+        server = create_authorization_server(app)
         server.register_endpoint(RevocationEndpoint)
+
+        @app.route('/oauth/revoke', methods=['POST'])
+        def revoke_token():
+            return server.create_endpoint_response('revocation')
 
         user = User(username='foo')
         db.session.add(user)

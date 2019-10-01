@@ -33,5 +33,15 @@ class ClientMetadataClaims(dict):
                 return self.get(key)
             raise error
 
+    def validate_redirect_uris(self):
+        pass
+
+    def validate_token_endpoint_auth_method(self):
+        # If unspecified or omitted, the default is "client_secret_basic"
+        pass
+
+    def validate_grant_types(self):
+        pass
+
     def validate(self):
         pass

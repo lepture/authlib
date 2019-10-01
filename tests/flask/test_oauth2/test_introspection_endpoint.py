@@ -30,8 +30,14 @@ class MyIntrospectionEndpoint(IntrospectionEndpoint):
 
 class IntrospectTokenTest(TestCase):
     def prepare_data(self):
-        server = create_authorization_server(self.app)
+        app = self.app
+
+        server = create_authorization_server(app)
         server.register_endpoint(MyIntrospectionEndpoint)
+
+        @app.route('/oauth/introspect', methods=['POST'])
+        def introspect_token():
+            return server.create_endpoint_response('introspection')
 
         user = User(username='foo')
         db.session.add(user)
