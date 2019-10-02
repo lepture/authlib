@@ -4,7 +4,7 @@ from authlib.oauth1 import ResourceProtector as _ResourceProtector
 from django.http import JsonResponse
 from django.conf import settings
 from .nonce import exists_nonce_in_cache
-from ..helpers import parse_request_headers
+from ..django_helpers import parse_request_headers
 
 
 class ResourceProtector(_ResourceProtector):

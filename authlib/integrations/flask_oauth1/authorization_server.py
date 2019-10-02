@@ -7,7 +7,7 @@ from authlib.oauth1 import (
 )
 from authlib.common.security import generate_token
 from authlib.common.urls import url_encode
-from ..helpers import create_oauth_request
+from ..flask_helpers import create_oauth_request
 
 log = logging.getLogger(__name__)
 

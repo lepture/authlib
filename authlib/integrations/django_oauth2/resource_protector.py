@@ -12,7 +12,7 @@ from authlib.oauth2.rfc6750 import (
     BearerTokenValidator as _BearerTokenValidator
 )
 from .signals import token_authenticated
-from ..helpers import parse_request_headers
+from ..django_helpers import parse_request_headers
 
 
 class ResourceProtector(_ResourceProtector):

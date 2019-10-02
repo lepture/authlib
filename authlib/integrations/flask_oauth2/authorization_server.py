@@ -10,7 +10,7 @@ from authlib.oauth2.rfc8414 import AuthorizationServerMetadata
 from authlib.common.security import generate_token
 from authlib.common.encoding import to_unicode
 from .signals import client_authenticated, token_revoked
-from ..helpers import create_oauth_request
+from ..flask_helpers import create_oauth_request
 
 
 class AuthorizationServer(_AuthorizationServer):

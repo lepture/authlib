@@ -10,7 +10,7 @@ from django.core.cache import cache
 from django.conf import settings
 from django.http import HttpResponse
 from .nonce import exists_nonce_in_cache
-from ..helpers import create_oauth_request
+from ..django_helpers import create_oauth_request
 
 log = logging.getLogger(__name__)
 

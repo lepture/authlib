@@ -1,17 +1,12 @@
 import uuid
 import functools
-from flask import request, redirect, session
-from flask import _app_ctx_stack
+from flask import session
 from werkzeug.local import LocalProxy
-from authlib.client import OAuthClient, OAUTH_CLIENT_PARAMS
-from authlib.client.errors import MismatchingStateError
+from authlib.client import OAUTH_CLIENT_PARAMS
+from .remote_app import RemoteApp
 
-__all__ = ['OAuth', 'RemoteApp']
-
+__all__ = ['OAuth']
 _req_token_tpl = '_{}_authlib_req_token_'
-_callback_tpl = '_{}_authlib_callback_'
-_state_tpl = '_{}_authlib_state_'
-_code_verifier_tpl = '_{}_authlib_code_verifier_'
 
 
 class OAuth(object):
@@ -166,129 +161,3 @@ class OAuth(object):
             if key in self._registry:
                 return self.create_client(key)
             raise AttributeError('No such client: %s' % key)
-
-
-class RemoteApp(OAuthClient):
-    """Flask integrated RemoteApp of :class:`~authlib.client.OAuthClient`.
-    It has built-in hooks for OAuthClient. The only required configuration
-    is token model.
-    """
-
-    def __init__(self, name, fetch_token=None, update_token=None,
-                 fetch_request_token=None, save_request_token=None, **kwargs):
-        super(RemoteApp, self).__init__(**kwargs)
-
-        self.name = name
-        self._fetch_token = fetch_token
-        self._fetch_request_token = fetch_request_token
-        self._save_request_token = save_request_token
-
-        if kwargs.get('refresh_token_url'):
-            self.client_kwargs['token_updater'] = _wrap_token_updater(self, update_token)
-
-    @property
-    def token(self):
-        ctx = _app_ctx_stack.top
-        attr = 'authlib_oauth_token_{}'.format(self.name)
-        token = getattr(ctx, attr, None)
-        if token:
-            return token
-        if self._fetch_token:
-            token = self._fetch_token()
-            self.token = token
-            return token
-
-    @token.setter
-    def token(self, token):
-        ctx = _app_ctx_stack.top
-        attr = 'authlib_oauth_token_{}'.format(self.name)
-        setattr(ctx, attr, token)
-
-    def request(self, method, url, token=None, **kwargs):
-        if token is None and not kwargs.get('withhold_token'):
-            token = self.token
-        return super(RemoteApp, self).request(
-            method, url, token=token, **kwargs)
-
-    def save_authorize_state(self, redirect_uri=None, state=None):
-        """Save ``redirect_uri`` and ``state`` into session during
-        authorize step."""
-        if redirect_uri:
-            key = _callback_tpl.format(self.name)
-            session[key] = redirect_uri
-
-        if state:
-            state_key = _state_tpl.format(self.name)
-            session[state_key] = state
-
-    def authorize_redirect(self, redirect_uri=None, **kwargs):
-        """Create a HTTP Redirect for Authorization Endpoint.
-
-        :param redirect_uri: Callback or redirect URI for authorization.
-        :param kwargs: Extra parameters to include.
-        :return: A HTTP redirect response.
-        """
-        if self.request_token_url:
-            save_temporary_data = self._save_request_token
-        else:
-            def save_temporary_data(code_verifier):
-                vf_key = _code_verifier_tpl.format(self.name)
-                session[vf_key] = code_verifier
-
-        uri, state = self.generate_authorize_redirect(
-            redirect_uri,
-            save_temporary_data,
-            **kwargs)
-
-        self.save_authorize_state(redirect_uri, state)
-        return redirect(uri)
-
-    def authorize_access_token(self, **kwargs):
-        """Authorize access token."""
-        if self.request_token_url:
-            request_token = self._fetch_request_token()
-            params = request.args.to_dict(flat=True)
-        else:
-            request_token = None
-            params = _generate_oauth2_access_token_params(self.name)
-
-        cb_key = _callback_tpl.format(self.name)
-        redirect_uri = session.pop(cb_key, None)
-        params.update(kwargs)
-        token = self.fetch_access_token(redirect_uri, request_token, **params)
-        self.token = token
-        return token
-
-
-def _generate_oauth2_access_token_params(name):
-    if request.method == 'GET':
-        params = {'code': request.args['code']}
-        request_state = request.args.get('state')
-    else:
-        params = {'code': request.form['code']}
-        request_state = request.form.get('state')
-
-    state_key = _state_tpl.format(name)
-    state = session.pop(state_key, None)
-    if state:
-        # verify state
-        if state != request_state:
-            raise MismatchingStateError()
-
-        params['state'] = state
-
-    vf_key = _code_verifier_tpl.format(name)
-    code_verifier = session.pop(vf_key, None)
-    if code_verifier:
-        params['code_verifier'] = code_verifier
-    return params
-
-
-def _wrap_token_updater(remote, func):
-
-    def _save_token(token):
-        remote.token = token
-        if callable(func):
-            return func(token)
-
-    return _save_token

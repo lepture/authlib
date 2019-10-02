@@ -1,4 +1,7 @@
 # flake8: noqa
 
-from .authorization_server import AuthorizationServer
-from .resource_protector import ResourceProtector, current_credential
+from authlib.integrations.flask_oauth1 import (
+    AuthorizationServer,
+    ResourceProtector,
+    current_credential,
+)
