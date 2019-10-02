@@ -22,8 +22,9 @@ class OAuth2Auth(AuthBase, TokenAuth):
         if self.client and self.token.is_expired():
             refresh_token = self.token.get('refresh_token')
             client = self.client
-            if refresh_token:
-                return client.refresh_token(refresh_token=refresh_token, **kwargs)
+            url = client.metadata.get('token_endpoint')
+            if refresh_token and url:
+                return client.refresh_token(url, refresh_token=refresh_token, **kwargs)
             elif client.metadata.get('grant_type') == 'client_credentials':
                 return client.fetch_token(grant_type='client_credentials', **kwargs)
             else:
@@ -81,24 +82,16 @@ class OAuth2Session(OAuth2Client, Session):
     )
 
     def __init__(self, client_id=None, client_secret=None,
-                 authorization_endpoint=None,
-                 token_endpoint=None, token_endpoint_auth_method=None,
-                 revocation_endpoint=None, revocation_endpoint_auth_method=None,
+                 token_endpoint_auth_method=None,
+                 revocation_endpoint_auth_method=None,
                  scope=None, redirect_uri=None,
                  token=None, token_placement='header', token_updater=None, **kwargs):
-
-        refresh_token_url = kwargs.pop('refresh_token_url', None)
-        if refresh_token_url is not None and token_endpoint is None:
-            token_endpoint = refresh_token_url
 
         Session.__init__(self)
         OAuth2Client.__init__(
             self, session=self,
             client_id=client_id, client_secret=client_secret,
-            authorization_endpoint=authorization_endpoint,
-            token_endpoint=token_endpoint,
             token_endpoint_auth_method=token_endpoint_auth_method,
-            revocation_endpoint=revocation_endpoint,
             revocation_endpoint_auth_method=revocation_endpoint_auth_method,
             scope=scope, redirect_uri=redirect_uri,
             token=token, token_placement=token_placement,

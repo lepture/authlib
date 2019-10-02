@@ -192,11 +192,11 @@ class OAuthClient(object):
             kwargs = {}
             kwargs.update(self.client_kwargs)
             kwargs.update(self.server_metadata)
+            kwargs['authorization_endpoint'] = self.authorize_url
+            kwargs['token_endpoint'] = self.access_token_url
             session = self.oauth2_client_cls(
                 client_id=self.client_id,
                 client_secret=self.client_secret,
-                token_endpoint=self.access_token_url,
-                authorization_endpoint=self.authorize_url,
                 **kwargs
             )
             # only OAuth2 has compliance_fix currently

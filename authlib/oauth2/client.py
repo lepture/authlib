@@ -23,13 +23,8 @@ class OAuth2Client(object):
                     authorization server.
     :param client_id: Client ID, which you get from client registration.
     :param client_secret: Client Secret, which you get from registration.
-    :param authorization_endpoint: URL of the authorization server's
-        authorization endpoint.
-    :param token_endpoint: URL of the authorization server's token endpoint.
     :param token_endpoint_auth_method: client authentication method for
         token endpoint.
-    :param revocation_endpoint: URL of the authorization server's OAuth 2.0
-        revocation endpoint.
     :param revocation_endpoint_auth_method: client authentication method for
         revocation endpoint.
     :param scope: Scope that you needed to access user resources.
@@ -51,16 +46,14 @@ class OAuth2Client(object):
     SESSION_REQUEST_PARAMS = []
 
     def __init__(self, session, client_id=None, client_secret=None,
-                 authorization_endpoint=None,
-                 token_endpoint=None, token_endpoint_auth_method=None,
-                 revocation_endpoint=None, revocation_endpoint_auth_method=None,
+                 token_endpoint_auth_method=None,
+                 revocation_endpoint_auth_method=None,
                  scope=None, redirect_uri=None, code_challenge_method=None,
                  token=None, token_placement='header', token_updater=None, **metadata):
 
         self.session = session
         self.client_id = client_id
         self.client_secret = client_secret
-        self.authorization_endpoint = authorization_endpoint
 
         if token_endpoint_auth_method is None:
             if client_secret:
@@ -68,7 +61,6 @@ class OAuth2Client(object):
             else:
                 token_endpoint_auth_method = 'none'
 
-        self.token_endpoint = token_endpoint
         self.token_endpoint_auth_method = token_endpoint_auth_method
 
         if revocation_endpoint_auth_method is None:
@@ -77,7 +69,6 @@ class OAuth2Client(object):
             else:
                 revocation_endpoint_auth_method = 'none'
 
-        self.revocation_endpoint = revocation_endpoint
         self.revocation_endpoint_auth_method = revocation_endpoint_auth_method
 
         self.scope = scope
@@ -103,7 +94,7 @@ class OAuth2Client(object):
     def token(self, token):
         self.token_auth.set_token(token)
 
-    def create_authorization_url(self, url=None, state=None, code_verifier=None, **kwargs):
+    def create_authorization_url(self, url, state=None, code_verifier=None, **kwargs):
         """Generate an authorization URL and state.
 
         :param url: Authorization endpoint url, must be HTTPS.
@@ -113,9 +104,6 @@ class OAuth2Client(object):
         :param kwargs: Extra parameters to include.
         :return: authorization_url, state
         """
-        if url is None:
-            url = self.authorization_endpoint
-
         if state is None:
             state = generate_token()
 
@@ -160,9 +148,6 @@ class OAuth2Client(object):
         authorization_response = kwargs.pop('authorization_response', None)
         if authorization_response and '#' in authorization_response:
             return self.token_from_fragment(authorization_response, kwargs.get('state'))
-
-        if url is None:
-            url = self.token_endpoint
 
         session_kwargs = self._extract_session_request_params(kwargs)
 
@@ -214,7 +199,7 @@ class OAuth2Client(object):
         token = parse_implicit_response(authorization_response, state)
         return self.parse_response_token(token)
 
-    def refresh_token(self, url=None, refresh_token=None, body='',
+    def refresh_token(self, url, refresh_token=None, body='',
                       auth=None, headers=None, **kwargs):
         """Fetch a new access token using a refresh token.
 
@@ -226,9 +211,6 @@ class OAuth2Client(object):
         :param headers: Dict to default request headers with.
         :return: A :class:`OAuth2Token` object (a dict too).
         """
-        if url is None:
-            url = self.token_endpoint
-
         session_kwargs = self._extract_session_request_params(kwargs)
         refresh_token = refresh_token or self.token.get('refresh_token')
         if 'scope' not in kwargs and self.scope:
@@ -273,7 +255,7 @@ class OAuth2Client(object):
 
         return self.token
 
-    def revoke_token(self, url=None, token=None, token_type_hint=None,
+    def revoke_token(self, url, token=None, token_type_hint=None,
                      body=None, auth=None, headers=None, **kwargs):
         """Revoke token method defined via `RFC7009`_.
 
@@ -289,9 +271,6 @@ class OAuth2Client(object):
 
         .. _`RFC7009`: https://tools.ietf.org/html/rfc7009
         """
-        if url is None:
-            url = self.revocation_endpoint
-
         if token is None and self.token:
             token = self.token.get('refresh_token') or self.token.get('access_token')
 
@@ -343,6 +322,8 @@ class OAuth2Client(object):
     def parse_response_token(self, token):
         if 'error' not in token:
             self.token = token
+            if callable(self.token_updater):
+                self.token_updater(self.token)
             return self.token
 
         error = token['error']
