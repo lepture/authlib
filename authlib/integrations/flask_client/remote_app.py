@@ -1,7 +1,7 @@
 from flask import request, redirect, session
 from flask import _app_ctx_stack
-from authlib.client import OAuthClient
-from authlib.client.errors import MismatchingStateError
+from ..requests_client import OAuthClient
+from ..client_errors import MismatchingStateError
 
 __all__ = ['RemoteApp']
 

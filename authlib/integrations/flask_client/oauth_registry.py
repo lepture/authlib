@@ -2,8 +2,8 @@ import uuid
 import functools
 from flask import session
 from werkzeug.local import LocalProxy
-from authlib.client import OAUTH_CLIENT_PARAMS
 from .remote_app import RemoteApp
+from ..oauth_client import OAUTH_CLIENT_PARAMS
 
 __all__ = ['OAuth']
 _req_token_tpl = '_{}_authlib_req_token_'
