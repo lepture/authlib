@@ -2,7 +2,7 @@ from requests import Session
 from requests.auth import AuthBase
 from authlib.oauth2.client import OAuth2Client
 from authlib.oauth2.auth import ClientAuth, TokenAuth
-from .errors import (
+from ..client_errors import (
     OAuthError,
     InvalidTokenError,
     MissingTokenError,
