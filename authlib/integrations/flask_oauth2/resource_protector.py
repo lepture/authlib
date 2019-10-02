@@ -13,7 +13,7 @@ from authlib.oauth2.rfc6749 import (
     HttpRequest,
 )
 from .signals import token_authenticated
-from authlib.flask.error import raise_http_exception
+from .errors import raise_http_exception
 
 
 class ResourceProtector(_ResourceProtector):
