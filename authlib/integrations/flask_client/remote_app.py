@@ -21,18 +21,16 @@ class RemoteApp(OAuthClient):
     is token model.
     """
 
-    def __init__(self, name, fetch_token=None, fetch_request_token=None,
-                 save_request_token=None, **kwargs):
-        super(RemoteApp, self).__init__(**kwargs)
+    def __init__(self, name, fetch_token=None, **kwargs):
+        update_token = kwargs.pop('update_token', None)
+        fetch_request_token = kwargs.pop('fetch_request_token', None)
+        save_request_token = kwargs.pop('save_request_token', None)
 
-        self.name = name
-        self._fetch_token = fetch_token
+        super(RemoteApp, self).__init__(name, fetch_token, **kwargs)
+
         self._fetch_request_token = fetch_request_token
         self._save_request_token = save_request_token
-
-        if kwargs.get('refresh_token_url'):
-            self._update_token = kwargs.get('update_token')
-            self.client_kwargs['token_updater'] = self._send_token_update
+        self._update_token = update_token
 
     def _send_token_update(self, token):
         self.token = token
@@ -90,10 +88,8 @@ class RemoteApp(OAuthClient):
                 vf_key = _code_verifier_tpl.format(self.name)
                 session[vf_key] = code_verifier
 
-        uri, state = self.generate_authorize_redirect(
-            redirect_uri,
-            save_temporary_data,
-            **kwargs)
+        uri, state = self.create_authorization_url(
+            redirect_uri, save_temporary_data, **kwargs)
 
         self.save_authorize_state(redirect_uri, state)
         return redirect(uri)

@@ -26,6 +26,8 @@ OAUTH_CLIENT_PARAMS = (
 class OAuthClient(object):
     """A mixed OAuth client for OAuth 1 and OAuth 2.
 
+    :param name: The name of the OAuth client, like: github, twitter
+    :param fetch_token: A function to fetch access token from database
     :param client_id: Client key of OAuth 1, or Client ID of OAuth 2
     :param client_secret: Client secret of OAuth 2, or Client Secret of OAuth 2
     :param request_token_url: Request Token endpoint for OAuth 1
@@ -61,13 +63,15 @@ class OAuthClient(object):
         )
     """
     DEFAULT_USER_AGENT = default_user_agent
+    OAUTH_NAME = None
     OAUTH_CONFIG = None
 
     oauth1_client_cls = None
     oauth2_client_cls = None
 
     def __init__(
-            self, client_id=None, client_secret=None,
+            self, name=None, fetch_token=None,
+            client_id=None, client_secret=None,
             request_token_url=None, request_token_params=None,
             access_token_url=None, access_token_params=None,
             authorize_url=None, authorize_params=None,
@@ -76,6 +80,7 @@ class OAuthClient(object):
 
         config = self.OAUTH_CONFIG or {}
 
+        self.name = name or self.OAUTH_NAME
         self.client_id = client_id
         self.client_secret = client_secret
         self.request_token_url = config.get('request_token_url', request_token_url)
@@ -92,8 +97,7 @@ class OAuthClient(object):
             self.client_kwargs = config.get('client_kwargs', {})
 
         self.compliance_fix = config.get('compliance_fix', compliance_fix)
-
-        self._fetch_token = None
+        self._fetch_token = fetch_token
 
         if not server_metadata_url:
             server_metadata_url = config.get('server_metadata_url')
@@ -104,7 +108,35 @@ class OAuthClient(object):
 
         self.server_metadata = kwargs
 
-    def generate_authorize_redirect(
+    def _send_token_update(self, token):
+        raise NotImplementedError()
+
+    def _get_session(self):
+        if self.request_token_url:
+            session = self.oauth1_client_cls(
+                self.client_id, self.client_secret,
+                **self.client_kwargs
+            )
+        else:
+            kwargs = {}
+            kwargs.update(self.client_kwargs)
+            kwargs.update(self.server_metadata)
+            kwargs['authorization_endpoint'] = self.authorize_url
+            kwargs['token_endpoint'] = self.access_token_url
+            session = self.oauth2_client_cls(
+                client_id=self.client_id,
+                client_secret=self.client_secret,
+                token_updater=self._send_token_update,
+                **kwargs
+            )
+            # only OAuth2 has compliance_fix currently
+            if self.compliance_fix:
+                self.compliance_fix(session)
+
+        session.headers['User-Agent'] = self.DEFAULT_USER_AGENT
+        return session
+
+    def create_authorization_url(
             self, redirect_uri=None, save_temporary_data=None, **kwargs):
         """Generate the authorization url and state for HTTP redirect.
 
@@ -181,30 +213,6 @@ class OAuthClient(object):
                 kwargs.update(params)
                 token = session.fetch_token(token_endpoint, **kwargs)
             return token
-
-    def _get_session(self):
-        if self.request_token_url:
-            session = self.oauth1_client_cls(
-                self.client_id, self.client_secret,
-                **self.client_kwargs
-            )
-        else:
-            kwargs = {}
-            kwargs.update(self.client_kwargs)
-            kwargs.update(self.server_metadata)
-            kwargs['authorization_endpoint'] = self.authorize_url
-            kwargs['token_endpoint'] = self.access_token_url
-            session = self.oauth2_client_cls(
-                client_id=self.client_id,
-                client_secret=self.client_secret,
-                **kwargs
-            )
-            # only OAuth2 has compliance_fix currently
-            if self.compliance_fix:
-                self.compliance_fix(session)
-
-        session.headers['User-Agent'] = self.DEFAULT_USER_AGENT
-        return session
 
     def request(self, method, url, token=None, **kwargs):
         if self.api_base_url and not url.startswith(('https://', 'http://')):
