@@ -1,6 +1,6 @@
 from flask import json
 from authlib.oauth2.rfc7591 import ClientRegistrationEndpoint as _ClientRegistrationEndpoint
-from .models import db, User
+from .models import db, User, Client
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
 
@@ -15,7 +15,14 @@ class ClientRegistrationEndpoint(_ClientRegistrationEndpoint):
         return b'hello'
 
     def save_client(self, client_info, client_metadata, user):
-        return
+        client = Client(
+            user_id=user.id,
+            **client_info,
+        )
+        client.set_client_metadata(client_metadata)
+        db.session.add(client)
+        db.session.commit()
+        return client
 
 
 class ClientRegistrationTest(TestCase):
@@ -46,3 +53,14 @@ class ClientRegistrationTest(TestCase):
         rv = self.client.post('/create_client', headers=headers)
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'invalid_request')
+
+    def test_create_client(self):
+        self.prepare_data()
+        headers = {'Authorization': 'bearer abc'}
+        body = {
+            'client_name': 'Authlib'
+        }
+        rv = self.client.post('/create_client', json=body, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertIn('client_id', resp)
+        self.assertEqual(resp['client_name'], 'Authlib')
