@@ -53,7 +53,7 @@ class OAuth(object):
             self.update_token = update_token
 
         app.extensions = getattr(app, 'extensions', {})
-        app.extensions['authlib.flask.client'] = self
+        app.extensions['authlib.integrations.flask_client'] = self
 
     def create_client(self, name):
         if not self.app:

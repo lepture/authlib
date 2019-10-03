@@ -1,9 +1,14 @@
+from flask.signals import Namespace
 from flask import request, redirect, session
 from flask import _app_ctx_stack
 from ..requests_client import OAuthClient
 from ..client_errors import MismatchingStateError
 
-__all__ = ['RemoteApp']
+__all__ = ['token_update', 'RemoteApp']
+
+_signal = Namespace()
+#: signal when token is updated
+token_update = _signal.signal('token_update')
 
 _callback_tpl = '_{}_authlib_callback_'
 _state_tpl = '_{}_authlib_state_'
@@ -16,8 +21,8 @@ class RemoteApp(OAuthClient):
     is token model.
     """
 
-    def __init__(self, name, fetch_token=None, update_token=None,
-                 fetch_request_token=None, save_request_token=None, **kwargs):
+    def __init__(self, name, fetch_token=None, fetch_request_token=None,
+                 save_request_token=None, **kwargs):
         super(RemoteApp, self).__init__(**kwargs)
 
         self.name = name
@@ -26,7 +31,15 @@ class RemoteApp(OAuthClient):
         self._save_request_token = save_request_token
 
         if kwargs.get('refresh_token_url'):
-            self.client_kwargs['token_updater'] = _wrap_token_updater(self, update_token)
+            self._update_token = kwargs.get('update_token')
+            self.client_kwargs['token_updater'] = self._send_token_update
+
+    def _send_token_update(self, token):
+        self.token = token
+        token_update.send(self, name=self.name, token=token)
+        if callable(self._update_token):
+            # TODO: deprecate
+            self._update_token(token)
 
     @property
     def token(self):
@@ -124,13 +137,3 @@ def _generate_oauth2_access_token_params(name):
     if code_verifier:
         params['code_verifier'] = code_verifier
     return params
-
-
-def _wrap_token_updater(remote, func):
-
-    def _save_token(token):
-        remote.token = token
-        if callable(func):
-            return func(token)
-
-    return _save_token
