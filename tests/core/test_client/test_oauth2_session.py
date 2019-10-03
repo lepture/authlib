@@ -5,8 +5,7 @@ from copy import deepcopy
 from unittest import TestCase
 
 from authlib.common.urls import url_encode
-from authlib.client import OAuth2Session
-from authlib.client.errors import OAuthError
+from authlib.integrations.requests_client import OAuth2Session, OAuthError
 from authlib.oauth2.rfc6749 import (
     MismatchingStateException,
 )
@@ -325,8 +324,7 @@ class OAuth2SessionTest(TestCase):
         )
         sess = OAuth2Session(
             'foo', token=old_token,
-            refresh_token_url='https://i.b/token',
-            refresh_token_params={'ping': 'pong'},
+            token_endpoint='https://i.b/token',
             token_updater=token_updater,
         )
         sess.send = mock_json_response(self.token)

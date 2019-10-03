@@ -12,7 +12,7 @@ from authlib.oauth1 import (
 )
 from authlib.oauth1.rfc5849.util import escape
 from authlib.common.encoding import to_unicode, unicode_type
-from authlib.client import OAuth1Session, OAuthError
+from authlib.integrations.requests_client import OAuth1Session, OAuthError
 from tests.client_base import mock_text_response
 from tests.util import read_file_path
 
