@@ -2,10 +2,10 @@ import os
 import unittest
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from authlib.flask.oauth1 import (
+from authlib.integrations.flask_oauth1 import (
     AuthorizationServer, ResourceProtector, current_credential
 )
-from authlib.flask.oauth1.sqla import (
+from authlib.integrations.sqla_oauth1 import (
     OAuth1ClientMixin,
     OAuth1TokenCredentialMixin,
     OAuth1TemporaryCredentialMixin,

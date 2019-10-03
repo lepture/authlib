@@ -83,10 +83,12 @@ class DeviceCodeGrantTest(TestCase):
             user_id=user.id,
             client_id='client',
             client_secret='secret',
-            redirect_uri='http://localhost/authorized',
-            scope='profile',
-            grant_type=grant_type,
         )
+        client.set_client_metadata({
+            'redirect_uris': ['http://localhost/authorized'],
+            'scope': 'profile',
+            'grant_types': [grant_type],
+        })
         db.session.add(client)
         db.session.commit()
 

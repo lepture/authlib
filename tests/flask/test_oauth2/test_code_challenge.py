@@ -46,12 +46,14 @@ class CodeChallengeTest(TestCase):
             user_id=user.id,
             client_id='code-client',
             client_secret=client_secret,
-            redirect_uri='https://a.b',
-            scope='profile address',
-            token_endpoint_auth_method=token_endpoint_auth_method,
-            response_type='code',
-            grant_type='authorization_code',
         )
+        client.set_client_metadata({
+            'redirect_uris': ['https://a.b'],
+            'scope': 'profile address',
+            'token_endpoint_auth_method': token_endpoint_auth_method,
+            'response_types': ['code'],
+            'grant_types': ['authorization_code'],
+        })
         self.authorize_url = (
             '/oauth/authorize?response_type=code'
             '&client_id=code-client'

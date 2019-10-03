@@ -18,10 +18,12 @@ class ClientCredentialsTest(TestCase):
             user_id=user.id,
             client_id='credential-client',
             client_secret='credential-secret',
-            redirect_uri='http://localhost/authorized',
-            scope='profile',
-            grant_type=grant_type,
         )
+        client.set_client_metadata({
+            'scope': 'profile',
+            'redirect_uris': ['http://localhost/authorized'],
+            'grant_types': [grant_type]
+        })
         db.session.add(client)
         db.session.commit()
 

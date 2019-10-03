@@ -1,10 +1,10 @@
 import time
 from flask_sqlalchemy import SQLAlchemy
 from authlib.common.security import generate_token
-from authlib.flask.oauth2.sqla import (
+from authlib.integrations.sqla_oauth2 import (
     OAuth2ClientMixin,
     OAuth2TokenMixin,
-    OIDCAuthorizationCodeMixin,
+    OAuth2AuthorizationCodeMixin,
 )
 from authlib.oidc.core import UserInfo
 db = SQLAlchemy()
@@ -33,11 +33,9 @@ class Client(db.Model, OAuth2ClientMixin):
     user = db.relationship('User')
 
 
-class AuthorizationCode(db.Model, OIDCAuthorizationCodeMixin):
+class AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, nullable=False)
-    code_challenge = db.Column(db.String(80))
-    code_challenge_method = db.Column(db.String(10))
 
     @property
     def user(self):

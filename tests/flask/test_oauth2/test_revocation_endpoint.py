@@ -1,5 +1,5 @@
 from flask import json
-from authlib.flask.oauth2.sqla import create_revocation_endpoint
+from authlib.integrations.sqla_oauth2 import create_revocation_endpoint
 from .models import db, User, Client, Token
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
@@ -25,9 +25,11 @@ class RevokeTokenTest(TestCase):
             user_id=user.id,
             client_id='revoke-client',
             client_secret='revoke-secret',
-            redirect_uri='http://localhost/authorized',
-            scope='profile',
         )
+        client.set_client_metadata({
+            'scope': 'profile',
+            'redirect_uris': ['http://localhost/authorized'],
+        })
         db.session.add(client)
         db.session.commit()
 

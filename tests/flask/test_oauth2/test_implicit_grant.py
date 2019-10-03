@@ -24,12 +24,14 @@ class ImplicitTest(TestCase):
             user_id=user.id,
             client_id='implicit-client',
             client_secret=client_secret,
-            redirect_uri='http://localhost/authorized',
-            response_type=response_type,
-            grant_type='implicit',
-            scope='profile',
-            token_endpoint_auth_method=token_endpoint_auth_method,
         )
+        client.set_client_metadata({
+            'redirect_uris': ['http://localhost/authorized'],
+            'scope': 'profile',
+            'response_types': [response_type],
+            'grant_types': ['implicit'],
+            'token_endpoint_auth_method': token_endpoint_auth_method,
+        })
         self.authorize_url = (
             '/oauth/authorize?response_type=token'
             '&client_id=implicit-client'

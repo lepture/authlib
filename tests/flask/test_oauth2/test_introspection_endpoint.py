@@ -1,5 +1,5 @@
 from flask import json
-from authlib.flask.oauth2.sqla import create_query_token_func
+from authlib.integrations.sqla_oauth2 import create_query_token_func
 from authlib.oauth2.rfc7662 import IntrospectionEndpoint
 from .models import db, User, Client, Token
 from .oauth2_server import TestCase
@@ -46,9 +46,11 @@ class IntrospectTokenTest(TestCase):
             user_id=user.id,
             client_id='introspect-client',
             client_secret='introspect-secret',
-            redirect_uri='http://a.b/c',
-            scope='profile',
         )
+        client.set_client_metadata({
+            'scope': 'profile',
+            'redirect_uris': ['http://a.b/c'],
+        })
         db.session.add(client)
         db.session.commit()
 

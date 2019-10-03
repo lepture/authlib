@@ -32,10 +32,12 @@ class JWTBearerGrantTest(TestCase):
             user_id=user.id,
             client_id='jwt-client',
             client_secret='jwt-secret',
-            redirect_uri='http://localhost/authorized',
-            scope='profile',
-            grant_type=grant_type,
         )
+        client.set_client_metadata({
+            'scope': 'profile',
+            'redirect_uris': ['http://localhost/authorized'],
+            'grant_types': [grant_type],
+        })
         db.session.add(client)
         db.session.commit()
 

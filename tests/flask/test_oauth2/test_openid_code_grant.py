@@ -57,11 +57,13 @@ class BaseTestCase(TestCase):
             user_id=user.id,
             client_id='code-client',
             client_secret='code-secret',
-            redirect_uri='https://a.b',
-            scope='openid profile address',
-            response_type='code',
-            grant_type='authorization_code',
         )
+        client.set_client_metadata({
+            'redirect_uris': ['https://a.b'],
+            'scope': 'openid profile address',
+            'response_types': ['code'],
+            'grant_types': ['authorization_code'],
+        })
         db.session.add(client)
         db.session.commit()
 

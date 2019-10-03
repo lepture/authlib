@@ -1,6 +1,6 @@
 from flask import json, jsonify
-from authlib.flask.oauth2 import ResourceProtector, current_token
-from authlib.flask.oauth2.sqla import create_bearer_token_validator
+from authlib.integrations.flask_oauth2 import ResourceProtector, current_token
+from authlib.integrations.sqla_oauth2 import create_bearer_token_validator
 from .models import db, User, Client, Token
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
@@ -94,9 +94,11 @@ class ResourceTest(TestCase):
             user_id=user.id,
             client_id='resource-client',
             client_secret='resource-secret',
-            redirect_uri='http://localhost/authorized',
-            scope='profile',
         )
+        client.set_client_metadata({
+            'scope': 'profile',
+            'redirect_uris': ['http://localhost/authorized'],
+        })
         db.session.add(client)
         db.session.commit()
 

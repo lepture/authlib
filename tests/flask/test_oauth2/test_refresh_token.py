@@ -34,10 +34,12 @@ class RefreshTokenTest(TestCase):
             user_id=user.id,
             client_id='refresh-client',
             client_secret='refresh-secret',
-            redirect_uri='http://localhost/authorized',
-            scope='profile',
-            grant_type=grant_type,
         )
+        client.set_client_metadata({
+            'scope': 'profile',
+            'grant_types': [grant_type],
+            'redirect_uris': ['http://localhost/authorized'],
+        })
         db.session.add(client)
         db.session.commit()
 

@@ -32,8 +32,7 @@ class OAuth2ClientMixin(ClientMixin):
             return json_loads(self._client_metadata)
         return {}
 
-    @client_metadata.setter
-    def client_metadata(self, value):
+    def set_client_metadata(self, value):
         self._client_metadata = json_dumps(value)
 
     @property
@@ -42,7 +41,10 @@ class OAuth2ClientMixin(ClientMixin):
 
     @property
     def token_endpoint_auth_method(self):
-        return self.client_metadata.get('token_endpoint_auth_method')
+        return self.client_metadata.get(
+            'token_endpoint_auth_method',
+            'client_secret_basic'
+        )
 
     @property
     def grant_types(self):

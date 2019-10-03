@@ -1,7 +1,7 @@
 import mock
 from unittest import TestCase
 from flask import Flask, session
-from authlib.flask.client import OAuth
+from authlib.integrations.flask_client import OAuth
 from .cache import SimpleCache
 from ..client_base import (
     mock_send_value,

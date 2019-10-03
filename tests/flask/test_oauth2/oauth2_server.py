@@ -5,11 +5,11 @@ from flask import Flask, request
 from authlib.common.security import generate_token
 from authlib.common.encoding import to_bytes, to_unicode
 from authlib.common.urls import url_encode
-from authlib.flask.oauth2.sqla import (
+from authlib.integrations.sqla_oauth2 import (
     create_query_client_func,
     create_save_token_func,
 )
-from authlib.flask.oauth2 import AuthorizationServer
+from authlib.integrations.flask_oauth2 import AuthorizationServer
 from authlib.oauth2 import OAuth2Error
 from .models import db, User, Client, Token
 

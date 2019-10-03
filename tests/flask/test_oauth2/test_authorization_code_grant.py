@@ -42,12 +42,14 @@ class AuthorizationCodeTest(TestCase):
             user_id=user.id,
             client_id='code-client',
             client_secret=client_secret,
-            redirect_uri='https://a.b',
-            scope='profile address',
-            token_endpoint_auth_method=token_endpoint_auth_method,
-            response_type=response_type,
-            grant_type=grant_type,
         )
+        client.set_client_metadata({
+            'redirect_uris': ['https://a.b'],
+            'scope': 'profile address',
+            'token_endpoint_auth_method': token_endpoint_auth_method,
+            'response_types': [response_type],
+            'grant_types': grant_type.splitlines(),
+        })
         self.authorize_url = (
             '/oauth/authorize?response_type=code'
             '&client_id=code-client'
