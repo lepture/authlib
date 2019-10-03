@@ -17,7 +17,7 @@ class ClientRegistrationEndpoint(_ClientRegistrationEndpoint):
     def save_client(self, client_info, client_metadata, user):
         client = Client(
             user_id=user.id,
-            **client_info,
+            **client_info
         )
         client.set_client_metadata(client_metadata)
         db.session.add(client)
