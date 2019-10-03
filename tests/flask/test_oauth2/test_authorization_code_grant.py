@@ -1,6 +1,5 @@
 from flask import json
 from authlib.common.urls import urlparse, url_decode
-from authlib.flask.oauth2 import register_cache_authorization_code
 from authlib.oauth2.rfc6749.grants import (
     AuthorizationCodeGrant as _AuthorizationCodeGrant,
 )
@@ -8,7 +7,6 @@ from .models import db, User, Client, AuthorizationCode
 from .models import CodeGrantMixin, generate_authorization_code
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
-from ..cache import SimpleCache
 
 
 class AuthorizationCodeGrant(CodeGrantMixin, _AuthorizationCodeGrant):
@@ -252,15 +250,3 @@ class AuthorizationCodeTest(TestCase):
         resp = json.loads(rv.data)
         self.assertIn('access_token', resp)
         self.assertIn('c-authorization_code.1.', resp['access_token'])
-
-
-class CacheAuthorizationCodeTest(AuthorizationCodeTest):
-    LAZY_INIT = True
-
-    def register_grant(self, server):
-
-        def authenticate_user(authorization_code):
-            return User.query.get(authorization_code.user_id)
-
-        cache = SimpleCache()
-        register_cache_authorization_code(cache, server, authenticate_user)

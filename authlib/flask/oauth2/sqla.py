@@ -11,6 +11,9 @@ from authlib.oauth2.rfc6749.util import scope_to_list, list_to_scope
 from authlib.oidc.core import (
     AuthorizationCodeMixin as OIDCCodeMixin
 )
+from authlib.deprecate import deprecate
+
+deprecate('Deprecate "authlib.flask.oauth2.sqla"', '1.0', 'Jeclj', 'sq')
 
 
 class OAuth2ClientMixin(ClientMixin):

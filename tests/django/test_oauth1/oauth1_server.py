@@ -1,5 +1,5 @@
 import os
-from authlib.django.oauth1 import (
+from authlib.integrations.django_oauth1 import (
     CacheAuthorizationServer,
 )
 from .models import Client, TokenCredential

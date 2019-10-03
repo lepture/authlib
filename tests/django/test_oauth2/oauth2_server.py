@@ -1,7 +1,7 @@
 import os
 import base64
 from authlib.common.encoding import to_bytes, to_unicode
-from authlib.django.oauth2 import AuthorizationServer
+from authlib.integrations.django_oauth2 import AuthorizationServer
 from .models import Client, OAuth2Token
 from ..base import TestCase as _TestCase
 

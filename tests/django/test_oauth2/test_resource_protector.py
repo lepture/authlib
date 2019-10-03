@@ -1,5 +1,5 @@
 import json
-from authlib.django.oauth2 import ResourceProtector, BearerTokenValidator
+from authlib.integrations.django_oauth2 import ResourceProtector, BearerTokenValidator
 from django.http import JsonResponse
 from .models import User, Client, OAuth2Token
 from .oauth2_server import TestCase

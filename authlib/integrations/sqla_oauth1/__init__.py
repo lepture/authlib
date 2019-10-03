@@ -1,3 +1,5 @@
+# flake8: noqa
+
 from .mixins import (
     OAuth1ClientMixin,
     OAuth1TemporaryCredentialMixin,

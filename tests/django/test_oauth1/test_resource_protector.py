@@ -3,7 +3,7 @@ import time
 from authlib.common.encoding import to_unicode
 from authlib.oauth1.rfc5849 import signature
 from authlib.common.urls import add_params_to_uri
-from authlib.django.oauth1 import ResourceProtector
+from authlib.integrations.django_oauth1 import ResourceProtector
 from django.http import JsonResponse
 from django.test import override_settings
 from tests.util import read_file_path

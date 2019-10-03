@@ -15,14 +15,13 @@ from authlib.integrations.sqla_oauth1 import (
     register_authorization_hooks,
     create_exists_nonce_func as create_db_exists_nonce_func,
 )
-from authlib.flask.oauth1.cache import (
+from authlib.integrations.flask_oauth1 import (
     register_temporary_credential_hooks,
     register_nonce_hooks,
     create_exists_nonce_func as create_cache_exists_nonce_func,
 )
 from authlib.oauth1.errors import OAuth1Error
-from authlib.common.urls import url_decode, url_encode
-from authlib.common.encoding import to_unicode
+from authlib.common.urls import url_encode
 from tests.util import read_file_path
 from ..cache import SimpleCache
 os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'

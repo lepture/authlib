@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function
 
 import mock
 from django.test import override_settings
-from authlib.django.client import OAuth, RemoteApp
+from authlib.integrations.django_client import OAuth, RemoteApp
 from .base import TestCase
 from ..client_base import (
     mock_send_value,

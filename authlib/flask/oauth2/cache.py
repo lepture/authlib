@@ -1,5 +1,8 @@
 from authlib.common.security import generate_token
 from authlib.oauth2.rfc6749.grants import AuthorizationCodeGrant
+from authlib.deprecate import deprecate
+
+deprecate('Removed "authlib.flask.oauth2.cache"', '1.0', 'Jeclj', 'sq')
 
 
 class AuthorizationCode(dict):
