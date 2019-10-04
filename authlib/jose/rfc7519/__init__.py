@@ -10,8 +10,8 @@
 """
 
 from .jwt import JsonWebToken
-from .claims import JWTClaims
+from .claims import BaseClaims, JWTClaims
 
 JWT = JsonWebToken
 
-__all__ = ['JWT', 'JsonWebToken', 'JWTClaims']
+__all__ = ['JWT', 'JsonWebToken', 'BaseClaims', 'JWTClaims']

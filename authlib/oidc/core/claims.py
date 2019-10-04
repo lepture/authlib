@@ -24,6 +24,10 @@ class IDToken(JWTClaims):
     ESSENTIAL_CLAIMS = ['iss', 'sub', 'aud', 'exp', 'iat']
 
     def validate(self, now=None, leeway=0):
+        for k in self.ESSENTIAL_CLAIMS:
+            if k not in self:
+                raise MissingClaimError(k)
+
         self._validate_essential_claims()
         if now is None:
             now = int(time.time())
@@ -40,12 +44,6 @@ class IDToken(JWTClaims):
         self.validate_amr()
         self.validate_azp()
         self.validate_at_hash()
-
-    def _validate_essential_claims(self):
-        super(IDToken, self)._validate_essential_claims()
-        for k in self.ESSENTIAL_CLAIMS:
-            if k not in self:
-                raise MissingClaimError(k)
 
     def validate_auth_time(self):
         """Time when the End-User authentication occurred. Its value is a JSON

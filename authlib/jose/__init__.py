@@ -21,7 +21,7 @@ from .rfc7518 import (
     JWE_ZIP_ALGORITHMS,
     JWK_ALGORITHMS,
 )
-from .rfc7519 import JWT, JsonWebToken, JWTClaims
+from .rfc7519 import JWT, JsonWebToken, BaseClaims, JWTClaims
 from .jwk import jwk
 
 jwt = JsonWebToken()
@@ -40,6 +40,6 @@ __all__ = [
     'JWE_ZIP_ALGORITHMS',
     'JWK_ALGORITHMS',
 
-    'JWT', 'JsonWebToken', 'JWTClaims',
+    'JWT', 'JsonWebToken', 'BaseClaims', 'JWTClaims',
     'jwk', 'jwt',
 ]

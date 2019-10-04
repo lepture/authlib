@@ -6,6 +6,7 @@ from authlib.common.security import generate_token
 from authlib.jose import jwt
 from authlib.jose.errors import JoseError
 from ..rfc6749 import AccessDeniedError, InvalidRequestError
+from ..rfc6749.util import scope_to_list
 from .claims import ClientMetadataClaims
 from .errors import (
     InvalidClientMetadataError,
@@ -54,11 +55,12 @@ class ClientRegistrationEndpoint(object):
             data = self.extract_software_statement(software_statement, request)
             json_data.update(data)
 
-        claims = self.claims_class(json_data, {})
+        options = self.get_claims_options()
+        claims = self.claims_class(json_data, {}, options, self.server.metadata)
         try:
             claims.validate()
-        except JoseError:
-            raise InvalidClientMetadataError()
+        except JoseError as error:
+            raise InvalidClientMetadataError(error.description)
         return claims
 
     def extract_software_statement(self, software_statement, request):
@@ -72,6 +74,49 @@ class ClientRegistrationEndpoint(object):
             return claims
         except JoseError:
             raise InvalidSoftwareStatementError()
+
+    def get_claims_options(self):
+        """Generate claims options validation from Authorization Server metadata."""
+        metadata = self.server.metadata
+        if not metadata:
+            return {}
+
+        scopes_supported = metadata.get('scopes_supported')
+        response_types_supported = metadata.get('response_types_supported')
+        grant_types_supported = metadata.get('grant_types_supported')
+        auth_methods_supported = metadata.get('token_endpoint_auth_methods_supported')
+        options = {}
+        if scopes_supported is not None:
+            scopes_supported = set(scopes_supported)
+
+            def _validate_scope(value):
+                if not value:
+                    return True
+                scopes = set(scope_to_list(value))
+                return scopes_supported.issuperset(scopes)
+
+            options['scope'] = {'validate': _validate_scope}
+
+        if response_types_supported is not None:
+            response_types_supported = set(response_types_supported)
+
+            def _validate_response_types(value):
+                return response_types_supported.issuperset(set(value))
+
+            options['response_types'] = {'validate': _validate_response_types}
+
+        if grant_types_supported is not None:
+            grant_types_supported = set(grant_types_supported)
+
+            def _validate_grant_types(value):
+                return grant_types_supported.issuperset(set(value))
+
+            options['grant_types'] = {'validate': _validate_grant_types}
+
+        if auth_methods_supported is not None:
+            options['token_endpoint_auth_method'] = {'values': auth_methods_supported}
+
+        return options
 
     def generate_client_info(self):
         # https://tools.ietf.org/html/rfc7591#section-3.2.1

@@ -7,7 +7,7 @@ from authlib.jose.errors import (
 )
 
 
-class JWTClaims(dict):
+class BaseClaims(dict):
     """Payload claims for JWT, which contains a validate interface.
 
     :param payload: the payload dict of JWT
@@ -35,10 +35,10 @@ class JWTClaims(dict):
     .. _`OpenID Connect Claims`:
         http://openid.net/specs/openid-connect-core-1_0.html#IndividualClaimsRequests
     """
-    REGISTERED_CLAIMS = ['iss', 'sub', 'aud', 'exp', 'nbf', 'iat', 'jti']
+    REGISTERED_CLAIMS = []
 
     def __init__(self, payload, header, options=None, params=None):
-        super(JWTClaims, self).__init__(payload)
+        super(BaseClaims, self).__init__(payload)
         self.header = header
         self.options = options or {}
         self.params = params or {}
@@ -50,21 +50,6 @@ class JWTClaims(dict):
             if key in self.REGISTERED_CLAIMS:
                 return self.get(key)
             raise error
-
-    def validate(self, now=None, leeway=0):
-        """Validate everything in claims payload."""
-        self._validate_essential_claims()
-
-        if now is None:
-            now = int(time.time())
-
-        self.validate_iss()
-        self.validate_sub()
-        self.validate_aud()
-        self.validate_exp(now, leeway)
-        self.validate_nbf(now, leeway)
-        self.validate_iat(now, leeway)
-        self.validate_jti()
 
     def _validate_essential_claims(self):
         for k in self.options:
@@ -88,6 +73,25 @@ class JWTClaims(dict):
         validate = option.get('validate')
         if validate and not validate(self, value):
             raise InvalidClaimError(claim_name)
+
+
+class JWTClaims(BaseClaims):
+    REGISTERED_CLAIMS = ['iss', 'sub', 'aud', 'exp', 'nbf', 'iat', 'jti']
+
+    def validate(self, now=None, leeway=0):
+        """Validate everything in claims payload."""
+        self._validate_essential_claims()
+
+        if now is None:
+            now = int(time.time())
+
+        self.validate_iss()
+        self.validate_sub()
+        self.validate_aud()
+        self.validate_exp(now, leeway)
+        self.validate_nbf(now, leeway)
+        self.validate_iat(now, leeway)
+        self.validate_jti()
 
     def validate_iss(self):
         """The "iss" (issuer) claim identifies the principal that issued the
