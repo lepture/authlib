@@ -34,6 +34,7 @@ class ClientMetadataClaims(BaseClaims):
         self.validate_logo_uri()
         self.validate_scope()
         self.validate_contacts()
+        self.validate_tos_uri()
         self.validate_policy_uri()
         self.validate_jwks_uri()
         self.validate_jwks()
@@ -156,6 +157,7 @@ class ClientMetadataClaims(BaseClaims):
         parameters MUST NOT both be present in the same request or
         response.
         """
+        # TODO: use real HTTP library
         self._validate_uri('jwks_uri')
 
     def validate_jwks(self):
