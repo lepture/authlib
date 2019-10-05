@@ -76,7 +76,7 @@ class JsonWebToken(object):
         :param payload: A dict to be encoded
         :param key: key used to sign the signature
         :param check: check if sensitive data in payload
-        :return: JWT
+        :return: bytes
         """
         header['typ'] = 'JWT'
 

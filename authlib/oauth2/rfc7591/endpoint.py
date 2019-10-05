@@ -3,7 +3,7 @@ import time
 import binascii
 from authlib.consts import default_json_headers
 from authlib.common.security import generate_token
-from authlib.jose import jwt
+from authlib.jose import JsonWebToken
 from authlib.jose.errors import JoseError
 from ..rfc6749 import AccessDeniedError, InvalidRequestError
 from ..rfc6749.util import scope_to_list
@@ -21,8 +21,12 @@ class ClientRegistrationEndpoint(object):
     """
     ENDPOINT_NAME = 'client_registration'
 
+    #: The claims validation class
     claims_class = ClientMetadataClaims
-    enable_software_statement = False
+
+    #: Rewrite this value with a list to support ``software_statement``
+    #: e.g. ``software_statement_alg_values_supported = ['RS256']``
+    software_statement_alg_values_supported = None
 
     def __init__(self, server):
         self.server = server
@@ -51,7 +55,7 @@ class ClientRegistrationEndpoint(object):
 
         json_data = request.data.copy()
         software_statement = json_data.pop('software_statement', None)
-        if software_statement and self.enable_software_statement:
+        if software_statement and self.software_statement_alg_values_supported:
             data = self.extract_software_statement(software_statement, request)
             json_data.update(data)
 
@@ -61,7 +65,7 @@ class ClientRegistrationEndpoint(object):
             claims.validate()
         except JoseError as error:
             raise InvalidClientMetadataError(error.description)
-        return claims
+        return claims.get_registered_claims()
 
     def extract_software_statement(self, software_statement, request):
         key = self.resolve_public_key(request)
@@ -69,6 +73,7 @@ class ClientRegistrationEndpoint(object):
             raise UnapprovedSoftwareStatementError()
 
         try:
+            jwt = JsonWebToken(self.software_statement_alg_values_supported)
             claims = jwt.decode(software_statement, key)
             # there is no need to validate claims
             return claims

@@ -74,6 +74,13 @@ class BaseClaims(dict):
         if validate and not validate(self, value):
             raise InvalidClaimError(claim_name)
 
+    def get_registered_claims(self):
+        rv = {}
+        for k in self.REGISTERED_CLAIMS:
+            if k in self:
+                rv[k] = self[k]
+        return rv
+
 
 class JWTClaims(BaseClaims):
     REGISTERED_CLAIMS = ['iss', 'sub', 'aud', 'exp', 'nbf', 'iat', 'jti']

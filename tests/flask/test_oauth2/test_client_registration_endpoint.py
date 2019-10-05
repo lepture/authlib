@@ -1,18 +1,22 @@
 from flask import json
+from authlib.jose import jwt
 from authlib.oauth2.rfc7591 import ClientRegistrationEndpoint as _ClientRegistrationEndpoint
+from tests.util import read_file_path
 from .models import db, User, Client
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
 
 
 class ClientRegistrationEndpoint(_ClientRegistrationEndpoint):
+    software_statement_alg_values_supported = ['RS256']
+
     def authenticate_user(self, request):
         auth_header = request.headers.get('Authorization')
         if auth_header:
             return User.query.get(1)
 
     def resolve_public_key(self, request):
-        return b'hello'
+        return read_file_path('rsa_public.pem')
 
     def save_client(self, client_info, client_metadata, user):
         client = Client(
@@ -64,3 +68,35 @@ class ClientRegistrationTest(TestCase):
         resp = json.loads(rv.data)
         self.assertIn('client_id', resp)
         self.assertEqual(resp['client_name'], 'Authlib')
+
+    def test_software_statement(self):
+        payload = {'software_id': 'uuid-123', 'client_name': 'Authlib'}
+        s = jwt.encode({'alg': 'RS256'}, payload, read_file_path('rsa_private.pem'))
+        body = {
+            'software_statement': s.decode('utf-8'),
+        }
+
+        self.prepare_data()
+        headers = {'Authorization': 'bearer abc'}
+        rv = self.client.post('/create_client', json=body, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertIn('client_id', resp)
+        self.assertEqual(resp['client_name'], 'Authlib')
+
+    def test_no_public_key(self):
+
+        class ClientRegistrationEndpoint2(ClientRegistrationEndpoint):
+            def resolve_public_key(self, request):
+                return None
+
+        payload = {'software_id': 'uuid-123', 'client_name': 'Authlib'}
+        s = jwt.encode({'alg': 'RS256'}, payload, read_file_path('rsa_private.pem'))
+        body = {
+            'software_statement': s.decode('utf-8'),
+        }
+
+        self.prepare_data(ClientRegistrationEndpoint2)
+        headers = {'Authorization': 'bearer abc'}
+        rv = self.client.post('/create_client', json=body, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp['error'], 'unapproved_software_statement')
