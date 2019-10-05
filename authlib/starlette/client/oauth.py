@@ -117,6 +117,9 @@ class RemoteApp(OAuthClient):
         self.save_authorize_state(request, redirect_uri, state)
         return RedirectResponse(uri)
 
+    def _send_token_update(self, token):
+        pass
+
     def authorize_access_token(self, request, **kwargs):
         """Fetch an access token.
 
