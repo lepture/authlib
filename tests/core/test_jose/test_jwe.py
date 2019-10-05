@@ -154,7 +154,7 @@ class JWETest(unittest.TestCase):
         )
 
     def test_rsa_alg(self):
-        alg = _find_alg('RSA-OAEP')
+        alg = JsonWebEncryption.JWE_AVAILABLE_ALGORITHMS['RSA-OAEP']
         pub_key = alg.prepare_public_key(
             read_file_path('rsa_public.pem'))
         private_key = alg.prepare_private_key(
@@ -193,9 +193,3 @@ class JWETest(unittest.TestCase):
             jwe.serialize_compact,
             protected, b'hello', b'invalid-key'
         )
-
-
-def _find_alg(name):
-    for alg in JWE_ALGORITHMS:
-        if alg.name == name:
-            return alg
