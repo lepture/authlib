@@ -111,7 +111,7 @@ class RemoteApp(OAuthClient):
                 vf_key = _code_verifier_tpl.format(self.name)
                 request.session[vf_key] = code_verifier
 
-        uri, state = self.generate_authorize_redirect(
+        uri, state = self.create_authorization_url(
             redirect_uri, save_temporary_data, **kwargs
         )
         self.save_authorize_state(request, redirect_uri, state)
