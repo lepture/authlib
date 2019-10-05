@@ -4,7 +4,7 @@ from starlette.applications import Starlette as App
 from starlette.requests import Request
 from starlette.middleware.sessions import SessionMiddleware
 from authlib.integrations.starlette_client import OAuth
-from ..client_base import mock_send_value, get_bearer_token
+from tests.client_base import mock_send_value, get_bearer_token
 
 
 class StarletteOAuthTest(TestCase):
