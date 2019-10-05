@@ -94,7 +94,7 @@ class ClientRegistrationEndpoint(object):
         if scopes_supported is not None:
             scopes_supported = set(scopes_supported)
 
-            def _validate_scope(value):
+            def _validate_scope(claims, value):
                 if not value:
                     return True
                 scopes = set(scope_to_list(value))
@@ -105,7 +105,7 @@ class ClientRegistrationEndpoint(object):
         if response_types_supported is not None:
             response_types_supported = set(response_types_supported)
 
-            def _validate_response_types(value):
+            def _validate_response_types(claims, value):
                 return response_types_supported.issuperset(set(value))
 
             options['response_types'] = {'validate': _validate_response_types}
@@ -113,7 +113,7 @@ class ClientRegistrationEndpoint(object):
         if grant_types_supported is not None:
             grant_types_supported = set(grant_types_supported)
 
-            def _validate_grant_types(value):
+            def _validate_grant_types(claims, value):
                 return grant_types_supported.issuperset(set(value))
 
             options['grant_types'] = {'validate': _validate_grant_types}

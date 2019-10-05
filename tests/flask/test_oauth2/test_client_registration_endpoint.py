@@ -30,9 +30,12 @@ class ClientRegistrationEndpoint(_ClientRegistrationEndpoint):
 
 
 class ClientRegistrationTest(TestCase):
-    def prepare_data(self, endpoint_cls=None):
+    def prepare_data(self, endpoint_cls=None, metadata=None):
         app = self.app
         server = create_authorization_server(app)
+        if metadata:
+            server.metadata = metadata
+
         if endpoint_cls is None:
             endpoint_cls = ClientRegistrationEndpoint
         server.register_endpoint(endpoint_cls)
@@ -100,3 +103,67 @@ class ClientRegistrationTest(TestCase):
         rv = self.client.post('/create_client', json=body, headers=headers)
         resp = json.loads(rv.data)
         self.assertIn(resp['error'], 'unapproved_software_statement')
+
+    def test_scopes_supported(self):
+        metadata = {'scopes_supported': ['profile', 'email']}
+        self.prepare_data(metadata=metadata)
+
+        headers = {'Authorization': 'bearer abc'}
+        body = {'scope': 'profile email', 'client_name': 'Authlib'}
+        rv = self.client.post('/create_client', json=body, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertIn('client_id', resp)
+        self.assertEqual(resp['client_name'], 'Authlib')
+
+        body = {'scope': 'profile email address', 'client_name': 'Authlib'}
+        rv = self.client.post('/create_client', json=body, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp['error'], 'invalid_client_metadata')
+
+    def test_response_types_supported(self):
+        metadata = {'response_types_supported': ['code']}
+        self.prepare_data(metadata=metadata)
+
+        headers = {'Authorization': 'bearer abc'}
+        body = {'response_types': ['code'], 'client_name': 'Authlib'}
+        rv = self.client.post('/create_client', json=body, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertIn('client_id', resp)
+        self.assertEqual(resp['client_name'], 'Authlib')
+
+        body = {'response_types': ['code', 'token'], 'client_name': 'Authlib'}
+        rv = self.client.post('/create_client', json=body, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp['error'], 'invalid_client_metadata')
+
+    def test_grant_types_supported(self):
+        metadata = {'grant_types_supported': ['authorization_code', 'password']}
+        self.prepare_data(metadata=metadata)
+
+        headers = {'Authorization': 'bearer abc'}
+        body = {'grant_types': ['password'], 'client_name': 'Authlib'}
+        rv = self.client.post('/create_client', json=body, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertIn('client_id', resp)
+        self.assertEqual(resp['client_name'], 'Authlib')
+
+        body = {'grant_types': ['client_credentials'], 'client_name': 'Authlib'}
+        rv = self.client.post('/create_client', json=body, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp['error'], 'invalid_client_metadata')
+
+    def test_token_endpoint_auth_methods_supported(self):
+        metadata = {'token_endpoint_auth_methods_supported': ['client_secret_basic']}
+        self.prepare_data(metadata=metadata)
+
+        headers = {'Authorization': 'bearer abc'}
+        body = {'token_endpoint_auth_method': 'client_secret_basic', 'client_name': 'Authlib'}
+        rv = self.client.post('/create_client', json=body, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertIn('client_id', resp)
+        self.assertEqual(resp['client_name'], 'Authlib')
+
+        body = {'token_endpoint_auth_method': 'none', 'client_name': 'Authlib'}
+        rv = self.client.post('/create_client', json=body, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp['error'], 'invalid_client_metadata')
