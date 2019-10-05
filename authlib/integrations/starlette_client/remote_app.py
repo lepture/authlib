@@ -19,12 +19,6 @@ class RemoteApp(OAuthClient):
 
     """
 
-    def __init__(self, name, fetch_token=None, **kwargs):
-        super(RemoteApp, self).__init__(**kwargs)
-
-        self.name = name
-        self._fetch_token = fetch_token
-
     def save_authorize_state(self, request, redirect_uri=None, state=None):
         """Save ``redirect_uri`` and ``state`` into session during authorization step.
 
