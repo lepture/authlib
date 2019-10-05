@@ -1,64 +1,15 @@
-import functools
 from starlette.responses import RedirectResponse
-from authlib.client import OAuthClient
-from authlib.client.errors import MismatchingStateError
+from authlib.integrations.requests_client import OAuthClient
+from authlib.integrations.client_errors import MismatchingStateError
 
 
-__all__ = ["OAuth", "RemoteApp"]
+__all__ = ["RemoteApp"]
 
 
 _req_token_tpl = "_{}_authlib_req_token_"
 _callback_tpl = "_{}_authlib_callback_"
 _state_tpl = "_{}_authlib_state_"
 _code_verifier_tpl = "_{}_authlib_code_verifier_"
-
-
-class OAuth(object):
-    """Registry for oauth clients.
-
-    Create an instance for registry::
-
-        oauth = OAuth()
-    """
-
-    def __init__(self, fetch_token=None):
-        self._clients = {}
-        self.fetch_token = fetch_token
-
-    def register(self, name, **kwargs):
-        """Register a new remote application.
-
-        :param name: Name of the remote application.
-        :param kwargs: Parameters for :class:`RemoteApp`.
-
-        Find parameters from :class:`~authlib.client.OAuthClient`.
-        When a remote app is registered, it can be accessed with
-        *named* attribute::
-
-            oauth.register('twitter', client_id='', ...)
-            oauth.twitter.get('timeline')
-
-        """
-        client_cls = kwargs.pop("client_cls", RemoteApp)
-        fetch_token = kwargs.pop("fetch_token", None)
-        if not fetch_token and self.fetch_token:
-            fetch_token = functools.partial(self.fetch_token, name)
-
-        compliance_fix = kwargs.pop("compliance_fix", None)
-        client = client_cls(name, fetch_token=fetch_token, **kwargs)
-        if compliance_fix:
-            client.compliance_fix = compliance_fix
-
-        self._clients[name] = client
-        return client
-
-    def __getattr__(self, key):
-        try:
-            return object.__getattribute__(self, key)
-        except AttributeError:
-            if key in self._clients:
-                return self._clients[key]
-            raise AttributeError("No such client: %s" % key)
 
 
 class RemoteApp(OAuthClient):
@@ -154,4 +105,6 @@ class RemoteApp(OAuthClient):
         cb_key = _callback_tpl.format(self.name)
         redirect_uri = request.session.get(cb_key, None)
 
-        return self.fetch_access_token(redirect_uri, request_token, **{**params, **kwargs})
+        return self.fetch_access_token(
+            redirect_uri, request_token, **{**params, **kwargs}
+        )
