@@ -1,7 +1,7 @@
 from django.dispatch import Signal
 from django.http import HttpResponseRedirect
-from ..requests_client import OAuthClient
-from ..client_errors import MismatchingStateError
+from authlib.integrations._client import MismatchingStateError
+from authlib.integrations.requests_client import OAuthClient
 
 __all__ = ['token_update', 'RemoteApp']
 

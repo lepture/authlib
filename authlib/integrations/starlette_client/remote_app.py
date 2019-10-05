@@ -1,6 +1,6 @@
 from starlette.responses import RedirectResponse
 from authlib.integrations.requests_client import OAuthClient
-from authlib.integrations.client_errors import MismatchingStateError
+from authlib.integrations._client import MismatchingStateError
 
 
 __all__ = ["RemoteApp"]

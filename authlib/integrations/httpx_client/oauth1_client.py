@@ -9,8 +9,8 @@ from authlib.oauth1 import (
 from authlib.common.encoding import to_unicode
 from authlib.oauth1 import ClientAuth
 from authlib.oauth1.client import OAuth1Client as _OAuth1Client
+from authlib.integrations._client import OAuthError
 from .utils import extract_client_kwargs
-from ..client_errors import OAuthError
 
 
 class OAuth1Auth(BaseMiddleware, ClientAuth):

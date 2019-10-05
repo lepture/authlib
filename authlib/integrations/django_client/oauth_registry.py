@@ -1,7 +1,7 @@
 import functools
 from django.conf import settings
+from authlib.integrations._client import OAUTH_CLIENT_PARAMS
 from .remote_app import RemoteApp
-from ..oauth_client import OAUTH_CLIENT_PARAMS
 
 __all__ = ['OAuth']
 

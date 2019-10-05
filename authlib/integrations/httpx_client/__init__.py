@@ -1,5 +1,4 @@
-from ..client_errors import OAuthError
-from .oauth1_client import OAuth1Auth, OAuth1Client, AsyncOAuth1Client
+from authlib.integrations._client import OAuthError
 from authlib.oauth1 import (
     SIGNATURE_HMAC_SHA1,
     SIGNATURE_RSA_SHA1,
@@ -8,6 +7,8 @@ from authlib.oauth1 import (
     SIGNATURE_TYPE_QUERY,
     SIGNATURE_TYPE_BODY,
 )
+from .oauth1_client import OAuth1Auth, OAuth1Client, AsyncOAuth1Client
+
 
 __all__ = [
     'OAuthError',

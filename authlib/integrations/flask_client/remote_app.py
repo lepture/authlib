@@ -1,8 +1,8 @@
 from flask.signals import Namespace
 from flask import request, redirect, session
 from flask import _app_ctx_stack
-from ..requests_client import OAuthClient
-from ..client_errors import MismatchingStateError
+from authlib.integrations._client import MismatchingStateError
+from authlib.integrations.requests_client import OAuthClient
 
 __all__ = ['token_update', 'RemoteApp']
 

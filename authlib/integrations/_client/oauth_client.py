@@ -3,7 +3,7 @@ import logging
 from authlib.common.urls import urlparse
 from authlib.common.security import generate_token
 from authlib.consts import default_user_agent
-from .client_errors import (
+from authlib.integrations._client.errors import (
     MissingRequestTokenError,
     MissingTokenError,
 )
