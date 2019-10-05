@@ -26,3 +26,8 @@ checks:
 
   similar-code:
     enabled: false
+
+  identical-code:
+    enabled: true
+    config:
+      threshold: 100

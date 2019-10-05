@@ -7,11 +7,11 @@ matrix:
   - python: 2.7
     env: TOXENV=py27,flask,py27-django
   - python: 3.6
-    env: TOXENV=py36,flask,py36-django
+    env: TOXENV=py36,flask,py36-django,py36-starlette
   - python: 3.7
     dist: xenial
     sudo: true
-    env: TOXENV=py37,flask,py37-django
+    env: TOXENV=py37,flask,py37-django,py37-starlette
 
 install:
   - pip install -U setuptools
