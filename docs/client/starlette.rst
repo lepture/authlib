@@ -7,7 +7,7 @@ Starlette OAuth Client
     :description: The built-in Starlette integrations for OAuth 1.0 and
         OAuth 2.0 clients.
 
-.. module:: authlib.starlette.client
+.. module:: authlib.integrations.starlette_client
     :noindex:
 
 The Starlette client provides integration with the Starlette ASGI framework and
@@ -23,7 +23,7 @@ functionality to be configured from the application settings or object.
 
 Create a registry with :class:`OAuth` object::
 
-    from authlib.starlette.client import OAuth
+    from authlib.integrations.starlette_client import OAuth
 
     oauth = OAuth()
 
