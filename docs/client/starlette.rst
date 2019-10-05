@@ -216,12 +216,13 @@ database.
 Database design for storing user access tokens
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The Authlib Starlette client has no built-in database model, and so it is necessary to
-design a suitable Token model.
+The Authlib Starlette client has no built-in database model, and so it is
+necessary to design a suitable Token model.
 
-Here are some hints on how to design your schema::
+Here are some hints on how to design your schema using SQLAlchemy::
 
-    class OAuth1Token(models.Model):
+    class OAuth1Token(Base):
+        __tablename__ = "oauth1tokens"
         name = models.CharField(max_length=40)
         oauth_token = models.CharField(max_length=200)
         oauth_token_secret = models.CharField(max_length=200)
@@ -233,7 +234,8 @@ Here are some hints on how to design your schema::
                 oauth_token_secret=self.alt_token,
             )
 
-    class OAuth2Token(models.Model):
+    class OAuth2Token(Base):
+        __tablename__ = "oauth2tokens"
         name = models.CharField(max_length=40)
         token_type = models.CharField(max_length=20)
         access_token = models.CharField(max_length=200)
