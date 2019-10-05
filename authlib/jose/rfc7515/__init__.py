@@ -11,9 +11,8 @@
 from .jws import JsonWebSignature
 from .models import JWSAlgorithm, JWSHeader, JWSObject
 
-JWS = JsonWebSignature
 
 __all__ = [
-    'JWS', 'JsonWebSignature',
+    'JsonWebSignature',
     'JWSAlgorithm', 'JWSHeader', 'JWSObject'
 ]

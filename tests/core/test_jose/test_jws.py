@@ -7,6 +7,12 @@ from tests.util import read_file_path
 
 class JWSTest(unittest.TestCase):
     def test_register_invalid_algorithms(self):
+        self.assertRaises(
+            ValueError,
+            JsonWebSignature,
+            ['INVALID']
+        )
+
         jws = JsonWebSignature(algorithms=[])
         self.assertRaises(
             ValueError,
@@ -48,8 +54,24 @@ class JWSTest(unittest.TestCase):
         s = 'eyJhbGciOiJIUzI1NiJ9.YQ.YQ'
         self.assertRaises(errors.BadSignatureError, jws.deserialize, s, 'k')
 
+    def test_not_supported_alg(self):
+        jws = JsonWebSignature(algorithms=['HS256'])
+        s = jws.serialize({'alg': 'HS256'}, 'hello', 'secret')
+
+        jws = JsonWebSignature(algorithms=['RS256'])
+        self.assertRaises(
+            errors.UnsupportedAlgorithmError,
+            lambda: jws.serialize({'alg': 'HS256'}, 'hello', 'secret')
+        )
+
+        self.assertRaises(
+            errors.UnsupportedAlgorithmError,
+            jws.deserialize,
+            s, 'secret'
+        )
+
     def test_compact_jws(self):
-        jws = JsonWebSignature(algorithms=JWS_ALGORITHMS)
+        jws = JsonWebSignature(algorithms=['HS256'])
         s = jws.serialize({'alg': 'HS256'}, 'hello', 'secret')
         data = jws.deserialize(s, 'secret')
         header, payload = data['header'], data['payload']

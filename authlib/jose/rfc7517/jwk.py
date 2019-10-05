@@ -3,6 +3,9 @@ from ._backends import EC_TYPES, RSA_TYPES
 
 class JWKAlgorithm(object):
     name = None
+    description = None
+    algorithm_type = 'JWK'
+    algorithm_location = 'kty'
 
     """Interface for JWK algorithm. JWA specification (RFC7518) SHOULD
     implement the algorithms for JWK with this base implementation.
@@ -21,11 +24,25 @@ class JWKAlgorithm(object):
 
 
 class JsonWebKey(object):
+    #: Defined available JWK algorithms
+    JWK_AVAILABLE_ALGORITHMS = None
+
     def __init__(self, algorithms):
         self._algorithms = {}
 
-        for alg in algorithms:
-            self._algorithms[alg.name] = alg
+        if isinstance(algorithms, list):
+            for algorithm in algorithms:
+                self.register_algorithm(algorithm)
+
+    def register_algorithm(self, algorithm):
+        if isinstance(algorithm, str) and self.JWK_AVAILABLE_ALGORITHMS:
+            algorithm = self.JWK_AVAILABLE_ALGORITHMS.get(algorithm)
+
+        if not algorithm or algorithm.algorithm_type != 'JWK':
+            raise ValueError(
+                'Invalid algorithm for JWK, {!r}'.format(algorithm))
+
+        self._algorithms[algorithm.name] = algorithm
 
     def _load_obj(self, obj):
         kty = obj['kty']

@@ -7,12 +7,12 @@
 """
 
 from .rfc7515 import (
-    JWS, JsonWebSignature, JWSAlgorithm, JWSHeader, JWSObject,
+    JsonWebSignature, JWSAlgorithm, JWSHeader, JWSObject,
 )
 from .rfc7516 import (
-    JWE, JsonWebEncryption, JWEAlgorithm, JWEEncAlgorithm, JWEZipAlgorithm,
+    JsonWebEncryption, JWEAlgorithm, JWEEncAlgorithm, JWEZipAlgorithm,
 )
-from .rfc7517 import JWK, JsonWebKey, JWKAlgorithm
+from .rfc7517 import JsonWebKey, JWKAlgorithm
 from .rfc7518 import (
     JWS_ALGORITHMS,
     JWE_ALGORITHMS,
@@ -25,6 +25,16 @@ from .rfc7519 import JWT, JsonWebToken, BaseClaims, JWTClaims
 from .jwk import jwk
 
 jwt = JsonWebToken()
+
+# attach algorithms
+JsonWebSignature.JWS_AVAILABLE_ALGORITHMS = {alg.name: alg for alg in JWS_ALGORITHMS}
+JsonWebEncryption.JWE_AVAILABLE_ALGORITHMS = {alg.name: alg for alg in JWE_ALGORITHMS}
+JsonWebKey.JWK_AVAILABLE_ALGORITHMS = {alg.name: alg for alg in JWK_ALGORITHMS}
+
+# compatible imports
+JWS = JsonWebSignature
+JWE = JsonWebEncryption
+JWK = JsonWebKey
 
 
 __all__ = [

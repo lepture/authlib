@@ -11,9 +11,8 @@
 from .jwe import JsonWebEncryption
 from .models import JWEAlgorithm, JWEEncAlgorithm, JWEZipAlgorithm
 
-JWE = JsonWebEncryption
 
 __all__ = [
-    'JWE', 'JsonWebEncryption',
+    'JsonWebEncryption',
     'JWEAlgorithm', 'JWEEncAlgorithm', 'JWEZipAlgorithm'
 ]

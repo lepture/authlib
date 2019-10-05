@@ -7,6 +7,12 @@ from tests.util import read_file_path
 
 class JWETest(unittest.TestCase):
     def test_register_invalid_algorithms(self):
+        self.assertRaises(
+            ValueError,
+            JsonWebEncryption,
+            ['INVALID']
+        )
+
         jwe = JsonWebEncryption(algorithms=[])
         self.assertRaises(
             ValueError,
@@ -48,6 +54,54 @@ class JWETest(unittest.TestCase):
             jwe.serialize_compact,
             {'alg': 'RSA-OAEP', 'enc': 'A256GCM', 'zip': 'invalid'},
             'a', public_key
+        )
+
+    def test_not_supported_alg(self):
+        public_key = read_file_path('rsa_public.pem')
+        private_key = read_file_path('rsa_private.pem')
+
+        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
+        s = jwe.serialize_compact(
+            {'alg': 'RSA-OAEP', 'enc': 'A256GCM'},
+            'hello', public_key
+        )
+
+        jwe = JsonWebEncryption(algorithms=['RSA1_5', 'A256GCM'])
+        self.assertRaises(
+            errors.UnsupportedAlgorithmError,
+            jwe.serialize_compact,
+            {'alg': 'RSA-OAEP', 'enc': 'A256GCM'},
+            'hello', public_key
+        )
+        self.assertRaises(
+            errors.UnsupportedCompressionAlgorithmError,
+            jwe.serialize_compact,
+            {'alg': 'RSA1_5', 'enc': 'A256GCM', 'zip': 'DEF'},
+            'hello', public_key
+        )
+        self.assertRaises(
+            errors.UnsupportedAlgorithmError,
+            jwe.deserialize_compact,
+            s, private_key,
+        )
+
+        jwe = JsonWebEncryption(algorithms=['RSA-OAEP', 'A192GCM'])
+        self.assertRaises(
+            errors.UnsupportedEncryptionAlgorithmError,
+            jwe.serialize_compact,
+            {'alg': 'RSA-OAEP', 'enc': 'A256GCM'},
+            'hello', public_key
+        )
+        self.assertRaises(
+            errors.UnsupportedCompressionAlgorithmError,
+            jwe.serialize_compact,
+            {'alg': 'RSA-OAEP', 'enc': 'A192GCM', 'zip': 'DEF'},
+            'hello', public_key
+        )
+        self.assertRaises(
+            errors.UnsupportedEncryptionAlgorithmError,
+            jwe.deserialize_compact,
+            s, private_key,
         )
 
     def test_compact_rsa(self):

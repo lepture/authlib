@@ -1,5 +1,5 @@
 import unittest
-from authlib.jose import jwk
+from authlib.jose import JsonWebKey, jwk
 from authlib.jose.rfc7517.jwk import EC_TYPES, RSA_TYPES
 from authlib.common.encoding import base64_to_int
 from tests.util import read_file_path
@@ -10,6 +10,13 @@ RSA_PRIVATE_KEY = read_file_path('jwk_private.json')
 class JWKTest(unittest.TestCase):
     def assertBase64IntEqual(self, x, y):
         self.assertEqual(base64_to_int(x), base64_to_int(y))
+
+    def test_register_invalid_algorithms(self):
+        self.assertRaises(
+            ValueError,
+            JsonWebKey,
+            ['INVALID']
+        )
 
     def test_ec_public_key(self):
         # https://tools.ietf.org/html/rfc7520#section-3.1

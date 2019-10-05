@@ -26,6 +26,9 @@ class JsonWebEncryption(object):
         'typ', 'cty', 'crit'
     ])
 
+    #: Defined available JWS algorithms
+    JWE_AVAILABLE_ALGORITHMS = None
+
     def __init__(self, algorithms, private_headers=None):
         self._alg_algorithms = {}
         self._enc_algorithms = {}
@@ -38,7 +41,11 @@ class JsonWebEncryption(object):
 
     def register_algorithm(self, algorithm):
         """Register an algorithm for ``alg`` or ``enc`` or ``zip`` of JWE."""
-        if algorithm.algorithm_type != 'JWE':
+
+        if isinstance(algorithm, str) and self.JWE_AVAILABLE_ALGORITHMS:
+            algorithm = self.JWE_AVAILABLE_ALGORITHMS.get(algorithm)
+
+        if not algorithm or algorithm.algorithm_type != 'JWE':
             raise ValueError(
                 'Invalid algorithm for JWE, {!r}'.format(algorithm))
 

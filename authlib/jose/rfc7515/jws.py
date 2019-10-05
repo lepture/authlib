@@ -29,6 +29,9 @@ class JsonWebSignature(object):
         'typ', 'cty', 'crit'
     ])
 
+    #: Defined available JWS algorithms
+    JWS_AVAILABLE_ALGORITHMS = None
+
     def __init__(self, algorithms, private_headers=None):
         self._algorithms = {}
         self._private_headers = private_headers
@@ -38,9 +41,13 @@ class JsonWebSignature(object):
                 self.register_algorithm(algorithm)
 
     def register_algorithm(self, algorithm):
-        if algorithm.algorithm_type != 'JWS':
+        if isinstance(algorithm, str) and self.JWS_AVAILABLE_ALGORITHMS:
+            algorithm = self.JWS_AVAILABLE_ALGORITHMS.get(algorithm)
+
+        if not algorithm or algorithm.algorithm_type != 'JWS':
             raise ValueError(
                 'Invalid algorithm for JWS, {!r}'.format(algorithm))
+
         self._algorithms[algorithm.name] = algorithm
 
     def serialize_compact(self, protected, payload, key):

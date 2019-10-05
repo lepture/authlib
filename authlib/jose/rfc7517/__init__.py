@@ -9,6 +9,5 @@
 """
 from .jwk import JsonWebKey, JWKAlgorithm
 
-JWK = JsonWebKey
 
-__all__ = ['JWK', 'JsonWebKey', 'JWKAlgorithm']
+__all__ = ['JsonWebKey', 'JWKAlgorithm']
