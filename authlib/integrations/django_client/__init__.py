@@ -1,13 +1,7 @@
 # flake8: noqa
 
-from .oauth_registry import DjangoOAuth
-from .remote_app import DjangoRemoteApp, token_update
+from .oauth_registry import OAuth
+from .remote_app import RemoteApp, token_update
 
-OAuth = DjangoOAuth
-RemoteApp = DjangoRemoteApp
 
-__all__ = [
-    'OAuth', 'DjangoOAuth',
-    'RemoteApp', 'DjangoRemoteApp',
-    'token_update'
-]
+__all__ = ['OAuth', 'RemoteApp', 'token_update']

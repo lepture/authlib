@@ -96,9 +96,13 @@ class RemoteApp(object):
 
         self.server_metadata = kwargs
 
-    def _send_token_update(self, token):
+    def _send_token_update(self, token, refresh_token=None, access_token=None):
         if callable(self._update_token):
-            self._update_token(token)
+            self._update_token(
+                token,
+                refresh_token=refresh_token,
+                access_token=access_token,
+            )
 
     def _generate_access_token_params(self, request):
         raise NotImplementedError()
@@ -126,7 +130,7 @@ class RemoteApp(object):
             session = self.oauth2_client_cls(
                 client_id=self.client_id,
                 client_secret=self.client_secret,
-                token_updater=self._send_token_update,
+                update_token=self._send_token_update,
                 **kwargs
             )
             # only OAuth2 has compliance_fix currently

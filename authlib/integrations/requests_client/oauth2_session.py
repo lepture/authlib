@@ -24,9 +24,12 @@ class OAuth2Auth(AuthBase, TokenAuth):
             client = self.client
             url = client.metadata.get('token_endpoint')
             if refresh_token and url:
-                return client.refresh_token(url, refresh_token=refresh_token, **kwargs)
+                client.refresh_token(url, refresh_token=refresh_token, **kwargs)
             elif client.metadata.get('grant_type') == 'client_credentials':
-                return client.fetch_token(grant_type='client_credentials', **kwargs)
+                access_token = self.token['access_token']
+                token = client.fetch_token(grant_type='client_credentials', **kwargs)
+                if client.update_token:
+                    client.update_token(token, access_token=access_token)
             else:
                 raise InvalidTokenError()
 
@@ -71,7 +74,7 @@ class OAuth2Session(OAuth2Client, Session):
         ``token_type`` and ``expires_at``.
     :param token_placement: The place to put token in HTTP request. Available
         values: "header", "body", "uri".
-    :param token_updater: A function for you to update token. It accept a
+    :param update_token: A function for you to update token. It accept a
         :class:`OAuth2Token` as parameter.
     """
     client_auth_class = OAuth2ClientAuth
@@ -85,7 +88,7 @@ class OAuth2Session(OAuth2Client, Session):
                  token_endpoint_auth_method=None,
                  revocation_endpoint_auth_method=None,
                  scope=None, redirect_uri=None,
-                 token=None, token_placement='header', token_updater=None, **kwargs):
+                 token=None, token_placement='header', update_token=None, **kwargs):
 
         Session.__init__(self)
         OAuth2Client.__init__(
@@ -95,7 +98,7 @@ class OAuth2Session(OAuth2Client, Session):
             revocation_endpoint_auth_method=revocation_endpoint_auth_method,
             scope=scope, redirect_uri=redirect_uri,
             token=token, token_placement=token_placement,
-            token_updater=token_updater, **kwargs
+            update_token=update_token, **kwargs
         )
 
     def register_client_auth_method(self, func):

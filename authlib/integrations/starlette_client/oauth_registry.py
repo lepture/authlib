@@ -1,11 +1,11 @@
-from .._client import OAuth
-from .remote_app import StarletteRemoteApp
+from .remote_app import RemoteApp
+from .._client import OAuth as _OAuth
 
-__all__ = ['StarletteOAuth']
+__all__ = ['OAuth']
 
 
-class StarletteOAuth(OAuth):
-    remote_app_class = StarletteRemoteApp
+class OAuth(_OAuth):
+    remote_app_class = RemoteApp
 
     def load_config(self, name, params):
         # TODO: framework configuration

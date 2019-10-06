@@ -1,14 +1,14 @@
 import uuid
 from flask import session
 from werkzeug.local import LocalProxy
-from .remote_app import FlaskRemoteApp
-from .._client import OAuth
+from .remote_app import RemoteApp
+from .._client import OAuth as _OAuth
 
-__all__ = ['FlaskOAuth']
+__all__ = ['OAuth']
 _req_token_tpl = '_{}_authlib_req_token_'
 
 
-class FlaskOAuth(OAuth):
+class OAuth(_OAuth):
     """A Flask OAuth registry for oauth clients.
 
     Create an instance with Flask::
@@ -25,10 +25,10 @@ class FlaskOAuth(OAuth):
     :param fetch_token: a shared function to get current user's token
     :param update_token: a share function to update current user's token
     """
-    remote_app_class = FlaskRemoteApp
+    remote_app_class = RemoteApp
 
     def __init__(self, app=None, cache=None, fetch_token=None, update_token=None):
-        super(FlaskOAuth, self).__init__(fetch_token, update_token)
+        super(OAuth, self).__init__(fetch_token, update_token)
 
         self.app = app
         self.cache = cache
@@ -54,7 +54,7 @@ class FlaskOAuth(OAuth):
     def create_client(self, name):
         if not self.app:
             raise RuntimeError('OAuth is not init with Flask app.')
-        return super(FlaskOAuth, self).create_client(name)
+        return super(OAuth, self).create_client(name)
 
     def register(self, name, overwrite=False, **kwargs):
         if not self.oauth1_client_cls or not self.oauth2_client_cls:
@@ -75,14 +75,17 @@ class FlaskOAuth(OAuth):
         return rv
 
     def generate_client_kwargs(self, name, overwrite, **kwargs):
-        kwargs = super(FlaskOAuth, self).generate_client_kwargs(name, overwrite, **kwargs)
+        kwargs = super(OAuth, self).generate_client_kwargs(name, overwrite, **kwargs)
 
-        if kwargs.get('request_token_url') and self.cache:
-            _generate_oauth1_client_kwargs(self.cache, name, kwargs)
+        if kwargs.get('request_token_url'):
+            if self.cache:
+                _add_cache_request_token(self.cache, name, kwargs)
+            else:
+                _add_session_request_token(name, kwargs)
         return kwargs
 
 
-def _generate_oauth1_client_kwargs(cache, name, kwargs):
+def _add_cache_request_token(cache, name, kwargs):
     if not kwargs.get('fetch_request_token'):
         def fetch_request_token():
             key = _req_token_tpl.format(name)
@@ -104,4 +107,22 @@ def _generate_oauth1_client_kwargs(cache, name, kwargs):
             cache.set(sid, token, timeout=600)
 
         kwargs['save_request_token'] = save_request_token
+    return kwargs
+
+
+def _add_session_request_token(name, kwargs):
+    if not kwargs.get('fetch_request_token'):
+        def fetch_request_token():
+            key = _req_token_tpl.format(name)
+            return session.pop(key, None)
+
+        kwargs['fetch_request_token'] = fetch_request_token
+
+    if not kwargs.get('save_request_token'):
+        def save_request_token(token):
+            key = _req_token_tpl.format(name)
+            session[key] = token
+
+        kwargs['save_request_token'] = save_request_token
+
     return kwargs

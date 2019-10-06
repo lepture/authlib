@@ -315,7 +315,8 @@ class OAuth2SessionTest(TestCase):
 
     def test_auto_refresh_token(self):
 
-        def token_updater(token):
+        def update_token(token, refresh_token=None, access_token=None):
+            self.assertEqual(refresh_token, 'b')
             self.assertEqual(token, self.token)
 
         old_token = dict(
@@ -325,7 +326,7 @@ class OAuth2SessionTest(TestCase):
         sess = OAuth2Session(
             'foo', token=old_token,
             token_endpoint='https://i.b/token',
-            token_updater=token_updater,
+            update_token=update_token,
         )
         sess.send = mock_json_response(self.token)
         sess.get('https://i.b/user')

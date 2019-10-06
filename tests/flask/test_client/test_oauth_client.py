@@ -135,7 +135,7 @@ class FlaskOAuthTest(TestCase):
         )
         self.assertEqual(oauth.dev.name, 'dev')
         session = oauth.dev._get_oauth_client()
-        self.assertIsNotNone(session.token_updater)
+        self.assertIsNotNone(session.update_token)
 
     def test_oauth2_authorize(self):
         app = Flask(__name__)

@@ -1,11 +1,11 @@
 from starlette.responses import RedirectResponse
-from .._client import RemoteApp
+from .._client import RemoteApp as _RemoteApp
 
 
-__all__ = ['StarletteRemoteApp']
+__all__ = ['RemoteApp']
 
 
-class StarletteRemoteApp(RemoteApp):
+class RemoteApp(_RemoteApp):
     """A RemoteApp for Starlette framework."""
 
     def _generate_access_token_params(self, request):

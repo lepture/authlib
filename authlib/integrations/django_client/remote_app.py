@@ -1,23 +1,26 @@
 from django.dispatch import Signal
 from django.http import HttpResponseRedirect
-from .._client import RemoteApp
+from .._client import RemoteApp as _RemoteApp
 
-__all__ = ['token_update', 'DjangoRemoteApp']
-
-
-token_update = Signal(providing_args=['name', 'token'])
+__all__ = ['token_update', 'RemoteApp']
 
 
-class DjangoRemoteApp(RemoteApp):
+token_update = Signal(providing_args=['name', 'token', 'refresh_token', 'access_token'])
+
+
+class RemoteApp(_RemoteApp):
     """A RemoteApp for Django framework."""
-    def _send_token_update(self, token):
-        if callable(self._update_token):
-            self._update_token(token)
+    def _send_token_update(self, token, refresh_token=None, access_token=None):
+        super(RemoteApp, self)._send_token_update(
+            token, refresh_token, access_token
+        )
 
         token_update.send(
             sender=self.__class__,
             name=self.name,
             token=token,
+            refresh_token=refresh_token,
+            access_token=access_token,
         )
 
     def _generate_access_token_params(self, request):

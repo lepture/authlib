@@ -1,12 +1,12 @@
 from django.conf import settings
-from .._client import OAuth
-from .remote_app import DjangoRemoteApp
+from .remote_app import RemoteApp
+from .._client import OAuth as _OAuth
 
-__all__ = ['DjangoOAuth']
+__all__ = ['OAuth']
 
 
-class DjangoOAuth(OAuth):
-    remote_app_class = DjangoRemoteApp
+class OAuth(_OAuth):
+    remote_app_class = RemoteApp
 
     def load_config(self, name, params):
         return _get_conf(name)

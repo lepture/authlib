@@ -34,7 +34,7 @@ class OAuth2Client(object):
         ``token_type`` and ``expires_at``.
     :param token_placement: The place to put token in HTTP request. Available
         values: "header", "body", "uri".
-    :param token_updater: A function for you to update token. It accept a
+    :param update_token: A function for you to update token. It accept a
         :class:`OAuth2Token` as parameter.
     """
     client_auth_class = ClientAuth
@@ -49,7 +49,7 @@ class OAuth2Client(object):
                  token_endpoint_auth_method=None,
                  revocation_endpoint_auth_method=None,
                  scope=None, redirect_uri=None, code_challenge_method=None,
-                 token=None, token_placement='header', token_updater=None, **metadata):
+                 token=None, token_placement='header', update_token=None, **metadata):
 
         self.session = session
         self.client_id = client_id
@@ -76,7 +76,12 @@ class OAuth2Client(object):
         self.code_challenge_method = code_challenge_method
 
         self.token_auth = self.token_auth_class(token, token_placement, self)
-        self.token_updater = token_updater
+        self.update_token = update_token
+
+        token_updater = metadata.pop('token_updater', None)
+        if token_updater:
+            raise ValueError('update token has been redesigned, checkout the documentation')
+
         self.metadata = metadata
 
         self.compliance_hook = {
@@ -250,8 +255,8 @@ class OAuth2Client(object):
         if 'refresh_token' not in token:
             self.token['refresh_token'] = refresh_token
 
-        if callable(self.token_updater):
-            self.token_updater(self.token)
+        if callable(self.update_token):
+            self.update_token(self.token, refresh_token=refresh_token)
 
         return self.token
 
@@ -322,8 +327,6 @@ class OAuth2Client(object):
     def parse_response_token(self, token):
         if 'error' not in token:
             self.token = token
-            if callable(self.token_updater):
-                self.token_updater(self.token)
             return self.token
 
         error = token['error']

@@ -1,13 +1,6 @@
 # flake8: noqa
 
-from .oauth_registry import FlaskOAuth
-from .remote_app import FlaskRemoteApp, token_update
+from .oauth_registry import OAuth
+from .remote_app import RemoteApp, token_update
 
-OAuth = FlaskOAuth
-RemoteApp = FlaskRemoteApp
-
-__all__ = [
-    'OAuth', 'FlaskOAuth',
-    'RemoteApp', 'FlaskRemoteApp',
-    'token_update',
-]
+__all__ = ['OAuth', 'RemoteApp', 'token_update']
