@@ -12,25 +12,23 @@ it in :ref:`JWE Guide <jwe_guide>`.
 
 .. _RFC7516: https://tools.ietf.org/html/rfc7516
 
-.. module:: authlib.jose.rfc7516
-
 
 API Reference
 -------------
 
-.. autoclass:: JsonWebEncryption
+.. autoclass:: authlib.jose.JsonWebEncryption
     :member-order: bysource
     :members:
 
 
-.. autoclass:: JWEAlgorithm
+.. autoclass:: authlib.jose.JWEAlgorithm
     :member-order: bysource
     :members:
 
-.. autoclass:: JWEEncAlgorithm
+.. autoclass:: authlib.jose.JWEEncAlgorithm
     :member-order: bysource
     :members:
 
-.. autoclass:: JWEZipAlgorithm
+.. autoclass:: authlib.jose.JWEZipAlgorithm
     :member-order: bysource
     :members:

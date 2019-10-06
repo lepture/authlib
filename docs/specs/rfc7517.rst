@@ -11,17 +11,15 @@ it in :ref:`JWK Guide <jwk_guide>`.
 
 .. _RFC7517: https://tools.ietf.org/html/rfc7517
 
-.. module:: authlib.jose.rfc7517
-
 
 API Reference
 -------------
 
-.. autoclass:: JsonWebKey
+.. autoclass:: authlib.jose.JsonWebKey
    :member-order: bysource
    :members:
 
 
-.. autoclass:: JWKAlgorithm
+.. autoclass:: authlib.jose.JWKAlgorithm
    :member-order: bysource
    :members:

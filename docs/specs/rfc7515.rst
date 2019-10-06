@@ -11,20 +11,19 @@ it in :ref:`JWS Guide <jws_guide>`.
 
 .. _RFC7515: https://tools.ietf.org/html/rfc7515
 
-.. module:: authlib.jose.rfc7515
 
 API Reference
 -------------
 
-.. autoclass:: JsonWebSignature
+.. autoclass:: authlib.jose.JsonWebSignature
     :member-order: bysource
     :members:
 
 
-.. autoclass:: JWSHeader
+.. autoclass:: authlib.jose.JWSHeader
 
-.. autoclass:: JWSObject
+.. autoclass:: authlib.jose.JWSObject
 
-.. autoclass:: JWSAlgorithm
+.. autoclass:: authlib.jose.JWSAlgorithm
     :member-order: bysource
     :members:

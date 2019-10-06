@@ -3,7 +3,7 @@
 JSON Web Key (JWK)
 ==================
 
-.. module:: authlib.jose.rfc7517
+.. module:: authlib.jose
     :noindex:
 
 A JSON Web Key (JWK) is a JavaScript Object Notation (JSON) data structure

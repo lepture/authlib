@@ -104,7 +104,7 @@ def _add_cache_request_token(cache, name, kwargs):
             key = _req_token_tpl.format(name)
             sid = uuid.uuid4().hex
             session[key] = sid
-            cache.set(sid, token, timeout=600)
+            cache.set(sid, token, 600)
 
         kwargs['save_request_token'] = save_request_token
     return kwargs

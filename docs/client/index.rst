@@ -1,22 +1,28 @@
 Client Guide
 ============
 
-This part of the documentation contains information on the client parts. For
-``Requests.Session``, Flask integration and Django integration.
+This part of the documentation contains information on the client parts. Authlib
+provides many frameworks integrations, including:
 
-In order to use Authlib client, you have to install ``requests`` yourself.
-You can either install requests with::
+* The famous Python Requests_
+* A next generation HTTP client for Python: httpx_
+* Flask_ web framework integration
+* Django_ web framework integration
+* Starlette_ web framework integration
 
-    $ pip install requests
+In order to use Authlib client, you have to install each library yourself. For
+example, you want to use ``requests`` OAuth clients::
 
-Or you can install with::
+    $ pip install Authlib requests
 
-    $ pip install Authlib[client]
+For instance, you want to use ``httpx`` OAuth clients::
+
+    $ pip install Authlib httpx
 
 Here is a simple overview of Flask OAuth client::
 
     from flask import Flask, jsonify
-    from authlib.flask.client import OAuth
+    from authlib.integrations.flask_client import OAuth
 
     app = Flask(__name__)
     oauth = OAuth(app)
@@ -41,8 +47,17 @@ Follow the documentation below to find out more in detail.
 
     oauth1
     oauth2
+    requests
+    httpx
+    frameworks
     flask
     django
+    starlette
     aiohttp
-    mixed
     api
+
+.. _Requests: https://requests.readthedocs.io/en/master/
+.. _httpx: https://www.encode.io/httpx/
+.. _Flask: https://flask.palletsprojects.com
+.. _Django: https://djangoproject.com
+.. _Starlette: https://starlette.io

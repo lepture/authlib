@@ -6,10 +6,10 @@ Client API References
 
 This part of the documentation covers the interface of Authlib Client.
 
-Sessions and Client
--------------------
+Requests OAuth Sessions
+-----------------------
 
-.. module:: authlib.client
+.. module:: authlib.integrations.requests_client
 
 .. autoclass:: OAuth1Session
     :members:
@@ -31,37 +31,98 @@ Sessions and Client
         revoke_token,
         register_compliance_hook
 
+.. autoclass:: OAuth2Auth
+    :members:
+
 .. autoclass:: AssertionSession
     :members:
     :member-order: bysource
 
-.. autoclass:: OAuth2Auth
+
+httpx OAuth Clients
+-------------------
+
+.. module:: authlib.integrations.httpx_client
+
+.. autoclass:: OAuth1Client
+    :members:
+        create_authorization_url,
+        fetch_request_token,
+        fetch_access_token,
+        parse_authorization_response
+
+.. autoclass:: OAuth1Auth
     :members:
 
-.. autoclass:: OAuthClient
+
+.. autoclass:: AsyncOAuth1Client
     :members:
-    :member-order: bysource
+        create_authorization_url,
+        fetch_request_token,
+        fetch_access_token,
+        parse_authorization_response
 
 
 Flask Registry and RemoteApp
 ----------------------------
 
-.. module:: authlib.flask.client
+.. module:: authlib.integrations.flask_client
 
 .. autoclass:: OAuth
     :members:
+        init_app,
+        register,
+        create_client
 
 .. autoclass:: RemoteApp
     :members:
-
+        authorize_redirect,
+        authorize_access_token,
+        save_authorize_state,
+        get,
+        post,
+        patch,
+        put,
+        delete
 
 Django Registry and RemoteApp
 -----------------------------
 
-.. module:: authlib.django.client
+.. module:: authlib.integrations.django_client
 
 .. autoclass:: OAuth
     :members:
+        register,
+        create_client
 
 .. autoclass:: RemoteApp
     :members:
+        authorize_redirect,
+        authorize_access_token,
+        save_authorize_state,
+        get,
+        post,
+        patch,
+        put,
+        delete
+
+Starlette Registry and RemoteApp
+--------------------------------
+
+.. module:: authlib.integrations.starlette_client
+
+.. autoclass:: OAuth
+    :members:
+        register,
+        create_client
+
+.. autoclass:: RemoteApp
+    :members:
+        authorize_redirect,
+        authorize_access_token,
+        save_authorize_state,
+        get,
+        post,
+        patch,
+        put,
+        delete

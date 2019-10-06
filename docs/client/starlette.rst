@@ -1,11 +1,11 @@
 .. _starlette_client:
 
 Starlette OAuth Client
-===================
+======================
 
 .. meta::
     :description: The built-in Starlette integrations for OAuth 1.0 and
-        OAuth 2.0 clients.
+        OAuth 2.0 clients, powered by Authlib.
 
 .. module:: authlib.integrations.starlette_client
     :noindex:
@@ -368,12 +368,3 @@ When :meth:`OAuth.register` a remote app, pass it in the parameters::
     )
 
 Find all the available compliance hooks at :ref:`compliance_fix_oauth2`.
-
-
-Loginpass
----------
-
-loginpass_ does not currently support Starlette. A pull request adding support
-to loginpass_ would be welcome.
-
-.. _loginpass: https://github.com/authlib/loginpass

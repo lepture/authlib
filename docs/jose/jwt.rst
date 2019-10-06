@@ -3,7 +3,7 @@
 JSON Web Token (JWT)
 ====================
 
-.. module:: authlib.jose.rfc7519
+.. module:: authlib.jose
     :noindex:
 
 JSON Web Token (JWT) is structured by :ref:`specs/rfc7515` or :ref:`specs/rfc7516`

@@ -1,46 +1,62 @@
+.. _oauth_1_session:
+
 OAuth 1 Session
 ===============
 
 .. meta::
-    :description: An OAuth 1 protocol implementation for requests.Session
-        powered by Authlib.
+    :description: An OAuth 1.0 protocol Client implementation for Python
+        requests and httpx, powered by Authlib.
 
-.. module:: authlib.client
+.. module:: authlib.integrations
     :noindex:
 
-The :class:`OAuth1Session` in Authlib is a subclass of ``requests.Session``.
-It shares the same API with ``requests.Session`` and extends it with OAuth 1
-protocol. This section is a guide on how to obtain an access token in OAuth 1
-flow.
+This documentation covers the common design of a Python OAuth 1.0 client.
+Authlib provides three implementations of OAuth 1.0 client:
 
-.. note::
-    If you are using Flask or Django, you may have interests in
-    :ref:`flask_client` and :ref:`django_client`.
+1. :class:`requests_client.OAuth1Session` implementation of :ref:`requests_client`
+2. :class:`httpx_client.OAuth1Client` implementation of :ref:`httpx_client`
+3. :class:`httpx_client.AsyncOAuth1Client` implementation of :ref:`httpx_client`
 
-If you are not familiar with OAuth 1.0, it is better to
-:ref:`understand_oauth1` now.
+:class:`requests_client.OAuth1Session` and :class:`httpx_client.OAuth1Client` shares
+the same API. But :class:`httpx_client.AsyncOAuth1Client` is a little different,
+because it is asynchronous.
 
-OAuth1Session for requests
---------------------------
+There are also frameworks integrations of :ref:`flask_client`, :ref:`django_client`
+and :ref:`starlette_client`. If you are using these frameworks, you may have interests
+in their own documentation.
 
-There are three steps in OAuth 1 to obtain an access token. Initialize
-the session for reuse::
+If you are not familiar with OAuth 1.0, it is better to :ref:`understand_oauth1` now.
 
-    >>> from authlib.client import OAuth1Session
+Initialize OAuth 1.0 Client
+---------------------------
+
+There are three steps in OAuth 1 to obtain an access token:
+
+1. fetch a temporary credential
+2. visit the authorization page
+3. exchange access token with the temporary credential
+
+But first, we need to initialize an OAuth 1.0 client::
+
     >>> client_id = 'Your Twitter client key'
     >>> client_secret = 'Your Twitter client secret'
-    >>> session = OAuth1Session(client_id, client_secret)
+    >>> # using requests client
+    >>> from authlib.integrations.requests_client import OAuth1Session
+    >>> client = OAuth1Session(client_id, client_secret)
+    >>> # using httpx client
+    >>> from authlib.integrations.httpx_client import OAuth1Client
+    >>> client = OAuth1Client(client_id, client_secret)
 
 .. _fetch_request_token:
 
 Fetch Temporary Credential
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------
 
 The first step is to fetch temporary credential, which will be used to generate
 authorization URL::
 
     >>> request_token_url = 'https://api.twitter.com/oauth/request_token'
-    >>> request_token = session.fetch_request_token(request_token_url)
+    >>> request_token = client.fetch_request_token(request_token_url)
     >>> print(request_token)
     {'oauth_token': 'gA..H', 'oauth_token_secret': 'lp..X', 'oauth_callback_confirmed': 'true'}
 
@@ -49,30 +65,30 @@ Save this temporary credential for later use (if required).
 You can assign a ``redirect_uri`` before fetching the request token, if
 you want to redirect back to another URL other than the one you registered::
 
-    >>> session.redirect_uri = 'https://your-domain.org/auth'
-    >>> session.fetch_request_token(request_token_url)
+    >>> client.redirect_uri = 'https://your-domain.org/auth'
+    >>> client.fetch_request_token(request_token_url)
 
 Redirect to Authorization Endpoint
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+----------------------------------
 
 The second step is to generate the authorization URL::
 
     >>> authenticate_url = 'https://api.twitter.com/oauth/authenticate'
-    >>> session.create_authorization_url(authenticate_url, request_token['oauth_token'])
+    >>> client.create_authorization_url(authenticate_url, request_token['oauth_token'])
     'https://api.twitter.com/oauth/authenticate?oauth_token=gA..H'
 
 Actually, the second parameter ``request_token`` can be omitted, since session
 is re-used::
 
-    >>> session.create_authorization_url(authenticate_url)
+    >>> client.create_authorization_url(authenticate_url)
 
-Now visit the authorization url that :meth:`OAuth1Session.create_authorization_url`
-generated, and grant the authorization.
+Now visit the authorization url that `create_authorization_url` generated, and
+grant the authorization.
 
 .. _fetch_oauth1_access_token:
 
 Fetch Access Token
-~~~~~~~~~~~~~~~~~~
+------------------
 
 When the authorization is granted, you will be redirected back to your
 registered callback URI. For instance::
@@ -87,9 +103,9 @@ authorize response would be something like::
 Now fetch the access token with this response::
 
     >>> resp_url = 'https://example.com/twitter?oauth_token=gA..H&oauth_verifier=fcg..1Dq'
-    >>> session.parse_authorization_response(resp_url)
+    >>> client.parse_authorization_response(resp_url)
     >>> access_token_url = 'https://api.twitter.com/oauth/access_token'
-    >>> token = session.fetch_access_token(access_token_url)
+    >>> token = client.fetch_access_token(access_token_url)
     >>> print(token)
     {
         'oauth_token': '12345-st..E',
@@ -111,23 +127,25 @@ session::
     >>> request_token = restore_request_token()
     >>> oauth_token = request_token['oauth_token']
     >>> oauth_token_secret = request_token['oauth_token_secret']
-    >>> session = OAuth1Session(
+    >>> from authlib.integrations.requests_client import OAuth1Session
+    >>> # if using httpx: from authlib.integrations.httpx_client import OAuth1Client
+    >>> client = OAuth1Session(
     ...     client_id, client_secret,
     ...     token=oauth_token,
     ...     token_secret=oauth_token_secret)
     >>> # there is no need for `parse_authorization_response` if you can get `verifier`
     >>> verifier = request.args.get('verifier')
     >>> access_token_url = 'https://api.twitter.com/oauth/access_token'
-    >>> token = session.fetch_access_token(access_token_url, verifier)
+    >>> token = client.fetch_access_token(access_token_url, verifier)
 
 Access Protected Resources
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------
 
 Now you can access the protected resources. If you re-use the session, you
 don't need to do anything::
 
     >>> account_url = 'https://api.twitter.com/1.1/account/verify_credentials.json'
-    >>> resp = session.get(account_url)
+    >>> resp = client.get(account_url)
     <Response [200]>
     >>> resp.json()
     {...}
@@ -138,21 +156,28 @@ The above is not the real flow, just like what we did in
     >>> access_token = restore_access_token_from_database()
     >>> oauth_token = access_token['oauth_token']
     >>> oauth_token_secret = access_token['oauth_token_secret']
-    >>> session = OAuth1Session(
+    >>> # if using httpx: from authlib.integrations.httpx_client import OAuth1Client
+    >>> client = OAuth1Session(
     ...     client_id, client_secret,
     ...     token=oauth_token,
     ...     token_secret=oauth_token_secret)
     >>> account_url = 'https://api.twitter.com/1.1/account/verify_credentials.json'
-    >>> resp = session.get(account_url)
+    >>> resp = client.get(account_url)
 
 Please note, there are duplicated steps in the documentation, read carefully
 and ignore the duplicated explains.
 
 Using OAuth1Auth
-~~~~~~~~~~~~~~~~
+----------------
 
 It is also possible to access protected resources with ``OAuth1Auth`` object.
 Create an instance of OAuth1Auth with an access token::
+
+    # if using requests
+    from authlib.integrations.requests_client import OAuth1Auth
+
+    # if using httpx
+    from authlib.integrations.httpx_client import OAuth1Auth
 
     auth = OAuth1Auth(
         client_id='..',
@@ -162,9 +187,16 @@ Create an instance of OAuth1Auth with an access token::
         ...
     )
 
-Pass this ``auth`` to ``requests`` to access protected resources::
+If using ``requests``, pass this ``auth`` to access protected resources::
 
     import requests
 
     url = 'https://api.twitter.com/1.1/account/verify_credentials.json'
     resp = requests.get(url, auth=auth)
+
+If using ``httpx``, pass this ``auth`` to access protected resources::
+
+    import httpx
+
+    url = 'https://api.twitter.com/1.1/account/verify_credentials.json'
+    resp = httpx.get(url, auth=auth)
