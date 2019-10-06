@@ -2,9 +2,9 @@ from __future__ import unicode_literals, print_function
 
 import mock
 from django.test import override_settings
-from authlib.integrations.django_client import OAuth, RemoteApp
-from .base import TestCase
-from ..client_base import (
+from authlib.integrations.django_client import OAuth
+from tests.django.base import TestCase
+from tests.client_base import (
     mock_send_value,
     get_bearer_token
 )
@@ -62,7 +62,8 @@ class DjangoOAuthTest(TestCase):
         request = self.factory.get('/login')
         request.session = self.factory.session
 
-        client = RemoteApp(
+        oauth = OAuth()
+        client = oauth.register(
             'dev',
             client_id='dev',
             client_secret='dev',
@@ -89,7 +90,8 @@ class DjangoOAuthTest(TestCase):
         request = self.factory.get('/login')
         request.session = self.factory.session
 
-        client = RemoteApp(
+        oauth = OAuth()
+        client = oauth.register(
             'dev',
             client_id='dev',
             client_secret='dev',
@@ -116,7 +118,8 @@ class DjangoOAuthTest(TestCase):
         request = self.factory.get('/login')
         request.session = self.factory.session
 
-        client = RemoteApp(
+        oauth = OAuth()
+        client = oauth.register(
             'dev',
             client_id='dev',
             api_base_url='https://i.b/api',
@@ -146,7 +149,8 @@ class DjangoOAuthTest(TestCase):
             self.assertEqual(token['access_token'], 'a')
 
     def test_oauth2_access_token_with_post(self):
-        client = RemoteApp(
+        oauth = OAuth()
+        client = oauth.register(
             'dev',
             client_id='dev',
             client_secret='dev',
