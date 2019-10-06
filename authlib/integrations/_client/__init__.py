@@ -1,4 +1,5 @@
 # flake8: noqa
 
+from .oauth_registry import OAuth
+from .remote_app import RemoteApp
 from .errors import *
-from .oauth_client import OAUTH_CLIENT_PARAMS, OAuthClient

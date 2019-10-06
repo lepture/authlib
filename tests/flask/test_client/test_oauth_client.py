@@ -2,8 +2,8 @@ import mock
 from unittest import TestCase
 from flask import Flask, session
 from authlib.integrations.flask_client import OAuth
-from .cache import SimpleCache
-from ..client_base import (
+from tests.flask.cache import SimpleCache
+from tests.client_base import (
     mock_send_value,
     get_bearer_token
 )
@@ -134,7 +134,7 @@ class FlaskOAuthTest(TestCase):
             update_token=lambda name: 'hi'
         )
         self.assertEqual(oauth.dev.name, 'dev')
-        session = oauth.dev._get_session()
+        session = oauth.dev._get_oauth_client()
         self.assertIsNotNone(session.token_updater)
 
     def test_oauth2_authorize(self):

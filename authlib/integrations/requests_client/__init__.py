@@ -1,8 +1,7 @@
 from .oauth1_session import OAuth1Session, OAuth1Auth
 from .oauth2_session import OAuth2Session, OAuth2Auth
 from .assertion_session import AssertionSession
-from authlib.integrations._client import OAuthError
-from authlib.integrations._client import OAuthClient as _OAuthClient
+from .._client import OAuthError
 from authlib.oauth1 import (
     SIGNATURE_HMAC_SHA1,
     SIGNATURE_RSA_SHA1,
@@ -13,11 +12,6 @@ from authlib.oauth1 import (
 )
 
 
-class OAuthClient(_OAuthClient):
-    oauth1_client_cls = OAuth1Session
-    oauth2_client_cls = OAuth2Session
-
-
 __all__ = [
     'OAuthError',
     'OAuth1Session', 'OAuth1Auth',
@@ -25,5 +19,4 @@ __all__ = [
     'SIGNATURE_TYPE_HEADER', 'SIGNATURE_TYPE_QUERY', 'SIGNATURE_TYPE_BODY',
     'OAuth2Session', 'OAuth2Auth',
     'AssertionSession',
-    'OAuthClient',
 ]

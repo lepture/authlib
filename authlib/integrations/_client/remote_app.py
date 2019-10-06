@@ -3,27 +3,22 @@ import logging
 from authlib.common.urls import urlparse
 from authlib.common.security import generate_token
 from authlib.consts import default_user_agent
-from authlib.integrations._client.errors import (
+from .errors import (
     MissingRequestTokenError,
     MissingTokenError,
+    MismatchingStateError,
 )
 
-__all__ = ['OAUTH_CLIENT_PARAMS', 'OAuthClient']
+__all__ = ['RemoteApp']
 
 log = logging.getLogger(__name__)
-
-OAUTH_CLIENT_PARAMS = (
-    'client_id', 'client_secret',
-    'request_token_url', 'request_token_params',
-    'access_token_url', 'access_token_params',
-    'refresh_token_url', 'refresh_token_params',
-    'authorize_url', 'authorize_params',
-    'api_base_url', 'client_kwargs',
-    'server_metadata_url',
-)
+_req_token_tpl = '_{}_authlib_req_token_'
+_callback_tpl = '_{}_authlib_callback_'
+_state_tpl = '_{}_authlib_state_'
+_code_verifier_tpl = '_{}_authlib_code_verifier_'
 
 
-class OAuthClient(object):
+class RemoteApp(object):
     """A mixed OAuth client for OAuth 1 and OAuth 2.
 
     :param name: The name of the OAuth client, like: github, twitter
@@ -39,12 +34,12 @@ class OAuthClient(object):
     :param api_base_url: The base API endpoint to make requests simple
     :param client_kwargs: Extra keyword arguments for session
     :param server_metadata_url: Discover server metadata from this URL
-    :param kwargs: Extra keyword arguments
+    :param kwargs: Extra server metadata
 
-    Create an instance of OAuthClient. If ``request_token_url`` is configured,
+    Create an instance of ``RemoteApp``. If ``request_token_url`` is configured,
     it would be an OAuth 1 instance, otherwise it is OAuth 2 instance::
 
-        oauth1_client = OAuthClient(
+        oauth1_client = RemoteApp(
             client_id='Twitter Consumer Key',
             client_secret='Twitter Consumer Secret',
             request_token_url='https://api.twitter.com/oauth/request_token',
@@ -53,7 +48,7 @@ class OAuthClient(object):
             api_base_url='https://api.twitter.com/1.1/',
         )
 
-        oauth2_client = OAuthClient(
+        oauth2_client = RemoteApp(
             client_id='GitHub Client ID',
             client_secret='GitHub Client Secret',
             api_base_url='https://api.github.com/',
@@ -63,44 +58,35 @@ class OAuthClient(object):
         )
     """
     DEFAULT_USER_AGENT = default_user_agent
-    OAUTH_NAME = None
-    OAUTH_CONFIG = None
-
-    oauth1_client_cls = None
-    oauth2_client_cls = None
 
     def __init__(
-            self, name=None, fetch_token=None,
+            self, name=None, fetch_token=None, update_token=None,
             client_id=None, client_secret=None,
             request_token_url=None, request_token_params=None,
             access_token_url=None, access_token_params=None,
             authorize_url=None, authorize_params=None,
-            api_base_url=None, client_kwargs=None,
-            server_metadata_url=None, compliance_fix=None, **kwargs):
+            api_base_url=None, client_kwargs=None, server_metadata_url=None,
+            oauth1_client_cls=None, oauth2_client_cls=None,
+            compliance_fix=None, **kwargs):
 
-        config = self.OAUTH_CONFIG or {}
-
-        self.name = name or self.OAUTH_NAME
+        self.name = name
         self.client_id = client_id
         self.client_secret = client_secret
-        self.request_token_url = config.get('request_token_url', request_token_url)
-        self.request_token_params = config.get('request_token_params', request_token_params)
-        self.access_token_url = config.get('access_token_url', access_token_url)
-        self.access_token_params = config.get('access_token_params', access_token_params)
-        self.authorize_url = config.get('authorize_url', authorize_url)
-        self.authorize_params = config.get('authorize_params', authorize_params)
-        self.api_base_url = config.get('api_base_url', api_base_url)
+        self.request_token_url = request_token_url
+        self.request_token_params = request_token_params
+        self.access_token_url = access_token_url
+        self.access_token_params = access_token_params
+        self.authorize_url = authorize_url
+        self.authorize_params = authorize_params
+        self.api_base_url = api_base_url
+        self.client_kwargs = client_kwargs or {}
 
-        if client_kwargs:
-            self.client_kwargs = client_kwargs
-        else:
-            self.client_kwargs = config.get('client_kwargs', {})
+        self.oauth1_client_cls = oauth1_client_cls
+        self.oauth2_client_cls = oauth2_client_cls
 
-        self.compliance_fix = config.get('compliance_fix', compliance_fix)
+        self.compliance_fix = compliance_fix
         self._fetch_token = fetch_token
-
-        if not server_metadata_url:
-            server_metadata_url = config.get('server_metadata_url')
+        self._update_token = update_token
 
         if server_metadata_url:
             metadata = self._fetch_server_metadata(server_metadata_url)
@@ -109,9 +95,19 @@ class OAuthClient(object):
         self.server_metadata = kwargs
 
     def _send_token_update(self, token):
+        if callable(self._update_token):
+            self._update_token(token)
+
+    def _generate_access_token_params(self, request):
         raise NotImplementedError()
 
-    def _get_session(self):
+    def _set_session_data(self, request, key, value):
+        request.session[key] = value
+
+    def _get_session_data(self, request, key):
+        return request.session.pop(key, None)
+
+    def _get_oauth_client(self):
         if self.request_token_url:
             session = self.oauth1_client_cls(
                 self.client_id, self.client_secret,
@@ -121,8 +117,10 @@ class OAuthClient(object):
             kwargs = {}
             kwargs.update(self.client_kwargs)
             kwargs.update(self.server_metadata)
-            kwargs['authorization_endpoint'] = self.authorize_url
-            kwargs['token_endpoint'] = self.access_token_url
+            if self.authorize_url:
+                kwargs['authorization_endpoint'] = self.authorize_url
+            if self.access_token_url:
+                kwargs['token_endpoint'] = self.access_token_url
             session = self.oauth2_client_cls(
                 client_id=self.client_id,
                 client_secret=self.client_secret,
@@ -135,6 +133,55 @@ class OAuthClient(object):
 
         session.headers['User-Agent'] = self.DEFAULT_USER_AGENT
         return session
+
+    def save_authorize_state(self, request, redirect_uri=None, state=None):
+        """Save ``redirect_uri`` and ``state`` into session during
+        authorize step."""
+        msg = 'Saving temporary data: redirect_uri: {!r}, state: {!r}'
+        log.debug(msg.format(redirect_uri, state))
+        if redirect_uri:
+            key = _callback_tpl.format(self.name)
+            self._set_session_data(request, key, redirect_uri)
+
+        if state:
+            key = _state_tpl.format(self.name)
+            self._set_session_data(request, key, state)
+
+    def save_temporary_data(self, request):
+        if self.request_token_url:
+            key = _req_token_tpl.format(self.name)
+        else:
+            key = _code_verifier_tpl.format(self.name)
+        return lambda value: self._set_session_data(request, key, value)
+
+    def retrieve_temporary_data(self, request, request_token=None):
+        params = self._generate_access_token_params(request)
+        if self.request_token_url:
+            if request_token is None:
+                req_key = _req_token_tpl.format(self.name)
+                request_token = self._get_session_data(request, req_key)
+            params['request_token'] = request_token
+        else:
+            request_state = params.pop('state', None)
+            state_key = _state_tpl.format(self.name)
+            state = self._get_session_data(request, state_key)
+            if state:
+                if state != request_state:
+                    raise MismatchingStateError()
+                params['state'] = state
+
+            vf_key = _code_verifier_tpl.format(self.name)
+            code_verifier = self._get_session_data(request, vf_key)
+            if code_verifier:
+                params['code_verifier'] = code_verifier
+
+        cb_key = _callback_tpl.format(self.name)
+        redirect_uri = self._get_session_data(request, cb_key)
+        if redirect_uri:
+            params['redirect_uri'] = redirect_uri
+
+        log.debug('Retrieve temporary data: {!r}'.format(params))
+        return params
 
     def create_authorization_url(
             self, redirect_uri=None, save_temporary_data=None, **kwargs):
@@ -155,7 +202,7 @@ class OAuthClient(object):
         if self.authorize_params:
             kwargs.update(self.authorize_params)
 
-        with self._get_session() as session:
+        with self._get_oauth_client() as session:
             if self.request_token_url:
                 session.redirect_uri = redirect_uri
                 params = {}
@@ -164,6 +211,7 @@ class OAuthClient(object):
                 token = session.fetch_request_token(
                     self.request_token_url, **params
                 )
+                log.debug('Fetch request token: {!r}'.format(token))
                 # remember oauth_token, oauth_token_secret
                 save_temporary_data(token)
                 url = session.create_authorization_url(
@@ -192,7 +240,7 @@ class OAuthClient(object):
         if not token_endpoint and not self.request_token_url:
             token_endpoint = self.server_metadata.get('token_endpoint')
 
-        with self._get_session() as session:
+        with self._get_oauth_client() as session:
             if self.request_token_url:
                 session.redirect_uri = redirect_uri
                 if request_token is None:
@@ -217,7 +265,7 @@ class OAuthClient(object):
     def request(self, method, url, token=None, **kwargs):
         if self.api_base_url and not url.startswith(('https://', 'http://')):
             url = urlparse.urljoin(self.api_base_url, url)
-        with self._get_session() as session:
+        with self._get_oauth_client() as session:
             if kwargs.get('withhold_token'):
                 return session.request(method, url, **kwargs)
 
