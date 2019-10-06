@@ -35,11 +35,31 @@ class OAuth(object):
             self.AVAILABLE_CLIENTS = _import_oauth_clients()
 
     def use_oauth_clients(self, name='requests'):
+        """Choose the OAuth Clients to use. Supported clients are:
+
+        * requests: using ``authlib.integrations.requests_client``
+        * httpx: using ``authlib.integrations.httpx_client``
+
+        By default, the OAuth registry will use ``requests``. Developers
+        may switch to **httpx** with::
+
+            oauth = OAuth()
+            oauth.use_oauth_clients("httpx")
+        """
         clients = self.AVAILABLE_CLIENTS[name]
         self.oauth1_client_cls = clients[0]
         self.oauth2_client_cls = clients[1]
 
     def create_client(self, name):
+        """Create or get the given named OAuth client. For instance, the
+        OAuth registry has ``.register`` a twitter client, developers may
+        access the client with::
+
+            client = oauth.create_client('twitter')
+
+        :param: name: Name of the remote application
+        :return: OAuth remote app
+        """
         if name in self._clients:
             return self._clients[name]
 

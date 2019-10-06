@@ -1,17 +1,15 @@
 import uuid
 from flask import session
 from werkzeug.local import LocalProxy
-from .._client import OAuth
 from .remote_app import FlaskRemoteApp
+from .._client import OAuth
 
 __all__ = ['FlaskOAuth']
 _req_token_tpl = '_{}_authlib_req_token_'
 
 
 class FlaskOAuth(OAuth):
-    """Registry for oauth clients.
-
-    :param app: the app instance of Flask
+    """A Flask OAuth registry for oauth clients.
 
     Create an instance with Flask::
 
@@ -38,7 +36,9 @@ class FlaskOAuth(OAuth):
             self.init_app(app)
 
     def init_app(self, app, cache=None, fetch_token=None, update_token=None):
-        """Init app with Flask instance."""
+        """Initialize lazy for Flask app. This is usually used for Flask application
+        factory pattern.
+        """
         self.app = app
         if cache is not None:
             self.cache = cache
@@ -57,19 +57,6 @@ class FlaskOAuth(OAuth):
         return super(FlaskOAuth, self).create_client(name)
 
     def register(self, name, overwrite=False, **kwargs):
-        """Registers a new remote application.
-
-        :param name: Name of the remote application.
-        :param overwrite: Overwrite existing config with Flask config.
-        :param kwargs: Parameters for :class:`RemoteApp`.
-
-        Find parameters from :class:`~authlib.client.OAuthClient`.
-        When a remote app is registered, it can be accessed with
-        *named* attribute::
-
-            oauth.register('twitter', client_id='', ...)
-            oauth.twitter.get('timeline')
-        """
         if not self.oauth1_client_cls or not self.oauth2_client_cls:
             self.use_oauth_clients()
 

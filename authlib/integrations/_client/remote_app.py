@@ -19,10 +19,12 @@ _code_verifier_tpl = '_{}_authlib_code_verifier_'
 
 
 class RemoteApp(object):
-    """A mixed OAuth client for OAuth 1 and OAuth 2.
+    """The remote application for OAuth 1 and OAuth 2. It is used together
+    with OAuth registry.
 
     :param name: The name of the OAuth client, like: github, twitter
     :param fetch_token: A function to fetch access token from database
+    :param update_token: A function to update access token to database
     :param client_id: Client key of OAuth 1, or Client ID of OAuth 2
     :param client_secret: Client secret of OAuth 2, or Client Secret of OAuth 2
     :param request_token_url: Request Token endpoint for OAuth 1
