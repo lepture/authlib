@@ -144,9 +144,3 @@ def _import_oauth_clients():
         rv['requests'] = OAuth1Session, OAuth2Session
     except ImportError:
         pass
-    try:
-        from ..httpx_client import OAuth1Client, OAuth2Client
-        rv['httpx'] = OAuth1Client, OAuth2Client
-    except ImportError:
-        pass
-    return rv
