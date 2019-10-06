@@ -144,3 +144,5 @@ def _import_oauth_clients():
         rv['requests'] = OAuth1Session, OAuth2Session
     except ImportError:
         pass
+
+    return rv
