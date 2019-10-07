@@ -53,7 +53,7 @@ class ClientAuth(object):
         self.client_id = client_id
         self.client_secret = client_secret
 
-        if isinstance(auth_method, str):
+        if auth_method in self.DEFAULT_AUTH_METHODS:
             auth_method = self.DEFAULT_AUTH_METHODS[auth_method]
 
         self.auth_method = auth_method
