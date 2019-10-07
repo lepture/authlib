@@ -54,7 +54,11 @@ When creating a client, authorization server will generate several key pairs.
 The server itself can only keep the public keys, which will be used to decode
 assertion value.
 
-For **client implementation**, check out :class:`~authlib.client.AssertionSession`.
+For **client implementation**, check out:
+
+1. :class:`~authlib.integrations.requests_client.AssertionSession`.
+2. :class:`~authlib.integrations.httpx_client.AssertionSession`.
+3. :class:`~authlib.integrations.httpx_client.AsyncAssertionSession`.
 
 .. _jwt_client_authentication:
 
@@ -137,22 +141,27 @@ alg, in this case, you can also alter ``CLIENT_AUTH_METHOD = 'client_secret_jwt'
 Using JWTs Client Assertion in OAuth2Session
 --------------------------------------------
 
-Authlib RFC7523 has provided you a helper function to register client assertion
-authentication method easily to ``OAuth2Session``. Take ``client_secret_jwt``
-as an example::
+Authlib RFC7523 provides two more client authentication methods for :ref:`oauth_2_session`:
 
-    from authlib.oauth2.rfc7523 import register_session_client_auth_method
-    from authlib.client import OAuth2Session
+1. ``client_secret_jwt``
+2. ``private_key_jwt``
+
+Here is an example of how to register ``client_secret_jwt`` for ``OAuth2Session``::
+
+    from authlib.oauth2.rfc7523 import ClientSecretJWT
+    from authlib.integrations.requests_client import OAuth2Session
 
     session = OAuth2Session(
         'your-client-id', 'your-client-secret',
         token_endpoint_auth_method='client_secret_jwt'
     )
-    # just one hook here
-    register_session_client_auth_method(session)
-    session.fetch_access_token('https://example.com/oauth/token')
+    token_endpoint = 'https://example.com/oauth/token'
+    session.register_client_auth_method(ClientSecretJWT(token_endpoint))
+    session.fetch_access_token(token_endpoint)
 
 How about ``private_key_jwt``? It is the same as ``client_secret_jwt``::
+
+    from authlib.oauth2.rfc7523 import PrivateKeyJWT
 
     with open('your-private-key.pem', 'rb') as f:
         private_key = f.read()
@@ -161,8 +170,9 @@ How about ``private_key_jwt``? It is the same as ``client_secret_jwt``::
         'your-client-id', private_key,
         token_endpoint_auth_method='private_key_jwt'  # NOTICE HERE
     )
-    register_session_client_auth_method(session)
-    session.fetch_access_token('https://example.com/oauth/token')
+    token_endpoint = 'https://example.com/oauth/token'
+    session.register_client_auth_method(PrivateKeyJWT(token_endpoint))
+    session.fetch_access_token(token_endpoint)
 
 API Reference
 -------------
@@ -175,4 +185,6 @@ API Reference
     :member-order: bysource
     :members:
 
-.. autofunction:: register_session_client_auth_method
+.. autoclass:: ClientSecretJWT
+
+.. autoclass:: PrivateKeyJWT

@@ -60,5 +60,5 @@ Articles
 --------
 
 - `Access Google Analytics API <https://blog.authlib.org/2018/access-google-analytics-api>`_:
-  An example on how to use :class:`~authlib.client.AssertionSession`.
+  An example on how to use :class:`~authlib.integrations.requests_client.AssertionSession`.
 - `Using Authlib with gspread <https://blog.authlib.org/2018/authlib-for-gspread>`_.

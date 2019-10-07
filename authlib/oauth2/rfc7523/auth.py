@@ -44,7 +44,7 @@ class PrivateKeyJWT(ClientSecretJWT):
         )
 
 
-def register_session_client_auth_method(session, token_url=None, **kwargs):
+def register_session_client_auth_method(session, token_url=None, **kwargs):  # pragma: no cover
     """Register "client_secret_jwt" or "private_key_jwt" token endpoint auth
     method to OAuth2Session.
 

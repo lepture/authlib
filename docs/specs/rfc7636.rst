@@ -89,8 +89,8 @@ consider that we already have a ``session``::
 The authorization flow is the same as in :ref:`oauth_2_session`, what you need
 to do is:
 
-1. adding ``code_challenge`` and ``code_challenge_method`` in :meth:`~authlib.client.OAuth2Session.authorization_url`.
-2. adding ``code_verifier`` in :meth:`~authlib.client.OAuth2Session.fetch_access_token`.
+1. adding ``code_challenge`` and ``code_challenge_method`` in ``.create_authorization_url``.
+2. adding ``code_verifier`` in ``.fetch_token``.
 
 API Reference
 -------------
