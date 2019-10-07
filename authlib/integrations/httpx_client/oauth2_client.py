@@ -1,7 +1,10 @@
-from requests import Session
-from requests.auth import AuthBase
-from authlib.oauth2.client import OAuth2Client
+import typing
+from httpx import Client
+from httpx import AsyncRequest, AsyncResponse
+from httpx.middleware.base import BaseMiddleware
+from authlib.oauth2.client import OAuth2Client as _OAuth2Client
 from authlib.oauth2.auth import ClientAuth, TokenAuth
+from .utils import HTTPX_CLIENT_KWARGS, auth_call
 from .._client import (
     OAuthError,
     InvalidTokenError,
@@ -9,52 +12,30 @@ from .._client import (
     UnsupportedTokenTypeError,
 )
 
-__all__ = ['OAuth2Session', 'OAuth2Auth']
+__all__ = ['OAuth2Auth', 'OAuth2ClientAuth', 'OAuth2Client']
 
 
-class OAuth2Auth(AuthBase, TokenAuth):
+class OAuth2Auth(BaseMiddleware, TokenAuth):
     """Sign requests for OAuth 2.0, currently only bearer token is supported."""
 
-    def ensure_active_token(self, **kwargs):
-        if not self.token:
-            raise MissingTokenError()
-
-        if self.client and self.token.is_expired():
-            refresh_token = self.token.get('refresh_token')
-            client = self.client
-            url = client.metadata.get('token_endpoint')
-            if refresh_token and url:
-                client.refresh_token(url, refresh_token=refresh_token, **kwargs)
-            elif client.metadata.get('grant_type') == 'client_credentials':
-                access_token = self.token['access_token']
-                token = client.fetch_token(grant_type='client_credentials', **kwargs)
-                if client.update_token:
-                    client.update_token(token, access_token=access_token)
-            else:
-                raise InvalidTokenError()
-
-    def __call__(self, req):
-        self.ensure_active_token()
+    async def __call__(
+        self, request: AsyncRequest, get_response: typing.Callable
+    ) -> AsyncResponse:
         try:
-            req.url, req.headers, req.body = self.prepare(
-                req.url, req.headers, req.body)
+            return await auth_call(self, request, get_response, False)
         except KeyError as error:
             description = 'Unsupported token_type: {}'.format(str(error))
             raise UnsupportedTokenTypeError(description=description)
-        return req
 
 
-class OAuth2ClientAuth(AuthBase, ClientAuth):
-    """Attaches OAuth Client Authentication to the given Request object.
-    """
-    def __call__(self, req):
-        req.url, req.headers, req.body = self.prepare(
-            req.method, req.url, req.headers, req.body
-        )
-        return req
+class OAuth2ClientAuth(BaseMiddleware, ClientAuth):
+    async def __call__(
+        self, request: AsyncRequest, get_response: typing.Callable
+    ) -> AsyncResponse:
+        return await auth_call(self, request, get_response)
 
 
-class OAuth2Session(OAuth2Client, Session):
+class OAuth2Client(_OAuth2Client, Client):
     """Construct a new OAuth 2 client requests session.
 
     :param client_id: Client ID, which you get from client registration.
@@ -77,12 +58,10 @@ class OAuth2Session(OAuth2Client, Session):
     :param update_token: A function for you to update token. It accept a
         :class:`OAuth2Token` as parameter.
     """
+    SESSION_REQUEST_PARAMS = HTTPX_CLIENT_KWARGS
+
     client_auth_class = OAuth2ClientAuth
     token_auth_class = OAuth2Auth
-    SESSION_REQUEST_PARAMS = (
-        'allow_redirects', 'timeout', 'cookies', 'files',
-        'proxies', 'hooks', 'stream', 'verify', 'cert', 'json'
-    )
 
     def __init__(self, client_id=None, client_secret=None,
                  token_endpoint_auth_method=None,
@@ -91,8 +70,11 @@ class OAuth2Session(OAuth2Client, Session):
                  token=None, token_placement='header',
                  update_token=None, **kwargs):
 
-        Session.__init__(self)
-        OAuth2Client.__init__(
+        # extract httpx.Client kwargs
+        client_kwargs = self._extract_session_request_params(kwargs)
+        Client.__init__(self, **client_kwargs)
+
+        _OAuth2Client.__init__(
             self, session=self,
             client_id=client_id, client_secret=client_secret,
             token_endpoint_auth_method=token_endpoint_auth_method,
@@ -102,18 +84,31 @@ class OAuth2Session(OAuth2Client, Session):
             update_token=update_token, **kwargs
         )
 
-    def fetch_access_token(self, url=None, **kwargs):
-        """Alias for fetch_token."""
-        return self.fetch_token(url, **kwargs)
-
     def request(self, method, url, withhold_token=False, auth=None, **kwargs):
         """Send request with auto refresh token feature (if available)."""
-        if self.token and not withhold_token:
-            if auth is None:
-                auth = self.token_auth
-        return super(OAuth2Session, self).request(
+        if not withhold_token and auth is None:
+            self.ensure_active_token(**kwargs)
+            auth = self.token_auth
+        return super(OAuth2Client, self).request(
             method, url, auth=auth, **kwargs)
 
     @staticmethod
     def handle_error(error_type, error_description):
         raise OAuthError(error_type, error_description)
+
+    def ensure_active_token(self, **kwargs):
+        if not self.token:
+            raise MissingTokenError()
+
+        if self.token.is_expired():
+            refresh_token = self.token.get('refresh_token')
+            url = self.metadata.get('token_endpoint')
+            if refresh_token and url:
+                self.refresh_token(url, refresh_token=refresh_token, **kwargs)
+            elif self.metadata.get('grant_type') == 'client_credentials':
+                access_token = self.token['access_token']
+                token = self.fetch_token(grant_type='client_credentials', **kwargs)
+                if self.update_token:
+                    self.update_token(token, access_token=access_token)
+            else:
+                raise InvalidTokenError()

@@ -1,6 +1,6 @@
 import typing
 from httpx import Client, AsyncClient
-from httpx import AsyncRequest, AsyncResponse, URL
+from httpx import AsyncRequest, AsyncResponse
 from httpx.middleware.base import BaseMiddleware
 from authlib.oauth1 import (
     SIGNATURE_HMAC_SHA1,
@@ -9,8 +9,8 @@ from authlib.oauth1 import (
 from authlib.common.encoding import to_unicode
 from authlib.oauth1 import ClientAuth
 from authlib.oauth1.client import OAuth1Client as _OAuth1Client
-from authlib.integrations._client import OAuthError
-from .utils import extract_client_kwargs
+from .utils import extract_client_kwargs, auth_call
+from .._client import OAuthError
 
 
 class OAuth1Auth(BaseMiddleware, ClientAuth):
@@ -19,16 +19,7 @@ class OAuth1Auth(BaseMiddleware, ClientAuth):
     async def __call__(
         self, request: AsyncRequest, get_response: typing.Callable
     ) -> AsyncResponse:
-        content = await request.read()
-        url, headers, body = self.prepare(
-            request.method, str(request.url), request.headers, content)
-
-        request.url = URL(url)
-        request.headers.update(headers)
-        if body:
-            request.is_streaming = False
-            request.content = body.encode('utf-8')
-        return await get_response(request)
+        return await auth_call(self, request, get_response)
 
 
 class OAuth1Client(_OAuth1Client, Client):
@@ -46,20 +37,12 @@ class OAuth1Client(_OAuth1Client, Client):
         Client.__init__(self, **_client_kwargs)
 
         _OAuth1Client.__init__(
-            self, None,
+            self, session=self,
             client_id=client_id, client_secret=client_secret,
             token=token, token_secret=token_secret,
             redirect_uri=redirect_uri, rsa_key=rsa_key, verifier=verifier,
             signature_method=signature_method, signature_type=signature_type,
             force_include_body=force_include_body, **kwargs)
-
-    def _fetch_token(self, url, **kwargs):
-        resp = self.post(url, auth=self.auth, **kwargs)
-        text = to_unicode(resp.read())
-        token = self.parse_response_token(resp.status_code, text)
-        self.token = token
-        self.auth.verifier = None
-        return token
 
     @staticmethod
     def handle_error(error_type, error_description):

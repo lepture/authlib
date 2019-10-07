@@ -1,4 +1,3 @@
-from authlib.integrations._client import OAuthError
 from authlib.oauth1 import (
     SIGNATURE_HMAC_SHA1,
     SIGNATURE_RSA_SHA1,
@@ -8,6 +7,8 @@ from authlib.oauth1 import (
     SIGNATURE_TYPE_BODY,
 )
 from .oauth1_client import OAuth1Auth, OAuth1Client, AsyncOAuth1Client
+from .oauth2_client import OAuth2Auth, OAuth2ClientAuth, OAuth2Client
+from .._client import OAuthError
 
 
 __all__ = [
@@ -15,4 +16,5 @@ __all__ = [
     'OAuth1Auth', 'OAuth1Client', 'AsyncOAuth1Client',
     'SIGNATURE_HMAC_SHA1', 'SIGNATURE_RSA_SHA1', 'SIGNATURE_PLAINTEXT',
     'SIGNATURE_TYPE_HEADER', 'SIGNATURE_TYPE_QUERY', 'SIGNATURE_TYPE_BODY',
+    'OAuth2Auth', 'OAuth2ClientAuth', 'OAuth2Client',
 ]

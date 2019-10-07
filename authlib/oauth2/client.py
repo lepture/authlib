@@ -91,6 +91,13 @@ class OAuth2Client(object):
             'revoke_token_request': set(),
         }
 
+    def register_client_auth_method(self, func):
+        """Extend client authenticate for token endpoint.
+
+        :param func: a function to sign the request
+        """
+        self.client_auth_class.register_auth_method(self.token_endpoint_auth_method, func)
+
     @property
     def token(self):
         return self.token_auth.token
@@ -191,9 +198,11 @@ class OAuth2Client(object):
                 url, data=dict(url_decode(body)), headers=headers,
                 auth=auth, **kwargs)
         else:
-            resp = self.session.get(
-                url, params=dict(url_decode(body)), headers=headers,
-                auth=auth, **kwargs)
+            if '?' in url:
+                url = '&'.join([url, body])
+            else:
+                url = '?'.join([url, body])
+            resp = self.session.get(url, headers=headers, auth=auth, **kwargs)
 
         for hook in self.compliance_hook['access_token_response']:
             resp = hook(resp)

@@ -145,4 +145,9 @@ def _import_oauth_clients():
     except ImportError:
         pass
 
+    try:
+        from ..httpx_client import OAuth1Client, OAuth2Client
+        rv['httpx'] = OAuth1Client, OAuth2Client
+    except (ImportError, SyntaxError):
+        pass
     return rv

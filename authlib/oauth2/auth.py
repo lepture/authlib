@@ -1,5 +1,5 @@
 import base64
-from authlib.common.urls import add_params_to_qs
+from authlib.common.urls import add_params_to_qs, add_params_to_uri
 from authlib.common.encoding import to_bytes, to_native
 from .rfc6749 import OAuth2Token
 from .rfc6750 import add_bearer_token
@@ -22,7 +22,7 @@ def encode_client_secret_post(client, method, uri, headers, body):
 
 def encode_none(client, method, uri, headers, body):
     if method == 'GET':
-        uri = add_params_to_qs(uri, [('client_id', client.client_id)])
+        uri = add_params_to_uri(uri, [('client_id', client.client_id)])
         return uri, headers, body
     body = add_params_to_qs(body, [('client_id', client.client_id)])
     return uri, headers, body
