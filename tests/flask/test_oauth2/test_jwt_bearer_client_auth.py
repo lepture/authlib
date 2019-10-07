@@ -71,7 +71,7 @@ class ClientCredentialsTest(TestCase):
             'client_assertion': client_secret_jwt_sign(
                 client_secret='invalid-secret',
                 client_id='credential-client',
-                token_url='https://localhost/oauth/token',
+                token_endpoint='https://localhost/oauth/token',
             )
         })
         resp = json.loads(rv.data)
@@ -86,7 +86,7 @@ class ClientCredentialsTest(TestCase):
             'client_assertion': client_secret_jwt_sign(
                 client_secret='credential-secret',
                 client_id='invalid-client',
-                token_url='https://localhost/oauth/token',
+                token_endpoint='https://localhost/oauth/token',
             )
         })
         resp = json.loads(rv.data)
@@ -100,7 +100,7 @@ class ClientCredentialsTest(TestCase):
             'client_assertion': client_secret_jwt_sign(
                 client_secret='credential-secret',
                 client_id='credential-client',
-                token_url='https://localhost/oauth/token',
+                token_endpoint='https://localhost/oauth/token',
             )
         })
         resp = json.loads(rv.data)
@@ -115,7 +115,7 @@ class ClientCredentialsTest(TestCase):
             'client_assertion': client_secret_jwt_sign(
                 client_secret='credential-secret',
                 client_id='credential-client',
-                token_url='https://localhost/oauth/token',
+                token_endpoint='https://localhost/oauth/token',
                 claims={'jti': 'nonce'},
             )
         })
@@ -131,7 +131,7 @@ class ClientCredentialsTest(TestCase):
             'client_assertion': private_key_jwt_sign(
                 private_key=read_file_path('jwk_private.json'),
                 client_id='credential-client',
-                token_url='https://localhost/oauth/token',
+                token_endpoint='https://localhost/oauth/token',
             )
         })
         resp = json.loads(rv.data)
@@ -146,7 +146,7 @@ class ClientCredentialsTest(TestCase):
             'client_assertion': client_secret_jwt_sign(
                 client_secret='credential-secret',
                 client_id='credential-client',
-                token_url='https://localhost/oauth/token',
+                token_endpoint='https://localhost/oauth/token',
             )
         })
         resp = json.loads(rv.data)

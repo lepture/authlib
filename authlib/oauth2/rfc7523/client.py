@@ -1,9 +1,7 @@
 import logging
 from authlib.jose import jwt
 from authlib.jose.errors import JoseError
-from authlib.common.security import generate_token
 from ..rfc6749 import InvalidClientError
-from .assertion import sign_jwt_bearer_assertion
 
 ASSERTION_TYPE = 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
 log = logging.getLogger(__name__)
@@ -111,34 +109,5 @@ class JWTBearerClientAssertion(object):
         raise NotImplementedError()
 
 
-def client_secret_jwt_sign(client_secret, client_id, token_url, alg='HS256',
-                           claims=None, **kwargs):
-    return _sign(client_secret, client_id, token_url, alg, claims, **kwargs)
-
-
-def private_key_jwt_sign(private_key, client_id, token_url, alg='RS256',
-                         claims=None, **kwargs):
-    return _sign(private_key, client_id, token_url, alg, claims, **kwargs)
-
-
 def _validate_iss(claims, iss):
     return claims['sub'] == iss
-
-
-def _sign(key, client_id, token_url, alg, claims=None, **kwargs):
-    # REQUIRED. Issuer. This MUST contain the client_id of the OAuth Client.
-    issuer = client_id
-    # REQUIRED. Subject. This MUST contain the client_id of the OAuth Client.
-    subject = client_id
-    # The Audience SHOULD be the URL of the Authorization Server's Token Endpoint.
-    audience = token_url
-
-    # jti is required
-    if claims is None:
-        claims = {}
-    if 'jti' not in claims:
-        claims['jti'] = generate_token(36)
-
-    return sign_jwt_bearer_assertion(
-        key=key, issuer=issuer, audience=audience, subject=subject,
-        claims=claims, alg=alg, **kwargs)

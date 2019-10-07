@@ -1,5 +1,6 @@
 import time
 from authlib.jose import jwt
+from authlib.common.security import generate_token
 
 
 def sign_jwt_bearer_assertion(
@@ -34,3 +35,32 @@ def sign_jwt_bearer_assertion(
         payload.update(claims)
 
     return jwt.encode(header, payload, key)
+
+
+def client_secret_jwt_sign(client_secret, client_id, token_endpoint, alg='HS256',
+                           claims=None, **kwargs):
+    return _sign(client_secret, client_id, token_endpoint, alg, claims, **kwargs)
+
+
+def private_key_jwt_sign(private_key, client_id, token_endpoint, alg='RS256',
+                         claims=None, **kwargs):
+    return _sign(private_key, client_id, token_endpoint, alg, claims, **kwargs)
+
+
+def _sign(key, client_id, token_endpoint, alg, claims=None, **kwargs):
+    # REQUIRED. Issuer. This MUST contain the client_id of the OAuth Client.
+    issuer = client_id
+    # REQUIRED. Subject. This MUST contain the client_id of the OAuth Client.
+    subject = client_id
+    # The Audience SHOULD be the URL of the Authorization Server's Token Endpoint.
+    audience = token_endpoint
+
+    # jti is required
+    if claims is None:
+        claims = {}
+    if 'jti' not in claims:
+        claims['jti'] = generate_token(36)
+
+    return sign_jwt_bearer_assertion(
+        key=key, issuer=issuer, audience=audience, subject=subject,
+        claims=claims, alg=alg, **kwargs)

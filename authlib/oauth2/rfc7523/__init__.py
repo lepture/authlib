@@ -13,7 +13,12 @@
 from .grant import JWTBearerGrant
 from .client import (
     JWTBearerClientAssertion,
+)
+from .assertion import (
     client_secret_jwt_sign,
     private_key_jwt_sign,
 )
-from .auth import register_session_client_auth_method
+from .auth import (
+    ClientSecretJWT, PrivateKeyJWT,
+    register_session_client_auth_method,
+)

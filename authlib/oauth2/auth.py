@@ -40,16 +40,11 @@ class ClientAuth(object):
         * client_secret_post
         * none
     """
-    AUTH_METHODS = {
+    DEFAULT_AUTH_METHODS = {
         'client_secret_basic': encode_client_secret_basic,
         'client_secret_post': encode_client_secret_post,
         'none': encode_none,
     }
-
-    @classmethod
-    def register_auth_method(cls, method, func):
-        assert method not in cls.AUTH_METHODS
-        cls.AUTH_METHODS[method] = func
 
     def __init__(self, client_id, client_secret, auth_method=None):
         if auth_method is None:
@@ -57,11 +52,14 @@ class ClientAuth(object):
 
         self.client_id = client_id
         self.client_secret = client_secret
+
+        if isinstance(auth_method, str):
+            auth_method = self.DEFAULT_AUTH_METHODS[auth_method]
+
         self.auth_method = auth_method
 
     def prepare(self, method, uri, headers, body):
-        func = self.AUTH_METHODS.get(self.auth_method)
-        return func(self, method, uri, headers, body)
+        return self.auth_method(self, method, uri, headers, body)
 
 
 class TokenAuth(object):
@@ -78,10 +76,6 @@ class TokenAuth(object):
     SIGN_METHODS = {
         'bearer': add_bearer_token
     }
-
-    @classmethod
-    def register_sign_method(cls, sign_type, func):
-        cls.SIGN_METHODS[sign_type] = func
 
     def __init__(self, token, token_placement='header', client=None):
         self.token = OAuth2Token.from_dict(token)

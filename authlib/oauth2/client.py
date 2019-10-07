@@ -90,13 +90,22 @@ class OAuth2Client(object):
             'refresh_token_response': set(),
             'revoke_token_request': set(),
         }
+        self._auth_methods = {}
 
-    def register_client_auth_method(self, func):
+    def register_client_auth_method(self, auth):
         """Extend client authenticate for token endpoint.
 
-        :param func: a function to sign the request
+        :param auth: an instance to sign the request
         """
-        self.client_auth_class.register_auth_method(self.token_endpoint_auth_method, func)
+        self._auth_methods[auth.name] = auth
+
+    def client_auth(self, auth_method):
+        auth_method = self._auth_methods.get(auth_method, auth_method)
+        return self.client_auth_class(
+            client_id=self.client_id,
+            client_secret=self.client_secret,
+            auth_method=auth_method,
+        )
 
     @property
     def token(self):
@@ -177,11 +186,7 @@ class OAuth2Client(object):
         body = self._prepare_token_endpoint_body(body, grant_type, **kwargs)
 
         if auth is None:
-            auth = self.client_auth_class(
-                client_id=self.client_id,
-                client_secret=self.client_secret,
-                auth_method=self.token_endpoint_auth_method,
-            )
+            auth = self.client_auth(self.token_endpoint_auth_method)
 
         if headers is None:
             headers = DEFAULT_HEADERS
@@ -241,11 +246,7 @@ class OAuth2Client(object):
             url, headers, body = hook(url, headers, body)
 
         if auth is None:
-            auth = self.client_auth_class(
-                self.client_id,
-                self.client_secret,
-                self.token_endpoint_auth_method,
-            )
+            auth = self.client_auth(self.token_endpoint_auth_method)
 
         return self._refresh_token(
             url, refresh_token=refresh_token, body=body, headers=headers,
@@ -298,11 +299,7 @@ class OAuth2Client(object):
             url, headers, body = hook(url, headers, body)
 
         if auth is None:
-            auth = self.client_auth_class(
-                self.client_id,
-                self.client_secret,
-                self.revocation_endpoint_auth_method,
-            )
+            auth = self.client_auth(self.revocation_endpoint_auth_method)
 
         session_kwargs = self._extract_session_request_params(kwargs)
         return self._revoke_token(
