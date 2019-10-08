@@ -63,6 +63,21 @@ httpx OAuth Clients
         parse_authorization_response
 
 
+.. autoclass:: OAuth2Client
+    :members:
+        register_client_auth_method,
+        create_authorization_url,
+        fetch_token,
+        fetch_access_token,
+        refresh_token,
+        revoke_token,
+        register_compliance_hook
+
+
+.. autoclass:: OAuth2Auth
+    :members:
+
+
 Flask Registry and RemoteApp
 ----------------------------
 
@@ -78,6 +93,7 @@ Flask Registry and RemoteApp
     :members:
         authorize_redirect,
         authorize_access_token,
+        save_authorize_data,
         save_authorize_state,
         get,
         post,
@@ -99,7 +115,7 @@ Django Registry and RemoteApp
     :members:
         authorize_redirect,
         authorize_access_token,
-        save_authorize_state,
+        save_authorize_data,
         get,
         post,
         patch,
@@ -120,7 +136,7 @@ Starlette Registry and RemoteApp
     :members:
         authorize_redirect,
         authorize_access_token,
-        save_authorize_state,
+        save_authorize_data,
         get,
         post,
         patch,

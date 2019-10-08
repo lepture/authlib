@@ -29,8 +29,63 @@ It shares a common API design with :ref:`requests_client`.
 Read the common guide of :ref:`oauth_1_session` to understand the whole OAuth
 1.0 flow.
 
+
 HTTPX OAuth 2.0
 ---------------
+
+In :ref:`oauth_2_session`, there are many grant types, including:
+
+1. Authorization Code Flow
+2. Implicit Flow
+3. Password Flow
+4. Client Credentials Flow
+
+And also, Authlib supports non Standard OAuth 2.0 providers via Compliance Fix.
+
+Read the common guide of :ref:`oauth_2_session` to understand the whole OAuth
+2.0 flow.
+
+Using ``client_secret_jwt`` in HTTPX
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Here is how you could register and use ``client_secret_jwt`` client
+authentication method for HTTPX::
+
+    from authlib.integrations.httpx_client import OAuth2Client
+    from authlib.oauth2.rfc7523 import ClientSecretJWT
+
+    client = OAuth2Client(
+        'your-client-id', 'your-client-secret',
+        token_endpoint_auth_method='client_secret_jwt'
+    )
+    token_endpoint = 'https://example.com/oauth/token'
+    client.register_client_auth_method(ClientSecretJWT(token_endpoint))
+    client.fetch_token(token_endpoint)
+
+The ``ClientSecretJWT`` is provided by :ref:`specs/rfc7523`.
+
+
+Using ``private_key_jwt`` in HTTPX
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Here is how you could register and use ``private_key_jwt`` client
+authentication method for HTTPX::
+
+    from authlib.integrations.httpx_client import OAuth2Client
+    from authlib.oauth2.rfc7523 import PrivateKeyJWT
+
+    with open('your-private-key.pem', 'rb') as f:
+        private_key = f.read()
+
+    client = OAuth2Client(
+        'your-client-id', private_key,
+        token_endpoint_auth_method='private_key_jwt',
+    )
+    token_endpoint = 'https://example.com/oauth/token'
+    client.register_client_auth_method(PrivateKeyJWT(token_endpoint))
+    client.fetch_token(token_endpoint)
+
+The ``PrivateKeyJWT`` is provided by :ref:`specs/rfc7523`.
 
 
 Async OAuth 1.0
@@ -39,3 +94,63 @@ Async OAuth 1.0
 
 Async OAuth 2.0
 ---------------
+
+
+Async Service Account
+---------------------
+
+Example::
+
+    import json
+    from authlib.integrations.httpx_client import AsyncAssertionClient
+
+    with open('MyProject-1234.json') as f:
+        conf = json.load(f)
+
+    token_uri = conf['token_uri']
+    header = {'alg': 'RS256'}
+    key_id = conf.get('private_key_id')
+    if key_id:
+        header['kid'] = key_id
+
+    # Google puts scope in payload
+    claims = {'scope': scope}
+
+    session = AsyncAssertionClient(
+        token_endpoint=token_uri,
+        issuer=conf['client_email'],
+        audience=token_uri,
+        claims=claims,
+        subject=None,
+        key=conf['private_key'],
+        header=header,
+    )
+    resp = await session.get(...)
+    resp = await session.post(...)
+
+
+Close Client Hint
+-----------------
+
+Developers SHOULD **close** a HTTPX Session when the jobs are done. You
+can call ``.close()`` manually, or use a ``with`` context to automatically
+close the session::
+
+    client = OAuth2Client(client_id, client_secret)
+    client.get(url)
+    client.close()
+
+    with OAuth2Client(client_id, client_secret) as client:
+        client.get(url)
+
+For **async** OAuth Client, use ``await client.close()``::
+
+    client = AsyncOAuth2Client(client_id, client_secret)
+    await client.get(url)
+    await client.close()
+
+    async with AsyncOAuth2Client(client_id, client_secret) as client:
+        await client.get(url)
+
+Our :ref:`frameworks_clients` will close every session automatically, no need
+to worry.

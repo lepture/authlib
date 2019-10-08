@@ -70,10 +70,7 @@ when clients send these parameters.
 Using ``code_challenge`` in Client
 ----------------------------------
 
-Read the **Code Challenge** section in the framework integrations:
-
-1. :ref:`flask_client`.
-2. :ref:`django_client`.
+Read the **Code Challenge** section in the :ref:`frameworks_clients`.
 
 It is also possible to add ``code_challenge`` in ``OAuth2Session``,
 consider that we already have a ``session``::
@@ -84,7 +81,7 @@ consider that we already have a ``session``::
     >>> uri, state = session.authorization_url(authorize_url, code_challenge=code_challenge, code_challenge_method='S256')
     >>> # visit uri, get the response
     >>> authorization_response = 'https://example.com/auth?code=42..e9&state=d..t'
-    >>> token = session.fetch_access_token(access_token_url, authorization_response=authorization_response, code_verifier=code_verifier)
+    >>> token = session.fetch_token(token_endpoint, authorization_response=authorization_response, code_verifier=code_verifier)
 
 The authorization flow is the same as in :ref:`oauth_2_session`, what you need
 to do is:

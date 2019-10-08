@@ -157,7 +157,7 @@ Here is an example of how to register ``client_secret_jwt`` for ``OAuth2Session`
     )
     token_endpoint = 'https://example.com/oauth/token'
     session.register_client_auth_method(ClientSecretJWT(token_endpoint))
-    session.fetch_access_token(token_endpoint)
+    session.fetch_token(token_endpoint)
 
 How about ``private_key_jwt``? It is the same as ``client_secret_jwt``::
 
@@ -172,7 +172,7 @@ How about ``private_key_jwt``? It is the same as ``client_secret_jwt``::
     )
     token_endpoint = 'https://example.com/oauth/token'
     session.register_client_auth_method(PrivateKeyJWT(token_endpoint))
-    session.fetch_access_token(token_endpoint)
+    session.fetch_token(token_endpoint)
 
 API Reference
 -------------

@@ -13,9 +13,12 @@ OAuth 1 Session
 This documentation covers the common design of a Python OAuth 1.0 client.
 Authlib provides three implementations of OAuth 1.0 client:
 
-1. :class:`requests_client.OAuth1Session` implementation of :ref:`requests_client`
-2. :class:`httpx_client.OAuth1Client` implementation of :ref:`httpx_client`
-3. :class:`httpx_client.AsyncOAuth1Client` implementation of :ref:`httpx_client`
+1. :class:`requests_client.OAuth1Session` implementation of :ref:`requests_client`,
+   which is a replacement for **requests-oauthlib**.
+2. :class:`httpx_client.OAuth1Client` implementation of :ref:`httpx_client`, which is
+   powered by **HTTPX**.
+3. :class:`httpx_client.AsyncOAuth1Client` implementation of :ref:`httpx_client`,
+   which is an **async** OAuth 1.0 client.
 
 :class:`requests_client.OAuth1Session` and :class:`httpx_client.OAuth1Client` shares
 the same API. But :class:`httpx_client.AsyncOAuth1Client` is a little different,

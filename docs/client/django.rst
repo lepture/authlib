@@ -28,6 +28,11 @@ Create a registry with :class:`OAuth` object::
 The common use case for OAuth is authentication, e.g. let your users log in
 with Twitter, GitHub, Google etc.
 
+.. note::
+
+    Please read :ref:`frameworks_clients` at first. Authlib has a shared API
+    design among framework integrations, learn them from :ref:`frameworks_clients`.
+
 Configuration
 -------------
 
@@ -110,3 +115,7 @@ it is also possible to use signal to listen for token updating::
         item.refresh_token = token.get('refresh_token')
         item.expires_at = token['expires_at']
         item.save()
+
+
+Django OIDC Support
+-------------------

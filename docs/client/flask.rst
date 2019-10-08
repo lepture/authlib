@@ -4,14 +4,15 @@ Flask OAuth Client
 ==================
 
 .. meta::
-    :description: The built-in Flask integrations for OAuth 1.0 and
-        OAuth 2.0 clients, powered by Authlib.
+    :description: The built-in Flask integrations for OAuth 1.0, OAuth 2.0
+        and OpenID Connect clients, powered by Authlib.
 
 
 .. module:: authlib.integrations.flask_client
     :noindex:
 
-Looking for OAuth providers?
+This documentation covers OAuth 1.0, OAuth 2.0 and OpenID Connect Client
+support for Flask. Looking for OAuth providers?
 
 - :ref:`flask_oauth1_server`
 - :ref:`flask_oauth2_server`
@@ -34,11 +35,13 @@ You can also initialize it later with :meth:`~OAuth.init_app` method::
 The common use case for OAuth is authentication, e.g. let your users log in
 with Twitter, GitHub, Google etc.
 
+.. note::
+
+    Please read :ref:`frameworks_clients` at first. Authlib has a shared API
+    design among framework integrations, learn them from :ref:`frameworks_clients`.
+
 Configuration
 -------------
-
-Authlib has a shared API design among framework integrations. Get started with
-:ref:`frameworks_clients`.
 
 Authlib Flask OAuth registry can load the configuration from Flask ``app.config``
 automatically. Every key value pair in ``.register`` can be omit. They can be
@@ -195,3 +198,7 @@ Connect the ``token_update`` signal::
         item.refresh_token = token.get('refresh_token')
         item.expires_at = token['expires_at']
         item.save()
+
+
+Flask OIDC Support
+------------------

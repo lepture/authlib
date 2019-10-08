@@ -13,12 +13,14 @@ OAuth 2 Session
 This documentation covers the common design of a Python OAuth 2.0 client.
 Authlib provides three implementations of OAuth 2.0 client:
 
+1. :class:`requests_client.OAuth2Session` implementation of :ref:`requests_client`,
+   which is a replacement for **requests-oauthlib**.
+2. :class:`httpx_client.OAuth2Client` implementation of :ref:`httpx_client`, which is
+   powered by **HTTPX**.
+3. ``httpx_client.AsyncOAuth2Client`` implementation of :ref:`httpx_client`,
+   which is an **async** OAuth 2.0 client.
 
-1. :class:`requests_client.OAuth2Session` implementation of :ref:`requests_client`
-2. ``httpx_client.OAuth2Client`` implementation of :ref:`httpx_client`
-3. ``httpx_client.AsyncOAuth2Client`` implementation of :ref:`httpx_client`
-
-:class:`requests_client.OAuth2Session` and ``httpx_client.OAuth2Client`` shares
+:class:`requests_client.OAuth2Session` and :class:`httpx_client.OAuth2Client` shares
 the same API. But ``httpx_client.AsyncOAuth2Client`` is a little different,
 because it is asynchronous.
 
@@ -42,6 +44,10 @@ code grant type. Initialize the session for reuse::
     >>> # using requests implementation
     >>> from authlib.integrations.requests_client import OAuth2Session
     >>> client = OAuth2Session(client_id, client_secret, scope=scope)
+    >>>
+    >>> # using httpx implementation
+    >>> from authlib.integrations.httpx_client import OAuth2Client
+    >>> client = OAuth2Client(client_id, client_secret, scope=scope)
 
 You can assign a ``redirect_uri`` in case you want to specify the callback
 url.
@@ -52,8 +58,8 @@ Redirect to Authorization Endpoint
 Unlike OAuth 1, there is no request token. The first step is to jump to
 the remote authorization server::
 
-    >>> authorize_url = 'https://github.com/login/oauth/authorize'
-    >>> uri, state = client.create_authorization_url(authorize_url)
+    >>> authorization_endpoint = 'https://github.com/login/oauth/authorize'
+    >>> uri, state = client.create_authorization_url(authorization_endpoint)
     >>> print(uri)
     https://github.com/login/oauth/authorize?response_type=code&client_id=c..id&scope=user%3Aemail&state=d..t
 
@@ -64,20 +70,20 @@ Now head over to the generated authorization url, and grant the authorization.
 
 .. _fetch_oauth2_access_token:
 
-Fetch Access Token
-~~~~~~~~~~~~~~~~~~
+Fetch Token
+~~~~~~~~~~~
 
 The authorization server will redirect you back to your site with a code and
 state arguments::
 
     https://example.com/github?code=42..e9&state=d..t
 
-Use ``.fetch_access_token`` to obtain access token. This method will also verify
+Use ``.fetch_token`` to obtain access token. This method will also verify
 the state in case of CSRF attack::
 
     >>> authorization_response = 'https://example.com/github?code=42..e9&state=d..t'
-    >>> access_token_url = 'https://github.com/login/oauth/access_token'
-    >>> token = client.fetch_access_token(access_token_url, authorization_response=authorization_response)
+    >>> token_endpoint = 'https://github.com/login/oauth/access_token'
+    >>> token = client.fetch_token(token_endpoint, authorization_response=authorization_response)
     >>> print(token)
     {
         'access_token': 'e..ad',
@@ -91,8 +97,16 @@ In real project, this session can not be re-used since you are redirected to
 another website. You need to create another session yourself::
 
     >>> state = restore_previous_state()
+    >>>
+    >>> # using requests
+    >>> from authlib.integrations.requests_client import OAuth2Session
     >>> client = OAuth2Session(client_id, client_secret, state=state)
-    >>> client.fetch_access_token(access_token_url, authorization_response=authorization_response)
+    >>>
+    >>> # using httpx
+    >>> from authlib.integrations.httpx_client import OAuth2Client
+    >>> client = OAuth2Client(client_id, client_secret, state=state)
+    >>>
+    >>> client.fetch_token(token_endpoint, authorization_response=authorization_response)
 
 Authlib has a built-in Flask/Django integration. Learn from them.
 
@@ -102,7 +116,7 @@ OAuth2Session for Implicit
 OAuth2Session supports implicit grant type. It can fetch the access token with
 the ``response_type`` of ``token``::
 
-    >>> uri, state = client.create_authorization_url(authorize_url, response_type='token')
+    >>> uri, state = client.create_authorization_url(authorization_endpoint, response_type='token')
     >>> print(uri)
     https://some-service.com/oauth/authorize?response_type=token&client_id=be..4d&...
 
@@ -111,9 +125,9 @@ redirect back to your redirect_uri, the response url would be something like::
 
     https://example.com/cb#access_token=2..WpA&state=xyz&token_type=bearer&expires_in=3600
 
-Fetch access token from the fragment with :meth:`OAuth2Session.fetch_access_token`:
+Fetch access token from the fragment with ``.fetch_token`` method:
 
-    >>> token = client.fetch_access_token(authorization_response=authorization_response)
+    >>> token = client.fetch_token(authorization_response=authorization_response)
     >>> # if you don't specify access token endpoint, it will fetch from fragment.
     >>> print(token)
     {'access_token': '2..WpA', 'token_type': 'bearer', 'expires_in': 3600}
@@ -127,7 +141,7 @@ OAuth2Session for Password
 The ``password`` grant type is supported since Version 0.5. Use ``username``
 and ``password`` to fetch the access token::
 
-    >>> token = client.fetch_access_token(token_url, username='a-name', password='a-password')
+    >>> token = client.fetch_token(token_endpoint, username='a-name', password='a-password')
 
 OAuth2Session for Client Credentials
 ------------------------------------
@@ -136,16 +150,15 @@ The ``client_credentials`` grant type is supported since Version 0.5. If no
 ``code`` or no user info provided, it would be a ``client_credentials``
 request. But it is suggested that you specify a ``grant_type`` for it::
 
-    >>> token = client.fetch_access_token(token_url)
+    >>> token = client.fetch_token(token_endpoint)
     >>> # or with grant_type
-    >>> token = client.fetch_access_token(token_url, grant_type='client_credentials')
+    >>> token = client.fetch_token(token_endpoint, grant_type='client_credentials')
 
 Client Authentication
 ---------------------
 
 When fetching access token, the authorization server will require a client
-authentication, Authlib has provided a :class:`OAuth2ClientAuth` which
-supports 3 methods defined by RFC7591:
+authentication, Authlib provides **three default methods** defined by RFC7591:
 
 - client_secret_basic
 - client_secret_post
@@ -157,20 +170,20 @@ with ``token_endpoint_auth_method``::
     >>> client = OAuth2Session(token_endpoint_auth_method='client_secret_post')
 
 If the authorization server requires other means of authentication, you can
-construct an ``auth`` of requests, and pass it to ``fetch_access_token``::
+construct an ``auth`` for your own need, and pass it to ``fetch_token``::
 
     >>> auth = YourAuth(...)
-    >>> token = client.fetch_access_token(token_url, auth=auth, ...)
+    >>> token = client.fetch_token(token_endpoint, auth=auth, ...)
 
 It is also possible to extend the client authentication method with
-``.register_client_auth_method``. Besides the default
-three authentication methods, there are more provided by Authlib. e.g.
+``.register_client_auth_method``. Besides the default three authentication
+methods, there are more provided by Authlib. e.g.
 
 - client_secret_jwt
 - private_key_jwt
 
 These two methods are defined by RFC7523 and OpenID Connect. Find more in
-:ref:`jwt_client_authentication`.
+:ref:`jwt_oauth2session`.
 
 Access Protected Resources
 --------------------------
@@ -233,11 +246,13 @@ OAuth 2 OpenID Connect
 For services that support OpenID Connect, if a scope of ``openid`` is provided,
 the authorization server will return a value of ``id_token`` in response::
 
-    >>> from authlib.client import OAuth2Session
     >>> client_id = 'Your Google client ID'
     >>> client_secret = 'Your Google client secret'
     >>> scope = 'openid email profile'
+    >>> # using requests
     >>> client = OAuth2Session(client_id, client_secret, scope=scope)
+    >>> # using httpx
+    >>> client = OAuth2Client(client_id, client_secret, scope=scope)
 
 The remote server may require other parameters for OpenID Connect requests, for
 instance, it may require a ``nonce`` parameter, in thise case, you need to
@@ -248,10 +263,10 @@ generate it yourself, and pass it to ``create_authorization_url``::
     >>> nonce = generate_token()
     >>> client.create_authorization_url(url, redirect_uri='xxx', nonce=nonce, ...)
 
-At the last step of ``client.fetch_access_token``, the return value contains
+At the last step of ``client.fetch_token``, the return value contains
 a ``id_token``::
 
-    >>> resp = session.fetch_access_token(...)
+    >>> resp = session.fetch_token(...)
     >>> print(resp['id_token'])
 
 This ``id_token`` is a JWT text, it can not be used unless it is parsed.
@@ -287,7 +302,7 @@ service account JSON configure file::
     with open('MyProject-1234.json') as f:
         conf = json.load(f)
 
-    token_url = conf['token_uri']
+    token_uri = conf['token_uri']
     header = {'alg': 'RS256'}
     key_id = conf.get('private_key_id')
     if key_id:
@@ -297,10 +312,9 @@ service account JSON configure file::
     claims = {'scope': scope}
 
     session = AssertionSession(
-        grant_type=cls.JWT_BEARER_GRANT_TYPE,
-        token_url=token_url,
+        token_endpoint=token_uri,
         issuer=conf['client_email'],
-        audience=token_url,
+        audience=token_uri,
         claims=claims,
         subject=None,
         key=conf['private_key'],

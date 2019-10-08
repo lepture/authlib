@@ -379,8 +379,16 @@ instead, they can pass the ``request``::
 .. note:: Flask is different, you don't need to pass the ``request`` either.
 
 
+OAuth 2.0 Enhancement
+---------------------
+
+OAuth 1.0 is a protocol, while OAuth 2.0 is a framework. There are so many
+features in OAuth 2.0 than OAuth 1.0. This section is designed for
+OAuth 2.0 specially.
+
+
 Auto Update Token
------------------
+~~~~~~~~~~~~~~~~~
 
 In OAuth 1.0, access token never expires. But in OAuth 2.0, token MAY expire. If
 there is a ``refresh_token`` value, Authlib will auto update the access token if
@@ -409,7 +417,7 @@ also a **signal** way to update token. Checkout the frameworks documentation.
 
 
 OAuth 2.0 Code Challenge
-------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 Adding ``code_challenge`` provided by :ref:`specs/rfc7636` is simple. You
 register your remote app with a ``code_challenge_method`` in ``client_kwargs``::
@@ -426,8 +434,9 @@ register your remote app with a ``code_challenge_method`` in ``client_kwargs``::
 
 Note, the only supportted ``code_challenge_method`` is ``S256``.
 
+
 Compliance Fix for OAuth 2.0
-----------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 For non standard OAuth 2.0 service, you can pass a ``compliance_fix`` when
 ``.register``. For example, Slack has a compliance problem, we can construct
@@ -454,3 +463,22 @@ Then pass this ``slack_compliance_fix`` into ``.register`` parameters::
     )
 
 Find all the available compliance hooks at :ref:`compliance_fix_oauth2`.
+
+
+OpenID Connect & UserInfo
+-------------------------
+
+When log in with OAuth 1.0 and OAuth 2.0, "access_token" is not what developers
+want. Instead, what developers want is **user info**.
+
+There are two ways to fetch **userinfo** from 3rd party providers. If the
+provider supports OpenID Connect, we can get the user info from the returned
+``id_token``.
+
+
+Parsing ``id_token``
+~~~~~~~~~~~~~~~~~~~~
+
+
+Compliance Fix UserInfo
+~~~~~~~~~~~~~~~~~~~~~~~
