@@ -77,6 +77,7 @@ class AsyncAssertionClient(_AssertionClient, AsyncClient):
             method, url, auth=auth, **kwargs)
 
     async def _refresh_token(self, data):
-        resp = await self.post(self.token_endpoint, data=data, withhold_token=True)
+        resp = await self.request(
+            'POST', self.token_endpoint, data=data, withhold_token=True)
         self.token = resp.json()
         return self.token

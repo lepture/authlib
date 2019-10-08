@@ -69,6 +69,7 @@ class AssertionClient(object):
         return self._refresh_token(data)
 
     def _refresh_token(self, data):
-        resp = self.session.post(self.token_endpoint, data=data, withhold_token=True)
+        resp = self.session.request(
+            'POST', self.token_endpoint, data=data, withhold_token=True)
         self.token = resp.json()
         return self.token
