@@ -11,15 +11,20 @@ class AssertionClient(object):
     ASSERTION_METHODS = {}
     token_auth_class = None
 
-    def __init__(self, session, token_url, issuer, subject, audience,
-                 grant_type=None, claims=None, token_placement='header',
-                 scope=None, **kwargs):
+    def __init__(self, session, token_endpoint, issuer, subject,
+                 audience=None, grant_type=None, claims=None,
+                 token_placement='header', scope=None, **kwargs):
 
         self.session = session
-        self.token_url = token_url
+
+        if audience is None:
+            audience = token_endpoint
+
+        self.token_endpoint = token_endpoint
 
         if grant_type is None:
             grant_type = self.DEFAULT_GRANT_TYPE
+
         self.grant_type = grant_type
 
         # https://tools.ietf.org/html/rfc7521#section-5.1
@@ -64,7 +69,6 @@ class AssertionClient(object):
         return self._refresh_token(data)
 
     def _refresh_token(self, data):
-        resp = self.session.post(
-            self.token_url, data=data, withhold_token=True)
+        resp = self.session.post(self.token_endpoint, data=data, withhold_token=True)
         self.token = resp.json()
         return self.token

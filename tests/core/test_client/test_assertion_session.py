@@ -24,7 +24,7 @@ class AssertionSessionTest(TestCase):
             return resp
 
         sess = AssertionSession(
-            token_url='https://i.b/token',
+            'https://i.b/token',
             grant_type=AssertionSession.JWT_BEARER_GRANT_TYPE,
             issuer='foo',
             subject='foo',
@@ -38,7 +38,7 @@ class AssertionSessionTest(TestCase):
         # trigger more case
         now = int(time.time())
         sess = AssertionSession(
-            token_url='https://i.b/token',
+            'https://i.b/token',
             issuer='foo',
             subject=None,
             audience='foo',
@@ -56,7 +56,7 @@ class AssertionSessionTest(TestCase):
 
     def test_without_alg(self):
         sess = AssertionSession(
-            token_url='https://i.b/token',
+            'https://i.b/token',
             grant_type=AssertionSession.JWT_BEARER_GRANT_TYPE,
             issuer='foo',
             subject='foo',

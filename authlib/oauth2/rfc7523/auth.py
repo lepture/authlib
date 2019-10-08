@@ -5,6 +5,25 @@ from .client import ASSERTION_TYPE
 
 
 class ClientSecretJWT(object):
+    """Authentication method for OAuth 2.0 Client. This authentication
+    method is called ``client_secret_jwt``, which is using ``client_id``
+    and ``client_secret`` constructed with JWT to identify a client.
+
+    Here is an example of use ``client_secret_jwt`` with Requests Session::
+
+        from authlib.integrations.requests_client import OAuth2Session
+
+        token_endpoint = 'https://example.com/oauth/token'
+        session = OAuth2Session(
+            'your-client-id', 'your-client-secret',
+            token_endpoint_auth_method='client_secret_jwt'
+        )
+        session.register_client_auth_method(ClientSecretJWT(token_endpoint))
+        session.fetch_token(token_endpoint)
+
+    :param token_endpoint: A string URL of the token endpoint
+    :param claims: Extra JWT claims
+    """
     name = 'client_secret_jwt'
 
     def __init__(self, token_endpoint=None, claims=None):
@@ -33,6 +52,25 @@ class ClientSecretJWT(object):
 
 
 class PrivateKeyJWT(ClientSecretJWT):
+    """Authentication method for OAuth 2.0 Client. This authentication
+    method is called ``private_key_jwt``, which is using ``client_id``
+    and ``private_key`` constructed with JWT to identify a client.
+
+    Here is an example of use ``private_key_jwt`` with Requests Session::
+
+        from authlib.integrations.requests_client import OAuth2Session
+
+        token_endpoint = 'https://example.com/oauth/token'
+        session = OAuth2Session(
+            'your-client-id', 'your-client-private-key',
+            token_endpoint_auth_method='private_key_jwt'
+        )
+        session.register_client_auth_method(PrivateKeyJWT(token_endpoint))
+        session.fetch_token(token_endpoint)
+
+    :param token_endpoint: A string URL of the token endpoint
+    :param claims: Extra JWT claims
+    """
     name = 'private_key_jwt'
 
     def sign(self, auth, token_endpoint):
