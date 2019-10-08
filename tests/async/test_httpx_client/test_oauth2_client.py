@@ -244,7 +244,7 @@ class OAuth2ClientTest(TestCase):
         token = dict(access_token='a', token_type='bearer', expires_at=100)
         sess = OAuth2Client('foo', token=token)
 
-        self.assertTrue(sess.token.is_expired)
+        self.assertTrue(sess.token.is_expired())
 
     def test_auto_refresh_token(self):
 

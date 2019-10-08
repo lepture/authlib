@@ -93,7 +93,7 @@ class AsyncOAuth1Client(_OAuth1Client, AsyncClient):
     async def _fetch_token(self, url, **kwargs):
         resp = await self.post(url, **kwargs)
         text = await resp.read()
-        token = self.parse_response_token(resp.status, to_unicode(text))
+        token = self.parse_response_token(resp.status_code, to_unicode(text))
         self.token = token
         return token
 

@@ -1,0 +1,82 @@
+from httpx import Client, AsyncClient
+from authlib.oauth2.rfc7521 import AssertionClient as _AssertionClient
+from authlib.oauth2.rfc7523 import JWTBearerGrant
+from .utils import extract_client_kwargs
+from .oauth2_client import OAuth2Auth
+
+__all__ = ['AssertionClient', 'AsyncAssertionClient']
+
+
+class AssertionClient(_AssertionClient, Client):
+    """Constructs a new Assertion Framework for OAuth 2.0 Authorization Grants
+    per RFC7521_.
+
+    .. _RFC7521: https://tools.ietf.org/html/rfc7521
+    """
+    token_auth_class = OAuth2Auth
+    JWT_BEARER_GRANT_TYPE = JWTBearerGrant.GRANT_TYPE
+    ASSERTION_METHODS = {
+        JWT_BEARER_GRANT_TYPE: JWTBearerGrant.sign,
+    }
+    DEFAULT_GRANT_TYPE = JWT_BEARER_GRANT_TYPE
+
+    def __init__(self, token_endpoint, issuer, subject, audience=None, grant_type=None,
+                 claims=None, token_placement='header', scope=None, **kwargs):
+
+        client_kwargs = extract_client_kwargs(kwargs)
+        Client.__init__(self, **client_kwargs)
+
+        _AssertionClient.__init__(
+            self, session=self,
+            token_endpoint=token_endpoint, issuer=issuer, subject=subject,
+            audience=audience, grant_type=grant_type, claims=claims,
+            token_placement=token_placement, scope=scope, **kwargs
+        )
+
+    def request(self, method, url, data=None, headers=None,
+                withhold_token=False, auth=None, **kwargs):
+        """Send request with auto refresh token feature."""
+        if not withhold_token and auth is None:
+            if not self.token or self.token.is_expired():
+                self.refresh_token()
+
+            auth = self.token_auth
+        return super(AssertionClient, self).request(
+            method, url, headers=headers, data=data, auth=auth, **kwargs)
+
+
+class AsyncAssertionClient(_AssertionClient, AsyncClient):
+    token_auth_class = OAuth2Auth
+    JWT_BEARER_GRANT_TYPE = JWTBearerGrant.GRANT_TYPE
+    ASSERTION_METHODS = {
+        JWT_BEARER_GRANT_TYPE: JWTBearerGrant.sign,
+    }
+    DEFAULT_GRANT_TYPE = JWT_BEARER_GRANT_TYPE
+
+    def __init__(self, token_endpoint, issuer, subject, audience=None, grant_type=None,
+                 claims=None, token_placement='header', scope=None, **kwargs):
+
+        client_kwargs = extract_client_kwargs(kwargs)
+        AsyncClient.__init__(self, **client_kwargs)
+
+        _AssertionClient.__init__(
+            self, session=None,
+            token_endpoint=token_endpoint, issuer=issuer, subject=subject,
+            audience=audience, grant_type=grant_type, claims=claims,
+            token_placement=token_placement, scope=scope, **kwargs
+        )
+
+    async def request(self, method, url, withhold_token=False, auth=None, **kwargs):
+        """Send request with auto refresh token feature."""
+        if not withhold_token and auth is None:
+            if not self.token or self.token.is_expired():
+                await self.refresh_token()
+
+            auth = self.token_auth
+        return await super(AsyncAssertionClient, self).request(
+            method, url, auth=auth, **kwargs)
+
+    async def _refresh_token(self, data):
+        resp = await self.post(self.token_endpoint, data=data, withhold_token=True)
+        self.token = resp.json()
+        return self.token
