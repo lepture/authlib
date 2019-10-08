@@ -9,9 +9,21 @@ OAuth for HTTPX
         generation HTTP client for Python, including support for OpenID Connect
         and service account, powered by Authlib.
 
+.. module:: authlib.integrations.httpx_client
+    :noindex:
+
 HTTPX is a next-generation HTTP client for Python. Authlib enables OAuth 1.0
-and OAuth 2.0 for HTTPX with its :class:`OAuth1Session`, ``OAuth2Session``
-and ``AssertionSession``.
+and OAuth 2.0 for HTTPX with its
+
+* :class:`OAuth1Client`
+* :class:`OAuth2Client`
+* :class:`AssertionClient`
+
+There are also the async versions:
+
+* :class:`AsyncOAuth1Client`
+* :class:`AsyncOAuth2Client`
+* :class:`AsyncAssertionClient`
 
 .. note:: HTTPX is still in its "alpha" stage, use it with caution.
 
@@ -91,15 +103,48 @@ The ``PrivateKeyJWT`` is provided by :ref:`specs/rfc7523`.
 Async OAuth 1.0
 ---------------
 
+The async version of :class:`AsyncOAuth1Client` works the same as
+:ref:`oauth_1_session`, except that we need to add ``await`` when
+required::
+
+    # fetching request token
+    request_token = await client.fetch_request_token(request_token_url)
+
+    # fetching access token
+    access_token = await client.fetch_access_token(access_token_url)
+
+    # normal requests
+    await client.get(...)
+    await client.post(...)
+    await client.put(...)
+    await client.delete(...)
 
 Async OAuth 2.0
 ---------------
 
+The async version of :class:`AsyncOAuth2Client` works the same as
+:ref:`oauth_2_session`, except that we need to add ``await`` when
+required::
+
+    # fetching access token
+    token = await client.fetch_token(token_endpoint, ...)
+
+    # normal requests
+    await client.get(...)
+    await client.post(...)
+    await client.put(...)
+    await client.delete(...)
 
 Async Service Account
 ---------------------
 
-Example::
+:class:`AsyncAssertionClient` is the async version for Assertion Framework of
+OAuth 2.0 Authorization Grants. It is also know as service account. A configured
+``AsyncAssertionClient`` will handle token authorization automatically,
+which means you can just use it.
+
+Take Google Service Account as an example, with the information in your
+service account JSON configure file::
 
     import json
     from authlib.integrations.httpx_client import AsyncAssertionClient
@@ -116,17 +161,18 @@ Example::
     # Google puts scope in payload
     claims = {'scope': scope}
 
-    session = AsyncAssertionClient(
-        token_endpoint=token_uri,
-        issuer=conf['client_email'],
-        audience=token_uri,
-        claims=claims,
-        subject=None,
-        key=conf['private_key'],
-        header=header,
-    )
-    resp = await session.get(...)
-    resp = await session.post(...)
+    async def main():
+        client = AsyncAssertionClient(
+            token_endpoint=token_uri,
+            issuer=conf['client_email'],
+            audience=token_uri,
+            claims=claims,
+            subject=None,
+            key=conf['private_key'],
+            header=header,
+        )
+        resp = await client.get(...)
+        resp = await client.post(...)
 
 
 Close Client Hint

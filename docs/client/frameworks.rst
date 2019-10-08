@@ -469,7 +469,8 @@ OpenID Connect & UserInfo
 -------------------------
 
 When log in with OAuth 1.0 and OAuth 2.0, "access_token" is not what developers
-want. Instead, what developers want is **user info**.
+want. Instead, what developers want is **user info**, Authlib wrap it with
+:class:`~authlib.oidc.core.UserInfo`.
 
 There are two ways to fetch **userinfo** from 3rd party providers. If the
 provider supports OpenID Connect, we can get the user info from the returned
