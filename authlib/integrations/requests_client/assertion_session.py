@@ -23,20 +23,25 @@ class AssertionSession(AssertionClient, Session):
     }
     DEFAULT_GRANT_TYPE = JWT_BEARER_GRANT_TYPE
 
-    def __init__(self, token_url, issuer, subject, audience, grant_type=None,
+    def __init__(self, token_endpoint, issuer, subject, audience=None, grant_type=None,
                  claims=None, token_placement='header', scope=None, **kwargs):
         Session.__init__(self)
+
+        token_url = kwargs.pop('token_url', None)
+        if token_url:
+            # TODO: deprecate
+            token_endpoint = token_url
+
         AssertionClient.__init__(
             self, session=self,
-            token_url=token_url, issuer=issuer, subject=subject,
+            token_endpoint=token_endpoint, issuer=issuer, subject=subject,
             audience=audience, grant_type=grant_type, claims=claims,
             token_placement=token_placement, scope=scope, **kwargs
         )
 
-    def request(self, method, url, data=None, headers=None,
-                withhold_token=False, auth=None, **kwargs):
+    def request(self, method, url, withhold_token=False, auth=None, **kwargs):
         """Send request with auto refresh token feature."""
         if not withhold_token and auth is None:
             auth = self.token_auth
         return super(AssertionSession, self).request(
-            method, url, headers=headers, data=data, auth=auth, **kwargs)
+            method, url, auth=auth, **kwargs)

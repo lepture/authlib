@@ -54,12 +54,6 @@ class RemoteApp(_RemoteApp):
             }
         return params
 
-    def _set_session_data(self, request, key, value):
-        session[key] = value
-
-    def _get_session_data(self, request, key):
-        return session.pop(key, None)
-
     @property
     def token(self):
         ctx = _app_ctx_stack.top
@@ -84,6 +78,19 @@ class RemoteApp(_RemoteApp):
         return super(RemoteApp, self).request(
             method, url, token=token, **kwargs)
 
+    def save_authorize_state(self, redirect_uri=None, state=None, **kwargs):
+        """Save ``redirect_uri``, ``state`` and other temporary data into
+        session during authorize step.
+        """
+        # make it compatible with previous design
+        flask_req.session = session
+        self.save_authorize_data(
+            flask_req,
+            redirect_uri=redirect_uri,
+            state=state,
+            **kwargs
+        )
+
     def authorize_redirect(self, redirect_uri=None, **kwargs):
         """Create a HTTP Redirect for Authorization Endpoint.
 
@@ -91,16 +98,14 @@ class RemoteApp(_RemoteApp):
         :param kwargs: Extra parameters to include.
         :return: A HTTP redirect response.
         """
+        rv = self.create_authorization_url(redirect_uri, **kwargs)
+
         if self.request_token_url:
-            save_temporary_data = self._save_request_token
-        else:
-            save_temporary_data = self.save_temporary_data(None)
+            request_token = rv.pop('request_token', None)
+            self._save_request_token(request_token)
 
-        uri, state = self.create_authorization_url(
-            redirect_uri, save_temporary_data, **kwargs)
-
-        self.save_authorize_state(flask_req, redirect_uri, state)
-        return redirect(uri)
+        self.save_authorize_state(redirect_uri, **rv)
+        return redirect(rv['url'])
 
     def authorize_access_token(self, **kwargs):
         """Authorize access token."""
@@ -109,7 +114,8 @@ class RemoteApp(_RemoteApp):
         else:
             request_token = None
 
-        params = self.retrieve_temporary_data(flask_req, request_token)
+        flask_req.session = session
+        params = self.retrieve_access_token_params(flask_req, request_token)
         params.update(kwargs)
         token = self.fetch_access_token(**params)
         self.token = token

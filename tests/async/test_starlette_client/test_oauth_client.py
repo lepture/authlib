@@ -55,7 +55,7 @@ class StarletteOAuthTest(TestCase):
             self.assertEqual(resp.status_code, 307)
             url = resp.headers.get("Location")
             self.assertIn("oauth_token=foo", url)
-            self.assertIsNotNone(req.session.get("_dev_authlib_req_token_"))
+            self.assertIsNotNone(req.session.get("_dev_authlib_request_token_"))
 
         with mock.patch("requests.sessions.Session.send") as send:
             send.return_value = mock_send_value("oauth_token=a&oauth_token_secret=b")

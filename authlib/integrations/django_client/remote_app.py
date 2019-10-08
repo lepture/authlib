@@ -47,10 +47,9 @@ class RemoteApp(_RemoteApp):
         :param kwargs: Extra parameters to include.
         :return: A HTTP redirect response.
         """
-        uri, state = self.create_authorization_url(
-            redirect_uri, self.save_temporary_data(request), **kwargs)
-        self.save_authorize_state(request, redirect_uri, state)
-        return HttpResponseRedirect(uri)
+        rv = self.create_authorization_url(redirect_uri, **kwargs)
+        self.save_authorize_data(request, redirect_uri=redirect_uri, **rv)
+        return HttpResponseRedirect(rv['url'])
 
     def authorize_access_token(self, request, **kwargs):
         """Fetch access token in one step.
@@ -58,6 +57,6 @@ class RemoteApp(_RemoteApp):
         :param request: HTTP request instance from Django view.
         :return: A token dict.
         """
-        params = self.retrieve_temporary_data(request)
+        params = self.retrieve_access_token_params(request)
         params.update(kwargs)
         return self.fetch_access_token(**params)
