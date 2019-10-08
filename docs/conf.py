@@ -77,6 +77,12 @@ _sidebar_templates = [
 ]
 if '.dev' not in release:
     _sidebar_templates.remove('sponsors.html')
+else:
+    version_warning = (
+        'This is the development version, check the latest '
+        '<a href="/en/stable/">Stable Version</a>.'
+    )
+    html_theme_options['warning'] = version_warning
 
 html_sidebars = {
     '**': _sidebar_templates
