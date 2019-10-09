@@ -18,7 +18,7 @@ token. In this case, we need a place to store the authorization code. It can be
 kept in a database or a cache like redis. Here is a SQLAlchemy mixin for
 **AuthorizationCode**::
 
-    from authlib.flask.oauth2.sqla import OAuth2AuthorizationCodeMixin
+    from authlib.integrations.sqla_oauth2 import OAuth2AuthorizationCodeMixin
 
     class AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):
         id = db.Column(db.Integer, primary_key=True)

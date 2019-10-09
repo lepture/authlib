@@ -14,7 +14,7 @@ To create an authorization server, only **Client** and **Token** models are
 required::
 
     from your_project.models import Client, Token
-    from authlib.django.oauth1 import CacheAuthorizationServer
+    from authlib.integrations.django_oauth1 import CacheAuthorizationServer
 
     authorization_server = CacheAuthorizationServer(Client, Token)
 

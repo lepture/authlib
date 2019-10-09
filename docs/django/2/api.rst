@@ -4,7 +4,7 @@ API References of Django OAuth 2.0 Server
 This part of the documentation covers the interface of Django OAuth 2.0
 Server.
 
-.. module:: authlib.django.oauth2
+.. module:: authlib.integrations.django_oauth2
 
 .. autoclass:: AuthorizationServer
     :members:

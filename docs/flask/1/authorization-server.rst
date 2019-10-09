@@ -33,7 +33,7 @@ information:
 
 Authlib has provided a mixin for SQLAlchemy, define the client with this mixin::
 
-    from authlib.flask.oauth1.sqla import OAuth1ClientMixin
+    from authlib.integrations.sqla_oauth1 import OAuth1ClientMixin
 
     class Client(db.Model, OAuth1ClientMixin):
         id = db.Column(db.Integer, primary_key=True)
@@ -60,7 +60,7 @@ methods:
 A cache can be a memcache, redis or something else. If cache is not available,
 there is also a SQLAlchemy mixin::
 
-    from authlib.flask.oauth1.sqla import OAuth1TemporaryCredentialMixin
+    from authlib.integrations.sqla_oauth1 import OAuth1TemporaryCredentialMixin
 
     class TemporaryCredential(db.Model, OAuth1TemporaryCredentialMixin):
         id = db.Column(db.Integer, primary_key=True)
@@ -81,7 +81,7 @@ are supposed to be saved into a persist database rather than a cache.
 
 Here is a SQLAlchemy mixin for easy integration::
 
-    from authlib.flask.oauth1.sqla import OAuth1TokenCredentialMixin
+    from authlib.integrations.sqla_oauth1 import OAuth1TokenCredentialMixin
 
     class TokenCredential(db.Model, OAuth1TokenCredentialMixin):
         id = db.Column(db.Integer, primary_key=True)
@@ -106,7 +106,7 @@ built-in validation with cache.
 
 If cache is not available, there is also a SQLAlchemy mixin::
 
-    from authlib.flask.oauth1.sqla import OAuth1TokenCredentialMixin
+    from authlib.integrations.sqla_oauth1 import OAuth1TokenCredentialMixin
 
     class TimestampNonce(db.Model, OAuth1TokenCredentialMixin)
         id = db.Column(db.Integer, primary_key=True)
@@ -115,11 +115,12 @@ If cache is not available, there is also a SQLAlchemy mixin::
 Define A Server
 ---------------
 
-Authlib provides a ready to use :class:`~authlib.flask.oauth1.AuthorizationServer`
+Authlib provides a ready to use
+:class:`~authlib.integrations.flask_oauth1.AuthorizationServer`
 which has built-in tools to handle requests and responses::
 
-    from authlib.flask.oauth1 import AuthorizationServer
-    from authlib.flask.oauth1.sqla import create_query_client_func
+    from authlib.integrations.flask_oauth1 import AuthorizationServer
+    from authlib.integrations.sqla_oauth1 import create_query_client_func
 
     query_client = create_query_client_func(db.session, Client)
     server = AuthorizationServer(app, query_client=query_client)
@@ -171,11 +172,11 @@ There are missing hooks that should be ``register_hook`` to AuthorizationServer.
 There are helper functions for registering hooks. If cache is available, you
 can take the advantage with::
 
-    from authlib.flask.oauth1.cache import (
+    from authlib.integrations.flask_oauth1.cache import (
         register_nonce_hooks,
         register_temporary_credential_hooks
     )
-    from authlib.flask.oauth1.sqla import register_token_credential_hooks
+    from authlib.integrations.sqla_oauth1 import register_token_credential_hooks
 
     register_nonce_hooks(server, cache)
     register_temporary_credential_hooks(server, cache)
@@ -183,7 +184,7 @@ can take the advantage with::
 
 If cache is not available, here are the helpers for SQLAlchemy::
 
-    from authlib.flask.oauth1.sqla import (
+    from authlib.integrations.sqla_oauth1 import (
         register_nonce_hooks,
         register_temporary_credential_hooks,
         register_token_credential_hooks

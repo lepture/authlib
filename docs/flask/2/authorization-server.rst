@@ -37,7 +37,7 @@ information:
 
 Authlib has provided a mixin for SQLAlchemy, define the client with this mixin::
 
-    from authlib.flask.oauth2.sqla import OAuth2ClientMixin
+    from authlib.integrations.sqla_oauth2 import OAuth2ClientMixin
 
     class Client(Model, OAuth2ClientMixin):
         id = Column(Integer, primary_key=True)
@@ -69,7 +69,7 @@ valid duration, limited scopes and etc. It contains at least:
 
 With the SQLAlchemy mixin provided by Authlib::
 
-    from authlib.flask.oauth2.sqla import OAuth2TokenMixin
+    from authlib.integrations.sqla_oauth2 import OAuth2TokenMixin
 
     class Token(db.Model, OAuth2TokenMixin):
         id = db.Column(db.Integer, primary_key=True)
@@ -87,10 +87,11 @@ inside with :class:`~authlib.oauth2.rfc6749.TokenMixin` API reference.
 Server
 ------
 
-Authlib provides a ready to use :class:`~authlib.flask.oauth2.AuthorizationServer`
+Authlib provides a ready to use
+:class:`~authlib.integrations.flask_oauth2.AuthorizationServer`
 which has built-in tools to handle requests and responses::
 
-    from authlib.flask.oauth2 import AuthorizationServer
+    from authlib.integrations.flask_oauth2 import AuthorizationServer
 
     def query_client(client_id):
         return Client.query.filter_by(client_id=client_id).first()
@@ -112,7 +113,7 @@ which has built-in tools to handle requests and responses::
         db.session.commit()
 
     # or with the helper
-    from authlib.flask.oauth2.sqla import (
+    from authlib.integrations.sqla_oauth2 import (
         create_query_client_func,
         create_save_token_func
     )

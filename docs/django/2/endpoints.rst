@@ -33,7 +33,7 @@ with the following request:
 
 In Authlib Django OAuth 2.0 provider, we can simply add this feature::
 
-    from authlib.django.oauth2 import RevocationEndpoint
+    from authlib.integrations.django_oauth2 import RevocationEndpoint
     from django.views.decorators.http import require_http_methods
 
     # see Authorization Server chapter

@@ -7,7 +7,7 @@ authorized access token can access the given scope resources.
 A resource server can be a different server other than the authorization
 server. Here is the way to protect your users' resources in Django::
 
-    from authlib.django.oauth2 import ResourceProtector, BearerTokenValidator
+    from authlib.integrations.django_oauth2 import ResourceProtector, BearerTokenValidator
     from django.http import JsonResponse
 
     require_oauth = ResourceProtector()

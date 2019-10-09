@@ -12,9 +12,9 @@ class ResourceProtector(_ResourceProtector):
     """A protecting method for resource servers. Initialize a resource
     protector with the query_token method::
 
-        from authlib.flask.oauth1 import ResourceProtector, current_credential
-        from authlib.flask.oauth1.cache import create_exists_nonce_func
-        from authlib.flask.oauth1.sqla import (
+        from authlib.integrations.flask_oauth1 import ResourceProtector, current_credential
+        from authlib.integrations.flask_oauth1 import create_exists_nonce_func
+        from authlib.integrations.sqla_oauth1 import (
             create_query_client_func,
             create_query_token_func,
         )

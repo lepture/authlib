@@ -19,7 +19,7 @@ class AuthorizationServer(_AuthorizationServer):
     """Django implementation of :class:`authlib.oauth2.rfc6749.AuthorizationServer`.
     Initialize it with client model and token model::
 
-        from authlib.django.oauth2 import AuthorizationServer
+        from authlib.integrations.django_oauth2 import AuthorizationServer
         from your_project.models import OAuth2Client, OAuth2Token
 
         server = AuthorizationServer(OAuth2Client, OAuth2Token)

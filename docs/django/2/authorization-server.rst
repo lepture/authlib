@@ -130,10 +130,10 @@ the missing methods of :class:`~authlib.oauth2.rfc6749.TokenMixin`::
 Server
 ------
 
-Authlib provides a ready to use :class:`~authlib.django.oauth2.AuthorizationServer`
+Authlib provides a ready to use :class:`~authlib.integrations.django_oauth2.AuthorizationServer`
 which has built-in tools to handle requests and responses::
 
-    from authlib.django.oauth2 import AuthorizationServer
+    from authlib.integrations.django_oauth2 import AuthorizationServer
 
     server = AuthorizationServer(OAuth2Client, OAuth2Token)
 

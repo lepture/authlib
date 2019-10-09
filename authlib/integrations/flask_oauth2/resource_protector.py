@@ -20,7 +20,7 @@ class ResourceProtector(_ResourceProtector):
     """A protecting method for resource servers. Creating a ``require_oauth``
     decorator easily with ResourceProtector::
 
-        from authlib.flask.oauth2 import ResourceProtector
+        from authlib.integrations.flask_oauth2 import ResourceProtector
 
         require_oauth = ResourceProtector()
 

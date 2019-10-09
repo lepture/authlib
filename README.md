@@ -133,7 +133,7 @@ Lovely features that Authlib has built-in:
 </details>
 
 <details>
-  <summary>🎉 RFC7521: Assertion Framework for OAuth 2.0 Client Authentication and Authorization Grants</summary>
+<summary>🎉 RFC7521: Assertion Framework for OAuth 2.0 Client Authentication and Authorization Grants</summary>
 
 - [x] Common Client for Assertion Framework
 - [ ] Common Server for Assertion Framework
@@ -152,8 +152,10 @@ Lovely features that Authlib has built-in:
 </details>
 
 <details>
-  <summary>🎁 RFC7591: OAuth 2.0 Dynamic Client Registration Protocol</summary>
-  <p>RFC7591 implementation is in plan. However, Flask SQLAlchemy ClientMixin is designed based on it.</p>
+<summary>🎉 RFC7591: OAuth 2.0 Dynamic Client Registration Protocol</summary>
+
+- [x] Dynamic Client Registration Endpoint for Flask OAuth 2.0 Server
+- [x] Dynamic Client Registration Endpoint for Django OAuth 2.0 Server
 </details>
 
 <details>
@@ -162,7 +164,7 @@ Lovely features that Authlib has built-in:
 </details>
 
 <details>
-<summary>🎉  RFC7636: Proof Key for Code Exchange by OAuth Public Clients</summary>
+<summary>🎉 RFC7636: Proof Key for Code Exchange by OAuth Public Clients</summary>
 
 - [x] Flask/Django client integrations
 - [x] Server side grant implementation
@@ -224,8 +226,12 @@ Framework integrations with current specification implementations:
 - [x] Requests OAuth 1 Session
 - [x] Requests OAuth 2 Session
 - [x] Requests Assertion Session
+- [x] HTTPX (async) OAuth 1 Session
+- [x] HTTPX (async) OAuth 2 Session
+- [x] HTTPX (async) Assertion Session
 - [x] Flask OAuth 1/2 Client
 - [x] Django OAuth 1/2 Client
+- [ ] Starlette OAuth 1/2 Client
 - [x] Flask OAuth 1.0 Server
 - [x] Flask OAuth 2.0 Server
 - [x] Flask OpenID Connect 1.0

@@ -8,7 +8,7 @@ A resource server can be a different server other than the authorization
 server. Here is the way to protect your users' resources::
 
     from django.http import JsonResponse
-    from authlib.django.oauth1 import ResourceProtector
+    from authlib.integrations.django_oauth1 import ResourceProtector
     require_oauth = ResourceProtector(Client, TokenCredential)
 
     @require_oauth()

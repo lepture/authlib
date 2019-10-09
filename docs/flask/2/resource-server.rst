@@ -10,7 +10,7 @@ A resource server can be a different server other than the authorization
 server. Here is the way to protect your users' resources::
 
     from flask import jsonify
-    from authlib.flask.oauth2 import ResourceProtector, current_token
+    from authlib.integrations.flask_oauth2 import ResourceProtector, current_token
     from authlib.oauth2.rfc6750 import BearerTokenValidator
 
     class MyBearerTokenValidator(BearerTokenValidator):
@@ -29,7 +29,7 @@ server. Here is the way to protect your users' resources::
     require_oauth.register_token_validator(MyBearerTokenValidator())
 
     # you can also create BearerTokenValidator with shortcut
-    from authlib.flask.oauth2.sqla import create_bearer_token_validator
+    from authlib.integrations.sqla_oauth2 import create_bearer_token_validator
 
     BearerTokenValidator = create_bearer_token_validator(db.session, Token)
     require_oauth.register_token_validator(BearerTokenValidator())

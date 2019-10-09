@@ -4,7 +4,7 @@ RFC8628: OAuth 2.0 Device Authorization Grant
 =============================================
 
 .. meta::
-    :description: API references on RFC8628 DeviceAuthorizationEndpoint
+    :description: Python API references on RFC8628 DeviceAuthorizationEndpoint
         and DeviceCodeGrant with Authlib implementation.
 
 This section contains the generic implementation of RFC8628_.

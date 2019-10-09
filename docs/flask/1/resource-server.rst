@@ -8,9 +8,9 @@ A resource server can be a different server other than the authorization
 server. Here is the way to protect your users' resources::
 
     from flask import jsonify
-    from authlib.flask.oauth1 import ResourceProtector, current_credential
-    from authlib.flask.oauth1.cache import create_exists_nonce_func
-    from authlib.flask.oauth1.sqla import (
+    from authlib.integrations.flask_oauth1 import ResourceProtector, current_credential
+    from authlib.integrations.flask_oauth1 import create_exists_nonce_func
+    from authlib.integrations.sqla_oauth1 import (
         create_query_client_func,
         create_query_token_func
     )
@@ -18,7 +18,7 @@ server. Here is the way to protect your users' resources::
     query_client = create_query_client_func(db.session, Client)
     query_token = create_query_token_func(db.session, TokenCredential)
     exists_nonce = create_exists_nonce_func(cache)
-    # OR: authlib.flask.oauth1.sqla.create_exists_nonce_func
+    # OR: authlib.integrations.sqla_oauth1.create_exists_nonce_func
 
     require_oauth = ResourceProtector(
         app, query_client=query_client,

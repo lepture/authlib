@@ -7,4 +7,8 @@ from .errors import (
     UnapprovedSoftwareStatementError,
 )
 
-__all__ = ['ClientMetadataClaims', 'ClientRegistrationEndpoint']
+__all__ = [
+    'ClientMetadataClaims', 'ClientRegistrationEndpoint',
+    'InvalidRedirectURIError', 'InvalidClientMetadataError',
+    'InvalidSoftwareStatementError', 'UnapprovedSoftwareStatementError',
+]

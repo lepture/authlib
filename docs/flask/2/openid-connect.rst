@@ -88,19 +88,7 @@ Code Flow
 ---------
 
 OpenID Connect authorization code flow relies on the OAuth2 authorization code
-flow and extends it. Basically, all you have to do is to extend
-:class:`OIDCAuthorizationCodeMixin` instead of :class:`AuthorizationCodeMixin`
-in your ``AuthorizationCode`` class. This will add a ``nonce`` attribute
-and its getter to it which will be required in this new code flow::
-
-    from authlib.flask.oauth2.sqla import OIDCAuthorizationCodeMixin
-
-    class AuthorizationCode(db.Model, OIDCAuthorizationCodeMixin):
-        id = db.Column(db.Integer, primary_key=True)
-        user_id = db.Column(
-            db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')
-        )
-        user = db.relationship('User')
+flow and extends it.
 
 OpenID Connect Code flow is the same as Authorization Code flow, but with
 extended features. We can apply the :class:`OpenIDCode` extension to
@@ -158,7 +146,7 @@ Finally, you can register ``AuthorizationCodeGrant`` with ``OpenIDCode``
 extension::
 
     # register it to grant endpoint
-    server.register_grant(OpenIDCodeGrant, [OpenIDCode(require_nonce=True)])
+    server.register_grant(AuthorizationCodeGrant, [OpenIDCode(require_nonce=True)])
 
 The difference between OpenID Code flow and the standard code flow is that
 OpenID Connect request has a scope of "openid":

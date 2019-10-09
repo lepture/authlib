@@ -1,0 +1,26 @@
+.. _specs/rfc7591:
+
+RFC7591: OAuth 2.0 Dynamic Client Registration Protocol
+=======================================================
+
+.. meta::
+    :description: Python API references on RFC7591 OAuth 2.0 Dynamic Client
+        Registration Protocol with Authlib implementation.
+
+This section contains the generic implementation of RFC7591_.
+
+.. _RFC7591: https://tools.ietf.org/html/rfc7591
+
+.. module:: authlib.oauth2.rfc7591
+
+
+API Reference
+-------------
+
+.. autoclass:: ClientRegistrationEndpoint
+    :member-order: bysource
+    :members:
+
+.. autoclass:: ClientMetadataClaims
+    :member-order: bysource
+    :members:

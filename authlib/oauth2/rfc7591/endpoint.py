@@ -140,9 +140,15 @@ class ClientRegistrationEndpoint(object):
         return self.server.create_json_request(request)
 
     def generate_client_id(self):
+        """Generate ``client_id`` value. Developers MAY rewrite this method
+        to use their own way to generate ``client_id``.
+        """
         return generate_token(42)
 
     def generate_client_secret(self):
+        """Generate ``client_secret`` value. Developers MAY rewrite this method
+        to use their own way to generate ``client_secret``.
+        """
         return binascii.hexlify(os.urandom(24)).decode('ascii')
 
     def authenticate_user(self, request):
