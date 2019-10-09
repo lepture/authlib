@@ -2,6 +2,7 @@ from flask import redirect, session
 from flask import request as flask_req
 from flask.signals import Namespace
 from flask import _app_ctx_stack
+from .._client import UserInfoMixin
 from .._client import RemoteApp as _RemoteApp
 
 __all__ = ['token_update', 'RemoteApp']
@@ -11,7 +12,7 @@ _signal = Namespace()
 token_update = _signal.signal('token_update')
 
 
-class RemoteApp(_RemoteApp):
+class RemoteApp(_RemoteApp, UserInfoMixin):
     """Flask integrated RemoteApp of :class:`~authlib.client.OAuthClient`.
     It has built-in hooks for OAuthClient. The only required configuration
     is token model.
@@ -120,3 +121,7 @@ class RemoteApp(_RemoteApp):
         token = self.fetch_access_token(**params)
         self.token = token
         return token
+
+    def parse_id_token(self, token, claims_options=None):
+        flask_req.session = session
+        return self._parse_id_token(flask_req, token, claims_options)
