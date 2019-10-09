@@ -21,6 +21,17 @@ class OAuth2ClientTest(TestCase):
         }
         self.client_id = 'foo'
 
+    def test_invalid_token_type(self):
+        token = {
+            'token_type': 'invalid',
+            'access_token': 'a',
+            'refresh_token': 'b',
+            'expires_in': '3600',
+            'expires_at': int(time.time()) + 3600,
+        }
+        with OAuth2Client(self.client_id, token=token) as client:
+            self.assertRaises(OAuthError, client.get, 'https://i.b')
+
     def test_add_token_to_header(self):
         def assert_func(request):
             token = 'Bearer ' + self.token['access_token']
@@ -149,6 +160,8 @@ class OAuth2ClientTest(TestCase):
             token = client.fetch_token(url, code='v', method='GET')
             self.assertEqual(token, self.token)
 
+            token = client.fetch_token(url + '?q=a', code='v', method='GET')
+            self.assertEqual(token, self.token)
 
     def test_token_auth_method_client_secret_post(self):
         url = 'https://example.com/token'
@@ -267,6 +280,50 @@ class OAuth2ClientTest(TestCase):
             sess.get('https://i.b/user')
             self.assertTrue(update_token.called)
 
+        old_token = dict(
+            access_token='a',
+            token_type='bearer',
+            expires_at=100
+        )
+        with OAuth2Client(
+                'foo', token=old_token, token_endpoint='https://i.b/token',
+                update_token=update_token, dispatch=dispatch
+        ) as sess:
+            self.assertRaises(OAuthError, sess.get, 'https://i.b/user')
+
+    def test_auto_refresh_token2(self):
+
+        def _update_token(token, refresh_token=None, access_token=None):
+            self.assertEqual(access_token, 'a')
+            self.assertEqual(token, self.token)
+
+        update_token = mock.Mock(side_effect=_update_token)
+
+        old_token = dict(
+            access_token='a',
+            token_type='bearer',
+            expires_at=100
+        )
+
+        dispatch = MockDispatch(self.token)
+
+        with OAuth2Client(
+                'foo', token=old_token,
+                token_endpoint='https://i.b/token',
+                grant_type='client_credentials',
+                dispatch=dispatch
+        ) as sess:
+            sess.get('https://i.b/user')
+            self.assertFalse(update_token.called)
+
+        with OAuth2Client(
+                'foo', token=old_token, token_endpoint='https://i.b/token',
+                update_token=update_token, grant_type='client_credentials',
+                dispatch=dispatch
+        ) as sess:
+            sess.get('https://i.b/user')
+            self.assertTrue(update_token.called)
+
     def test_revoke_token(self):
         answer = {'status': 'ok'}
         dispatch = MockDispatch(answer)
@@ -296,3 +353,7 @@ class OAuth2ClientTest(TestCase):
                 token_type_hint='access_token'
             )
             self.assertTrue(revoke_token_request.called)
+
+    def test_request_without_token(self):
+        with OAuth2Client('a') as client:
+            self.assertRaises(OAuthError, client.get, 'https://i.b/token')

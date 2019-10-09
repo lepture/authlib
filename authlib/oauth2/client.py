@@ -191,6 +191,9 @@ class OAuth2Client(object):
         if headers is None:
             headers = DEFAULT_HEADERS
 
+        if url is None:
+            url = self.metadata.get('token_endpoint')
+
         return self._fetch_token(
             url, body=body, auth=auth, method=method,
             headers=headers, **session_kwargs

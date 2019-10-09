@@ -164,6 +164,9 @@ async def test_fetch_token_get():
         token = await client.fetch_token(url, code='v', method='GET')
         assert token == default_token
 
+        token = await client.fetch_token(url + '?q=a', code='v', method='GET')
+        assert token == default_token
+
 
 @pytest.mark.asyncio
 async def test_token_auth_method_client_secret_post():
@@ -287,6 +290,53 @@ async def test_auto_refresh_token():
         await sess.get('https://i.b/user')
         assert update_token.called is True
 
+    old_token = dict(
+        access_token='a',
+        token_type='bearer',
+        expires_at=100
+    )
+    async with AsyncOAuth2Client(
+            'foo', token=old_token, token_endpoint='https://i.b/token',
+            update_token=update_token, dispatch=dispatch
+    ) as sess:
+        with pytest.raises(OAuthError):
+            await sess.get('https://i.b/user')
+
+
+@pytest.mark.asyncio
+async def test_auto_refresh_token2():
+
+    def _update_token(token, refresh_token=None, access_token=None):
+        assert access_token == 'a'
+        assert token == default_token
+
+    update_token = mock.Mock(side_effect=_update_token)
+
+    old_token = dict(
+        access_token='a',
+        token_type='bearer',
+        expires_at=100
+    )
+
+    dispatch = MockDispatch(default_token)
+
+    async with AsyncOAuth2Client(
+            'foo', token=old_token,
+            token_endpoint='https://i.b/token',
+            grant_type='client_credentials',
+            dispatch=dispatch,
+    ) as client:
+        await client.get('https://i.b/user')
+        assert update_token.called is False
+
+    async with AsyncOAuth2Client(
+            'foo', token=old_token, token_endpoint='https://i.b/token',
+            update_token=update_token, grant_type='client_credentials',
+            dispatch=dispatch,
+    ) as client:
+        await client.get('https://i.b/user')
+        assert update_token.called is True
+
 
 @pytest.mark.asyncio
 async def test_revoke_token():
@@ -302,3 +352,10 @@ async def test_revoke_token():
             token_type_hint='access_token'
         )
         assert resp.json() == answer
+
+
+@pytest.mark.asyncio
+async def test_request_without_token():
+    async with AsyncOAuth2Client('a') as client:
+        with pytest.raises(OAuthError):
+            await client.get('https://i.b/token')

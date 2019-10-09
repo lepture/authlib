@@ -116,7 +116,7 @@ class OAuth2Client(_OAuth2Client, Client):
             self.refresh_token(url, refresh_token=refresh_token, **kwargs)
         elif self.metadata.get('grant_type') == 'client_credentials':
             access_token = self.token['access_token']
-            token = self.fetch_token(grant_type='client_credentials', **kwargs)
+            token = self.fetch_token(url, grant_type='client_credentials', **kwargs)
             if self.update_token:
                 self.update_token(token, access_token=access_token)
         else:
@@ -174,9 +174,11 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
             await self.refresh_token(url, refresh_token=refresh_token, **kwargs)
         elif self.metadata.get('grant_type') == 'client_credentials':
             access_token = self.token['access_token']
-            token = await self.fetch_token(grant_type='client_credentials', **kwargs)
-            if self.update_token:
+            token = await self.fetch_token(url, grant_type='client_credentials', **kwargs)
+            if inspect.iscoroutinefunction(self.update_token):
                 await self.update_token(token, access_token=access_token)
+            elif callable(self.update_token):
+                self.update_token(token, access_token=access_token)
         else:
             raise InvalidTokenError()
 

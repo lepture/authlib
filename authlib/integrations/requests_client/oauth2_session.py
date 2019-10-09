@@ -16,9 +16,6 @@ class OAuth2Auth(AuthBase, TokenAuth):
     """Sign requests for OAuth 2.0, currently only bearer token is supported."""
 
     def ensure_active_token(self, **kwargs):
-        if not self.token:
-            raise MissingTokenError()
-
         if self.client and self.token.is_expired():
             refresh_token = self.token.get('refresh_token')
             client = self.client
@@ -27,7 +24,8 @@ class OAuth2Auth(AuthBase, TokenAuth):
                 client.refresh_token(url, refresh_token=refresh_token, **kwargs)
             elif client.metadata.get('grant_type') == 'client_credentials':
                 access_token = self.token['access_token']
-                token = client.fetch_token(grant_type='client_credentials', **kwargs)
+                token = client.fetch_token(
+                    url, grant_type='client_credentials', **kwargs)
                 if client.update_token:
                     client.update_token(token, access_token=access_token)
             else:
@@ -108,9 +106,10 @@ class OAuth2Session(OAuth2Client, Session):
 
     def request(self, method, url, withhold_token=False, auth=None, **kwargs):
         """Send request with auto refresh token feature (if available)."""
-        if self.token and not withhold_token:
-            if auth is None:
-                auth = self.token_auth
+        if not withhold_token and auth is None:
+            if not self.token:
+                raise MissingTokenError()
+            auth = self.token_auth
         return super(OAuth2Session, self).request(
             method, url, auth=auth, **kwargs)
 

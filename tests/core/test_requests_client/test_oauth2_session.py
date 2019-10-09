@@ -26,6 +26,17 @@ class OAuth2SessionTest(TestCase):
         }
         self.client_id = 'foo'
 
+    def test_invalid_token_type(self):
+        token = {
+            'token_type': 'invalid',
+            'access_token': 'a',
+            'refresh_token': 'b',
+            'expires_in': '3600',
+            'expires_at': int(time.time()) + 3600,
+        }
+        with OAuth2Session(self.client_id, token=token) as sess:
+            self.assertRaises(OAuthError, sess.get, 'https://i.b')
+
     def test_add_token_to_header(self):
         token = 'Bearer ' + self.token['access_token']
 
@@ -97,10 +108,10 @@ class OAuth2SessionTest(TestCase):
         sess = OAuth2Session(self.client_id)
         response_url = 'https://i.b/callback#' + url_encode(self.token.items())
         self.assertEqual(sess.token_from_fragment(response_url), self.token)
-        token = sess.fetch_access_token(authorization_response=response_url)
+        token = sess.fetch_token(authorization_response=response_url)
         self.assertEqual(token, self.token)
 
-    def test_fetch_access_token_with_post(self):
+    def test_fetch_token_post(self):
         url = 'https://example.com/token'
 
         def fake_send(r, **kwargs):
@@ -114,7 +125,7 @@ class OAuth2SessionTest(TestCase):
         sess = OAuth2Session(client_id=self.client_id)
         sess.send = fake_send
         self.assertEqual(
-            sess.fetch_access_token(
+            sess.fetch_token(
                 url, authorization_response='https://i.b/?code=v'),
             self.token)
 
@@ -123,7 +134,7 @@ class OAuth2SessionTest(TestCase):
             token_endpoint_auth_method='none',
         )
         sess.send = fake_send
-        token = sess.fetch_access_token(url, code='v')
+        token = sess.fetch_token(url, code='v')
         self.assertEqual(token, self.token)
 
         error = {'error': 'invalid_request'}
@@ -131,7 +142,7 @@ class OAuth2SessionTest(TestCase):
         sess.send = mock_json_response(error)
         self.assertRaises(OAuthError, sess.fetch_access_token, url)
 
-    def test_fetch_access_token_with_get(self):
+    def test_fetch_token_get(self):
         url = 'https://example.com/token'
 
         def fake_send(r, **kwargs):
@@ -143,7 +154,7 @@ class OAuth2SessionTest(TestCase):
 
         sess = OAuth2Session(client_id=self.client_id)
         sess.send = fake_send
-        token = sess.fetch_access_token(
+        token = sess.fetch_token(
             url, authorization_response='https://i.b/?code=v', method='GET')
         self.assertEqual(token, self.token)
 
@@ -152,7 +163,10 @@ class OAuth2SessionTest(TestCase):
             token_endpoint_auth_method='none',
         )
         sess.send = fake_send
-        token = sess.fetch_access_token(url, code='v', method='GET')
+        token = sess.fetch_token(url, code='v', method='GET')
+        self.assertEqual(token, self.token)
+
+        token = sess.fetch_token(url + '?q=a', code='v', method='GET')
         self.assertEqual(token, self.token)
 
     def test_token_auth_method_client_secret_post(self):
@@ -173,7 +187,7 @@ class OAuth2SessionTest(TestCase):
             token_endpoint_auth_method='client_secret_post',
         )
         sess.send = fake_send
-        token = sess.fetch_access_token(url, code='v')
+        token = sess.fetch_token(url, code='v')
         self.assertEqual(token, self.token)
 
     def test_access_token_response_hook(self):
@@ -189,7 +203,7 @@ class OAuth2SessionTest(TestCase):
             access_token_response_hook
         )
         sess.send = mock_json_response(self.token)
-        self.assertEqual(sess.fetch_access_token(url), self.token)
+        self.assertEqual(sess.fetch_token(url), self.token)
 
     def test_password_grant_type(self):
         url = 'https://example.com/token'
@@ -204,7 +218,7 @@ class OAuth2SessionTest(TestCase):
 
         sess = OAuth2Session(client_id=self.client_id, scope='profile')
         sess.send = fake_send
-        token = sess.fetch_access_token(url, username='v', password='v')
+        token = sess.fetch_token(url, username='v', password='v')
         self.assertEqual(token, self.token)
 
     def test_client_credentials_type(self):
@@ -223,7 +237,7 @@ class OAuth2SessionTest(TestCase):
             scope='profile',
         )
         sess.send = fake_send
-        token = sess.fetch_access_token(url)
+        token = sess.fetch_token(url)
         self.assertEqual(token, self.token)
 
     def test_cleans_previous_token_before_fetching_new_one(self):
@@ -242,7 +256,7 @@ class OAuth2SessionTest(TestCase):
         with mock.patch('time.time', lambda: now):
             sess = OAuth2Session(client_id=self.client_id, token=self.token)
             sess.send = mock_json_response(new_token)
-            self.assertEqual(sess.fetch_access_token(url), new_token)
+            self.assertEqual(sess.fetch_token(url), new_token)
 
     def test_mis_match_state(self):
         sess = OAuth2Session('foo')
@@ -263,6 +277,14 @@ class OAuth2SessionTest(TestCase):
     def test_token_expired(self):
         token = dict(access_token='a', token_type='bearer', expires_at=100)
         sess = OAuth2Session('foo', token=token)
+        self.assertRaises(
+            OAuthError,
+            sess.get,
+            'https://i.b/token',
+        )
+
+    def test_missing_token(self):
+        sess = OAuth2Session('foo')
         self.assertRaises(
             OAuthError,
             sess.get,
@@ -310,6 +332,38 @@ class OAuth2SessionTest(TestCase):
         sess.get('https://i.b/user')
         self.assertTrue(update_token.called)
 
+    def test_auto_refresh_token2(self):
+
+        def _update_token(token, refresh_token=None, access_token=None):
+            self.assertEqual(access_token, 'a')
+            self.assertEqual(token, self.token)
+
+        update_token = mock.Mock(side_effect=_update_token)
+        old_token = dict(
+            access_token='a',
+            token_type='bearer',
+            expires_at=100
+        )
+
+        sess = OAuth2Session(
+            'foo', token=old_token,
+            token_endpoint='https://i.b/token',
+            grant_type='client_credentials',
+        )
+        sess.send = mock_json_response(self.token)
+        sess.get('https://i.b/user')
+        self.assertFalse(update_token.called)
+
+        sess = OAuth2Session(
+            'foo', token=old_token,
+            token_endpoint='https://i.b/token',
+            grant_type='client_credentials',
+            update_token=update_token,
+        )
+        sess.send = mock_json_response(self.token)
+        sess.get('https://i.b/user')
+        self.assertTrue(update_token.called)
+
     def test_revoke_token(self):
         sess = OAuth2Session('a')
         answer = {'status': 'ok'}
@@ -351,7 +405,7 @@ class OAuth2SessionTest(TestCase):
             return resp
 
         sess.send = fake_send
-        token = sess.fetch_access_token('https://i.b/token')
+        token = sess.fetch_token('https://i.b/token')
         self.assertEqual(token, self.token)
 
     def test_private_key_jwt(self):
@@ -370,7 +424,7 @@ class OAuth2SessionTest(TestCase):
             return resp
 
         sess.send = fake_send
-        token = sess.fetch_access_token('https://i.b/token')
+        token = sess.fetch_token('https://i.b/token')
         self.assertEqual(token, self.token)
 
     def test_use_client_token_auth(self):
