@@ -7,12 +7,13 @@ JWS, JWK, JWA, JWT are included.
 Useful Links
 ------------
 
-1. Homepage: https://authlib.org/.
-2. Documentation: https://docs.authlib.org/.
-3. Blog: https://blog.authlib.org/.
-4. More Repositories: https://github.com/authlib.
-5. Twitter: https://twitter.com/authlib.
-6. Donate: https://www.patreon.com/lepture.
+1. Homepage: https://authlib.org/
+2. Documentation: https://docs.authlib.org/
+3. Purchase Commercial License: https://authlib.org/plans
+4. Blog: https://blog.authlib.org/
+5. More Repositories: https://github.com/authlib
+6. Twitter: https://twitter.com/authlib
+7. Donate: https://www.patreon.com/lepture
 
 Specifications
 --------------
@@ -26,10 +27,14 @@ Specifications
 - RFC7517: JSON Web Key
 - RFC7518: JSON Web Algorithms
 - RFC7519: JSON Web Token
+- RFC7521: Assertion Framework for OAuth 2.0 Client Authentication and Authorization Grants
 - RFC7523: JSON Web Token (JWT) Profile for OAuth 2.0 Client Authentication and Authorization Grants
+- RFC7591: OAuth 2.0 Dynamic Client Registration Protocol
 - RFC7662: OAuth 2.0 Token Introspection
 - RFC8414: OAuth 2.0 Authorization Server Metadata
+- RFC8628: OAuth 2.0 Device Authorization Grant
 - OpenID Connect 1.0
+- OpenID Connect Discovery 1.0
 
 Implementations
 ---------------

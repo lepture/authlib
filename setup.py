@@ -40,6 +40,7 @@ setup(
     },
     project_urls={
         'Documentation': 'https://docs.authlib.org/',
+        'Commercial License': 'https://authlib.org/plans',
         'Bug Tracker': 'https://github.com/lepture/authlib/issues',
         'Source Code': 'https://github.com/lepture/authlib',
         'Blog': 'https://blog.authlib.org/',
