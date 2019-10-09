@@ -14,4 +14,6 @@ def is_secure_transport(uri):
     """Check if the uri is over ssl."""
     if os.getenv('AUTHLIB_INSECURE_TRANSPORT'):
         return True
-    return uri.lower().startswith('https://')
+
+    uri = uri.lower()
+    return uri.startswith(('https://', 'http://localhost:'))
