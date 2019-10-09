@@ -6,6 +6,30 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+
+Version 0.13
+------------
+
+**Release Date not Decided**
+
+This is the release that makes Authlib one more step close to v1.0. We
+did a huge refactor on our integrations. Authlib believes in monolithic
+design, it enables us to design the API to integrate with every framework
+in the best way. In this release, Authlib has re-organized the folder
+structure, moving every integration into the ``integrations` folder. It
+makes Authlib to add more integrations easily in the future.
+
+**RFC implementations** and updates in this release:
+
+- RFC7591: OAuth 2.0 Dynamic Client Registration Protocol
+- RFC8628: OAuth 2.0 Device Authorization Grant
+
+**New integrations** and changes in this release:
+
+- **HTTPX** OAuth 1.0 and OAuth 2.0 clients in both sync and async way
+- **Starlette** OAuth 1.0 and OAuth 2.0 client registry
+- The experimental ``authlib.client.aiohttp`` is removed in Authlib
+
 Version 0.12
 ------------
 

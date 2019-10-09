@@ -53,7 +53,6 @@ Follow the documentation below to find out more in detail.
     flask
     django
     starlette
-    aiohttp
     api
 
 .. _Requests: https://requests.readthedocs.io/en/master/
