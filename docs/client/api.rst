@@ -35,7 +35,7 @@ Requests OAuth Sessions
 .. autoclass:: AssertionSession
 
 
-httpx OAuth Clients
+HTTPX OAuth Clients
 -------------------
 
 .. module:: authlib.integrations.httpx_client

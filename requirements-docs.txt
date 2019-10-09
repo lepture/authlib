@@ -2,4 +2,6 @@
 Flask
 Django
 SQLAlchemy
+httpx
+starlette
 sphinx-typlog-theme==0.8.0
