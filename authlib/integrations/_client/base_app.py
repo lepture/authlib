@@ -240,3 +240,7 @@ class BaseApp(object):
             client.delete('posts/123')
         """
         return self.request('DELETE', url, **kwargs)
+
+    def _fetch_server_metadata(self, url):
+        resp = self.request('GET', url, withhold_token=True)
+        return resp.json()

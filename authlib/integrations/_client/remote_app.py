@@ -84,26 +84,26 @@ class RemoteApp(BaseApp):
         if not token_endpoint and not self.request_token_url:
             token_endpoint = metadata.get('token_endpoint')
 
-        with self._get_oauth_client(**metadata) as session:
+        with self._get_oauth_client(**metadata) as client:
             if self.request_token_url:
-                session.redirect_uri = redirect_uri
+                client.redirect_uri = redirect_uri
                 if request_token is None:
                     raise MissingRequestTokenError()
                 # merge request token with verifier
                 token = {}
                 token.update(request_token)
                 token.update(params)
-                session.token = token
+                client.token = token
                 kwargs = self.access_token_params or {}
-                token = session.fetch_access_token(token_endpoint, **kwargs)
-                session.redirect_uri = None
+                token = client.fetch_access_token(token_endpoint, **kwargs)
+                client.redirect_uri = None
             else:
-                session.redirect_uri = redirect_uri
+                client.redirect_uri = redirect_uri
                 kwargs = {}
                 if self.access_token_params:
                     kwargs.update(self.access_token_params)
                 kwargs.update(params)
-                token = session.fetch_token(token_endpoint, **kwargs)
+                token = client.fetch_token(token_endpoint, **kwargs)
             return token
 
     def request(self, method, url, token=None, **kwargs):
@@ -122,7 +122,3 @@ class RemoteApp(BaseApp):
 
             session.token = token
             return session.request(method, url, **kwargs)
-
-    def _fetch_server_metadata(self, url):
-        resp = self.get(url, withhold_token=True)
-        return resp.json()
