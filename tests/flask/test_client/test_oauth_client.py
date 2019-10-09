@@ -1,7 +1,7 @@
 import mock
 from unittest import TestCase
 from flask import Flask, session
-from authlib.integrations.flask_client import OAuth
+from authlib.integrations.flask_client import OAuth, OAuthError
 from tests.flask.cache import SimpleCache
 from tests.client_base import (
     mock_send_value,
@@ -238,6 +238,27 @@ class FlaskOAuthTest(TestCase):
                 token = client.authorize_access_token()
                 self.assertEqual(token['access_token'], 'a')
 
+    def test_openid_authorize(self):
+        app = Flask(__name__)
+        app.secret_key = '!'
+        oauth = OAuth(app)
+        client = oauth.register(
+            'dev',
+            client_id='dev',
+            api_base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+            authorize_url='https://i.b/authorize',
+            client_kwargs={'scope': 'openid profile'},
+        )
+
+        with app.test_request_context():
+            resp = client.authorize_redirect('https://b.com/bar')
+            self.assertEqual(resp.status_code, 302)
+            nonce = session['_dev_authlib_nonce_']
+            self.assertIsNotNone(nonce)
+            url = resp.headers.get('Location')
+            self.assertIn('nonce={}'.format(nonce), url)
+
     def test_oauth2_access_token_with_post(self):
         app = Flask(__name__)
         app.secret_key = '!'
@@ -333,7 +354,7 @@ class FlaskOAuthTest(TestCase):
                 resp = client.get('/api/user', token=expired_token)
                 self.assertEqual(resp.text, 'hi')
 
-    def test_request_withhold_token(self):
+    def test_request_without_token(self):
         app = Flask(__name__)
         app.secret_key = '!'
         oauth = OAuth(app)
@@ -358,3 +379,4 @@ class FlaskOAuthTest(TestCase):
             with mock.patch('requests.sessions.Session.send', fake_send):
                 resp = client.get('/api/user', withhold_token=True)
                 self.assertEqual(resp.text, 'hi')
+                self.assertRaises(OAuthError, client.get, 'https://i.b/api/user')

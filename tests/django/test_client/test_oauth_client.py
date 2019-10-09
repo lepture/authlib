@@ -2,7 +2,7 @@ from __future__ import unicode_literals, print_function
 
 import mock
 from django.test import override_settings
-from authlib.integrations.django_client import OAuth
+from authlib.integrations.django_client import OAuth, OAuthError
 from tests.django.base import TestCase
 from tests.client_base import (
     mock_send_value,
@@ -148,6 +148,27 @@ class DjangoOAuthTest(TestCase):
             token = client.authorize_access_token(request)
             self.assertEqual(token['access_token'], 'a')
 
+    def test_openid_authorize(self):
+        request = self.factory.get('/login')
+        request.session = self.factory.session
+
+        oauth = OAuth()
+        client = oauth.register(
+            'dev',
+            client_id='dev',
+            api_base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+            authorize_url='https://i.b/authorize',
+            client_kwargs={'scope': 'openid profile'},
+        )
+
+        resp = client.authorize_redirect(request, 'https://b.com/bar')
+        self.assertEqual(resp.status_code, 302)
+        nonce = request.session['_dev_authlib_nonce_']
+        self.assertIsNotNone(nonce)
+        url = resp.get('Location')
+        self.assertIn('nonce={}'.format(nonce), url)
+
     def test_oauth2_access_token_with_post(self):
         oauth = OAuth()
         client = oauth.register(
@@ -212,3 +233,27 @@ class DjangoOAuthTest(TestCase):
         with mock.patch('requests.sessions.Session.send', fake_send):
             request = self.factory.get('/login')
             client.get('/user', request=request)
+
+    def test_request_without_token(self):
+        oauth = OAuth()
+        client = oauth.register(
+            'dev',
+            client_id='dev',
+            client_secret='dev',
+            api_base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+            authorize_url='https://i.b/authorize'
+        )
+
+        def fake_send(sess, req, **kwargs):
+            auth = req.headers.get('Authorization')
+            self.assertIsNone(auth)
+            resp = mock.MagicMock()
+            resp.text = 'hi'
+            resp.status_code = 200
+            return resp
+
+        with mock.patch('requests.sessions.Session.send', fake_send):
+            resp = client.get('/api/user', withhold_token=True)
+            self.assertEqual(resp.text, 'hi')
+            self.assertRaises(OAuthError, client.get, 'https://i.b/api/user')
