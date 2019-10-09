@@ -170,6 +170,36 @@ class FlaskOAuthTest(TestCase):
         with app.test_request_context():
             self.assertEqual(client.token, None)
 
+    def test_oauth2_authorize_with_metadata(self):
+        app = Flask(__name__)
+        app.secret_key = '!'
+        oauth = OAuth(app)
+        client = oauth.register(
+            'dev',
+            client_id='dev',
+            client_secret='dev',
+            api_base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+        )
+        self.assertRaises(RuntimeError, client.create_authorization_url)
+
+        client = oauth.register(
+            'dev2',
+            client_id='dev',
+            client_secret='dev',
+            api_base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+            server_metadata_url='https://i.b/.well-known/openid-configuration'
+        )
+        with mock.patch('requests.sessions.Session.send') as send:
+            send.return_value = mock_send_value({
+                'authorization_endpoint': 'https://i.b/authorize'
+            })
+
+            with app.test_request_context():
+                resp = client.authorize_redirect('https://b.com/bar')
+                self.assertEqual(resp.status_code, 302)
+
     def test_oauth2_authorize_code_challenge(self):
         app = Flask(__name__)
         app.secret_key = '!'
