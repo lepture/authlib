@@ -1,4 +1,5 @@
 import base64
+import binascii
 from authlib.common.encoding import to_unicode
 
 
@@ -31,8 +32,9 @@ def extract_basic_authorization(headers):
 
     try:
         query = to_unicode(base64.b64decode(auth_token))
-    except TypeError:
+    except (binascii.Error, TypeError):
         return None, None
     if ':' in query:
-        return query.split(':', 1)
+        username, password = query.split(':', 1)
+        return username, password
     return query, None
