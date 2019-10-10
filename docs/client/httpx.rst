@@ -135,6 +135,30 @@ required::
     await client.put(...)
     await client.delete(...)
 
+
+Auto Update Token
+~~~~~~~~~~~~~~~~~
+
+The :class:`AsyncOAuth2Client` also supports ``update_token`` parameter,
+the ``update_token`` can either be sync and async. For instance::
+
+    async def update_token(token, refresh_token=None, access_token=None):
+        if refresh_token:
+            item = await OAuth2Token.find(name=name, refresh_token=refresh_token)
+        elif access_token:
+            item = await OAuth2Token.find(name=name, access_token=access_token)
+        else:
+            return
+
+        # update old token
+        item.access_token = token['access_token']
+        item.refresh_token = token.get('refresh_token')
+        item.expires_at = token['expires_at']
+        await item.save()
+
+Then pass this ``update_token`` into ``AsyncOAuth2Client``.
+
+
 Async Service Account
 ---------------------
 

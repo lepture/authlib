@@ -201,11 +201,56 @@ The above is not the real flow, just like what we did in
 :ref:`fetch_oauth2_access_token`, we need to create another session
 ourselves::
 
-    >>> token = restore_access_token_from_database()
+    >>> token = restore_previous_token_from_database()
     >>> # token is a dict which must contain ``access_token``, ``token_type``
     >>> client = OAuth2Session(client_id, client_secret, token=token)
     >>> account_url = 'https://api.github.com/user'
     >>> resp = client.get(account_url)
+
+
+Refresh & Auto Update Token
+---------------------------
+
+It is possible that your previously saved token is expired when accessing
+protected resources. In this case, we can refresh the token manually, or even
+better, Authlib will refresh the token automatically and update the token
+for us.
+
+To call :meth:`~requests_client.OAuth2Session.refresh_token` manually means
+we are going to exchange a new "access_token" with "refresh_token"::
+
+    >>> token = restore_previous_token_from_database()
+    >>> new_token = client.refresh_token(token_endpoint, refresh_token=token.refresh_token)
+
+Authlib can also refresh a new token automatically when requesting resources.
+This is done by passing a ``update_token`` function when constructing the client
+instance::
+
+    def update_token(token, refresh_token=None, access_token=None):
+        if refresh_token:
+            item = OAuth2Token.find(name=name, refresh_token=refresh_token)
+        elif access_token:
+            item = OAuth2Token.find(name=name, access_token=access_token)
+        else:
+            return
+
+        # update old token
+        item.access_token = token['access_token']
+        item.refresh_token = token.get('refresh_token')
+        item.expires_at = token['expires_at']
+        item.save()
+
+    client = OAuth2Session(client_id, client_secret, update_token=update_token)
+
+When sending a request to resources endpoint, if our previously saved token
+is expired, this ``client`` will invoke ``.refresh_token`` method itself and
+call this our defined ``update_token`` to save the new token::
+
+    token = restore_previous_token_from_database()
+    client.token = token
+
+    # if the token is expired, this GET request will update token
+    client.get('https://openidconnect.googleapis.com/v1/userinfo')
 
 .. _compliance_fix_oauth2:
 
