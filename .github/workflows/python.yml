@@ -58,7 +58,6 @@ jobs:
         coverage xml
     - name: Upload coverage to Codecov
       if: success()
-      uses: codecov/codecov-action@v1.0.2
       run: |
         bash <(curl -s https://codecov.io/bash) \
         -F unittests \
