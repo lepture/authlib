@@ -2,8 +2,6 @@ name: Python Tests
 
 on:
   push:
-    branches-ignore:
-    - 'wip-*'
     paths-ignore:
     - '*.*'
     - 'docs/**'
@@ -30,6 +28,15 @@ jobs:
           toxenv: py37,flask,django,async
 
     steps:
+    - name: Dump GitHub info
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+        JOB_CONTEXT: ${{ toJson(job) }}
+        RUNNER_CONTEXT: ${{ toJson(runner) }}
+      run: |
+        echo "$GITHUB_CONTEXT"
+        echo "$JOB_CONTEXT"
+        echo "$RUNNER_CONTEXT"
     - uses: actions/checkout@v1
     - name: Set up Python ${{ matrix.python.version }}
       uses: actions/setup-python@v1
@@ -50,7 +57,17 @@ jobs:
         coverage report
         coverage xml
     - name: Upload coverage to Codecov
+      if: success()
       uses: codecov/codecov-action@v1.0.2
-      with:
-        token: ${{secrets.CODECOV_TOKEN}}
-        file: ./coverage.xml
+      run: |
+        bash <(curl -s https://codecov.io/bash) \
+        -F unittests \
+        -t ${{ secrets.CODECOV_TOKEN }}
+      env:
+        CI: "true"
+        VCS_COMMIT_ID: ${{ github.sha }}
+        VCS_BRANCH_NAME: ${{ github.ref }}
+        VCS_SLUG: ${{ github.repository }}
+        CI_BUILD_ID: ${{ runner.id }}
+        CI_BUILD_URL: https://github.com/lepture/authlib/commit/${{ github.sha }}/checks
+        CI_JOB_ID: ${{ runner.id }}
