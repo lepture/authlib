@@ -28,7 +28,15 @@ jobs:
         python -m pip install --upgrade pip
         pip install tox
         pip install -r requirements-test.txt
-    - name: Test with tox
+    - name: Test with tox ${{ matrix.python.toxenv }}
       env:
         TOXENV: ${{ matrix.python.toxenv }}
       run: tox
+    - name: Report coverage
+      run: |
+        coverage combine
+        coverage report
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v1.0.2
+      with:
+        token: ${{secrets.CODECOV_TOKEN}}
