@@ -5,7 +5,7 @@ RFC7591: OAuth 2.0 Dynamic Client Registration Protocol
 
 .. meta::
     :description: Python API references on RFC7591 OAuth 2.0 Dynamic Client
-        Registration Protocol with Authlib implementation.
+        Registration Protocol in Python with Authlib implementation.
 
 This section contains the generic implementation of RFC7591_.
 

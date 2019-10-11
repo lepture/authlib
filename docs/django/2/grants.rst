@@ -12,6 +12,8 @@ Register Grants
 There are four grant types defined by RFC6749, you can also create your own
 extended grant. Register the supported grant types to the authorization server.
 
+.. _django_oauth2_code_grant:
+
 Authorization Code Grant
 ------------------------
 

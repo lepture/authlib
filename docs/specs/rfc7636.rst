@@ -24,8 +24,10 @@ Using RFC7636 in Authorization Code Grant
 
 In order to apply proof key for code exchange, you need to register the
 :class:`CodeChallenge` extension to ``AuthorizationCodeGrant``. But before
-that, we need to re-design our AuthorizationCode database. If you are using
-Flask, check the section :ref:`flask_oauth2_code_grant`.
+that, we need to re-design our AuthorizationCode database.
+
+* For Flask Developers, check the section :ref:`flask_oauth2_code_grant`.
+* For Django Developers, check the section :ref:`django_oauth2_code_grant`.
 
 The new database SHOULD contain two more columns:
 

@@ -99,7 +99,7 @@ algorithms:
 
 For example, a JWS with RS256 requires a private PEM key to sign the JWS::
 
-    jws = JsonWebSignature(algorithms=JWS_ALGORITHMS)
+    jws = JsonWebSignature(algorithms=['RS256'])
     protected = {'alg': 'RS256'}
     payload = b'example'
     with open('private.pem', 'rb') as f:

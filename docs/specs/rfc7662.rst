@@ -4,9 +4,12 @@ RFC7662: OAuth 2.0 Token Introspection
 ======================================
 
 .. meta::
-    :description: API references on RFC7009 Authlib implementation.
+    :description: API references on RFC7009, OAuth 2.0 Token Introspection,
+        in Python via Authlib implementation.
 
-This section contains the generic implementation of RFC7662_.
+This section contains the generic implementation of RFC7662_. OAuth 2.0 Token
+Introspection is usually designed to let resource servers to know content of
+a token.
 
 .. _RFC7662: https://tools.ietf.org/html/rfc7662
 
@@ -17,9 +20,11 @@ This section contains the generic implementation of RFC7662_.
 Register Introspection Endpoint
 -------------------------------
 
-With the help of ``register_endpoint`` offered by :ref:`flask_oauth2_server`,
-we can easily add introspection endpoint to the authorization server. But
-first, we need to implement the missing methods::
+Authlib is designed to be very extendable, with the method of
+``.register_endpoint`` on ``AuthorizationServer``, it is easy to add the
+introspection endpoint to the authorization server. It works on both
+:ref:`flask_oauth2_server` and :ref:`django_oauth2_server`. But first,
+we need to implement the missing methods::
 
     from authlib.oauth2.rfc7662 import IntrospectionEndpoint
 

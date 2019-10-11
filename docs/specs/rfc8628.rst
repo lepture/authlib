@@ -7,11 +7,28 @@ RFC8628: OAuth 2.0 Device Authorization Grant
     :description: Python API references on RFC8628 DeviceAuthorizationEndpoint
         and DeviceCodeGrant with Authlib implementation.
 
-This section contains the generic implementation of RFC8628_.
+.. module:: authlib.oauth2.rfc8628
+
+This section contains the generic implementation of RFC8628_. OAuth 2.0 Device
+Authorization Grant is usually used when devices have limited input capabilities
+or lack a suitable browser, such as smart TVs, media consoles, picture frames,
+printers and etc.
+
+To integrate with Authlib :ref:`flask_oauth2_server` or :ref:`django_oauth2_server`,
+developers MUST implement the missing methods of the two classes:
+
+1. :class:`DeviceAuthorizationEndpoint`
+2. :class:`DeviceCodeGrant`
+
+Device Authorization Endpoint
+-----------------------------
+
+
+Device Code Grant
+-----------------
+
 
 .. _RFC8628: https://tools.ietf.org/html/rfc8628
-
-.. module:: authlib.oauth2.rfc8628
 
 
 API Reference

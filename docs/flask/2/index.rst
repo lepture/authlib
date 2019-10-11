@@ -4,11 +4,11 @@ Flask OAuth 2.0 Server
 ======================
 
 .. meta::
-    :description: How to create an OAuth 2.0 server in Flask with Authlib.
+    :description: How to create an OAuth 2.0 provider in Flask with Authlib.
         And understand how OAuth 2.0 works. Authlib has all built-in grant
         types for you.
 
-This section is not a step by step guide on how to create an OAuth 2.0 server
+This section is not a step by step guide on how to create an OAuth 2.0 provider
 in Flask. Instead, we will learn how the Flask implementation works, and some
 technical details in an OAuth 2.0 provider.
 

@@ -38,6 +38,35 @@ via ``check=False``.
     You can also use JWT with JWE which is encrypted. But this feature is not
     mature, documentation is not provided yet.
 
+JWT Encode
+----------
+
+``jwt.encode`` is the method to create a JSON Web Token string. It encodes the
+payload with the given ``alg`` in header::
+
+    >>> from authlib.jose import jwt
+    >>> headers = {'alg': 'RS256'}
+    >>> payload = {'iss': 'Authlib', 'sub': '123', ...}
+    >>> key = read_file('private.pem')
+    >>> s = jwt.encode(header, payload, key)
+
+The available keys in headers are defined by :ref:`specs/rfc7515`.
+
+JWT Decode
+----------
+
+``jwt.decode`` is the method to translate a JSON Web Token string into the
+dict of the payload. Usually, we do not use ``authlib.jose.jwt`` directly,
+we want to limit the algorithms when using JWT, for instance, we want to
+use only ``RS256`` to decode a JWT string::
+
+    >>> from authlib.jose import JsonWebToken
+    >>> jwt = JsonWebToken(['RS256'])
+    >>> claims = jwt.decode(s, read_file('public.pem'))
+
+The returned value is a :class:`JWTClaims`, check the next section to
+validate claims value.
+
 JWT Payload Claims Validation
 -----------------------------
 

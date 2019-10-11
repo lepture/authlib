@@ -10,16 +10,25 @@ ones.
 Examples
 --------
 
-OAuth 2.0 Server
-~~~~~~~~~~~~~~~~
+OAuth Clients Demo
+~~~~~~~~~~~~~~~~~~
+
+An official example on how to use OAuth clients with Authlib in Flask,
+Django and Starlette.
+
+- Source Code: https://github.com/authlib/demo-oauth-client
+
+
+OAuth 2.0 Provider
+~~~~~~~~~~~~~~~~~~
 
 An official example on how to create an OAuth 2.0 server with Authlib.
 
 - Source Code: https://github.com/authlib/example-oauth2-server
 
 
-OpenID Connect 1.0 Server
-~~~~~~~~~~~~~~~~~~~~~~~~~
+OpenID Connect 1.0 Provider
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 An official example on how to create an OpenID Connect server with Authlib.
 
@@ -62,3 +71,4 @@ Articles
 - `Access Google Analytics API <https://blog.authlib.org/2018/access-google-analytics-api>`_:
   An example on how to use :class:`~authlib.integrations.requests_client.AssertionSession`.
 - `Using Authlib with gspread <https://blog.authlib.org/2018/authlib-for-gspread>`_.
+- `Multipart Upload to Google Cloud Storage <https://blog.authlib.org/2018/multipart-upload-to-google-cloud-storage>`_.
