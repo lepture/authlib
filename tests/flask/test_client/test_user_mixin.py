@@ -2,6 +2,7 @@ import mock
 from unittest import TestCase
 from flask import Flask, session
 from authlib.jose import jwk
+from authlib.jose.errors import InvalidClaimError
 from authlib.integrations.flask_client import OAuth
 from authlib.oidc.core.grants.util import generate_id_token
 from tests.util import read_file_path
@@ -78,8 +79,10 @@ class FlaskUserMixinTest(TestCase):
             self.assertEqual(user.sub, '123')
 
             claims_options = {'iss': {'value': 'https://i.c'}}
-            user = client.parse_id_token(token, claims_options=claims_options)
-            self.assertEqual(user.sub, '123')
+            self.assertRaises(
+                InvalidClaimError,
+                client.parse_id_token, token, claims_options
+            )
 
     def test_runtime_error_fetch_jwks_uri(self):
         key = jwk.dumps('secret', 'oct', kid='f')
