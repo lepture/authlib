@@ -5,7 +5,7 @@
 # Authlib
 
 <a href="https://lepture.com/donate"><img src="https://badgen.net/badge/donate/lepture/ff69b4?icon=patreon" /></a>
-<a href="https://travis-ci.com/lepture/authlib"><img src="https://badgen.net/travis/lepture/authlib" alt="Build Status"></a>
+<a href="https://github.com/lepture/authlib/actions"><img src="https://github.com/lepture/authlib/workflows/tests/badge.svg" alt="Build Status"></a>
 <a href="https://codecov.io/gh/lepture/authlib?branch=master"><img src="https://badgen.net/codecov/c/github/lepture/authlib" alt="Coverage Status"></a>
 <a href="https://pypi.org/project/Authlib/"><img src="https://badgen.net/pypi/v/authlib" alt="PyPI Version"></a>
 <a href="https://codeclimate.com/github/lepture/authlib/maintainability"><img src="https://badgen.net/codeclimate/maintainability/lepture/authlib?icon=codeclimate" alt="Maintainability" /></a>

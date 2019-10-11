@@ -1,0 +1,15 @@
+[coverage:run]
+branch = True
+omit =
+    authlib/client/*
+    authlib/flask/*
+    authlib/django/*
+    authlib/specs/*
+
+[coverage:report]
+exclude_lines =
+    pragma: no cover
+    def __repr__
+    raise NotImplementedError
+    raise DeprecationWarning
+    deprecate

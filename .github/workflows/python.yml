@@ -1,0 +1,64 @@
+name: tests
+
+on:
+  push:
+    branches-ignore:
+    - 'wip-*'
+    paths-ignore:
+    - 'docs/**'
+  pull_request:
+    branches-ignore:
+    - 'wip-*'
+    paths-ignore:
+    - 'docs/**'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 3
+      matrix:
+        python:
+        - version: 2.7
+          toxenv: py27,flask
+        - version: 3.6
+          toxenv: py36,flask,django,async
+        - version: 3.7
+          toxenv: py37,flask,django,async
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Set up Python ${{ matrix.python.version }}
+      uses: actions/setup-python@v1
+      with:
+        python-version: ${{ matrix.python.version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install tox
+        pip install -r requirements-test.txt
+
+    - name: Test with tox ${{ matrix.python.toxenv }}
+      env:
+        TOXENV: ${{ matrix.python.toxenv }}
+      run: tox
+
+    - name: Report coverage
+      run: |
+        coverage combine
+        coverage report
+        coverage xml
+
+    - name: Upload coverage to Codecov  
+      uses: codecov/codecov-action@v1.0.2
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: ./coverage.xml
+        flags: unittests
+        name: GitHub
+      env:
+        VCS_BRANCH_NAME: ${{ github.ref }}
+        VCS_SLUG: ${{ github.repository }}
+        CI_BUILD_URL: https://github.com/lepture/authlib/commit/${{ github.sha }}/checks
