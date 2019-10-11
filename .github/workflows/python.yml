@@ -1,4 +1,4 @@
-name: Python Tests
+name: tests
 
 on:
   push:
@@ -57,3 +57,8 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: ./coverage.xml
         flags: unittests
+        name: GitHub
+      env:
+        VCS_BRANCH_NAME: ${{ github.ref }}
+        VCS_SLUG: ${{ github.repository }}
+        CI_BUILD_URL: https://github.com/lepture/authlib/commit/${{ github.sha }}/checks
