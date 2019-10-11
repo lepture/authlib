@@ -29,7 +29,6 @@ async def auth_call(self, request, get_response, has_method=True):
     request.url = URL(url)
     request.headers.update(headers)
     if body:
-        body = body.encode('utf-8')
         if body != content:
             request.is_streaming = False
             request.content = body

@@ -149,8 +149,7 @@ class RemoteApp(BaseApp):
         if self.api_base_url and not url.startswith(('https://', 'http://')):
             url = urlparse.urljoin(self.api_base_url, url)
 
-        metadata = await self._load_server_metadata()
-        async with self._get_oauth_client(**metadata) as client:
+        async with self._get_oauth_client() as client:
             if kwargs.get('withhold_token'):
                 return await client.request(method, url, **kwargs)
 
@@ -234,3 +233,7 @@ class RemoteApp(BaseApp):
         jwk_set = await self._fetch_server_metadata(uri)
         self.server_metadata['jwks'] = jwk_set
         return jwk_set
+
+    async def _fetch_server_metadata(self, url):
+        resp = await self.request('GET', url, withhold_token=True)
+        return resp.json()
