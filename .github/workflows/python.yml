@@ -3,13 +3,11 @@ name: Python Tests
 on:
   push:
     paths-ignore:
-    - '*.*'
     - 'docs/**'
   pull_request:
     branches-ignore:
     - 'wip-*'
     paths-ignore:
-    - '*.*'
     - 'docs/**'
 
 jobs:
