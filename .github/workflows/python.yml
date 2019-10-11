@@ -20,7 +20,14 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install tox tox-gh-actions
+        pip install tox
         pip install -r requirements-test.txt
     - name: Test with tox
-      run: tox
+      run: tox -e py27,flask
+      if: matrix.python-version == 2.7
+    - name: Test with tox
+      run: tox -e py36,flask,django,async
+      if: matrix.python-version == 3.6
+    - name: Test with tox
+      run: tox -e py37,flask,django,async
+      if: matrix.python-version == 3.7
