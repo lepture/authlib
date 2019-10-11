@@ -160,4 +160,5 @@ The above example only shows one endpoint, which is **token endpoint**. There ar
 more endpoints in OAuth 2.0. For example:
 
 - :ref:`Token Revocation Endpoint <specs/rfc7009>`
+- :ref:`Dynamic Client Registration Endpoint <specs/rfc7591>`
 - :ref:`Token Introspection Endpoint <specs/rfc7662>`

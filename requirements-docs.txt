@@ -1,7 +1,8 @@
--r requirements.txt
+cryptography
 Flask
 Django
 SQLAlchemy
+requests
 httpx
 starlette
 sphinx-typlog-theme==0.8.0

@@ -36,15 +36,15 @@ You don't have to worry about monolithic, it doesn't cost your memory. If
 you don't import a module, it won't be loaded. We don't madly import everything
 into the root **__init__.py**.
 
-Flexible
---------
+Extendable
+----------
 
 Authlib is designed as flexible as possible. Since it is built from low-level
 specification implementation to high-level framework integrations, if a high
 level can't meet your needs, you can always create one for your purpose based on
 the low-level implementation.
 
-Most of the cases, you don't need to do so. Flexible has been taken
+Most of the cases, you don't need to do so. Extendable has been taken
 into account from the start of the project. Take OAuth 2.0 server as an
 example, instead of a pre-configured server, Authlib takes advantage of
 ``register``.
@@ -54,7 +54,7 @@ example, instead of a pre-configured server, Authlib takes advantage of
     authorization_server.register_grant(AuthorizationCodeGrant)
     authorization_server.register_endpoint(RevocationEndpoint)
 
-If you find anything not that flexible, you can ask help on StackOverflow or
+If you find anything not that extendable, you can ask help on StackOverflow or
 open an issue on GitHub.
 
 Specification
@@ -71,13 +71,15 @@ Currently, these specs are in the warehouse:
 - :badge:`done` :ref:`specs/rfc6750`
 - :badge:`done` :ref:`specs/rfc7009`
 - :badge:`done` :ref:`specs/rfc7515`
-- :badge-blue:`beta` :ref:`specs/rfc7516`
+- :badge:`done` :ref:`specs/rfc7516`
 - :badge:`done` :ref:`specs/rfc7517`
 - :badge:`done` :ref:`specs/rfc7518`
 - :badge:`done` :ref:`specs/rfc7519`
 - :badge:`done` :ref:`specs/rfc7523`
-- :badge-blue:`beta` :ref:`specs/rfc7636`
+- :badge-blue:`beta` :ref:`specs/rfc7591`
+- :badge:`done` :ref:`specs/rfc7636`
 - :badge:`done` :ref:`specs/rfc7662`
+- :badge-blue:`beta` :ref:`specs/rfc8628`
 - :badge:`done` :ref:`specs/oidc`
 
 Credits

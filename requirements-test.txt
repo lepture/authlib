@@ -1,4 +1,5 @@
--r requirements.txt
+cryptography
+requests
 mock
 pytest
 coverage

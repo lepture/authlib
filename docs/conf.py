@@ -12,7 +12,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 project = u'Authlib'
-copyright = u'2018, Hsiaoming Ltd'
+copyright = u'2017, Hsiaoming Ltd'
 author = u'Hsiaoming Yang'
 
 # The version info for the project you're documenting, acts as replacement for
@@ -79,8 +79,8 @@ if '.dev' not in release:
     _sidebar_templates.remove('sponsors.html')
 else:
     version_warning = (
-        'This is the development version, check the latest '
-        '<a href="/en/stable/">Stable Version</a>.'
+        'This is the documentation of the development version, check the '
+        '<a href="/en/stable/">Stable Version</a> documentation.'
     )
     html_theme_options['warning'] = version_warning
 
