@@ -28,15 +28,6 @@ jobs:
           toxenv: py37,flask,django,async
 
     steps:
-    - name: Dump GitHub info
-      env:
-        GITHUB_CONTEXT: ${{ toJson(github) }}
-        JOB_CONTEXT: ${{ toJson(job) }}
-        RUNNER_CONTEXT: ${{ toJson(runner) }}
-      run: |
-        echo "$GITHUB_CONTEXT"
-        echo "$JOB_CONTEXT"
-        echo "$RUNNER_CONTEXT"
     - uses: actions/checkout@v1
     - name: Set up Python ${{ matrix.python.version }}
       uses: actions/setup-python@v1
@@ -51,6 +42,19 @@ jobs:
       env:
         TOXENV: ${{ matrix.python.toxenv }}
       run: tox
+
+    - name: Dump GitHub info
+      env:
+        GITHUB_CONTEXT: ${{ toJson(github) }}
+        JOB_CONTEXT: ${{ toJson(job) }}
+        STEPS_CONTEXT: ${{ toJson(steps) }}
+        RUNNER_CONTEXT: ${{ toJson(runner) }}
+      run: |
+        echo "$GITHUB_CONTEXT"
+        echo "$JOB_CONTEXT"
+        echo "$STEPS_CONTEXT"
+        echo "$RUNNER_CONTEXT"
+
     - name: Report coverage
       run: |
         coverage combine
