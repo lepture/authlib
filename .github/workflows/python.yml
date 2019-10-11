@@ -33,44 +33,19 @@ jobs:
       uses: actions/setup-python@v1
       with:
         python-version: ${{ matrix.python.version }}
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
         pip install tox
         pip install -r requirements-test.txt
+
     - name: Test with tox ${{ matrix.python.toxenv }}
       env:
         TOXENV: ${{ matrix.python.toxenv }}
       run: tox
 
-    - name: Dump GitHub info
-      env:
-        GITHUB_CONTEXT: ${{ toJson(github) }}
-        JOB_CONTEXT: ${{ toJson(job) }}
-        STEPS_CONTEXT: ${{ toJson(steps) }}
-        RUNNER_CONTEXT: ${{ toJson(runner) }}
-      run: |
-        echo "$GITHUB_CONTEXT"
-        echo "$JOB_CONTEXT"
-        echo "$STEPS_CONTEXT"
-        echo "$RUNNER_CONTEXT"
-
     - name: Report coverage
       run: |
         coverage combine
         coverage report
-        coverage xml
-    - name: Upload coverage to Codecov
-      if: success()
-      run: |
-        bash <(curl -s https://codecov.io/bash) \
-        -F unittests \
-        -t ${{ secrets.CODECOV_TOKEN }}
-      env:
-        CI: "true"
-        VCS_COMMIT_ID: ${{ github.sha }}
-        VCS_BRANCH_NAME: ${{ github.ref }}
-        VCS_SLUG: ${{ github.repository }}
-        CI_BUILD_ID: ${{ runner.id }}
-        CI_BUILD_URL: https://github.com/lepture/authlib/commit/${{ github.sha }}/checks
-        CI_JOB_ID: ${{ runner.id }}
