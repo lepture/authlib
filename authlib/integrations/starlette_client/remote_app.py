@@ -1,4 +1,3 @@
-import inspect
 import logging
 
 from authlib.common.urls import urlparse
@@ -27,18 +26,11 @@ class RemoteApp(BaseApp):
         return self.server_metadata
 
     async def _send_token_update(self, token, refresh_token=None, access_token=None):
-        if inspect.iscoroutinefunction(self._update_token):
-            await self._update_token(
-                token,
-                refresh_token=refresh_token,
-                access_token=access_token,
-            )
-        elif callable(self._update_token):
-            self._update_token(
-                token,
-                refresh_token=refresh_token,
-                access_token=access_token,
-            )
+        await self._update_token(
+            token,
+            refresh_token=refresh_token,
+            access_token=access_token,
+        )
 
     def _generate_access_token_params(self, request):
         if self.request_token_url:
@@ -155,10 +147,7 @@ class RemoteApp(BaseApp):
 
             request = kwargs.pop('request', None)
             if token is None and request:
-                if inspect.iscoroutinefunction(self._fetch_token):
-                    token = await self._fetch_token(request)
-                elif callable(self._fetch_token):
-                    token = self._fetch_token(request)
+                await self._fetch_token(request)
 
             if token is None:
                 raise MissingTokenError()
@@ -174,10 +163,7 @@ class RemoteApp(BaseApp):
 
         compliance_fix = metadata.get('userinfo_compliance_fix')
         if compliance_fix:
-            if inspect.iscoroutinefunction(compliance_fix):
-                data = await compliance_fix(self, data)
-            else:
-                data = compliance_fix(self, data)
+            data = await compliance_fix(self, data)
         return UserInfo(data)
 
     async def parse_id_token(self, request, token, claims_options=None):
