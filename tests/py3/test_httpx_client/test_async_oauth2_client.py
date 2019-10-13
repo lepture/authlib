@@ -271,7 +271,7 @@ def test_token_status():
 @pytest.mark.asyncio
 async def test_auto_refresh_token():
 
-    def _update_token(token, refresh_token=None, access_token=None):
+    async def _update_token(token, refresh_token=None, access_token=None):
         assert refresh_token == 'b'
         assert token == default_token
 
@@ -306,7 +306,7 @@ async def test_auto_refresh_token():
 @pytest.mark.asyncio
 async def test_auto_refresh_token2():
 
-    def _update_token(token, refresh_token=None, access_token=None):
+    async def _update_token(token, refresh_token=None, access_token=None):
         assert access_token == 'a'
         assert token == default_token
 

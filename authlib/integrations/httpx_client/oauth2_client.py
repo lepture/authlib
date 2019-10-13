@@ -174,7 +174,8 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
         elif self.metadata.get('grant_type') == 'client_credentials':
             access_token = self.token['access_token']
             token = await self.fetch_token(url, grant_type='client_credentials', **kwargs)
-            await self.update_token(token, access_token=access_token)
+            if self.update_token:
+                await self.update_token(token, access_token=access_token)
         else:
             raise InvalidTokenError()
 
