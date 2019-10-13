@@ -1,7 +1,7 @@
 import time
 import pytest
 from authlib.integrations.httpx_client import AssertionClient
-from .utils import MockDispatch
+from tests.py3.utils import MockDispatch
 
 
 default_token = {

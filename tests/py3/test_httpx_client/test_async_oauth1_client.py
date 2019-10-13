@@ -5,7 +5,7 @@ from authlib.integrations.httpx_client import (
     SIGNATURE_TYPE_BODY,
     SIGNATURE_TYPE_QUERY,
 )
-from .utils import MockDispatch
+from tests.py3.utils import MockDispatch
 
 oauth_url = 'https://example.com/oauth'
 
