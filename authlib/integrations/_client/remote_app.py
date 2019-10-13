@@ -111,10 +111,10 @@ class RemoteApp(BaseApp):
             url = urlparse.urljoin(self.api_base_url, url)
 
         with self._get_oauth_client() as session:
+            request = kwargs.pop('request', None)
             if kwargs.get('withhold_token'):
                 return session.request(method, url, **kwargs)
 
-            request = kwargs.pop('request', None)
             if token is None and self._fetch_token and request:
                 token = self._fetch_token(request)
             if token is None:

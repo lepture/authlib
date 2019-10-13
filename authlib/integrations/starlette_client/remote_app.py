@@ -142,12 +142,13 @@ class RemoteApp(BaseApp):
             url = urlparse.urljoin(self.api_base_url, url)
 
         async with self._get_oauth_client() as client:
+            request = kwargs.pop('request', None)
+
             if kwargs.get('withhold_token'):
                 return await client.request(method, url, **kwargs)
 
-            request = kwargs.pop('request', None)
             if token is None and request:
-                await self._fetch_token(request)
+                token = await self._fetch_token(request)
 
             if token is None:
                 raise MissingTokenError()
