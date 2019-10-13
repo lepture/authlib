@@ -1,5 +1,4 @@
 import typing
-import inspect
 from httpx import Client, AsyncClient
 from httpx.middleware.base import BaseMiddleware
 from httpx.models import (
@@ -175,10 +174,8 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
         elif self.metadata.get('grant_type') == 'client_credentials':
             access_token = self.token['access_token']
             token = await self.fetch_token(url, grant_type='client_credentials', **kwargs)
-            if inspect.iscoroutinefunction(self.update_token):
+            if self.update_token:
                 await self.update_token(token, access_token=access_token)
-            elif callable(self.update_token):
-                self.update_token(token, access_token=access_token)
         else:
             raise InvalidTokenError()
 
@@ -214,10 +211,7 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
             self.token['refresh_token'] = refresh_token
 
         if self.update_token:
-            if inspect.iscoroutinefunction(self.update_token):
-                await self.update_token(self.token, refresh_token=refresh_token)
-            elif callable(self.update_token):
-                self.update_token(self.token, refresh_token=refresh_token)
+            await self.update_token(self.token, refresh_token=refresh_token)
 
         return self.token
 
