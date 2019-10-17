@@ -477,9 +477,65 @@ provider supports OpenID Connect, we can get the user info from the returned
 ``id_token``.
 
 
+userinfo_endpoint
+~~~~~~~~~~~~~~~~~
+
+Passing a ``userinfo_endpoint`` when ``.register`` remote client::
+
+    oauth.register(
+        'google',
+        client_id='...',
+        client_secret='...',
+        userinfo_endpoint='https://openidconnect.googleapis.com/v1/userinfo',
+    )
+
+And later, when the client has obtained access token, we can call::
+
+    def authorize(request):
+        token = oauth.google.authorize_access_token(request)
+        user = oauth.google.userinfo(request)
+        return '...'
+
+If the ``userinfo_endpoint`` is not compatible with
+:class:`~authlib.oidc.core.UserInfo`, we can use a ``userinfo_compliance_fix``::
+
+
+    def compliance_fix(client, user_data):
+        return {
+            'sub': user_data['id'],
+            'name': user_data['name']
+        }
+
+    oauth.register(
+        'example',
+        client_id='...',
+        client_secret='...',
+        userinfo_endpoint='https://example.com/userinfo',
+        userinfo_compliance_fix=compliance_fix,
+    )
+
 Parsing ``id_token``
 ~~~~~~~~~~~~~~~~~~~~
 
+For OpenID Connect provider, when ``.authorize_access_token``, the provider
+will include a ``id_token`` in the response. This ``id_token`` contains the
+``UserInfo`` we need so that we don't have to fetch userinfo endpoint again.
 
-Compliance Fix UserInfo
-~~~~~~~~~~~~~~~~~~~~~~~
+The ``id_token`` is a JWT, with Authlib :ref:`jwt_guide`, we can decode it
+easily. Frameworks integrations will handle it automatically if configurations
+are correct.
+
+A simple solution is to provide the OpenID Connect Discovery Endpoint::
+
+    oauth.register(
+        'google',
+        client_id='...',
+        client_secret='...',
+        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+        client_kwargs={'scope': 'openid email profile'},
+    )
+
+The discovery endpoint provides all the information we need so that you don't
+have to add ``authorize_url`` and ``access_token_url``.
+
+Check out our client example: https://github.com/authlib/demo-oauth-client

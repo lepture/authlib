@@ -117,5 +117,5 @@ it is also possible to use signal to listen for token updating::
         item.save()
 
 
-Django OIDC Support
--------------------
+Django OpenID Connect Client
+----------------------------

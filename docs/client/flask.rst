@@ -200,5 +200,5 @@ Connect the ``token_update`` signal::
         item.save()
 
 
-Flask OIDC Support
-------------------
+Flask OpenID Connect Client
+---------------------------

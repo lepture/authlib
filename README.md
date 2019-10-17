@@ -201,7 +201,7 @@ Lovely features that Authlib has built-in:
 </details>
 
 <details>
-<summary>🎉 OpenID Connect 1.0</summary>
+<summary>🎉 OpenID Connect Core 1.0</summary>
 
 - [x] OpenID Code Flow
 - [x] OpenID Implicit Flow
@@ -232,7 +232,7 @@ Framework integrations with current specification implementations:
 - [x] HTTPX sync/async Assertion Session
 - [x] Flask OAuth 1/2 Client
 - [x] Django OAuth 1/2 Client
-- [ ] Starlette OAuth 1/2 Client
+- [x] Starlette OAuth 1/2 Client
 - [x] Flask OAuth 1.0 Provider
 - [x] Flask OAuth 2.0 Provider
 - [x] Flask OpenID Connect 1.0
