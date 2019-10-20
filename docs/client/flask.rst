@@ -209,3 +209,22 @@ Connect the ``token_update`` signal::
 
 Flask OpenID Connect Client
 ---------------------------
+
+An OpenID Connect client is no different than a normal OAuth 2.0 client. When
+register with ``openid`` scope, the built-in Flask OAuth client will handle everything
+automatically::
+
+    oauth.register(
+        'google',
+        ...
+        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+        client_kwargs={'scope': 'openid profile email'}
+    )
+
+When we get the returned token::
+
+    token = oauth.google.authorize_access_token()
+
+We can get the user information from the ``id_token`` in the returned token::
+
+    userinfo = oauth.google.parse_id_token(token)

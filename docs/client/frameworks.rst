@@ -59,6 +59,7 @@ The first step is register a remote application on the ``OAuth`` registry via
         access_token_url='https://api.twitter.com/oauth/access_token',
         access_token_params=None,
         authorize_url='https://api.twitter.com/oauth/authenticate',
+        authorize_params=None,
         api_base_url='https://api.twitter.com/1.1/',
         client_kwargs=None,
     )
@@ -146,7 +147,9 @@ The first step is register a remote application on the ``OAuth`` registry via
         client_id='{{ your-github-client-id }}',
         client_secret='{{ your-github-client-secret }}',
         access_token_url='https://github.com/login/oauth/access_token',
+        access_token_params=None,
         authorize_url='https://github.com/login/oauth/authorize',
+        authorize_params=None,
         api_base_url='https://api.github.com/',
         client_kwargs={'scope': 'user:email'},
     )
@@ -432,7 +435,7 @@ register your remote app with a ``code_challenge_method`` in ``client_kwargs``::
         client_kwargs={'code_challenge_method': 'S256'},
     )
 
-Note, the only supportted ``code_challenge_method`` is ``S256``.
+Note, the only supported ``code_challenge_method`` is ``S256``.
 
 
 Compliance Fix for OAuth 2.0
@@ -539,3 +542,22 @@ The discovery endpoint provides all the information we need so that you don't
 have to add ``authorize_url`` and ``access_token_url``.
 
 Check out our client example: https://github.com/authlib/demo-oauth-client
+
+But if there is no discovery endpoint, developers MUST add all the missing information
+themselves::
+
+* authorize_url
+* access_token_url
+* jwks_uri
+
+This ``jwks_uri`` is the URL to get provider's public JWKs. Developers MAY also
+provide the value of ``jwks`` instead of ``jwks_uri``::
+
+    oauth.register(
+        'google',
+        client_id='...',
+        client_secret='...',
+        access_token_url='https://example.com/oauth/access_token',
+        authorize_url='https://example.com/oauth/authorize',
+        jwks={"keys": [...]}
+    )

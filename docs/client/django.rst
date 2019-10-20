@@ -127,3 +127,22 @@ it is also possible to use signal to listen for token updating::
 
 Django OpenID Connect Client
 ----------------------------
+
+An OpenID Connect client is no different than a normal OAuth 2.0 client. When
+register with ``openid`` scope, the built-in Django OAuth client will handle
+everything automatically::
+
+    oauth.register(
+        'google',
+        ...
+        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+        client_kwargs={'scope': 'openid profile email'}
+    )
+
+When we get the returned token::
+
+    token = oauth.google.authorize_access_token(request)
+
+We can get the user information from the ``id_token`` in the returned token::
+
+    userinfo = oauth.google.parse_id_token(request, token)
