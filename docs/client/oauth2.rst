@@ -10,6 +10,11 @@ OAuth 2 Session
 .. module:: authlib.integrations
     :noindex:
 
+.. versionchanged:: v0.13
+
+    All client related code have been moved into ``authlib.integrations``. For
+    earlier versions of Authlib, check out their own versions documentation.
+
 This documentation covers the common design of a Python OAuth 2.0 client.
 Authlib provides three implementations of OAuth 2.0 client:
 

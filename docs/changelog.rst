@@ -28,7 +28,8 @@ makes Authlib to add more integrations easily in the future.
 
 - **HTTPX** OAuth 1.0 and OAuth 2.0 clients in both sync and async way
 - **Starlette** OAuth 1.0 and OAuth 2.0 client registry
-- The experimental ``authlib.client.aiohttp`` is removed in Authlib
+- The experimental ``authlib.client.aiohttp`` has been removed
+
 
 Version 0.12
 ------------

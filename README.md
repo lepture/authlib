@@ -256,10 +256,13 @@ Tidelift will coordinate the fix and disclosure.
 
 ## License
 
-Authlib is licensed under BSD. Please see LICENSE for licensing details.
+Authlib offers two licenses:
 
-There is also a commercial license which you can purchase at
-[Authlib Plans](https://authlib.org/plans) page.
+1. BSD for open source projects
+2. Commercial license for closed source projects
+
+Companies can purchase a commercial license at
+[Authlib Plans](https://authlib.org/plans).
 
 ## Support
 
