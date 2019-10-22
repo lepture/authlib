@@ -85,7 +85,6 @@ class OAuth2Client(object):
         self.metadata = metadata
 
         self.compliance_hook = {
-            'access_token_request': set(),
             'access_token_response': set(),
             'refresh_token_request': set(),
             'refresh_token_response': set(),
@@ -211,9 +210,6 @@ class OAuth2Client(object):
 
         if headers is None:
             headers = DEFAULT_HEADERS
-
-        for hook in self.compliance_hook['access_token_request']:
-            url, headers, body = hook(url, headers, body)
 
         resp = self.session.request(
             method, url, data=body, headers=headers, auth=auth, **kwargs)

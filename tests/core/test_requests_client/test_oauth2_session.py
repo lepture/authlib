@@ -190,22 +190,6 @@ class OAuth2SessionTest(TestCase):
         token = sess.fetch_token(url, code='v')
         self.assertEqual(token, self.token)
 
-    def test_access_token_request_hook(self):
-        token_url = 'https://example.com/token'
-        def access_token_request_hook(url, headers, body):
-            self.assertEqual(url, token_url)
-            url = url + '?' + body
-            body = ''
-            return url, headers, body
-
-        sess = OAuth2Session(client_id=self.client_id, token=self.token)
-        sess.register_compliance_hook(
-            'access_token_request',
-            access_token_request_hook
-        )
-        sess.send = mock_json_response(self.token)
-        self.assertEqual(sess.fetch_token(token_url), self.token)
-
     def test_access_token_response_hook(self):
         url = 'https://example.com/token'
 
