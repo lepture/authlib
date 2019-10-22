@@ -60,7 +60,7 @@ class JsonWebKey(object):
         for key in keys:
             if key['kid'] == kid:
                 return self._load_obj(key)
-        raise ValueError('Invalid JWK format')
+        raise ValueError('Invalid JWK kid')
 
     def loads(self, obj, kid=None):
         """Loads JSON Web Key object into a public/private key.
