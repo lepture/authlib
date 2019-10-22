@@ -85,6 +85,7 @@ class OAuth2Client(object):
         self.metadata = metadata
 
         self.compliance_hook = {
+            'access_token_request': set(),
             'access_token_response': set(),
             'refresh_token_request': set(),
             'refresh_token_response': set(),
@@ -201,16 +202,21 @@ class OAuth2Client(object):
 
     def _fetch_token(self, url, body='', headers=None, auth=None,
                      method='POST', **kwargs):
-        if method.upper() == 'POST':
-            resp = self.session.post(
-                url, data=dict(url_decode(body)), headers=headers,
-                auth=auth, **kwargs)
-        else:
+        if method == 'GET':
             if '?' in url:
                 url = '&'.join([url, body])
             else:
                 url = '?'.join([url, body])
-            resp = self.session.get(url, headers=headers, auth=auth, **kwargs)
+            body = ''
+
+        if headers is None:
+            headers = DEFAULT_HEADERS
+
+        for hook in self.compliance_hook['access_token_request']:
+            url, headers, body = hook(url, headers, body)
+
+        resp = self.session.request(
+            method, url, data=body, headers=headers, auth=auth, **kwargs)
 
         for hook in self.compliance_hook['access_token_response']:
             resp = hook(resp)
