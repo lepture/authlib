@@ -1,7 +1,7 @@
 .. _django_oidc_server:
 
-Django OpenID Connect 1.0
-=========================
+Django OIDC Provider
+====================
 
 .. meta::
     :description: How to create an OpenID Connect server in Django with Authlib.
@@ -12,6 +12,8 @@ read the Authorization Server chapter at first.
 
 .. module:: authlib.oauth2.rfc6749.grants
     :noindex:
+
+Looking for OpenID Connect Client? Head over to :ref:`django_client`.
 
 Understand JWT
 --------------

@@ -1,10 +1,10 @@
 .. _flask_oidc_server:
 
-Flask OpenID Connect 1.0
-========================
+Flask OIDC Provider
+===================
 
 .. meta::
-    :description: How to create an OpenID Connect server in Flask with Authlib.
+    :description: How to create an OpenID Connect 1.0 server in Flask with Authlib.
         And understand how OpenID Connect works.
 
 OpenID Connect 1.0 is supported since version 0.6. The integrations are built
@@ -19,6 +19,8 @@ Since OpenID Connect is built on OAuth 2.0 frameworks, you need to read
 
     The Grant system has been redesigned from v0.12. This documentation ONLY
     works for Authlib >=v0.12.
+
+Looking for OpenID Connect Client? Head over to :ref:`flask_client`.
 
 Understand JWT
 --------------

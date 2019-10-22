@@ -1,5 +1,5 @@
-Client Guide
-============
+OAuth Client Guide
+==================
 
 This part of the documentation contains information on the client parts. Authlib
 provides many frameworks integrations, including:
