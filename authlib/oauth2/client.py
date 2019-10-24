@@ -97,7 +97,10 @@ class OAuth2Client(object):
 
         :param auth: an instance to sign the request
         """
-        self._auth_methods[auth.name] = auth
+        if isinstance(auth, tuple):
+            self._auth_methods[auth[0]] = auth[1]
+        else:
+            self._auth_methods[auth.name] = auth
 
     def client_auth(self, auth_method):
         auth_method = self._auth_methods.get(auth_method, auth_method)

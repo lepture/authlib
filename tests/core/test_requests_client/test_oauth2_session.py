@@ -4,7 +4,7 @@ import time
 from copy import deepcopy
 from unittest import TestCase
 
-from authlib.common.urls import url_encode
+from authlib.common.urls import url_encode, add_params_to_uri
 from authlib.integrations.requests_client import OAuth2Session, OAuthError
 from authlib.oauth2.rfc6749 import (
     MismatchingStateException,
@@ -419,6 +419,33 @@ class OAuth2SessionTest(TestCase):
         def fake_send(r, **kwargs):
             self.assertIn('client_assertion=', r.body)
             self.assertIn('client_assertion_type=', r.body)
+            resp = mock.MagicMock()
+            resp.json = lambda: self.token
+            return resp
+
+        sess.send = fake_send
+        token = sess.fetch_token('https://i.b/token')
+        self.assertEqual(token, self.token)
+
+    def test_custom_client_auth_method(self):
+        def auth_client(client, method, uri, headers, body):
+            uri = add_params_to_uri(uri, [
+                ('client_id', client.client_id),
+                ('client_secret', client.client_secret),
+            ])
+            uri = uri + '&' + body
+            body = ''
+            return uri, headers, body
+
+        sess = OAuth2Session(
+            'id', 'secret',
+            token_endpoint_auth_method='client_secret_uri'
+        )
+        sess.register_client_auth_method(('client_secret_uri', auth_client))
+
+        def fake_send(r, **kwargs):
+            self.assertIn('client_id=', r.url)
+            self.assertIn('client_secret=', r.url)
             resp = mock.MagicMock()
             resp.json = lambda: self.token
             return resp

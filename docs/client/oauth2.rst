@@ -159,6 +159,8 @@ request. But it is suggested that you specify a ``grant_type`` for it::
     >>> # or with grant_type
     >>> token = client.fetch_token(token_endpoint, grant_type='client_credentials')
 
+.. _oauth2_client_auth:
+
 Client Authentication
 ---------------------
 
@@ -189,6 +191,37 @@ methods, there are more provided by Authlib. e.g.
 
 These two methods are defined by RFC7523 and OpenID Connect. Find more in
 :ref:`jwt_oauth2session`.
+
+There are still cases that developers need to define a custom client
+authentication method. Take :gh:`issue#158` as an example, the provider
+requires us put ``client_id`` and ``client_secret`` on URL when sending
+POST request::
+
+    POST /oauth/token?grant_type=code&code=...&client_id=...&client_secret=...
+
+Let's call this weird authentication method ``client_secret_uri``, and this
+is how we can get our OAuth 2.0 client authenticated::
+
+    from authlib.common.urls import add_params_to_uri
+
+    def auth_client_secret_uri(client, method, uri, headers, body):
+        uri = add_params_to_uri(uri, [
+            ('client_id', client.client_id),
+            ('client_secret', client.client_secret),
+        ])
+        uri = uri + '&' + body
+        body = ''
+        return uri, headers, body
+
+    client = OAuth2Session(
+        'client_id', 'client_secret',
+        token_endpoint_auth_method='client_secret_uri',
+        ...
+    )
+    client.register_client_auth_method(('client_secret_uri', auth_client_secret_uri))
+
+With ``client_secret_uri`` registered, OAuth 2.0 client will authenticate with
+the signed URI.
 
 Access Protected Resources
 --------------------------

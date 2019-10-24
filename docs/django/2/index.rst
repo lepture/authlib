@@ -24,7 +24,7 @@ At the very beginning, we need to have some basic understanding of
 
         export AUTHLIB_INSECURE_TRANSPORT=true
 
-Looking for OAuth 2 client? Check out :ref:`django_client`.
+Looking for Django OAuth 2.0 client? Check out :ref:`django_client`.
 
 .. toctree::
     :maxdepth: 2

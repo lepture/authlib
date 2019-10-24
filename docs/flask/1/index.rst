@@ -22,7 +22,7 @@ At the very beginning, we need to have some basic understanding of
 
         export AUTHLIB_INSECURE_TRANSPORT=true
 
-Here are the details in documentation:
+Looking for Flask OAuth 1.0 client? Check out :ref:`flask_client`.
 
 .. toctree::
     :maxdepth: 2

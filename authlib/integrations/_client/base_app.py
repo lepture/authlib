@@ -62,7 +62,7 @@ class BaseApp(object):
             authorize_url=None, authorize_params=None,
             api_base_url=None, client_kwargs=None, server_metadata_url=None,
             oauth1_client_cls=None, oauth2_client_cls=None,
-            compliance_fix=None, **kwargs):
+            compliance_fix=None, client_auth_methods=None, **kwargs):
 
         self.name = name
         self.client_id = client_id
@@ -80,6 +80,7 @@ class BaseApp(object):
         self.oauth2_client_cls = oauth2_client_cls
 
         self.compliance_fix = compliance_fix
+        self.client_auth_methods = client_auth_methods
         self._fetch_token = fetch_token
         self._update_token = update_token
 
@@ -120,6 +121,9 @@ class BaseApp(object):
                 update_token=self._send_token_update,
                 **client_kwargs
             )
+            if self.client_auth_methods:
+                for f in self.client_auth_methods:
+                    session.register_client_auth_method(f)
             # only OAuth2 has compliance_fix currently
             if self.compliance_fix:
                 self.compliance_fix(session)

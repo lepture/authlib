@@ -1,7 +1,7 @@
 .. _frameworks_clients:
 
-Web Frameworks Clients
-======================
+Python OAuth Clients
+====================
 
 .. module:: authlib.integrations
     :noindex:
@@ -223,6 +223,30 @@ in your database, mark your user as logged in and etc.
     ``request_token_url`` and ``request_token_params`` while OAuth 2.0
     not. Also, the ``client_kwargs`` are different.
 
+
+Client Authentication Methods
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When fetching access token, the authorization server will require a client
+authentication, Authlib provides **three default methods** defined by RFC7591:
+
+- client_secret_basic
+- client_secret_post
+- none
+
+But if the remote provider does not support these three methods, we need to
+register our own authentication methods::
+
+    oauth.register(
+        'name',
+        ...
+        client_auth_methods=[
+            ClientSecretJWT(token_endpoint),
+            ('client_secret_uri', auth_client_secret_uri),
+        ]
+    )
+
+Read more in OAuth 2.0 :ref:`oauth2_client_auth`.
 
 Accessing OAuth Resources
 -------------------------
