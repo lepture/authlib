@@ -23,16 +23,17 @@ for you, some of them even don't require code writing:
 Sponsor the Project
 -------------------
 
-Authlib is accepting sponsorships via Patreon_. You are welcome to become a
-supporter, a backer or a company sponsor.
+Authlib is accepting sponsorships via `GitHub Sponsors`_ or Patreon_.
+You are welcome to become a backer or a sponsor.
 
+.. _`GitHub Sponsors`: https://github.com/sponsors/lepture
 .. _Patreon: https://www.patreon.com/lepture
 
 Commercial License
 ------------------
 
-Authlib is licensed under BSD, if this license doesn't fit your company,
-consider to purchase a commercial license.
+Authlib is licensed under BSD for open source projects. If you are
+running a business, consider to purchase a commercial license instead.
 
 Find more information on
 https://authlib.org/support#commercial-license

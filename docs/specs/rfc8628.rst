@@ -23,9 +23,86 @@ developers MUST implement the missing methods of the two classes:
 Device Authorization Endpoint
 -----------------------------
 
+There are two missing methods that developers MUST implement::
+
+    from authlib.oauth2.rfc8628 import DeviceAuthorizationEndpoint
+
+    class MyDeviceAuthorizationEndpoint(DeviceAuthorizationEndpoint):
+        def get_verification_uri(self):
+            return 'https://example.com/active'
+
+        def save_device_credential(self, client_id, scope, data):
+            credential = DeviceCredential(
+                client_id=client_id,
+                scope=scope,
+                **data
+            )
+            credential.save()
+
+    # register it to authorization server
+    authorization_server.register_endpoint(MyDeviceAuthorizationEndpoint)
+
+``get_verification_uri`` is the URL that end user will use their browser to
+log in and authenticate. See below "Verification Endpoint".
+
+After the registration, you can create a response with::
+
+    @app.route('/device_authorization', methods=['POST'])
+    def device_authorization():
+        return server.create_endpoint_response('device_authorization')
 
 Device Code Grant
 -----------------
+
+With Authlib ``.register_grant``, we can add ``DeviceCodeGrant`` easily.
+But first, we need to implement the missing methods::
+
+    from authlib.oauth2.rfc8628 import DeviceCodeGrant
+
+    class MyDeviceCodeGrant(DeviceCodeGrant):
+        def query_device_credential(self, device_code):
+            return DeviceCredential.query(device_code=device_code)
+
+        def query_user_grant(self, user_code):
+            data = redis.get('oauth_user_grant:' + user_code)
+            if not data:
+                return None
+
+            user_id, allowed = data.split()
+            user = User.query.get(user_id)
+            return user, bool(allowed)
+
+        def should_slow_down(self, credential, now):
+            # developers can return True/False based on credential and now
+            return False
+
+    authorization_server.register_grant(MyDeviceCodeGrant)
+
+Note ``query_user_grant``, we are fetching data from redis. This data
+was saved from verification endpoint when end user granted the request.
+
+Verification Endpoint
+---------------------
+
+Developers MUST implement this part by themselves. Here is a hint on
+how to implement this endpoint::
+
+    @app.route('/active', methods=['GET', 'POST'])
+    @login_required
+    def verify_device_code():
+        if request.method == 'GET':
+            return render_template('verification.html')
+
+        allowed = request.form['allowed']
+        user_code = request.form['user_code']
+        key = 'oauth_user_grant:' + user_code
+        redis.set(key, f'{current_user.id} {allowed}', 12)
+        return render_template('verification.html')
+
+Check points:
+
+1. route should match ``get_verification_uri`` in Device Authorization Endpoint
+2. user grant should match ``query_user_grant`` in Device Code Grant
 
 
 .. _RFC8628: https://tools.ietf.org/html/rfc8628

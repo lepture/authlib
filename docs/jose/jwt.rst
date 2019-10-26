@@ -56,16 +56,23 @@ JWT Decode
 ----------
 
 ``jwt.decode`` is the method to translate a JSON Web Token string into the
-dict of the payload. Usually, we do not use ``authlib.jose.jwt`` directly,
-we want to limit the algorithms when using JWT, for instance, we want to
-use only ``RS256`` to decode a JWT string::
+dict of the payload::
 
-    >>> from authlib.jose import JsonWebToken
-    >>> jwt = JsonWebToken(['RS256'])
+    >>> from authlib.jose import jwt
     >>> claims = jwt.decode(s, read_file('public.pem'))
 
 The returned value is a :class:`JWTClaims`, check the next section to
 validate claims value.
+
+JWT with limited Algorithms
+---------------------------
+
+There are cases that we don't want to support all the ``alg`` values,
+especially when decoding a token. In this case, we can pass a list
+of supported ``alg`` into :class:`JsonWebToken`::
+
+    >>> from authlib.jose import JsonWebToken
+    >>> jwt = JsonWebToken(['RS256'])
 
 JWT Payload Claims Validation
 -----------------------------
