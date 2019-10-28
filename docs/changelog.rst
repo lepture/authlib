@@ -30,6 +30,11 @@ makes Authlib to add more integrations easily in the future.
 - **Starlette** OAuth 1.0 and OAuth 2.0 client registry
 - The experimental ``authlib.client.aiohttp`` has been removed
 
+**Bug fixes** and enhancements in this release:
+
+- Add custom client authentication methods for framework integrations.
+- Refresh token automatically for client_credentials grant type.
+- Enhancements on JOSE, specifying ``alg`` values easily for JWS and JWE.
 
 Version 0.12
 ------------
