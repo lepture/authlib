@@ -2,6 +2,7 @@ import mock
 from unittest import TestCase
 from flask import Flask, session
 from authlib.integrations.flask_client import OAuth, OAuthError
+from authlib.integrations.flask_client import RemoteApp
 from tests.flask.cache import SimpleCache
 from tests.client_base import (
     mock_send_value,
@@ -76,6 +77,13 @@ class FlaskOAuthTest(TestCase):
 
         oauth.init_app(app, update_token=lambda o: o)
         self.assertIsNotNone(oauth.update_token)
+
+    def test_create_client(self):
+        app = Flask(__name__)
+        oauth = OAuth(app)
+        self.assertIsNone(oauth.create_client('dev'))
+        oauth.register('dev', client_id='dev')
+        self.assertIsNotNone(oauth.create_client('dev'))
 
     def test_register_oauth1_remote_app(self):
         app = Flask(__name__)
@@ -169,6 +177,27 @@ class FlaskOAuthTest(TestCase):
 
         with app.test_request_context():
             self.assertEqual(client.token, None)
+
+    def test_oauth2_authorize_via_custom_client(self):
+        class CustomRemoteApp(RemoteApp):
+            OAUTH_APP_CONFIG = {'authorize_url': 'https://i.b/custom'}
+
+        app = Flask(__name__)
+        app.secret_key = '!'
+        oauth = OAuth(app)
+        client = oauth.register(
+            'dev',
+            client_id='dev',
+            client_secret='dev',
+            api_base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+            client_cls=CustomRemoteApp,
+        )
+        with app.test_request_context():
+            resp = client.authorize_redirect('https://b.com/bar')
+            self.assertEqual(resp.status_code, 302)
+            url = resp.headers.get('Location')
+            self.assertTrue(url.startswith('https://i.b/custom?'))
 
     def test_oauth2_authorize_with_metadata(self):
         app = Flask(__name__)

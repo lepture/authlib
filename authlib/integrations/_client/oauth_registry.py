@@ -63,8 +63,16 @@ class OAuth(object):
         if name in self._clients:
             return self._clients[name]
 
-        overwrite, kwargs = self._registry[name]
-        client_cls = kwargs.pop('client_cls', self.remote_app_class)
+        if name not in self._registry:
+            return None
+
+        overwrite, config = self._registry[name]
+        client_cls = config.pop('client_cls', self.remote_app_class)
+        if client_cls.OAUTH_APP_CONFIG:
+            kwargs = client_cls.OAUTH_APP_CONFIG
+            kwargs.update(config)
+        else:
+            kwargs = config
         kwargs = self.generate_client_kwargs(name, overwrite, **kwargs)
         client = client_cls(name, **kwargs)
         self._clients[name] = client

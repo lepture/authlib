@@ -53,6 +53,7 @@ class BaseApp(object):
         )
     """
     DEFAULT_USER_AGENT = default_user_agent
+    OAUTH_APP_CONFIG = None
 
     def __init__(
             self, name=None, fetch_token=None, update_token=None,
