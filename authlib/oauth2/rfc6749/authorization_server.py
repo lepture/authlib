@@ -18,15 +18,20 @@ class AuthorizationServer(object):
         self.query_client = query_client
         self.save_token = save_token
         self.generate_token = generate_token
-        if query_client:
-            self.authenticate_client = ClientAuthentication(query_client)
-        else:
-            self.authenticate_client = None
 
         self.metadata = metadata
+        self._client_auth = None
         self._authorization_grants = []
         self._token_grants = []
         self._endpoints = {}
+
+    def authenticate_client(self, request, methods):
+        """Authenticate client via HTTP request information with the given
+        methods, such as ``client_secret_basic``, ``client_secret_post``.
+        """
+        if self._client_auth is None and self.query_client:
+            self._client_auth = ClientAuthentication(self.query_client)
+        return self._client_auth(request, methods)
 
     def register_client_auth_method(self, method, func):
         """Add more client auth method. The default methods are:
@@ -50,7 +55,10 @@ class AuthorizationServer(object):
             authorization_server.register_client_auth_method(
                 'custom', authenticate_client_via_custom)
         """
-        self.authenticate_client.register(method, func)
+        if self._client_auth is None and self.query_client:
+            self._client_auth = ClientAuthentication(self.query_client)
+
+        self._client_auth.register(method, func)
 
     def get_translations(self, request):
         """Return a translations instance used for i18n error messages.
