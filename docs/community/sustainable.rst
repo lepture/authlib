@@ -7,7 +7,7 @@ A sustainable project is trustworthy to use in your production environment.
 To make this project sustainable, we need your help. Here are several options:
 
 .. raw:: html
-   :file: ../_templates/tidelift.html
+   :file: ../_templates/sustainable.html
 
 Community Contribute
 --------------------

@@ -17,7 +17,7 @@ framework integrations.
 I'm intended to make it profitable so that it can be :ref:`sustainable`.
 
 .. raw:: html
-   :file: ../_templates/tidelift.html
+   :file: ../_templates/sustainable.html
 
 .. _monolithic:
 
