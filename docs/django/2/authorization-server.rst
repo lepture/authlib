@@ -166,8 +166,8 @@ The ``AuthorizationServer`` has provided built-in methods to handle these endpoi
     # use ``server.create_token_response`` to handle token endpoint
 
     @require_http_methods(["POST"])  # we only allow POST for token endpoint
-    def issue_token():
-        return server.create_token_response()
+    def issue_token(request):
+        return server.create_token_response(request)
 
 For now, you have set up the authorization server. But it won't work since it doesn't
 support any grant types yet. Let's head over to the next chapter.

@@ -187,5 +187,6 @@ class ClientRegistrationEndpoint(object):
                     ...
                 )
                 client.save()
+                return client
         """
         raise NotImplementedError()
