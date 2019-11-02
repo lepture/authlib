@@ -27,9 +27,8 @@ If the resource is not protected by a scope, use ``None``::
 
     # or with None
 
-    @app.route('/user')
     @require_oauth(None)
-    def user_profile():
+    def user_profile(request):
         user = request.oauth_token.user
         return JsonResponse(dict(sub=user.pk, username=user.username))
 
