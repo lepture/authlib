@@ -1,7 +1,7 @@
 .. _frameworks_clients:
 
-Python OAuth Clients
-====================
+Web OAuth Clients
+=================
 
 .. module:: authlib.integrations
     :noindex:

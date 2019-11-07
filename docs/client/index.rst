@@ -1,5 +1,9 @@
-OAuth Client Guide
-==================
+OAuth Clients
+=============
+
+.. meta::
+    :description: This documentation contains Python OAuth 1.0 and OAuth 2.0 Clients
+        implementation with requests, HTTPX, Flask, Django and Starlette.
 
 This part of the documentation contains information on the client parts. Authlib
 provides many frameworks integrations, including:
