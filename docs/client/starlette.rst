@@ -60,8 +60,8 @@ It will load **GOOGLE_CLIENT_ID** and **GOOGLE_CLIENT_SECRET** from the
 environment.
 
 
-Using Cache for Temporary Credential
-------------------------------------
+Enable Session for OAuth 1.0
+----------------------------
 
 With OAuth 1.0, we need to use a temporary credential to exchange for an access token.
 This temporary credential is created before redirecting to the provider (Twitter),
@@ -78,13 +78,29 @@ application, which requires the installation of the ``itsdangerous`` package::
     app.add_middleware(SessionMiddleware, secret_key="some-random-string")
 
 However, using the ``SessionMiddleware`` will store the temporary credential as
-a secure cookie which will expose your request token to the client. If you want
-to improve security on this part, it is possible by passing a cache instance::
+a secure cookie which will expose your request token to the client.
 
-    oauth = OAuth(cache=cache)
+Using FastAPI
+-------------
 
-In this way, Authlib will save the ``request_token`` into your cache. The ``cache``
-instance MUST have methods:
+Developers may not use starlette directly. For instance, FastAPI is based on
+starlette, we can also use the starlette integration in FastAPI.
 
-- ``.get(key)``
-- ``.set(key, value, expires=None)``
+Since Authlib starlette requires using ``request`` instance, we need to
+expose that ``request`` to Authlib. According to the documentation on
+`Using the Request Directly <https://fastapi.tiangolo.com/tutorial/using-request-directly/>`_::
+
+    from starlette.requests import Request
+
+    @app.get("/login")
+    def login_via_google(request: Request):
+        redirect_uri = 'https://example.com/auth'
+        return await oauth.google.authorize_redirect(request, redirect_uri)
+
+    @app.get("/auth")
+    def auth_via_google(request: Request):
+        token = await oauth.google.authorize_access_token(request)
+        user = await oauth.google.parse_id_token(request, token)
+        return dict(user)
+
+Find out our demo on how to use starlette integration at https://github.com/authlib/demo-oauth-client

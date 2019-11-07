@@ -27,8 +27,26 @@ There are three steps in :ref:`oauth_1_session` to obtain an access token:
 
 It shares a common API design with :ref:`httpx_client`.
 
-Read the common guide of :ref:`oauth_1_session` to understand the whole OAuth
-1.0 flow.
+OAuth1Session
+~~~~~~~~~~~~~
+
+The requests integration follows our common guide of :ref:`oauth_1_session`.
+Follow the documentation in :ref:`oauth_1_session` instead.
+
+OAuth1Auth
+~~~~~~~~~~
+
+It is also possible to use :class:`OAuth1Auth` directly with in requests.
+After we obtained access token from an OAuth 1.0 provider, we can construct
+an ``auth`` instance for requests::
+
+    auth = OAuth1Auth(
+        client_id='YOUR-CLIENT-ID',
+        client_secret='YOUR-CLIENT-SECRET',
+        token='oauth_token',
+        token_secret='oauth_token_secret',
+    )
+    requests.get(url, auth=auth)
 
 
 Requests OAuth 2.0
@@ -43,8 +61,8 @@ In :ref:`oauth_2_session`, there are many grant types, including:
 
 And also, Authlib supports non Standard OAuth 2.0 providers via Compliance Fix.
 
-Read the common guide of :ref:`oauth_2_session` to understand the whole OAuth
-2.0 flow.
+Follow the common guide of :ref:`oauth_2_session` to find out how to use
+requests integration of OAuth 2.0 flow.
 
 
 Using ``client_secret_jwt`` in Requests
@@ -88,6 +106,18 @@ here is the way with  ``.register_client_auth_method`` for Requests::
     session.fetch_token(token_endpoint)
 
 The ``PrivateKeyJWT`` is provided by :ref:`specs/rfc7523`.
+
+
+OAuth2Auth
+~~~~~~~~~~
+
+Already obtained access token? We can use :class:`OAuth2Auth` directly in
+requests. But this OAuth2Auth can not refresh token automatically for you.
+Here is how to use it in requests::
+
+    token = {'token_type': 'bearer', 'access_token': '....', ...}
+    auth = OAuth2Auth(token)
+    requests.get(url, auth=auth)
 
 
 Requests OpenID Connect
