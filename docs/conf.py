@@ -54,6 +54,8 @@ html_theme_options = {
     'twitter': 'authlib',
     'og_image': 'https://authlib.org/logo.png',
     'meta_html': (
+        '<style>.fund{display:inline-block}.fund a {border:0}'
+        '.ethical-fixedfooter{display:none}</style>'
         '<link rel="apple-touch-icon" sizes="180x180" '
         'href="https://authlib.org/apple-touch-icon.png">'
     )
@@ -125,6 +127,10 @@ texinfo_documents = [
         author, 'Authlib', 'One line description of project.',
         'Miscellaneous'
     ),
+]
+
+html_js_files = [
+    'sponsors.js',
 ]
 
 
