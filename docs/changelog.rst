@@ -35,6 +35,9 @@ makes Authlib to add more integrations easily in the future.
 - Add custom client authentication methods for framework integrations.
 - Refresh token automatically for client_credentials grant type.
 - Enhancements on JOSE, specifying ``alg`` values easily for JWS and JWE.
+- Add PKCE into requests OAuth2Session and HTTPX OAuth2Client.
+
+**Deprecate Changes**: find how to solve the deprecate issues via https://git.io/Jeclj
 
 Version 0.12
 ------------
