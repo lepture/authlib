@@ -313,7 +313,7 @@ how to design the database::
         token_type = String(length=40)
         access_token = String(length=200)
         refresh_token = String(length=200)
-        expires_at = Timestamp()
+        expires_at = PositiveIntegerField()
         user = ForeignKey(User)
 
         def to_token(self):
