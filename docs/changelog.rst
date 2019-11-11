@@ -10,7 +10,7 @@ Here you can see the full list of changes between each Authlib release.
 Version 0.13
 ------------
 
-**Release Date not Decided**
+**Released on Nov 11, 2019. Go Async**
 
 This is the release that makes Authlib one more step close to v1.0. We
 did a huge refactor on our integrations. Authlib believes in monolithic
