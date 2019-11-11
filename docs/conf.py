@@ -77,9 +77,7 @@ _sidebar_templates = [
     'searchbox.html',
     'tidelift.html',
 ]
-if '.dev' not in release:
-    _sidebar_templates.remove('sponsors.html')
-else:
+if '.dev' in release:
     version_warning = (
         'This is the documentation of the development version, check the '
         '<a href="/en/stable/">Stable Version</a> documentation.'
