@@ -29,7 +29,7 @@ class OAuth2Client(object):
         revocation endpoint.
     :param scope: Scope that you needed to access user resources.
     :param redirect_uri: Redirect URI you registered as callback.
-    :param code_challenge_method: PKCE method name, only S256 is supportted.
+    :param code_challenge_method: PKCE method name, only S256 is supported.
     :param token: A dict of token attributes such as ``access_token``,
         ``token_type`` and ``expires_at``.
     :param token_placement: The place to put token in HTTP request. Available
