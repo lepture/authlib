@@ -80,7 +80,7 @@ consider that we already have a ``session``::
     >>> from authlib.oauth2.rfc7636 import create_s256_code_challenge
     >>> code_verifier = 'generate-a-urlsafe-string'
     >>> code_challenge = create_s256_code_challenge(code_verifier)
-    >>> uri, state = session.authorization_url(authorize_url, code_challenge=code_challenge, code_challenge_method='S256')
+    >>> uri, state = session.create_authorization_url(authorize_url, code_challenge=code_challenge, code_challenge_method='S256')
     >>> # visit uri, get the response
     >>> authorization_response = 'https://example.com/auth?code=42..e9&state=d..t'
     >>> token = session.fetch_token(token_endpoint, authorization_response=authorization_response, code_verifier=code_verifier)
