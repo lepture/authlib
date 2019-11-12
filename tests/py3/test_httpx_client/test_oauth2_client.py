@@ -2,6 +2,7 @@ import mock
 import time
 from copy import deepcopy
 from unittest import TestCase
+from authlib.common.security import generate_token
 from authlib.common.urls import url_encode
 from authlib.integrations.httpx_client import (
     OAuthError,
@@ -99,7 +100,7 @@ class OAuth2ClientTest(TestCase):
 
         url = 'https://example.com/authorize'
         auth_url, _ = sess.create_authorization_url(
-            url, code_verifier='hello')
+            url, code_verifier=generate_token(48))
         self.assertIn('code_challenge', auth_url)
         self.assertIn('code_challenge_method=S256', auth_url)
 

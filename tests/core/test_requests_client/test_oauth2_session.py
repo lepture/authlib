@@ -3,7 +3,7 @@ import mock
 import time
 from copy import deepcopy
 from unittest import TestCase
-
+from authlib.common.security import generate_token
 from authlib.common.urls import url_encode, add_params_to_uri
 from authlib.integrations.requests_client import OAuth2Session, OAuthError
 from authlib.oauth2.rfc6749 import (
@@ -100,7 +100,7 @@ class OAuth2SessionTest(TestCase):
 
         url = 'https://example.com/authorize'
         auth_url, _ = sess.create_authorization_url(
-            url, code_verifier='hello')
+            url, code_verifier=generate_token(48))
         self.assertIn('code_challenge', auth_url)
         self.assertIn('code_challenge_method=S256', auth_url)
 

@@ -78,7 +78,7 @@ It is also possible to add ``code_challenge`` in ``OAuth2Session``,
 consider that we already have a ``session``::
 
     >>> from authlib.oauth2.rfc7636 import create_s256_code_challenge
-    >>> code_verifier = 'generate-a-urlsafe-string'
+    >>> code_verifier = generate_token(48)
     >>> code_challenge = create_s256_code_challenge(code_verifier)
     >>> uri, state = session.create_authorization_url(authorize_url, code_challenge=code_challenge, code_challenge_method='S256')
     >>> # visit uri, get the response

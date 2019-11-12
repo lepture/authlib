@@ -2,6 +2,7 @@ import mock
 import time
 import pytest
 from copy import deepcopy
+from authlib.common.security import generate_token
 from authlib.common.urls import url_encode
 from authlib.integrations.httpx_client import (
     OAuthError,
@@ -97,7 +98,7 @@ def test_code_challenge():
 
     url = 'https://example.com/authorize'
     auth_url, _ = sess.create_authorization_url(
-        url, code_verifier='hello')
+        url, code_verifier=generate_token(48))
     assert 'code_challenge=' in auth_url
     assert 'code_challenge_method=S256' in auth_url
 
