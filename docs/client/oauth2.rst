@@ -338,7 +338,7 @@ the authorization server will return a value of ``id_token`` in response::
     >>> client = OAuth2Client(client_id, client_secret, scope=scope)
 
 The remote server may require other parameters for OpenID Connect requests, for
-instance, it may require a ``nonce`` parameter, in thise case, you need to
+instance, it may require a ``nonce`` parameter, in this case, you need to
 generate it yourself, and pass it to ``create_authorization_url``::
 
     >>> from authlib.common.security import generate_token
