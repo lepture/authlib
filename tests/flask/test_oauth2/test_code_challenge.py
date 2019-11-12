@@ -1,4 +1,5 @@
 from flask import json
+from authlib.common.security import generate_token
 from authlib.common.urls import urlparse, url_decode
 from authlib.oauth2.rfc6749 import grants
 from authlib.oauth2.rfc7636 import (
@@ -134,7 +135,7 @@ class CodeChallengeTest(TestCase):
         resp = json.loads(rv.data)
         self.assertIn('Missing', resp['error_description'])
 
-    def test_plain_code_challenge_failed(self):
+    def test_plain_code_challenge_invalid(self):
         self.prepare_data()
         url = self.authorize_url + '&code_challenge=foo'
         rv = self.client.post(url, data={'user_id': '1'})
@@ -149,9 +150,9 @@ class CodeChallengeTest(TestCase):
             'client_id': 'code-client',
         })
         resp = json.loads(rv.data)
-        self.assertIn('failed', resp['error_description'])
+        self.assertIn('Invalid', resp['error_description'])
 
-    def test_plain_code_challenge_success(self):
+    def test_plain_code_challenge_failed(self):
         self.prepare_data()
         url = self.authorize_url + '&code_challenge=foo'
         rv = self.client.post(url, data={'user_id': '1'})
@@ -162,7 +163,25 @@ class CodeChallengeTest(TestCase):
         rv = self.client.post('/oauth/token', data={
             'grant_type': 'authorization_code',
             'code': code,
-            'code_verifier': 'foo',
+            'code_verifier': generate_token(48),
+            'client_id': 'code-client',
+        })
+        resp = json.loads(rv.data)
+        self.assertIn('failed', resp['error_description'])
+
+    def test_plain_code_challenge_success(self):
+        self.prepare_data()
+        code_verifier = generate_token(48)
+        url = self.authorize_url + '&code_challenge=' + code_verifier
+        rv = self.client.post(url, data={'user_id': '1'})
+        self.assertIn('code=', rv.location)
+
+        params = dict(url_decode(urlparse.urlparse(rv.location).query))
+        code = params['code']
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': 'authorization_code',
+            'code': code,
+            'code_verifier': code_verifier,
             'client_id': 'code-client',
         })
         resp = json.loads(rv.data)
@@ -170,7 +189,8 @@ class CodeChallengeTest(TestCase):
 
     def test_s256_code_challenge_success(self):
         self.prepare_data()
-        code_challenge = create_s256_code_challenge('foo')
+        code_verifier = generate_token(48)
+        code_challenge = create_s256_code_challenge(code_verifier)
         url = self.authorize_url + '&code_challenge=' + code_challenge
         url += '&code_challenge_method=S256'
 
@@ -182,7 +202,7 @@ class CodeChallengeTest(TestCase):
         rv = self.client.post('/oauth/token', data={
             'grant_type': 'authorization_code',
             'code': code,
-            'code_verifier': 'foo',
+            'code_verifier': code_verifier,
             'client_id': 'code-client',
         })
         resp = json.loads(rv.data)
@@ -203,7 +223,7 @@ class CodeChallengeTest(TestCase):
             data={
                 'grant_type': 'authorization_code',
                 'code': code,
-                'code_verifier': 'foo',
+                'code_verifier': generate_token(48),
                 'client_id': 'code-client',
             }
         )

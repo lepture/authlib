@@ -1,6 +1,10 @@
+import re
 import hashlib
 from authlib.common.encoding import to_bytes, to_unicode, urlsafe_b64encode
 from ..rfc6749.errors import InvalidRequestError, InvalidGrantError
+
+
+CODE_VERIFIER_PATTERN = re.compile(r'^[a-zA-Z0-9\-\.\_\~]{43,128}$')
 
 
 def create_s256_code_challenge(code_verifier):
@@ -89,6 +93,9 @@ class CodeChallenge(object):
         # challenge exists, code_verifier is required
         if not verifier:
             raise InvalidRequestError('Missing "code_verifier"')
+
+        if not CODE_VERIFIER_PATTERN.match(verifier):
+            raise InvalidRequestError('Invalid "code_verifier"')
 
         # 4.6. Server Verifies code_verifier before Returning the Tokens
         method = self.get_authorization_code_challenge_method(authorization_code)
