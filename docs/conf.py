@@ -127,6 +127,9 @@ texinfo_documents = [
     ),
 ]
 
+html_css_files = [
+    'sponsors.css',
+]
 html_js_files = [
     'sponsors.js',
 ]
