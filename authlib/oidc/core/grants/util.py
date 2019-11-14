@@ -16,7 +16,7 @@ from ..errors import (
 
 def is_openid_scope(scope):
     scopes = scope_to_list(scope)
-    return scopes and scopes[0] == 'openid'
+    return scopes and 'openid' in scopes
 
 
 def validate_request_prompt(grant, redirect_uri, redirect_fragment=False):
