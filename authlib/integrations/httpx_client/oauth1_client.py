@@ -1,7 +1,7 @@
 import typing
-from httpx import Client, AsyncClient
-from httpx import AsyncRequest, AsyncResponse
-from httpx.middleware.base import BaseMiddleware
+from httpx import Client
+from httpx import Request, Request
+from httpx.middleware import Middleware
 from authlib.oauth1 import (
     SIGNATURE_HMAC_SHA1,
     SIGNATURE_TYPE_HEADER,
@@ -13,12 +13,12 @@ from .utils import extract_client_kwargs, auth_call
 from .._client import OAuthError
 
 
-class OAuth1Auth(BaseMiddleware, ClientAuth):
+class OAuth1Auth(Middleware, ClientAuth):
     """Signs the httpx request using OAuth 1 (RFC5849)"""
 
     async def __call__(
-        self, request: AsyncRequest, get_response: typing.Callable
-    ) -> AsyncResponse:
+        self, request: Request, get_response: typing.Callable
+    ) -> Request:
         return await auth_call(self, request, get_response)
 
 
@@ -49,7 +49,7 @@ class OAuth1Client(_OAuth1Client, Client):
         raise OAuthError(error_type, error_description)
 
 
-class AsyncOAuth1Client(_OAuth1Client, AsyncClient):
+class AsyncOAuth1Client(_OAuth1Client, Client):
     auth_class = OAuth1Auth
 
     def __init__(self, client_id, client_secret=None,
@@ -60,7 +60,7 @@ class AsyncOAuth1Client(_OAuth1Client, AsyncClient):
                  force_include_body=False, **kwargs):
 
         _client_kwargs = extract_client_kwargs(kwargs)
-        AsyncClient.__init__(self, **_client_kwargs)
+        Client.__init__(self, **_client_kwargs)
 
         _OAuth1Client.__init__(
             self, None,
