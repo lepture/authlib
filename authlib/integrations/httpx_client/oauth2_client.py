@@ -2,8 +2,8 @@ import typing
 from httpx import Client
 from httpx.middleware import Middleware
 from httpx.models import (
-    AsyncRequest,
-    AsyncResponse,
+    Request,
+    Response,
 )
 from authlib.common.urls import url_decode
 from authlib.oauth2.client import OAuth2Client as _OAuth2Client
@@ -26,8 +26,8 @@ class OAuth2Auth(Middleware, TokenAuth):
     """Sign requests for OAuth 2.0, currently only bearer token is supported."""
 
     async def __call__(
-        self, request: AsyncRequest, get_response: typing.Callable
-    ) -> AsyncResponse:
+        self, request: Request, get_response: typing.Callable
+    ) -> Response:
         try:
             return await auth_call(self, request, get_response, False)
         except KeyError as error:
@@ -37,8 +37,8 @@ class OAuth2Auth(Middleware, TokenAuth):
 
 class OAuth2ClientAuth(Middleware, ClientAuth):
     async def __call__(
-        self, request: AsyncRequest, get_response: typing.Callable
-    ) -> AsyncResponse:
+        self, request: Request, get_response: typing.Callable
+    ) -> Response:
         return await auth_call(self, request, get_response)
 
 
