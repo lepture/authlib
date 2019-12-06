@@ -1,9 +1,9 @@
 import typing
-from httpx import Client, AsyncClient
-from httpx.middleware.base import BaseMiddleware
+from httpx import Client
+from httpx.middleware import Middleware
 from httpx.models import (
-    AsyncRequest,
-    AsyncResponse,
+    Request,
+    Response,
 )
 from authlib.common.urls import url_decode
 from authlib.oauth2.client import OAuth2Client as _OAuth2Client
@@ -22,12 +22,12 @@ __all__ = [
 ]
 
 
-class OAuth2Auth(BaseMiddleware, TokenAuth):
+class OAuth2Auth(Middleware, TokenAuth):
     """Sign requests for OAuth 2.0, currently only bearer token is supported."""
 
     async def __call__(
-        self, request: AsyncRequest, get_response: typing.Callable
-    ) -> AsyncResponse:
+        self, request: Request, get_response: typing.Callable
+    ) -> Response:
         try:
             return await auth_call(self, request, get_response, False)
         except KeyError as error:
@@ -35,10 +35,10 @@ class OAuth2Auth(BaseMiddleware, TokenAuth):
             raise UnsupportedTokenTypeError(description=description)
 
 
-class OAuth2ClientAuth(BaseMiddleware, ClientAuth):
+class OAuth2ClientAuth(Middleware, ClientAuth):
     async def __call__(
-        self, request: AsyncRequest, get_response: typing.Callable
-    ) -> AsyncResponse:
+        self, request: Request, get_response: typing.Callable
+    ) -> Response:
         return await auth_call(self, request, get_response)
 
 
@@ -122,7 +122,7 @@ class OAuth2Client(_OAuth2Client, Client):
             raise InvalidTokenError()
 
 
-class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
+class AsyncOAuth2Client(_OAuth2Client, Client):
     SESSION_REQUEST_PARAMS = HTTPX_CLIENT_KWARGS
 
     client_auth_class = OAuth2ClientAuth
@@ -137,7 +137,7 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
 
         # extract httpx.Client kwargs
         client_kwargs = self._extract_session_request_params(kwargs)
-        AsyncClient.__init__(self, **client_kwargs)
+        Client.__init__(self, **client_kwargs)
 
         _OAuth2Client.__init__(
             self, session=None,
