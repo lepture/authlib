@@ -40,13 +40,6 @@ HTTPX OAuth Clients
 
 .. module:: authlib.integrations.httpx_client
 
-.. autoclass:: OAuth1Client
-    :members:
-        create_authorization_url,
-        fetch_request_token,
-        fetch_access_token,
-        parse_authorization_response
-
 .. autoclass:: OAuth1Auth
     :members:
 
@@ -58,16 +51,7 @@ HTTPX OAuth Clients
         fetch_access_token,
         parse_authorization_response
 
-
-.. autoclass:: OAuth2Client
-    :members:
-        register_client_auth_method,
-        create_authorization_url,
-        fetch_token,
-        refresh_token,
-        revoke_token,
-        register_compliance_hook
-
+.. autoclass:: OAuth2Auth
 
 .. autoclass:: AsyncOAuth2Client
     :members:
@@ -77,11 +61,6 @@ HTTPX OAuth Clients
         refresh_token,
         revoke_token,
         register_compliance_hook
-
-
-.. autoclass:: OAuth2Auth
-
-.. autoclass:: AssertionClient
 
 .. autoclass:: AsyncAssertionClient
 

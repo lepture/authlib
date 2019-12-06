@@ -22,33 +22,6 @@ class OAuth1Auth(Middleware, ClientAuth):
         return await auth_call(self, request, get_response)
 
 
-class OAuth1Client(_OAuth1Client, Client):
-    auth_class = OAuth1Auth
-
-    def __init__(self, client_id, client_secret=None,
-                 token=None, token_secret=None,
-                 redirect_uri=None, rsa_key=None, verifier=None,
-                 signature_method=SIGNATURE_HMAC_SHA1,
-                 signature_type=SIGNATURE_TYPE_HEADER,
-                 force_include_body=False, **kwargs):
-
-        # extract httpx.Client kwargs
-        _client_kwargs = extract_client_kwargs(kwargs)
-        Client.__init__(self, **_client_kwargs)
-
-        _OAuth1Client.__init__(
-            self, session=self,
-            client_id=client_id, client_secret=client_secret,
-            token=token, token_secret=token_secret,
-            redirect_uri=redirect_uri, rsa_key=rsa_key, verifier=verifier,
-            signature_method=signature_method, signature_type=signature_type,
-            force_include_body=force_include_body, **kwargs)
-
-    @staticmethod
-    def handle_error(error_type, error_description):
-        raise OAuthError(error_type, error_description)
-
-
 class AsyncOAuth1Client(_OAuth1Client, Client):
     auth_class = OAuth1Auth
 

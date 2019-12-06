@@ -1,11 +1,11 @@
 import json
 from httpx import (
-    AsyncDispatcher,
-    AsyncResponse,
+    Dispatcher,
+    Response,
 )
 
 
-class MockDispatch(AsyncDispatcher):
+class MockDispatch(Dispatcher):
     def __init__(self, body=b'', status_code=200, headers=None,
                  assert_func=None):
         if headers is None:
@@ -27,7 +27,7 @@ class MockDispatch(AsyncDispatcher):
         if self.assert_func:
             self.assert_func(request)
 
-        return AsyncResponse(
+        return Response(
             self.status_code,
             content=self.body,
             headers=self.headers,
@@ -35,7 +35,7 @@ class MockDispatch(AsyncDispatcher):
         )
 
 
-class PathMapDispatch(AsyncDispatcher):
+class PathMapDispatch(Dispatcher):
     def __init__(self, path_maps):
         self.path_maps = path_maps
 
@@ -52,7 +52,7 @@ class PathMapDispatch(AsyncDispatcher):
                 body = body.encode()
             headers['Content-Type'] = 'application/x-www-form-urlencoded'
 
-        return AsyncResponse(
+        return Response(
             status_code,
             content=body,
             headers=headers,

@@ -13,13 +13,7 @@ OAuth for HTTPX
     :noindex:
 
 HTTPX is a next-generation HTTP client for Python. Authlib enables OAuth 1.0
-and OAuth 2.0 for HTTPX with its
-
-* :class:`OAuth1Client`
-* :class:`OAuth2Client`
-* :class:`AssertionClient`
-
-There are also the async versions:
+and OAuth 2.0 for HTTPX with its async versions:
 
 * :class:`AsyncOAuth1Client`
 * :class:`AsyncOAuth2Client`
@@ -63,10 +57,10 @@ Using ``client_secret_jwt`` in HTTPX
 Here is how you could register and use ``client_secret_jwt`` client
 authentication method for HTTPX::
 
-    from authlib.integrations.httpx_client import OAuth2Client
+    from authlib.integrations.httpx_client import AsyncOAuth2Client
     from authlib.oauth2.rfc7523 import ClientSecretJWT
 
-    client = OAuth2Client(
+    client = AsyncOAuth2Client(
         'your-client-id', 'your-client-secret',
         token_endpoint_auth_method='client_secret_jwt'
     )
@@ -83,13 +77,13 @@ Using ``private_key_jwt`` in HTTPX
 Here is how you could register and use ``private_key_jwt`` client
 authentication method for HTTPX::
 
-    from authlib.integrations.httpx_client import OAuth2Client
+    from authlib.integrations.httpx_client import AsyncOAuth2Client
     from authlib.oauth2.rfc7523 import PrivateKeyJWT
 
     with open('your-private-key.pem', 'rb') as f:
         private_key = f.read()
 
-    client = OAuth2Client(
+    client = AsyncOAuth2Client(
         'your-client-id', private_key,
         token_endpoint_auth_method='private_key_jwt',
     )

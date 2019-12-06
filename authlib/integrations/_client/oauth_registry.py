@@ -35,17 +35,6 @@ class OAuth(object):
             self.AVAILABLE_CLIENTS = _import_oauth_clients()
 
     def use_oauth_clients(self, name='requests'):
-        """Choose the OAuth Clients to use. Supported clients are:
-
-        * requests: using ``authlib.integrations.requests_client``
-        * httpx: using ``authlib.integrations.httpx_client``
-
-        By default, the OAuth registry will use ``requests``. Developers
-        may switch to **httpx** with::
-
-            oauth = OAuth()
-            oauth.use_oauth_clients("httpx")
-        """
         clients = self.AVAILABLE_CLIENTS[name]
         self.oauth1_client_cls = clients[0]
         self.oauth2_client_cls = clients[1]
@@ -151,11 +140,5 @@ def _import_oauth_clients():
         from ..requests_client import OAuth1Session, OAuth2Session
         rv['requests'] = OAuth1Session, OAuth2Session
     except ImportError:
-        pass
-
-    try:
-        from ..httpx_client import OAuth1Client, OAuth2Client
-        rv['httpx'] = OAuth1Client, OAuth2Client
-    except (ImportError, SyntaxError):
         pass
     return rv
