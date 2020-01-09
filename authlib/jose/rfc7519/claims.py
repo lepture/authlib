@@ -163,8 +163,8 @@ class JWTClaims(BaseClaims):
         a few minutes, to account for clock skew.  Its value MUST be a number
         containing a NumericDate value.  Use of this claim is OPTIONAL.
         """
-        exp = self.get('exp')
-        if exp:
+        if 'exp' in self:
+            exp = self['exp']
             if not isinstance(exp, int):
                 raise InvalidClaimError('exp')
             if exp < (now - leeway):
@@ -179,8 +179,8 @@ class JWTClaims(BaseClaims):
         account for clock skew.  Its value MUST be a number containing a
         NumericDate value.  Use of this claim is OPTIONAL.
         """
-        nbf = self.get('nbf')
-        if nbf:
+        if 'nbf' in self:
+            nbf = self['nbf']
             if not isinstance(nbf, int):
                 raise InvalidClaimError('nbf')
             if nbf > (now + leeway):
@@ -192,9 +192,10 @@ class JWTClaims(BaseClaims):
         value MUST be a number containing a NumericDate value.  Use of this
         claim is OPTIONAL.
         """
-        iat = self.get('iat')
-        if iat and not isinstance(iat, int):
-            raise InvalidClaimError('iat')
+        if 'iat' in self:
+            iat = self['iat']
+            if not isinstance(iat, int):
+                raise InvalidClaimError('iat')
 
     def validate_jti(self):
         """The "jti" (JWT ID) claim provides a unique identifier for the JWT.
