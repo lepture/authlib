@@ -66,7 +66,7 @@ class AuthlibHTTPError(AuthlibBaseError):
         return error
 
     def get_headers(self):
-        return default_json_headers
+        return default_json_headers[:]
 
     def __call__(self, translations=None, error_uris=None):
         self._translations = translations
