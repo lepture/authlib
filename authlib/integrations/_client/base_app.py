@@ -188,8 +188,10 @@ class BaseApp(object):
         scope = kwargs.get('scope', client.scope)
         if scope and scope.startswith('openid'):
             # this is an OpenID Connect service
-            nonce = generate_token(20)
-            kwargs['nonce'] = nonce
+            nonce = kwargs.get('nonce')
+            if not nonce:
+                nonce = generate_token(20)
+                kwargs['nonce'] = nonce
             rv['nonce'] = nonce
 
         url, state = client.create_authorization_url(
