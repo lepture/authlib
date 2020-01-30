@@ -1,4 +1,5 @@
 from starlette.responses import RedirectResponse
+from starlette.status import HTTP_303_SEE_OTHER
 from ..asgi_client import AsyncBaseApp
 
 
@@ -26,7 +27,7 @@ class RemoteApp(AsyncBaseApp):
         """
         rv = await self.create_authorization_url(redirect_uri, **kwargs)
         self.save_authorize_data(request, redirect_uri=redirect_uri, **rv)
-        return RedirectResponse(rv['url'])
+        return RedirectResponse(rv['url'], status_code=HTTP_303_SEE_OTHER)
 
     async def authorize_access_token(self, request, **kwargs):
         """Fetch an access token.
