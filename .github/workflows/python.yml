@@ -27,6 +27,8 @@ jobs:
           toxenv: py36,flask,django,async
         - version: 3.7
           toxenv: py37,flask,django,async
+        - version: 3.8
+          toxenv: py38,flask,django,async
 
     steps:
     - uses: actions/checkout@v2
