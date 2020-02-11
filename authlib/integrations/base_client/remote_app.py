@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 
 class RemoteApp(BaseApp):
-    def _load_server_metadata(self):
+    def load_server_metadata(self):
         if self._server_metadata_url and '_loaded_at' not in self.server_metadata:
             metadata = self._fetch_server_metadata(self._server_metadata_url)
             metadata['_loaded_at'] = time.time()
@@ -53,7 +53,7 @@ class RemoteApp(BaseApp):
         :param kwargs: Extra parameters to include.
         :return: dict
         """
-        metadata = self._load_server_metadata()
+        metadata = self.load_server_metadata()
         authorization_endpoint = self.authorize_url
         if not authorization_endpoint and not self.request_token_url:
             authorization_endpoint = metadata.get('authorization_endpoint')
@@ -83,7 +83,7 @@ class RemoteApp(BaseApp):
         :param params: Extra parameters to fetch access token.
         :return: A token dict.
         """
-        metadata = self._load_server_metadata()
+        metadata = self.load_server_metadata()
         token_endpoint = self.access_token_url
         if not token_endpoint and not self.request_token_url:
             token_endpoint = metadata.get('token_endpoint')
@@ -128,7 +128,7 @@ class RemoteApp(BaseApp):
             return session.request(method, url, **kwargs)
 
     def fetch_jwk_set(self, force=False):
-        metadata = self._load_server_metadata()
+        metadata = self.load_server_metadata()
         jwk_set = metadata.get('jwks')
         if jwk_set and not force:
             return jwk_set
@@ -142,7 +142,7 @@ class RemoteApp(BaseApp):
 
     def userinfo(self, **kwargs):
         """Fetch user info from ``userinfo_endpoint``."""
-        metadata = self._load_server_metadata()
+        metadata = self.load_server_metadata()
         resp = self.get(metadata['userinfo_endpoint'], **kwargs)
         data = resp.json()
 
@@ -176,7 +176,7 @@ class RemoteApp(BaseApp):
         else:
             claims_cls = ImplicitIDToken
 
-        metadata = self._load_server_metadata()
+        metadata = self.load_server_metadata()
         if claims_options is None and 'issuer' in metadata:
             claims_options = {'iss': {'values': [metadata['issuer']]}}
 

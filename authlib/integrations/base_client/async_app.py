@@ -15,7 +15,7 @@ log = logging.getLogger(__name__)
 
 
 class AsyncRemoteApp(BaseApp):
-    async def _load_server_metadata(self):
+    async def load_server_metadata(self):
         if self._server_metadata_url and '_loaded_at' not in self.server_metadata:
             metadata = await self._fetch_server_metadata(self._server_metadata_url)
             metadata['_loaded_at'] = time.time()
@@ -48,7 +48,7 @@ class AsyncRemoteApp(BaseApp):
         :param kwargs: Extra parameters to include.
         :return: dict
         """
-        metadata = await self._load_server_metadata()
+        metadata = await self.load_server_metadata()
         authorization_endpoint = self.authorize_url
         if not authorization_endpoint and not self.request_token_url:
             authorization_endpoint = metadata.get('authorization_endpoint')
@@ -78,7 +78,7 @@ class AsyncRemoteApp(BaseApp):
         :param params: Extra parameters to fetch access token.
         :return: A token dict.
         """
-        metadata = await self._load_server_metadata()
+        metadata = await self.load_server_metadata()
         token_endpoint = self.access_token_url
         if not token_endpoint and not self.request_token_url:
             token_endpoint = metadata.get('token_endpoint')
@@ -126,7 +126,7 @@ class AsyncRemoteApp(BaseApp):
 
     async def userinfo(self, **kwargs):
         """Fetch user info from ``userinfo_endpoint``."""
-        metadata = await self._load_server_metadata()
+        metadata = await self.load_server_metadata()
         resp = await self.get(metadata['userinfo_endpoint'], **kwargs)
         data = resp.json()
 
@@ -147,7 +147,7 @@ class AsyncRemoteApp(BaseApp):
         else:
             claims_cls = ImplicitIDToken
 
-        metadata = await self._load_server_metadata()
+        metadata = await self.load_server_metadata()
         if claims_options is None and 'issuer' in metadata:
             claims_options = {'iss': {'values': [metadata['issuer']]}}
 
@@ -178,7 +178,7 @@ class AsyncRemoteApp(BaseApp):
         return UserInfo(claims)
 
     async def _fetch_jwk_set(self, force=False):
-        metadata = await self._load_server_metadata()
+        metadata = await self.load_server_metadata()
         jwk_set = metadata.get('jwks')
         if jwk_set and not force:
             return jwk_set
