@@ -6,6 +6,22 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 0.14
+------------
+
+In this release, Authlib has introduced a new way to write framework integrations
+for clients.
+
+**Bug fixes** and enhancements in this release:
+
+- Fix HTTPX integrations due to HTTPX breaking changes
+- Fix ES algorithms for JWS
+- Allow user given ``nonce`` via :gh:`issue#180`.
+- Fix OAuth errors ``get_headers`` leak.
+- Fix ``code_verifier`` via :gh:`issue#165`.
+
+**Breaking Change**: drop sync OAuth clients of HTTPX.
+
 
 Version 0.13
 ------------
