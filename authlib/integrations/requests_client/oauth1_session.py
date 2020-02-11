@@ -8,7 +8,7 @@ from authlib.oauth1 import (
 from authlib.common.encoding import to_native
 from authlib.oauth1 import ClientAuth
 from authlib.oauth1.client import OAuth1Client
-from authlib.integrations._client import OAuthError
+from ..base_client import OAuthError
 
 
 class OAuth1Auth(AuthBase, ClientAuth):

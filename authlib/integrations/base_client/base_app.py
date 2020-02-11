@@ -56,15 +56,15 @@ class BaseApp(object):
     OAUTH_APP_CONFIG = None
 
     def __init__(
-            self, name=None, fetch_token=None, update_token=None,
+            self, framework, name=None, fetch_token=None, update_token=None,
             client_id=None, client_secret=None,
             request_token_url=None, request_token_params=None,
             access_token_url=None, access_token_params=None,
             authorize_url=None, authorize_params=None,
             api_base_url=None, client_kwargs=None, server_metadata_url=None,
-            oauth1_client_cls=None, oauth2_client_cls=None,
             compliance_fix=None, client_auth_methods=None, **kwargs):
 
+        self.framework = framework
         self.name = name
         self.client_id = client_id
         self.client_secret = client_secret
@@ -77,9 +77,6 @@ class BaseApp(object):
         self.api_base_url = api_base_url
         self.client_kwargs = client_kwargs or {}
 
-        self.oauth1_client_cls = oauth1_client_cls
-        self.oauth2_client_cls = oauth2_client_cls
-
         self.compliance_fix = compliance_fix
         self.client_auth_methods = client_auth_methods
         self._fetch_token = fetch_token
@@ -88,26 +85,15 @@ class BaseApp(object):
         self._server_metadata_url = server_metadata_url
         self.server_metadata = kwargs
 
-    def _send_token_update(self, token, refresh_token=None, access_token=None):
+    def _on_update_token(self, token, refresh_token=None, access_token=None):
         raise NotImplementedError()
-
-    def _generate_access_token_params(self, request):
-        raise NotImplementedError()
-
-    def _set_session_data(self, request, key, value):
-        sess_key = '_{}_authlib_{}_'.format(self.name, key)
-        request.session[sess_key] = value
-
-    def _get_session_data(self, request, key):
-        sess_key = '_{}_authlib_{}_'.format(self.name, key)
-        return request.session.pop(sess_key, None)
 
     def _get_oauth_client(self, **kwargs):
         client_kwargs = {}
         client_kwargs.update(self.client_kwargs)
         client_kwargs.update(kwargs)
         if self.request_token_url:
-            session = self.oauth1_client_cls(
+            session = self.framework.oauth1_client_cls(
                 self.client_id, self.client_secret,
                 **client_kwargs
             )
@@ -116,10 +102,10 @@ class BaseApp(object):
                 client_kwargs['authorization_endpoint'] = self.authorize_url
             if self.access_token_url:
                 client_kwargs['token_endpoint'] = self.access_token_url
-            session = self.oauth2_client_cls(
+            session = self.framework.oauth2_client_cls(
                 client_id=self.client_id,
                 client_secret=self.client_secret,
-                update_token=self._send_token_update,
+                update_token=self._on_update_token,
                 **client_kwargs
             )
             if self.client_auth_methods:
@@ -134,13 +120,13 @@ class BaseApp(object):
 
     def _retrieve_oauth2_access_token_params(self, request, params):
         request_state = params.pop('state', None)
-        state = self._get_session_data(request, 'state')
+        state = self.framework.get_session_data(request, 'state')
         if state:
             if state != request_state:
                 raise MismatchingStateError()
             params['state'] = state
 
-        code_verifier = self._get_session_data(request, 'code_verifier')
+        code_verifier = self.framework.get_session_data(request, 'code_verifier')
         if code_verifier:
             params['code_verifier'] = code_verifier
         return params
@@ -149,15 +135,15 @@ class BaseApp(object):
         """Retrieve parameters for fetching access token, those parameters come
         from request and previously saved temporary data in session.
         """
-        params = self._generate_access_token_params(request)
+        params = self.framework.generate_access_token_params(self.request_token_url, request)
         if self.request_token_url:
             if request_token is None:
-                request_token = self._get_session_data(request, 'request_token')
+                request_token = self.framework.get_session_data(request, 'request_token')
             params['request_token'] = request_token
         else:
             params = self._retrieve_oauth2_access_token_params(request, params)
 
-        redirect_uri = self._get_session_data(request, 'redirect_uri')
+        redirect_uri = self.framework.get_session_data(request, 'redirect_uri')
         if redirect_uri:
             params['redirect_uri'] = redirect_uri
 
@@ -175,7 +161,7 @@ class BaseApp(object):
         ]
         for k in keys:
             if k in kwargs:
-                self._set_session_data(request, k, kwargs[k])
+                self.framework.set_session_data(request, k, kwargs[k])
 
     @staticmethod
     def _create_oauth2_authorization_url(client, authorization_endpoint, **kwargs):

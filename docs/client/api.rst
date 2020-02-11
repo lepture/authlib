@@ -76,7 +76,7 @@ Flask Registry and RemoteApp
         register,
         create_client
 
-.. autoclass:: RemoteApp
+.. autoclass:: FlaskRemoteApp
     :members:
         authorize_redirect,
         authorize_access_token,
@@ -98,7 +98,7 @@ Django Registry and RemoteApp
         register,
         create_client
 
-.. autoclass:: RemoteApp
+.. autoclass:: DjangoRemoteApp
     :members:
         authorize_redirect,
         authorize_access_token,
@@ -119,7 +119,7 @@ Starlette Registry and RemoteApp
         register,
         create_client
 
-.. autoclass:: RemoteApp
+.. autoclass:: StarletteRemoteApp
     :members:
         authorize_redirect,
         authorize_access_token,

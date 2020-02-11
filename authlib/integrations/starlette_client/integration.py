@@ -1,20 +1,39 @@
 from starlette.responses import RedirectResponse
-from ..asgi_client import AsyncBaseApp
+from ..httpx_client import AsyncOAuth1Client, AsyncOAuth2Client
+from ..base_client import FrameworkIntegration
+from ..base_client.async_app import AsyncRemoteApp
 
 
-__all__ = ['RemoteApp']
+class StartletteIntegration(FrameworkIntegration):
+    oauth1_client_cls = AsyncOAuth1Client
+    oauth2_client_cls = AsyncOAuth2Client
 
+    def update_token(self, token, refresh_token=None, access_token=None):
+        pass
 
-class RemoteApp(AsyncBaseApp):
-    """A RemoteApp for Starlette framework."""
-
-    def _generate_access_token_params(self, request):
-        if self.request_token_url:
+    def generate_access_token_params(self, request_token_url, request):
+        if request_token_url:
             return request.scope
         return {
             'code': request.query_params.get('code'),
             'state': request.query_params.get('state'),
         }
+
+    @staticmethod
+    def load_config(oauth, name, params):
+        if not oauth.config:
+            return {}
+
+        rv = {}
+        for k in params:
+            conf_key = '{}_{}'.format(name, k).upper()
+            v = oauth.config.get(conf_key, default=None)
+            if v is not None:
+                rv[k] = v
+        return rv
+
+
+class StarletteRemoteApp(AsyncRemoteApp):
 
     async def authorize_redirect(self, request, redirect_uri=None, **kwargs):
         """Create a HTTP Redirect for Authorization Endpoint.
@@ -26,7 +45,7 @@ class RemoteApp(AsyncBaseApp):
         """
         rv = await self.create_authorization_url(redirect_uri, **kwargs)
         self.save_authorize_data(request, redirect_uri=redirect_uri, **rv)
-        return RedirectResponse(rv['url'])
+        return RedirectResponse(rv['url'], status_code=302)
 
     async def authorize_access_token(self, request, **kwargs):
         """Fetch an access token.
@@ -43,5 +62,5 @@ class RemoteApp(AsyncBaseApp):
         if 'id_token' not in token:
             return None
 
-        nonce = self._get_session_data(request, 'nonce')
+        nonce = self.framework.get_session_data(request, 'nonce')
         return await self._parse_id_token(token, nonce, claims_options)

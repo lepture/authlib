@@ -9,7 +9,7 @@ from authlib.common.encoding import to_unicode
 from authlib.oauth1 import ClientAuth
 from authlib.oauth1.client import OAuth1Client as _OAuth1Client
 from .utils import extract_client_kwargs, rebuild_request
-from .._client import OAuthError
+from ..base_client import OAuthError
 
 
 class OAuth1Auth(Auth, ClientAuth):

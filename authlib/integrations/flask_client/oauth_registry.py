@@ -1,14 +1,15 @@
 import uuid
 from flask import session
 from werkzeug.local import LocalProxy
-from .remote_app import RemoteApp
-from .._client import OAuth as _OAuth
+from .integration import FlaskIntegration
+from .remote_app import FlaskRemoteApp
+from ..base_client import BaseOAuth
 
 __all__ = ['OAuth']
 _req_token_tpl = '_{}_authlib_req_token_'
 
 
-class OAuth(_OAuth):
+class OAuth(BaseOAuth):
     """A Flask OAuth registry for oauth clients.
 
     Create an instance with Flask::
@@ -25,7 +26,8 @@ class OAuth(_OAuth):
     :param fetch_token: a shared function to get current user's token
     :param update_token: a share function to update current user's token
     """
-    remote_app_class = RemoteApp
+    framework_client_cls = FlaskRemoteApp
+    framework_integration_cls = FlaskIntegration
 
     def __init__(self, app=None, cache=None, fetch_token=None, update_token=None):
         super(OAuth, self).__init__(fetch_token, update_token)
@@ -57,22 +59,10 @@ class OAuth(_OAuth):
         return super(OAuth, self).create_client(name)
 
     def register(self, name, overwrite=False, **kwargs):
-        if not self.oauth1_client_cls or not self.oauth2_client_cls:
-            self.use_oauth_clients()
-
         self._registry[name] = (overwrite, kwargs)
         if self.app:
             return self.create_client(name)
         return LocalProxy(lambda: self.create_client(name))
-
-    def load_config(self, name, params):
-        rv = {}
-        for k in params:
-            conf_key = '{}_{}'.format(name, k).upper()
-            v = self.app.config.get(conf_key, None)
-            if v is not None:
-                rv[k] = v
-        return rv
 
     def generate_client_kwargs(self, name, overwrite, **kwargs):
         kwargs = super(OAuth, self).generate_client_kwargs(name, overwrite, **kwargs)

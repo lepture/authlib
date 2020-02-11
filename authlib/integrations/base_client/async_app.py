@@ -1,33 +1,34 @@
+import time
 import logging
-
 from authlib.common.urls import urlparse
-from authlib.jose import JsonWebToken, jwk
+from authlib.jose import JsonWebToken
 from authlib.oidc.core import UserInfo, CodeIDToken, ImplicitIDToken
-from .._client import BaseApp
-from .._client import (
+from .base_app import BaseApp
+from .errors import (
     MissingRequestTokenError,
     MissingTokenError,
 )
 
-__all__ = ['AsyncBaseApp']
+__all__ = ['AsyncRemoteApp']
 
 log = logging.getLogger(__name__)
 
 
-class AsyncBaseApp(BaseApp):
+class AsyncRemoteApp(BaseApp):
     async def _load_server_metadata(self):
-        if self._server_metadata_url:
+        if self._server_metadata_url and '_loaded_at' not in self.server_metadata:
             metadata = await self._fetch_server_metadata(self._server_metadata_url)
-            self._server_metadata_url = None  # only load once
+            metadata['_loaded_at'] = time.time()
             self.server_metadata.update(metadata)
         return self.server_metadata
 
-    async def _send_token_update(self, token, refresh_token=None, access_token=None):
-        await self._update_token(
-            token,
-            refresh_token=refresh_token,
-            access_token=access_token,
-        )
+    async def _on_update_token(self, token, refresh_token=None, access_token=None):
+        if self._update_token:
+            await self._update_token(
+                token,
+                refresh_token=refresh_token,
+                access_token=access_token,
+            )
 
     async def _create_oauth1_authorization_url(self, client, authorization_endpoint, **kwargs):
         params = {}

@@ -1,6 +1,7 @@
 import functools
+from .framework_integration import FrameworkIntegration
 
-__all__ = ['OAuth']
+__all__ = ['BaseOAuth']
 
 
 OAUTH_CLIENT_PARAMS = (
@@ -14,30 +15,21 @@ OAUTH_CLIENT_PARAMS = (
 )
 
 
-class OAuth(object):
+class BaseOAuth(object):
     """Registry for oauth clients.
 
     Create an instance for registry::
 
         oauth = OAuth()
     """
-    AVAILABLE_CLIENTS = {}
-    remote_app_class = None
+    framework_client_cls = None
+    framework_integration_cls = FrameworkIntegration
 
     def __init__(self, fetch_token=None, update_token=None):
         self._registry = {}
         self._clients = {}
         self.fetch_token = fetch_token
         self.update_token = update_token
-        self.oauth1_client_cls = None
-        self.oauth2_client_cls = None
-        if not self.AVAILABLE_CLIENTS:
-            self.AVAILABLE_CLIENTS = _import_oauth_clients()
-
-    def use_oauth_clients(self, name='requests'):
-        clients = self.AVAILABLE_CLIENTS[name]
-        self.oauth1_client_cls = clients[0]
-        self.oauth2_client_cls = clients[1]
 
     def create_client(self, name):
         """Create or get the given named OAuth client. For instance, the
@@ -56,14 +48,14 @@ class OAuth(object):
             return None
 
         overwrite, config = self._registry[name]
-        client_cls = config.pop('client_cls', self.remote_app_class)
+        client_cls = config.pop('client_cls', self.framework_client_cls)
         if client_cls.OAUTH_APP_CONFIG:
             kwargs = client_cls.OAUTH_APP_CONFIG
             kwargs.update(config)
         else:
             kwargs = config
         kwargs = self.generate_client_kwargs(name, overwrite, **kwargs)
-        client = client_cls(name, **kwargs)
+        client = client_cls(self.framework_integration_cls(name), name, **kwargs)
         self._clients[name] = client
         return client
 
@@ -80,9 +72,6 @@ class OAuth(object):
             oauth.register('twitter', client_id='', ...)
             oauth.twitter.get('timeline')
         """
-        if not self.oauth1_client_cls or not self.oauth2_client_cls:
-            self.use_oauth_clients()
-
         self._registry[name] = (overwrite, kwargs)
         return self.create_client(name)
 
@@ -99,18 +88,15 @@ class OAuth(object):
 
         kwargs['fetch_token'] = fetch_token
 
-        if kwargs.get('request_token_url'):
-            kwargs['oauth1_client_cls'] = self.oauth1_client_cls
-        else:
+        if not kwargs.get('request_token_url'):
             if not update_token and self.update_token:
                 update_token = functools.partial(self.update_token, name)
 
             kwargs['update_token'] = update_token
-            kwargs['oauth2_client_cls'] = self.oauth2_client_cls
         return kwargs
 
     def load_config(self, name, params):
-        raise NotImplementedError()
+        return self.framework_integration_cls.load_config(self, name, params)
 
     def __getattr__(self, key):
         try:
@@ -132,13 +118,3 @@ def _config_client(config, kwargs, overwrite):
             else:
                 kwargs[k] = v
     return kwargs
-
-
-def _import_oauth_clients():
-    rv = {}
-    try:
-        from ..requests_client import OAuth1Session, OAuth2Session
-        rv['requests'] = OAuth1Session, OAuth2Session
-    except ImportError:
-        pass
-    return rv

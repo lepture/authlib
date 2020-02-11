@@ -12,7 +12,7 @@ from .oauth2_client import (
     AsyncOAuth2Client,
 )
 from .assertion_client import AsyncAssertionClient
-from .._client import OAuthError
+from ..base_client import OAuthError
 
 
 __all__ = [

@@ -2,7 +2,7 @@ import mock
 from unittest import TestCase
 from flask import Flask, session
 from authlib.integrations.flask_client import OAuth, OAuthError
-from authlib.integrations.flask_client import RemoteApp
+from authlib.integrations.flask_client import FlaskRemoteApp
 from tests.flask.cache import SimpleCache
 from tests.client_base import (
     mock_send_value,
@@ -179,7 +179,7 @@ class FlaskOAuthTest(TestCase):
             self.assertEqual(client.token, None)
 
     def test_oauth2_authorize_via_custom_client(self):
-        class CustomRemoteApp(RemoteApp):
+        class CustomRemoteApp(FlaskRemoteApp):
             OAUTH_APP_CONFIG = {'authorize_url': 'https://i.b/custom'}
 
         app = Flask(__name__)

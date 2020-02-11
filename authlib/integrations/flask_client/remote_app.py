@@ -1,59 +1,28 @@
-from flask import redirect, session
+from flask import redirect
 from flask import request as flask_req
-from flask.signals import Namespace
 from flask import _app_ctx_stack
-from .._client import UserInfoMixin
-from .._client import RemoteApp as _RemoteApp
-
-__all__ = ['token_update', 'RemoteApp']
-
-_signal = Namespace()
-#: signal when token is updated
-token_update = _signal.signal('token_update')
+from ..base_client import RemoteApp
 
 
-class RemoteApp(_RemoteApp, UserInfoMixin):
+class FlaskRemoteApp(RemoteApp):
     """Flask integrated RemoteApp of :class:`~authlib.client.OAuthClient`.
     It has built-in hooks for OAuthClient. The only required configuration
     is token model.
     """
 
-    def __init__(self, name, fetch_token=None, **kwargs):
+    def __init__(self, framework, name=None, fetch_token=None, **kwargs):
         fetch_request_token = kwargs.pop('fetch_request_token', None)
         save_request_token = kwargs.pop('save_request_token', None)
-        super(RemoteApp, self).__init__(name, fetch_token, **kwargs)
+        super(FlaskRemoteApp, self).__init__(framework, name, fetch_token, **kwargs)
 
         self._fetch_request_token = fetch_request_token
         self._save_request_token = save_request_token
 
-    def _send_token_update(self, token, refresh_token=None, access_token=None):
+    def _on_update_token(self, token, refresh_token=None, access_token=None):
         self.token = token
-        super(RemoteApp, self)._send_token_update(
+        super(FlaskRemoteApp, self)._on_update_token(
             token, refresh_token, access_token
         )
-        token_update.send(
-            self,
-            name=self.name,
-            token=token,
-            refresh_token=refresh_token,
-            access_token=access_token,
-        )
-
-    def _generate_access_token_params(self, request):
-        if self.request_token_url:
-            return request.args.to_dict(flat=True)
-
-        if request.method == 'GET':
-            params = {
-                'code': request.args['code'],
-                'state': request.args.get('state'),
-            }
-        else:
-            params = {
-                'code': request.form['code'],
-                'state': request.form.get('state'),
-            }
-        return params
 
     @property
     def token(self):
@@ -76,21 +45,8 @@ class RemoteApp(_RemoteApp, UserInfoMixin):
     def request(self, method, url, token=None, **kwargs):
         if token is None and not kwargs.get('withhold_token'):
             token = self.token
-        return super(RemoteApp, self).request(
+        return super(FlaskRemoteApp, self).request(
             method, url, token=token, **kwargs)
-
-    def save_authorize_state(self, redirect_uri=None, state=None, **kwargs):
-        """Save ``redirect_uri``, ``state`` and other temporary data into
-        session during authorize step.
-        """
-        # make it compatible with previous design
-        flask_req.session = session
-        self.save_authorize_data(
-            flask_req,
-            redirect_uri=redirect_uri,
-            state=state,
-            **kwargs
-        )
 
     def authorize_redirect(self, redirect_uri=None, **kwargs):
         """Create a HTTP Redirect for Authorization Endpoint.
@@ -105,7 +61,7 @@ class RemoteApp(_RemoteApp, UserInfoMixin):
             request_token = rv.pop('request_token', None)
             self._save_request_token(request_token)
 
-        self.save_authorize_state(redirect_uri, **rv)
+        self.save_authorize_data(flask_req, redirect_uri=redirect_uri, **rv)
         return redirect(rv['url'])
 
     def authorize_access_token(self, **kwargs):
@@ -115,7 +71,6 @@ class RemoteApp(_RemoteApp, UserInfoMixin):
         else:
             request_token = None
 
-        flask_req.session = session
         params = self.retrieve_access_token_params(flask_req, request_token)
         params.update(kwargs)
         token = self.fetch_access_token(**params)
@@ -123,5 +78,4 @@ class RemoteApp(_RemoteApp, UserInfoMixin):
         return token
 
     def parse_id_token(self, token, claims_options=None):
-        flask_req.session = session
         return self._parse_id_token(flask_req, token, claims_options)

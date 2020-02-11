@@ -1,8 +1,15 @@
 # flake8: noqa
 
-from .oauth_registry import OAuth
-from .remote_app import RemoteApp, token_update
-from .._client import OAuthError
+from .integration import DjangoIntegration, DjangoRemoteApp, token_update
+from ..base_client import BaseOAuth, OAuthError
 
 
-__all__ = ['OAuth', 'RemoteApp', 'token_update', 'OAuthError']
+class OAuth(BaseOAuth):
+    framework_integration_cls = DjangoIntegration
+    framework_client_cls = DjangoRemoteApp
+
+
+__all__ = [
+    'OAuth', 'DjangoRemoteApp', 'DjangoIntegration',
+    'token_update', 'OAuthError',
+]

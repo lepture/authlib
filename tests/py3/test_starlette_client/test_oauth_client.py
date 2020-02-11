@@ -59,7 +59,7 @@ async def test_oauth1_authorize():
     req_scope = {'type': 'http', 'session': {}}
     req = Request(req_scope)
     resp = await client.authorize_redirect(req, 'https://b.com/bar')
-    assert resp.status_code == 307
+    assert resp.status_code == 302
     url = resp.headers.get('Location')
     assert 'oauth_token=foo' in url
 
@@ -91,7 +91,7 @@ async def test_oauth2_authorize():
     req_scope = {'type': 'http', 'session': {}}
     req = Request(req_scope)
     resp = await client.authorize_redirect(req, 'https://b.com/bar')
-    assert resp.status_code == 307
+    assert resp.status_code == 302
     url = resp.headers.get('Location')
     assert 'state=' in url
 
@@ -132,7 +132,7 @@ async def test_oauth2_authorize_code_challenge():
     req = Request(req_scope)
 
     resp = await client.authorize_redirect(req, redirect_uri='https://b.com/bar')
-    assert resp.status_code == 307
+    assert resp.status_code == 302
 
     url = resp.headers.get('Location')
     assert 'code_challenge=' in url
@@ -268,4 +268,4 @@ async def test_oauth2_authorize_with_metadata():
         }
     )
     resp = await client.authorize_redirect(req, 'https://b.com/bar')
-    assert resp.status_code == 307
+    assert resp.status_code == 302
