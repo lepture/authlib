@@ -17,6 +17,7 @@ jobs:
 
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       max-parallel: 3
       matrix:
         python:
@@ -28,9 +29,9 @@ jobs:
           toxenv: py37,flask,django,async
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python.version }}
-      uses: actions/setup-python@v1
+      uses: actions/setup-python@v1.1.1
       with:
         python-version: ${{ matrix.python.version }}
 
@@ -52,13 +53,9 @@ jobs:
         coverage xml
 
     - name: Upload coverage to Codecov  
-      uses: codecov/codecov-action@v1.0.2
+      uses: codecov/codecov-action@v1.0.5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: ./coverage.xml
         flags: unittests
         name: GitHub
-      env:
-        VCS_BRANCH_NAME: ${{ github.ref }}
-        VCS_SLUG: ${{ github.repository }}
-        CI_BUILD_URL: https://github.com/lepture/authlib/commit/${{ github.sha }}/checks
