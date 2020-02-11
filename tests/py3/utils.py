@@ -1,11 +1,9 @@
 import json
-from httpx import (
-    Dispatcher,
-    Response,
-)
+from httpx import Response
+from httpx.dispatch.base import AsyncDispatcher
 
 
-class MockDispatch(Dispatcher):
+class MockDispatch(AsyncDispatcher):
     def __init__(self, body=b'', status_code=200, headers=None,
                  assert_func=None):
         if headers is None:
@@ -35,7 +33,7 @@ class MockDispatch(Dispatcher):
         )
 
 
-class PathMapDispatch(Dispatcher):
+class PathMapDispatch(AsyncDispatcher):
     def __init__(self, path_maps):
         self.path_maps = path_maps
 

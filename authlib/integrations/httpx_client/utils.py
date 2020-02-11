@@ -1,4 +1,5 @@
 from httpx import URL
+from httpx.content_streams import ByteStream
 from authlib.common.encoding import to_bytes
 
 
@@ -17,21 +18,12 @@ def extract_client_kwargs(kwargs):
     return client_kwargs
 
 
-async def auth_call(self, request, get_response, has_method=True):
-    content = await request.read()
-
-    if has_method:
-        url, headers, body = self.prepare(
-            request.method, str(request.url), request.headers, content)
-    else:
-        url, headers, body = self.prepare(
-            str(request.url), request.headers, content)
-
+def rebuild_request(request, url, headers, body):
     request.url = URL(url)
     request.headers.update(headers)
     if body:
         body = to_bytes(body)
-        if body != content:
-            request.is_streaming = False
-            request.content = body
-    return await get_response(request)
+        if body != request.content:
+            request._content = body
+            request.stream = ByteStream(body)
+    return request

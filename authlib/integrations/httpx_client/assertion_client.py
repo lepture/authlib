@@ -1,4 +1,4 @@
-from httpx import Client
+from httpx import AsyncClient
 from authlib.oauth2.rfc7521 import AssertionClient as _AssertionClient
 from authlib.oauth2.rfc7523 import JWTBearerGrant
 from .utils import extract_client_kwargs
@@ -7,7 +7,7 @@ from .oauth2_client import OAuth2Auth
 __all__ = ['AsyncAssertionClient']
 
 
-class AsyncAssertionClient(_AssertionClient, Client):
+class AsyncAssertionClient(_AssertionClient, AsyncClient):
     token_auth_class = OAuth2Auth
     JWT_BEARER_GRANT_TYPE = JWTBearerGrant.GRANT_TYPE
     ASSERTION_METHODS = {
@@ -19,7 +19,7 @@ class AsyncAssertionClient(_AssertionClient, Client):
                  claims=None, token_placement='header', scope=None, **kwargs):
 
         client_kwargs = extract_client_kwargs(kwargs)
-        Client.__init__(self, **client_kwargs)
+        AsyncClient.__init__(self, **client_kwargs)
 
         _AssertionClient.__init__(
             self, session=None,

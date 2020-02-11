@@ -17,7 +17,7 @@ default_token = {
 async def test_refresh_token():
     def verifier(request):
         if str(request.url) == 'https://i.b/token':
-            assert b'assertion=' in request.content
+            assert b'assertion=' in request.read()
 
     async with AsyncAssertionClient(
         'https://i.b/token',

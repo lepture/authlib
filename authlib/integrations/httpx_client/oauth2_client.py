@@ -1,6 +1,5 @@
 import typing
-from httpx import Client
-from httpx.middleware import Middleware
+from httpx import AsyncClient, Auth
 from httpx.models import (
     Request,
     Response,
@@ -8,7 +7,7 @@ from httpx.models import (
 from authlib.common.urls import url_decode
 from authlib.oauth2.client import OAuth2Client as _OAuth2Client
 from authlib.oauth2.auth import ClientAuth, TokenAuth
-from .utils import HTTPX_CLIENT_KWARGS, auth_call
+from .utils import HTTPX_CLIENT_KWARGS, rebuild_request
 from .._client import (
     OAuthError,
     InvalidTokenError,
@@ -18,31 +17,34 @@ from .._client import (
 
 __all__ = [
     'OAuth2Auth', 'OAuth2ClientAuth',
-    'OAuth2Client', 'AsyncOAuth2Client',
+    'AsyncOAuth2Client',
 ]
 
 
-class OAuth2Auth(Middleware, TokenAuth):
+class OAuth2Auth(Auth, TokenAuth):
     """Sign requests for OAuth 2.0, currently only bearer token is supported."""
+    requires_request_body = True
 
-    async def __call__(
-        self, request: Request, get_response: typing.Callable
-    ) -> Response:
+    def auth_flow(self, request: Request) -> typing.Generator[Request, Response, None]:
         try:
-            return await auth_call(self, request, get_response, False)
+            url, headers, body = self.prepare(
+                str(request.url), request.headers, request.content)
+            yield rebuild_request(request, url, headers, body)
         except KeyError as error:
             description = 'Unsupported token_type: {}'.format(str(error))
             raise UnsupportedTokenTypeError(description=description)
 
 
-class OAuth2ClientAuth(Middleware, ClientAuth):
-    async def __call__(
-        self, request: Request, get_response: typing.Callable
-    ) -> Response:
-        return await auth_call(self, request, get_response)
+class OAuth2ClientAuth(Auth, ClientAuth):
+    requires_request_body = True
+
+    def auth_flow(self, request: Request) -> typing.Generator[Request, Response, None]:
+        url, headers, body = self.prepare(
+            request.method, str(request.url), request.headers, request.content)
+        yield rebuild_request(request, url, headers, body)
 
 
-class AsyncOAuth2Client(_OAuth2Client, Client):
+class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
     SESSION_REQUEST_PARAMS = HTTPX_CLIENT_KWARGS
 
     client_auth_class = OAuth2ClientAuth
@@ -57,7 +59,7 @@ class AsyncOAuth2Client(_OAuth2Client, Client):
 
         # extract httpx.Client kwargs
         client_kwargs = self._extract_session_request_params(kwargs)
-        Client.__init__(self, **client_kwargs)
+        AsyncClient.__init__(self, **client_kwargs)
 
         _OAuth2Client.__init__(
             self, session=None,

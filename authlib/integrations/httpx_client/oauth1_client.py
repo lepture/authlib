@@ -1,7 +1,6 @@
 import typing
-from httpx import Client
-from httpx import Request, Request
-from httpx.middleware import Middleware
+from httpx import AsyncClient, Auth
+from httpx import Request, Response
 from authlib.oauth1 import (
     SIGNATURE_HMAC_SHA1,
     SIGNATURE_TYPE_HEADER,
@@ -9,20 +8,21 @@ from authlib.oauth1 import (
 from authlib.common.encoding import to_unicode
 from authlib.oauth1 import ClientAuth
 from authlib.oauth1.client import OAuth1Client as _OAuth1Client
-from .utils import extract_client_kwargs, auth_call
+from .utils import extract_client_kwargs, rebuild_request
 from .._client import OAuthError
 
 
-class OAuth1Auth(Middleware, ClientAuth):
+class OAuth1Auth(Auth, ClientAuth):
     """Signs the httpx request using OAuth 1 (RFC5849)"""
+    requires_request_body = True
 
-    async def __call__(
-        self, request: Request, get_response: typing.Callable
-    ) -> Request:
-        return await auth_call(self, request, get_response)
+    def auth_flow(self, request: Request) -> typing.Generator[Request, Response, None]:
+        url, headers, body = self.prepare(
+            request.method, str(request.url), request.headers, request.content)
+        yield rebuild_request(request, url, headers, body)
 
 
-class AsyncOAuth1Client(_OAuth1Client, Client):
+class AsyncOAuth1Client(_OAuth1Client, AsyncClient):
     auth_class = OAuth1Auth
 
     def __init__(self, client_id, client_secret=None,
@@ -33,7 +33,7 @@ class AsyncOAuth1Client(_OAuth1Client, Client):
                  force_include_body=False, **kwargs):
 
         _client_kwargs = extract_client_kwargs(kwargs)
-        Client.__init__(self, **_client_kwargs)
+        AsyncClient.__init__(self, **_client_kwargs)
 
         _OAuth1Client.__init__(
             self, None,
@@ -65,7 +65,7 @@ class AsyncOAuth1Client(_OAuth1Client, Client):
 
     async def _fetch_token(self, url, **kwargs):
         resp = await self.post(url, **kwargs)
-        text = await resp.read()
+        text = await resp.aread()
         token = self.parse_response_token(resp.status_code, to_unicode(text))
         self.token = token
         return token
