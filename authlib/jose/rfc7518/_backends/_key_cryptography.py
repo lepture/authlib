@@ -38,6 +38,7 @@ class ECKey(object):
     def prepare_public_key(self, key):
         if isinstance(key, EllipticCurvePublicKey):
             return key
+        key = to_bytes(key)
         if key.startswith(b'ecdsa-sha2-'):
             return load_ssh_public_key(key, backend=default_backend())
         return load_pem_public_key(key, backend=default_backend())
