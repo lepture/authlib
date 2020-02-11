@@ -9,6 +9,8 @@ Here you can see the full list of changes between each Authlib release.
 Version 0.14
 ------------
 
+**Released on Feb 11, 2020.**
+
 In this release, Authlib has introduced a new way to write framework integrations
 for clients.
 
