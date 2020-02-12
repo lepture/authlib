@@ -20,14 +20,11 @@ Authlib provides three implementations of OAuth 2.0 client:
 
 1. :class:`requests_client.OAuth2Session` implementation of :ref:`requests_client`,
    which is a replacement for **requests-oauthlib**.
-2. :class:`httpx_client.OAuth2Client` implementation of :ref:`httpx_client`, which is
-   powered by **HTTPX**.
-3. ``httpx_client.AsyncOAuth2Client`` implementation of :ref:`httpx_client`,
-   which is an **async** OAuth 2.0 client.
+2. :class:`httpx_client.AsyncOAuth2Client` implementation of :ref:`httpx_client`,
+   which is **async** OAuth 2.0 client powered by **HTTPX**.
 
-:class:`requests_client.OAuth2Session` and :class:`httpx_client.OAuth2Client` shares
-the same API. But ``httpx_client.AsyncOAuth2Client`` is a little different,
-because it is asynchronous.
+:class:`requests_client.OAuth2Session` and :class:`httpx_client.AsyncOAuth2Client`
+shares the same API.
 
 There are also frameworks integrations of :ref:`flask_client`, :ref:`django_client`
 and :ref:`starlette_client`. If you are using these frameworks, you may have interests
@@ -51,8 +48,8 @@ code grant type. Initialize the session for reuse::
     >>> client = OAuth2Session(client_id, client_secret, scope=scope)
     >>>
     >>> # using httpx implementation
-    >>> from authlib.integrations.httpx_client import OAuth2Client
-    >>> client = OAuth2Client(client_id, client_secret, scope=scope)
+    >>> from authlib.integrations.httpx_client import AsyncOAuth2Client
+    >>> client = AsyncOAuth2Client(client_id, client_secret, scope=scope)
 
 You can assign a ``redirect_uri`` in case you want to specify the callback
 url.
@@ -108,7 +105,7 @@ another website. You need to create another session yourself::
     >>> client = OAuth2Session(client_id, client_secret, state=state)
     >>>
     >>> # using httpx
-    >>> from authlib.integrations.httpx_client import OAuth2Client
+    >>> from authlib.integrations.httpx_client import AsyncOAuth2Client
     >>> client = OAuth2Client(client_id, client_secret, state=state)
     >>>
     >>> client.fetch_token(token_endpoint, authorization_response=authorization_response)
@@ -335,7 +332,7 @@ the authorization server will return a value of ``id_token`` in response::
     >>> # using requests
     >>> client = OAuth2Session(client_id, client_secret, scope=scope)
     >>> # using httpx
-    >>> client = OAuth2Client(client_id, client_secret, scope=scope)
+    >>> client = AsyncOAuth2Client(client_id, client_secret, scope=scope)
 
 The remote server may require other parameters for OpenID Connect requests, for
 instance, it may require a ``nonce`` parameter, in this case, you need to

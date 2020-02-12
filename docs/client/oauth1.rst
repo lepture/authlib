@@ -15,14 +15,11 @@ Authlib provides three implementations of OAuth 1.0 client:
 
 1. :class:`requests_client.OAuth1Session` implementation of :ref:`requests_client`,
    which is a replacement for **requests-oauthlib**.
-2. :class:`httpx_client.OAuth1Client` implementation of :ref:`httpx_client`, which is
-   powered by **HTTPX**.
-3. :class:`httpx_client.AsyncOAuth1Client` implementation of :ref:`httpx_client`,
+2. :class:`httpx_client.AsyncOAuth1Client` implementation of :ref:`httpx_client`,
    which is an **async** OAuth 1.0 client.
 
-:class:`requests_client.OAuth1Session` and :class:`httpx_client.OAuth1Client` shares
-the same API. But :class:`httpx_client.AsyncOAuth1Client` is a little different,
-because it is asynchronous.
+:class:`requests_client.OAuth1Session` and :class:`httpx_client.AsyncOAuth1Client`
+shares the same API.
 
 There are also frameworks integrations of :ref:`flask_client`, :ref:`django_client`
 and :ref:`starlette_client`. If you are using these frameworks, you may have interests
@@ -47,8 +44,8 @@ But first, we need to initialize an OAuth 1.0 client::
     >>> from authlib.integrations.requests_client import OAuth1Session
     >>> client = OAuth1Session(client_id, client_secret)
     >>> # using httpx client
-    >>> from authlib.integrations.httpx_client import OAuth1Client
-    >>> client = OAuth1Client(client_id, client_secret)
+    >>> from authlib.integrations.httpx_client import AsyncOAuth1Client
+    >>> client = AsyncOAuth1Client(client_id, client_secret)
 
 .. _fetch_request_token:
 
@@ -131,7 +128,7 @@ session::
     >>> oauth_token = request_token['oauth_token']
     >>> oauth_token_secret = request_token['oauth_token_secret']
     >>> from authlib.integrations.requests_client import OAuth1Session
-    >>> # if using httpx: from authlib.integrations.httpx_client import OAuth1Client
+    >>> # if using httpx: from authlib.integrations.httpx_client import AsyncOAuth1Client
     >>> client = OAuth1Session(
     ...     client_id, client_secret,
     ...     token=oauth_token,
@@ -159,7 +156,7 @@ The above is not the real flow, just like what we did in
     >>> access_token = restore_access_token_from_database()
     >>> oauth_token = access_token['oauth_token']
     >>> oauth_token_secret = access_token['oauth_token_secret']
-    >>> # if using httpx: from authlib.integrations.httpx_client import OAuth1Client
+    >>> # if using httpx: from authlib.integrations.httpx_client import AsyncOAuth1Client
     >>> client = OAuth1Session(
     ...     client_id, client_secret,
     ...     token=oauth_token,
