@@ -196,93 +196,14 @@ in version 0.8:
 - Rename Flask OAuth 2.0 ``create_expires_generator`` to
   ``create_token_expires_in_generator``
 
-Version 0.7
------------
-
-**Released on Apr 28, 2018. Better Beta.**
-
-Authlib has changed its license from LGPL to AGPL. This is not a huge release
-like v0.6, but it still contains some deprecate changes, the good news is
-they are compatible, they won't break your project. Authlib can't go further
-without these deprecate changes.
-
-As always, Authlib is adding specification implementations. Here is what's in
-version 0.7:
-
-- RFC7515_: Refactored :class:`~authlib.rfc7515.JWS`, make it a full implementation.
-- RFC7521_: Add :class:`~authlib.client.AssertionSession`, only works with RFC7523_.
-- RFC7523_: Add :class:`~authlib.oauth2.rfc7523.JWTBearerGrant`, read the guide in
-  :ref:`specs/rfc7523`.
-
-Besides that, there are more changes:
-
-- Add ``overwrite`` parameter for framework integrations clients.
-- Add ``response_mode=query`` for OpenID Connect implicit and hybrid flow.
-- Bug fix and documentation fix via :gh:`issue#42`, :gh:`issue#43`.
-- Dropping ``authlib.client.apps``. Use Loginpass_ instead.
-
-**Deprecate Changes**: find how to solve the deprecate issues via https://git.io/vpCH5
-
-.. _RFC7521: https://tools.ietf.org/html/rfc7521
-.. _RFC7523: https://tools.ietf.org/html/rfc7523
-.. _Loginpass: https://github.com/authlib/loginpass
-
-
-Version 0.6
------------
-
-**Released on Mar 20, 2018. Going Beta!**
-
-From alpha to beta. This is a huge release with lots of deprecating changes
-and some breaking changes. And finally, OpenID Connect server is supported
-by now, because Authlib has added these specifications:
-
-- RFC7515_: JSON Web Signature (JWS)
-- RFC7517_: JSON Web Key (JWK)
-- RFC7518_: JSON Web Algorithms (JWA)
-- RFC7519_: JSON Web Token (JWT)
-
-The specifications are not completed yet, but they are ready to use. The
-missing RFC7516 (JWE) is going to be implemented in next version. Open ID
-Connect 1.0 is added with:
-
-- Authentication using the :ref:`flask_odic_code`
-- Authentication using the :ref:`flask_odic_implicit`
-- Authentication using the :ref:`flask_odic_hybrid`
-- ID Token Validation
-
-Besides that, there are more changes:
-
-- Implementation of RFC7662: OAuth 2.0 Token Introspection via :gh:`PR#36`.
-- Use the ``token_endpoint_auth_method`` concept defined in `RFC7591`_.
-- Signal feature for Flask integration of OAuth 2.0 server.
-- Bug fixes for OAuth client parts, thanks for the instruction by Lukas Schink.
-
-**Breaking Changes**:
-
-1. the columns in ``authlib.flask.oauth2.sqla`` has been changed a lot.
-   If you are using it, you need to upgrade your database.
-
-2. use ``register_token_validator`` on
-   :ref:`ResourceProtector <flask_oauth2_resource_protector>`.
-
-3. ``authlib.client.oauth1.OAuth1`` has been renamed to
-   ``authlib.client.oauth1.OAuth1Auth``.
-
-**Deprecate Changes**: find how to solve the deprecate issues via https://git.io/vAAUK
-
-.. _`RFC7515`: https://tools.ietf.org/html/rfc7515
-.. _`RFC7517`: https://tools.ietf.org/html/rfc7517
-.. _`RFC7518`: https://tools.ietf.org/html/rfc7518
-.. _`RFC7519`: https://tools.ietf.org/html/rfc7519
-.. _`RFC7591`: https://tools.ietf.org/html/rfc7591
-
 
 Old Versions
 ------------
 
 Find old changelog at https://github.com/lepture/authlib/releases
 
+- Version 0.7.0: Released on Apr 28, 2018
+- Version 0.6.0: Released on Mar 20, 2018
 - Version 0.5.1: Released on Feb 11, 2018
 - Version 0.5.0: Released on Feb 11, 2018
 - Version 0.4.1: Released on Feb 2, 2018
