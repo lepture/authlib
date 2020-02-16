@@ -17,6 +17,8 @@ def encode_client_secret_post(client, method, uri, headers, body):
         ('client_id', client.client_id),
         ('client_secret', client.client_secret or '')
     ])
+    if 'Content-Length' in headers:
+        headers['Content-Length'] = str(len(body))
     return uri, headers, body
 
 
@@ -25,6 +27,8 @@ def encode_none(client, method, uri, headers, body):
         uri = add_params_to_uri(uri, [('client_id', client.client_id)])
         return uri, headers, body
     body = add_params_to_qs(body, [('client_id', client.client_id)])
+    if 'Content-Length' in headers:
+        headers['Content-Length'] = str(len(body))
     return uri, headers, body
 
 
