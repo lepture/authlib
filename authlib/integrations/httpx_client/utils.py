@@ -7,6 +7,7 @@ HTTPX_CLIENT_KWARGS = [
     'headers', 'cookies', 'verify', 'cert', 'http_versions',
     'proxies', 'timeout', 'pool_limits', 'max_redirects',
     'base_url', 'dispatch', 'app', 'backend', 'trust_env',
+    'json',
 ]
 
 

@@ -340,6 +340,31 @@ async def test_auto_refresh_token2():
 
 
 @pytest.mark.asyncio
+async def test_auto_refresh_token3():
+    async def _update_token(token, refresh_token=None, access_token=None):
+        assert access_token == 'a'
+        assert token == default_token
+
+    update_token = mock.Mock(side_effect=_update_token)
+
+    old_token = dict(
+        access_token='a',
+        token_type='bearer',
+        expires_at=100
+    )
+
+    dispatch = MockDispatch(default_token)
+
+    async with AsyncOAuth2Client(
+            'foo', token=old_token, token_endpoint='https://i.b/token',
+            update_token=update_token, grant_type='client_credentials',
+            dispatch=dispatch,
+    ) as client:
+        await client.post('https://i.b/user', json={'foo': 'bar'})
+        assert update_token.called is True
+
+
+@pytest.mark.asyncio
 async def test_revoke_token():
     answer = {'status': 'ok'}
     dispatch = MockDispatch(answer)
