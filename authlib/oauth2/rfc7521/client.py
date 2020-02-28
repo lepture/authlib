@@ -1,4 +1,5 @@
 from authlib.common.encoding import to_native
+from authlib.oauth2.base import OAuth2Error
 
 
 class AssertionClient(object):
@@ -71,5 +72,13 @@ class AssertionClient(object):
     def _refresh_token(self, data):
         resp = self.session.request(
             'POST', self.token_endpoint, data=data, withhold_token=True)
-        self.token = resp.json()
+
+        token = resp.json()
+        if 'error' in token:
+            raise OAuth2Error(
+                error=token['error'],
+                description=token.get('error_description')
+            )
+
+        self.token = token
         return self.token

@@ -1,6 +1,7 @@
 from httpx import AsyncClient
 from authlib.oauth2.rfc7521 import AssertionClient as _AssertionClient
 from authlib.oauth2.rfc7523 import JWTBearerGrant
+from authlib.oauth2 import OAuth2Error
 from .utils import extract_client_kwargs
 from .oauth2_client import OAuth2Auth
 
@@ -41,5 +42,12 @@ class AsyncAssertionClient(_AssertionClient, AsyncClient):
     async def _refresh_token(self, data):
         resp = await self.request(
             'POST', self.token_endpoint, data=data, withhold_token=True)
-        self.token = resp.json()
+
+        token = resp.json()
+        if 'error' in token:
+            raise OAuth2Error(
+                error=token['error'],
+                description=token.get('error_description')
+            )
+        self.token = token
         return self.token
