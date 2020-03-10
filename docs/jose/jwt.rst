@@ -45,7 +45,7 @@ JWT Encode
 payload with the given ``alg`` in header::
 
     >>> from authlib.jose import jwt
-    >>> headers = {'alg': 'RS256'}
+    >>> header = {'alg': 'RS256'}
     >>> payload = {'iss': 'Authlib', 'sub': '123', ...}
     >>> key = read_file('private.pem')
     >>> s = jwt.encode(header, payload, key)
