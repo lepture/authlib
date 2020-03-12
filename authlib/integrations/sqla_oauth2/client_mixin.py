@@ -68,7 +68,7 @@ class OAuth2ClientMixin(ClientMixin):
 
     @property
     def scope(self):
-        return self.client_metadata.get('scope')
+        return self.client_metadata.get('scope', '')
 
     @property
     def contacts(self):
