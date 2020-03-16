@@ -21,7 +21,7 @@ a shared API design among framework integrations. Get started with
 
 Create a registry with :class:`OAuth` object::
 
-    from authlib.django.client import OAuth
+    from authlib.integrations.django_client import OAuth
 
     oauth = OAuth()
 
