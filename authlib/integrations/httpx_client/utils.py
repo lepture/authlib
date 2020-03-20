@@ -1,5 +1,8 @@
 from httpx import URL
-from httpx._content_streams import ByteStream
+try:
+    from httpx._content_streams import ByteStream
+except ImportError:
+    from httpx.content_streams import ByteStream
 from authlib.common.encoding import to_bytes
 
 
