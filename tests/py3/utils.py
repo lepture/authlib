@@ -1,6 +1,6 @@
 import json
 from httpx import Response
-from httpx.dispatch.base import AsyncDispatcher
+from httpx._dispatch.base import AsyncDispatcher
 
 
 class MockDispatch(AsyncDispatcher):

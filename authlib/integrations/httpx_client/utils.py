@@ -1,5 +1,5 @@
 from httpx import URL
-from httpx.content_streams import ByteStream
+from httpx._content_streams import ByteStream
 from authlib.common.encoding import to_bytes
 
 

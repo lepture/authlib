@@ -1,6 +1,7 @@
 import typing
-from httpx import AsyncClient, Auth
-from httpx.models import (
+from httpx import (
+    AsyncClient,
+    Auth,
     Request,
     Response,
 )
