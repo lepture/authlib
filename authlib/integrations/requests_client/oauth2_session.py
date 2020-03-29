@@ -24,6 +24,8 @@ class OAuth2Auth(AuthBase, TokenAuth):
                 client.refresh_token(url, refresh_token=refresh_token, **kwargs)
             elif client.metadata.get('grant_type') == 'client_credentials':
                 access_token = self.token['access_token']
+                kwargs.setdefault('client_id', self.client.client_id)
+                kwargs.setdefault('client_secret', self.client.client_secret)
                 token = client.fetch_token(
                     url, grant_type='client_credentials', **kwargs)
                 if client.update_token:
