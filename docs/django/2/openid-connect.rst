@@ -112,7 +112,7 @@ First, we need to implement the missing methods for ``OpenIDCode``::
         def exists_nonce(self, nonce, request):
             try:
                 AuthorizationCode.objects.get(
-                    client_id=request.client_id, nonce=nonce)
+                    client_id=request.client_id, nonce=nonce
                 )
                 return True
             except AuthorizationCode.DoesNotExist:
@@ -156,7 +156,7 @@ Finally, you can register ``AuthorizationCodeGrant`` with ``OpenIDCode``
 extension::
 
     # register it to grant endpoint
-    server.register_grant(OpenIDCodeGrant, [OpenIDCode(require_nonce=True)])
+    server.register_grant(AuthorizationCodeGrant, [OpenIDCode(require_nonce=True)])
 
 The difference between OpenID Code flow and the standard code flow is that
 OpenID Connect request has a scope of "openid":
