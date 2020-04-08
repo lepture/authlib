@@ -1,7 +1,7 @@
 (function() {
   function pageAd() {
-    var h2 = document.querySelector('h2');
-    if (!h2) return;
+    var h1 = document.querySelector('.t-body h1');
+    if (!h1) return;
 
     var div = document.createElement('div');
     div.className = 'fund';
@@ -10,7 +10,7 @@
     s.id = '_carbonads_js';
     s.src = 'https://cdn.carbonads.com/carbon.js?serve=CE7DKK3W&placement=authliborg';
     div.appendChild(s);
-    h2.parentNode.insertBefore(div, h2);
+    h1.parentNode.insertBefore(div, h1.nextSibling);
   }
 
   document.addEventListener('DOMContentLoaded', pageAd);

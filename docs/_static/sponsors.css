@@ -1,10 +1,16 @@
-.fund{ display:inline-block }
-.fund a { border:0 }
 .ethical-fixedfooter { display:none }
-#carbonads {
-  display: flex;
-  max-width: 330px;
-  background-color: hsl(0, 0%, 98%);
+.fund{
+  z-index: 1;
+  position: relative;
+  bottom: 0;
+  right: 0;
+  float: right;
+  padding: 0 0 20px 30px;
+  width: 130px;
+}
+.fund a { border:0 }
+#carbonads span {
+  display: block;
 }
 
 #carbonads a {
@@ -22,36 +28,22 @@
   overflow: hidden;
 }
 
-#carbonads .carbon-wrap {
-  display: flex;
-}
-
-.carbon-img {
-  display: block;
-  margin: 0;
-  line-height: 1;
-}
-
 .carbon-img img {
   display: block;
+  width: 130px;
 }
 
-.carbon-text {
+#carbonads .carbon-text {
+  display: block;
+  margin-top: 4px;
   font-size: 13px;
-  padding: 10px;
-  line-height: 1.5;
   text-align: left;
 }
 
-.carbon-poweredby {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  display: block;
-  padding: 8px 10px;
+#carbonads .carbon-poweredby {
+  color: #aaa;
+  font-size: 10px;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
-  letter-spacing: .5px;
-  font-weight: 600;
-  font-size: 9px;
-  line-height: 1;
+  font-weight: normal;
 }
