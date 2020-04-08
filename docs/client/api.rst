@@ -81,7 +81,6 @@ Flask Registry and RemoteApp
         authorize_redirect,
         authorize_access_token,
         save_authorize_data,
-        save_authorize_state,
         get,
         post,
         patch,
