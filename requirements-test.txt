@@ -3,4 +3,3 @@ requests
 mock
 pytest
 coverage
-flake8

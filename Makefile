@@ -27,4 +27,4 @@ docs:
 	@$(MAKE) -C docs html
 
 lint:
-	@TOXENV=flake8 tox
+	@TOXENV=lint tox
