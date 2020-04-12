@@ -44,6 +44,7 @@ jobs:
         pip install -r requirements-test.txt
 
     - name: Run linters
+      if: matrix.python.version != '2.7'
       run: |
         flake8 authlib/ tests/
 
