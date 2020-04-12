@@ -162,7 +162,9 @@ class OAuth1Client(object):
 
     def parse_response_token(self, status_code, text):
         if status_code >= 400:
-            message = "Token request failed with code {}, response was '{}'.".format(status_code, text)
+            message = (
+                "Token request failed with code {}, response was '{}'.".format(status_code, text)
+            )
             self.handle_error('fetch_token_denied', message)
 
         try:
