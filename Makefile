@@ -11,7 +11,6 @@ clean-build:
 	@rm -fr *.egg
 	@rm -fr *.egg-info
 
-
 clean-pyc:
 	@find . -name '*.pyc' -exec rm -f {} +
 	@find . -name '*.pyo' -exec rm -f {} +
@@ -26,3 +25,6 @@ clean-tox:
 
 docs:
 	@$(MAKE) -C docs html
+
+lint:
+	@TOXENV=flake8 tox
