@@ -14,12 +14,16 @@ from ..base_client import OAuthError
 
 class OAuth1Auth(Auth, ClientAuth):
     """Signs the httpx request using OAuth 1 (RFC5849)"""
+
     requires_request_body = True
 
-    def auth_flow(self, request: Request) -> typing.Generator[Request, Response, None]:
+    def auth_flow(
+        self, request: Request
+    ) -> typing.Generator[Request, Response, None]:
         url, headers, body = self.prepare(
-            request.method, str(request.url), request.headers, request.content)
-        yield rebuild_request(request, url, headers, body)
+            request.method, str(request.url), request.headers, request.content
+        )
+        yield rebuild_request(request, url=url, headers=headers, body=body)
 
 
 class AsyncOAuth1Client(_OAuth1Client, AsyncClient):
