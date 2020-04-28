@@ -106,9 +106,9 @@ built-in validation with cache.
 
 If cache is not available, there is also a SQLAlchemy mixin::
 
-    from authlib.integrations.sqla_oauth1 import OAuth1TokenCredentialMixin
+    from authlib.integrations.sqla_oauth1 import OAuth1TimestampNonceMixin
 
-    class TimestampNonce(db.Model, OAuth1TokenCredentialMixin)
+    class TimestampNonce(db.Model, OAuth1TimestampNonceMixin)
         id = db.Column(db.Integer, primary_key=True)
 
 
