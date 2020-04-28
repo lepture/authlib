@@ -204,7 +204,7 @@ to fetch a temporary credential::
 
     @app.route('/initiate', methods=['POST'])
     def initiate_temporary_credential():
-        return server.create_temporary_credential_response()
+        return server.create_temporary_credentials_response()
 
 The endpoint for resource owner authorization. OAuth 1 Client will redirect
 user to this authorization page, so that resource owner can grant or deny this
