@@ -222,12 +222,14 @@ request::
 
         granted = request.form.get('granted')
         if granted:
-            grant_user = current_user
+            client_id = request.form.get('client_id')
+            client = server.get_client_by_id(client_id)
+            grant_user = client.user
         else:
             grant_user = None
 
         try:
-            return server.create_authorization_response(grant_user)
+            return server.create_authorization_response(request, grant_user)
         except OAuth1Error as error:
             return render_template('error.html', error=error)
 
