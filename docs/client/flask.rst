@@ -228,3 +228,5 @@ When we get the returned token::
 We can get the user information from the ``id_token`` in the returned token::
 
     userinfo = oauth.google.parse_id_token(token)
+
+Find Flask Google login example at https://github.com/authlib/demo-oauth-client/tree/master/flask-google-login
