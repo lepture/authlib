@@ -52,3 +52,26 @@
   text-transform: uppercase;
   font-weight: normal;
 }
+
+#bsa .native-box {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  margin: 16px 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  background-color: #f8fafc;
+  text-decoration: none;
+  color: rgba(0, 0, 0, 0.68);
+}
+
+#bsa .native-sponsor {
+  background-color: #447FD7;
+  color: #fff;
+  border-radius: .25rem;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  margin-right: 10px;
+  font-weight: 500;
+  font-size: 12px;
+}
