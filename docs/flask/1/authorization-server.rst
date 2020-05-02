@@ -227,7 +227,7 @@ request::
             grant_user = None
 
         try:
-            return server.create_authorization_response(grant_user)
+            return server.create_authorization_response(grant_user=grant_user)
         except OAuth1Error as error:
             return render_template('error.html', error=error)
 
