@@ -88,14 +88,14 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
         return await super(AsyncOAuth2Client, self).request(
             method, url, auth=auth, **kwargs)
 
-    async def ensure_active_token(self, **kwargs):
+    async def ensure_active_token(self):
         refresh_token = self.token.get('refresh_token')
         url = self.metadata.get('token_endpoint')
         if refresh_token and url:
-            await self.refresh_token(url, refresh_token=refresh_token, **kwargs)
+            await self.refresh_token(url, refresh_token=refresh_token)
         elif self.metadata.get('grant_type') == 'client_credentials':
             access_token = self.token['access_token']
-            token = await self.fetch_token(url, grant_type='client_credentials', **kwargs)
+            token = await self.fetch_token(url, grant_type='client_credentials')
             if self.update_token:
                 await self.update_token(token, access_token=access_token)
         else:
