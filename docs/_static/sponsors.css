@@ -6,9 +6,14 @@
   right: 0;
   float: right;
   padding: 0 0 20px 30px;
-  width: 130px;
+  width: 150px;
 }
 .fund a { border:0 }
+#carbonads {
+  background: #EDF2F4;
+  padding: 5px 10px;
+  border-radius: 3px;
+}
 #carbonads span {
   display: block;
 }
