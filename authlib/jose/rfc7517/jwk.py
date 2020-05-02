@@ -58,7 +58,7 @@ class JsonWebKey(object):
             raise ValueError('Invalid JWK set format')
 
         for key in keys:
-            if key['kid'] == kid:
+            if key.get('kid') == kid:
                 return self._load_obj(key)
         raise ValueError('Invalid JWK kid')
 
@@ -73,10 +73,6 @@ class JsonWebKey(object):
             if kid and 'kid' in obj and kid != obj['kid']:
                 raise ValueError('Invalid JSON Web Key')
             return self._load_obj(obj)
-
-        if not kid:
-            raise ValueError('Invalid JSON Web Key')
-
         return self._load_jwk_set(obj, kid)
 
     def dumps(self, key, kty=None, **params):
