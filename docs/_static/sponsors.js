@@ -26,12 +26,10 @@
     s.src = 'https://m.servedby-buysellads.com/monetization.js';
     s.onload = function() {
       if(typeof window._bsa !== 'undefined' && window._bsa) {
-        _bsa.init('custom', 'CE7DKK3M', 'placement:authliborg', { target: '#bsa', template: `
-  <a href="##link##" class="native-box">
-    <div class="native-sponsor">Sponsor</div>
-    <div class="native-text"><strong>##company##</strong> - ##description##</div>
-  </a>`}
-        );
+        _bsa.init('custom', 'CE7DKK3M', 'placement:authliborg', {
+          target: '#bsa',
+          template: '<a href="##link##" class="native-box"><div class="native-sponsor">Sponsor</div><div class="native-text"><strong>##company##</strong> - ##description##</div></a>'
+        });
       }
     }
     document.body.appendChild(s);
