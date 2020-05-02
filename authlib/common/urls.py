@@ -16,11 +16,11 @@ except ImportError:
     from urllib.parse import urlencode as _urlencode
 
 try:
-    from urllib2 import parse_keqv_list  # flake8: noqa
-    from urllib2 import parse_http_list  # flake8: noqa
+    from urllib2 import parse_keqv_list  # noqa: F401
+    from urllib2 import parse_http_list  # noqa: F401
 except ImportError:
-    from urllib.request import parse_keqv_list  # flake8: noqa
-    from urllib.request import parse_http_list  # flake8: noqa
+    from urllib.request import parse_keqv_list  # noqa: F401
+    from urllib.request import parse_http_list  # noqa: F401
 
 try:
     import urlparse

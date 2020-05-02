@@ -6,9 +6,9 @@ import struct
 is_py2 = sys.version_info[0] == 2
 
 if is_py2:
-    unicode_type = unicode
+    unicode_type = unicode  # noqa: F821
     byte_type = str
-    text_types = (unicode, str)
+    text_types = (unicode, str)  # noqa: F821
 else:
     unicode_type = str
     byte_type = bytes

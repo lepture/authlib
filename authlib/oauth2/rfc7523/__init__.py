@@ -22,3 +22,13 @@ from .auth import (
     ClientSecretJWT, PrivateKeyJWT,
     register_session_client_auth_method,
 )
+
+__all__ = [
+    'JWTBearerGrant',
+    'JWTBearerClientAssertion',
+    'client_secret_jwt_sign',
+    'private_key_jwt_sign',
+    'ClientSecretJWT',
+    'PrivateKeyJWT',
+    'register_session_client_auth_method',
+]
