@@ -11,7 +11,7 @@
     s.async = 1;
     s.id = '_carbonads_js';
     s.src = 'https://cdn.carbonads.com/carbon.js?serve=CE7DKK3W&placement=authliborg';
-    document.head.appendChild(s);
+    div.appendChild(s);
   }
 
   function bsa() {
@@ -34,7 +34,7 @@
         );
       }
     }
-    document.head.appendChild(s);
+    document.body.appendChild(s);
   }
 
   document.addEventListener('DOMContentLoaded', function() {
