@@ -81,7 +81,7 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
                 raise MissingTokenError()
 
             if self.token.is_expired():
-                await self.ensure_active_token(**kwargs)
+                await self.ensure_active_token()
 
             auth = self.token_auth
 
