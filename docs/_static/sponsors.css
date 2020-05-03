@@ -68,9 +68,9 @@
 #bsa .native-sponsor {
   background-color: #447FD7;
   color: #fff;
-  border-radius: .25rem;
+  border-radius: 3px;
   text-transform: uppercase;
-  padding: 6px 14px;
+  padding: 5px 12px;
   margin-right: 10px;
   font-weight: 500;
   font-size: 12px;

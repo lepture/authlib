@@ -37,6 +37,6 @@
 
   document.addEventListener('DOMContentLoaded', function() {
     carbon();
-    bsa();
+    setTimeout(bsa, 5000);
   });
 })();
