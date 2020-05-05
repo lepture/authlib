@@ -77,5 +77,5 @@ class FlaskRemoteApp(RemoteApp):
         self.token = token
         return token
 
-    def parse_id_token(self, token, claims_options=None):
-        return self._parse_id_token(flask_req, token, claims_options)
+    def parse_id_token(self, token, claims_options=None, leeway=120):
+        return self._parse_id_token(flask_req, token, claims_options, leeway)
