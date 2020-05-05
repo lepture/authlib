@@ -67,5 +67,5 @@ class DjangoRemoteApp(RemoteApp):
         params.update(kwargs)
         return self.fetch_access_token(**params)
 
-    def parse_id_token(self, request, token, claims_options=None):
-        return self._parse_id_token(request, token, claims_options)
+    def parse_id_token(self, request, token, claims_options=None, leeway=120):
+        return self._parse_id_token(request, token, claims_options, leeway)

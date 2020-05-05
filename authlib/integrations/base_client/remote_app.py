@@ -151,7 +151,7 @@ class RemoteApp(BaseApp):
             data = compliance_fix(self, data)
         return UserInfo(data)
 
-    def _parse_id_token(self, request, token, claims_options=None):
+    def _parse_id_token(self, request, token, claims_options=None, leeway=120):
         """Return an instance of UserInfo from token's ``id_token``."""
         if 'id_token' not in token:
             return None
@@ -191,5 +191,5 @@ class RemoteApp(BaseApp):
             claims_options=claims_options,
             claims_params=claims_params,
         )
-        claims.validate(leeway=120)
+        claims.validate(leeway)
         return UserInfo(claims)
