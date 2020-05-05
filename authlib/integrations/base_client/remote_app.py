@@ -197,5 +197,5 @@ class RemoteApp(BaseApp):
             claims_options=claims_options,
             claims_params=claims_params,
         )
-        claims.validate(leeway)
+        claims.validate(leeway=leeway)
         return UserInfo(claims)
