@@ -90,6 +90,9 @@ class OAuth1Client(object):
         kwargs['oauth_token'] = request_token or self.auth.token
         if self.auth.redirect_uri:
             kwargs['oauth_callback'] = self.auth.redirect_uri
+
+        self.auth.redirect_uri = None
+        self.auth.realm = None
         return add_params_to_uri(url, kwargs.items())
 
     def fetch_request_token(self, url, realm=None, **kwargs):
@@ -118,10 +121,7 @@ class OAuth1Client(object):
         else:
             self.auth.realm = None
 
-        token = self._fetch_token(url, **kwargs)
-        self.auth.redirect_uri = None
-        self.auth.realm = None
-        return token
+        return self._fetch_token(url, **kwargs)
 
     def fetch_access_token(self, url, verifier=None, **kwargs):
         """Method for fetching an access token from the token endpoint.

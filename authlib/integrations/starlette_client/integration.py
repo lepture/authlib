@@ -13,7 +13,7 @@ class StartletteIntegration(FrameworkIntegration):
 
     def generate_access_token_params(self, request_token_url, request):
         if request_token_url:
-            return request.scope
+            return dict(request.query_params)
         return {
             'code': request.query_params.get('code'),
             'state': request.query_params.get('state'),
