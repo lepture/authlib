@@ -15,17 +15,16 @@ __all__ = ['OAuth2Session', 'OAuth2Auth']
 class OAuth2Auth(AuthBase, TokenAuth):
     """Sign requests for OAuth 2.0, currently only bearer token is supported."""
 
-    def ensure_active_token(self, **kwargs):
+    def ensure_active_token(self):
         if self.client and self.token.is_expired():
             refresh_token = self.token.get('refresh_token')
             client = self.client
             url = client.metadata.get('token_endpoint')
             if refresh_token and url:
-                client.refresh_token(url, refresh_token=refresh_token, **kwargs)
+                client.refresh_token(url, refresh_token=refresh_token)
             elif client.metadata.get('grant_type') == 'client_credentials':
                 access_token = self.token['access_token']
-                token = client.fetch_token(
-                    url, grant_type='client_credentials', **kwargs)
+                token = client.fetch_token(url, grant_type='client_credentials')
                 if client.update_token:
                     client.update_token(token, access_token=access_token)
             else:

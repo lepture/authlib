@@ -162,7 +162,10 @@ class OAuth1Client(object):
 
     def parse_response_token(self, status_code, text):
         if status_code >= 400:
-            message = "Token request failed with code {}, response was '{}'.".format(status_code, text)
+            message = (
+                "Token request failed with code {}, "
+                "response was '{}'."
+            ).format(status_code, text)
             self.handle_error('fetch_token_denied', message)
 
         try:
@@ -172,10 +175,12 @@ class OAuth1Client(object):
             else:
                 token = dict(url_decode(text))
         except (TypeError, ValueError) as e:
-            error = ("Unable to decode token from token response. "
-                     "This is commonly caused by an unsuccessful request where"
-                     " a non urlencoded error message is returned. "
-                     "The decoding error was %s""" % e)
+            error = (
+                "Unable to decode token from token response. "
+                "This is commonly caused by an unsuccessful request where"
+                " a non urlencoded error message is returned. "
+                "The decoding error was {}"
+            ).format(e)
             raise ValueError(error)
         return token
 

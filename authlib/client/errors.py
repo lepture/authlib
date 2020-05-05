@@ -1,1 +1,1 @@
-from authlib.integrations._client import *
+from authlib.integrations.base_client import *

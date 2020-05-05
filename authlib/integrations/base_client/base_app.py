@@ -235,5 +235,6 @@ class BaseApp(object):
         return self.request('DELETE', url, **kwargs)
 
     def _fetch_server_metadata(self, url):
-        resp = self.request('GET', url, withhold_token=True)
-        return resp.json()
+        with self._get_oauth_client() as session:
+            resp = session.request('GET', url, withhold_token=True)
+            return resp.json()

@@ -114,9 +114,15 @@ class RemoteApp(BaseApp):
         if self.api_base_url and not url.startswith(('https://', 'http://')):
             url = urlparse.urljoin(self.api_base_url, url)
 
-        with self._get_oauth_client() as session:
+        withhold_token = kwargs.get('withhold_token')
+        if token and not withhold_token:
+            metadata = self.load_server_metadata()
+        else:
+            metadata = {}
+
+        with self._get_oauth_client(**metadata) as session:
             request = kwargs.pop('request', None)
-            if kwargs.get('withhold_token'):
+            if withhold_token:
                 return session.request(method, url, **kwargs)
 
             if token is None and self._fetch_token and request:

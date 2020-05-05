@@ -6,9 +6,14 @@
   right: 0;
   float: right;
   padding: 0 0 20px 30px;
-  width: 130px;
+  width: 150px;
 }
 .fund a { border:0 }
+#carbonads {
+  background: #EDF2F4;
+  padding: 5px 10px;
+  border-radius: 3px;
+}
 #carbonads span {
   display: block;
 }
@@ -46,4 +51,27 @@
   letter-spacing: 0.8px;
   text-transform: uppercase;
   font-weight: normal;
+}
+
+#bsa .native-box {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  margin: 16px 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  background-color: #f8fafc;
+  text-decoration: none;
+  color: rgba(0, 0, 0, 0.68);
+}
+
+#bsa .native-sponsor {
+  background-color: #447FD7;
+  color: #fff;
+  border-radius: 3px;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  margin-right: 10px;
+  font-weight: 500;
+  font-size: 12px;
 }
