@@ -121,9 +121,9 @@ class BaseApp(object):
     def _retrieve_oauth2_access_token_params(self, request, params):
         request_state = params.pop('state', None)
         state = self.framework.get_session_data(request, 'state')
-        if request_state or state:
-            if state != request_state:
-                raise MismatchingStateError()
+        if state != request_state:
+            raise MismatchingStateError()
+        if state:
             params['state'] = state
 
         code_verifier = self.framework.get_session_data(request, 'code_verifier')
