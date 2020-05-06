@@ -13,10 +13,6 @@ with open('README.rst') as f:
 client_requires = ['requests']
 crypto_requires = ['cryptography']
 
-tidelift = (
-    'https://tidelift.com/subscription/pkg/pypi-authlib'
-    '?utm_source=pypi-authlib&utm_medium=referral&utm_campaign=pypi'
-)
 
 setup(
     name='Authlib',
@@ -45,7 +41,6 @@ setup(
         'Source Code': 'https://github.com/lepture/authlib',
         'Blog': 'https://blog.authlib.org/',
         'Donate': 'https://lepture.com/donate',
-        'Tidelift Subscription': tidelift,
     },
     classifiers=[
         'Development Status :: 4 - Beta',

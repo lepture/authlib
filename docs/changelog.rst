@@ -6,6 +6,27 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+
+Version 0.14.2
+--------------
+
+**Released on May 6, 2020.**
+
+- Fix OAuth 1.0 client for starlette.
+- Allow leeway option in client parse ID token via :gh:`PR#228`.
+- Fix OAuthToken when ``expires_at`` or ``expires_in`` is 0 via :gh:`PR#227`.
+- Fix auto refresh token logic.
+- Load server metadata before request.
+
+
+Version 0.14.1
+--------------
+
+**Released on Feb 12, 2020.**
+
+- Quick fix for legacy imports of Flask and Django clients
+
+
 Version 0.14
 ------------
 
@@ -144,64 +165,14 @@ Besides that, there are other improvements:
 
 **Deprecate Changes**: find how to solve the deprecate issues via https://git.io/fAmW1
 
-Version 0.9
------------
-
-**Released on Aug 12, 2018. Fun Dive.**
-
-There is no big break changes in this version. The very great improvement is
-adding JWE support. But the JWA parts of JWE are not finished yet, use with
-caution.
-
-RFC implementations in this release:
-
-- RFC7636: client and server implementation of :ref:`specs/rfc7636`.
-- RFC7523: easy integration of :ref:`jwt_oauth2session`.
-- RFC7516: JWE compact serialization and deserialization.
-- RFC7519: JWT with JWE encode and decode.
-
-**Other Changes**:
-
-- Fixed the lazy initialization of Flask OAuth 2.0 provider.
-- Deprecated ``authlib.client.apps`` from v0.7 has been dropped.
-
-
-Version 0.8
------------
-
-**Released on Jun 17, 2018. Try Django.**
-
-Authlib has tried to introduce Django OAuth server implementation in this
-version. It turns out that it is not that easy. In this version, only Django
-OAuth 1.0 server is provided.
-
-As always, there are also RFC features added in this release, here is what's
-in version 0.8:
-
-- RFC7523: Add JWTs for Client Authentication of :ref:`specs/rfc7523`.
-- OIDC: Add ``response_mode=form_post`` support for OpenID Connect.
-
-**Improvement** in this release:
-
-- A new redesigned error system. All errors are subclasses of a ``AuthlibBaseError``.
-- I18N support for error descriptions.
-- Separate AuthorizationCodeMixin in ``authlib.flask.oauth2.sqla`` via :gh:`issue#57`.
-- Add context information when generate token via :gh:`issue#58`.
-- Improve JWT key handles, auto load JWK and JWK set.
-- Add ``require_oauth.acquire`` with statement, get example on :ref:`flask_oauth2_server`.
-
-**Deprecate Changes**: find how to solve the deprecate issues via https://git.io/vhL75
-
-- Rename config key ``OAUTH2_EXPIRES_IN`` to ``OAUTH2_TOKEN_EXPIRES_IN``.
-- Rename Flask OAuth 2.0 ``create_expires_generator`` to
-  ``create_token_expires_in_generator``
-
 
 Old Versions
 ------------
 
 Find old changelog at https://github.com/lepture/authlib/releases
 
+- Version 0.9.0: Released on Aug 12, 2018
+- Version 0.8.0: Released on Jun 17, 2018
 - Version 0.7.0: Released on Apr 28, 2018
 - Version 0.6.0: Released on Mar 20, 2018
 - Version 0.5.1: Released on Feb 11, 2018
