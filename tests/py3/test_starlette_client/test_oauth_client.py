@@ -66,6 +66,7 @@ async def test_oauth1_authorize():
     req_token = req.session.get('_dev_authlib_request_token_')
     assert req_token is not None
 
+    req.scope['query_string'] = 'oauth_token=foo&oauth_verifier=baz'
     token = await client.authorize_access_token(req)
     assert token['oauth_token'] == 'a'
 
