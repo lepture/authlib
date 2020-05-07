@@ -408,6 +408,23 @@ class OAuth2SessionTest(TestCase):
         token = sess.fetch_token('https://i.b/token')
         self.assertEqual(token, self.token)
 
+    def test_client_secret_jwt2(self):
+        sess = OAuth2Session(
+            'id', 'secret',
+            token_endpoint_auth_method=ClientSecretJWT(),
+        )
+
+        def fake_send(r, **kwargs):
+            self.assertIn('client_assertion=', r.body)
+            self.assertIn('client_assertion_type=', r.body)
+            resp = mock.MagicMock()
+            resp.json = lambda: self.token
+            return resp
+
+        sess.send = fake_send
+        token = sess.fetch_token('https://i.b/token')
+        self.assertEqual(token, self.token)
+
     def test_private_key_jwt(self):
         client_secret = read_file_path('rsa_private.pem')
         sess = OAuth2Session(

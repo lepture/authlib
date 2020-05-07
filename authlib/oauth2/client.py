@@ -103,7 +103,8 @@ class OAuth2Client(object):
             self._auth_methods[auth.name] = auth
 
     def client_auth(self, auth_method):
-        auth_method = self._auth_methods.get(auth_method, auth_method)
+        if isinstance(auth_method, str) and auth_method in self._auth_methods:
+            auth_method = self._auth_methods[auth_method]
         return self.client_auth_class(
             client_id=self.client_id,
             client_secret=self.client_secret,
