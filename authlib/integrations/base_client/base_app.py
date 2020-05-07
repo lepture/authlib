@@ -167,8 +167,10 @@ class BaseApp(object):
     def _create_oauth2_authorization_url(client, authorization_endpoint, **kwargs):
         rv = {}
         if client.code_challenge_method:
-            code_verifier = generate_token(48)
-            kwargs['code_verifier'] = code_verifier
+            code_verifier = kwargs.get('code_verifier')
+            if not code_verifier:
+                code_verifier = generate_token(48)
+                kwargs['code_verifier'] = code_verifier
             rv['code_verifier'] = code_verifier
 
         scope = kwargs.get('scope', client.scope)
