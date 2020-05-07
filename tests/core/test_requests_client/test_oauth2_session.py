@@ -390,6 +390,23 @@ class OAuth2SessionTest(TestCase):
             token_type_hint='access_token'
         )
 
+    def test_introspect_token(self):
+        sess = OAuth2Session('a')
+        answer = {
+            "active": True,
+            "client_id": "l238j323ds-23ij4",
+            "username": "jdoe",
+            "scope": "read write dolphin",
+            "sub": "Z5O3upPC88QrAjx00dis",
+            "aud": "https://protected.example.net/resource",
+            "iss": "https://server.example.com/",
+            "exp": 1419356238,
+            "iat": 1419350238
+        }
+        sess.send = mock_json_response(answer)
+        resp = sess.introspect_token('https://i.b/token', 'hi')
+        self.assertEqual(resp.json(), answer)
+
     def test_client_secret_jwt(self):
         sess = OAuth2Session(
             'id', 'secret',
