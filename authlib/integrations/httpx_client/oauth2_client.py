@@ -137,7 +137,7 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
 
         return self.token
 
-    def _revoke_token(self, url, body=None, auth=None, headers=None, **kwargs):
+    def _http_post(self, url, body=None, auth=None, headers=None, **kwargs):
         return self.post(
             url, data=dict(url_decode(body)),
             headers=headers, auth=auth, **kwargs)

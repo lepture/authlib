@@ -90,6 +90,7 @@ class OAuth2Client(object):
             'refresh_token_request': set(),
             'refresh_token_response': set(),
             'revoke_token_request': set(),
+            'introspect_token_request': set(),
         }
         self._auth_methods = {}
 
@@ -292,10 +293,38 @@ class OAuth2Client(object):
                      include in the token request. Prefer kwargs over body.
         :param auth: An auth tuple or method as accepted by requests.
         :param headers: Dict to default request headers with.
-        :return: A :class:`OAuth2Token` object (a dict too).
+        :return: Revocation Response
 
         .. _`RFC7009`: https://tools.ietf.org/html/rfc7009
         """
+        return self._handle_token_hint(
+            'revoke_token_request', url,
+            token=token, token_type_hint=token_type_hint,
+            body=body, auth=auth, headers=headers, **kwargs)
+
+    def introspect_token(self, url, token=None, token_type_hint=None,
+                         body=None, auth=None, headers=None, **kwargs):
+        """Implementation of OAuth 2.0 Token Introspection defined via `RFC7662`_.
+
+        :param url: Introspection Endpoint, must be HTTPS.
+        :param token: The token to be introspected.
+        :param token_type_hint: The type of the token that to be revoked.
+                                It can be "access_token" or "refresh_token".
+        :param body: Optional application/x-www-form-urlencoded body to add the
+                     include in the token request. Prefer kwargs over body.
+        :param auth: An auth tuple or method as accepted by requests.
+        :param headers: Dict to default request headers with.
+        :return: Introspection Response
+
+        .. _`RFC7662`: https://tools.ietf.org/html/rfc7662
+        """
+        return self._handle_token_hint(
+            'introspect_token_request', url,
+            token=token, token_type_hint=token_type_hint,
+            body=body, auth=auth, headers=headers, **kwargs)
+
+    def _handle_token_hint(self, hook, url, token=None, token_type_hint=None,
+                           body=None, auth=None, headers=None, **kwargs):
         if token is None and self.token:
             token = self.token.get('refresh_token') or self.token.get('access_token')
 
@@ -305,17 +334,17 @@ class OAuth2Client(object):
         body, headers = prepare_revoke_token_request(
             token, token_type_hint, body, headers)
 
-        for hook in self.compliance_hook['revoke_token_request']:
+        for hook in self.compliance_hook[hook]:
             url, headers, body = hook(url, headers, body)
 
         if auth is None:
             auth = self.client_auth(self.revocation_endpoint_auth_method)
 
         session_kwargs = self._extract_session_request_params(kwargs)
-        return self._revoke_token(
+        return self._http_post(
             url, body, auth=auth, headers=headers, **session_kwargs)
 
-    def _revoke_token(self, url, body=None, auth=None, headers=None, **kwargs):
+    def _http_post(self, url, body=None, auth=None, headers=None, **kwargs):
         return self.session.post(
             url, data=dict(url_decode(body)),
             headers=headers, auth=auth, **kwargs)
@@ -330,6 +359,7 @@ class OAuth2Client(object):
         * refresh_token_response: invoked before refresh token parsing.
         * protected_request: invoked before making a request.
         * revoke_token_request: invoked before revoking a token.
+        * introspect_token_request: invoked before introspecting a token.
         """
         if hook_type == 'protected_request':
             self.token_auth.hooks.add(hook)
