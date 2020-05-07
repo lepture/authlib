@@ -13,6 +13,7 @@ provides many frameworks integrations, including:
 * Flask_ web framework integration
 * Django_ web framework integration
 * Starlette_ web framework integration
+* FastAPI_ web framework integration
 
 In order to use Authlib client, you have to install each library yourself. For
 example, you want to use ``requests`` OAuth clients::
@@ -21,7 +22,7 @@ example, you want to use ``requests`` OAuth clients::
 
 For instance, you want to use ``httpx`` OAuth clients::
 
-    $ pip install Authlib httpx
+    $ pip install Authlib httpx==0.12.0
 
 Here is a simple overview of Flask OAuth client::
 
@@ -41,7 +42,7 @@ Here is a simple overview of Flask OAuth client::
     def authorize():
         token = github.authorize_access_token()
         # you can save the token into database
-        profile = github.get('/user')
+        profile = github.get('/user', token=token)
         return jsonify(profile)
 
 Follow the documentation below to find out more in detail.
@@ -57,6 +58,7 @@ Follow the documentation below to find out more in detail.
     flask
     django
     starlette
+    fastapi
     api
 
 .. _Requests: https://requests.readthedocs.io/en/master/
@@ -64,3 +66,4 @@ Follow the documentation below to find out more in detail.
 .. _Flask: https://flask.palletsprojects.com
 .. _Django: https://djangoproject.com
 .. _Starlette: https://starlette.io
+.. _FastAPI: https://fastapi.tiangolo.com/

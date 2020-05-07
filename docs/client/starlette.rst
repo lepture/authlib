@@ -10,9 +10,16 @@ Starlette OAuth Client
 .. module:: authlib.integrations.starlette_client
     :noindex:
 
+Starlette_ is a lightweight ASGI framework/toolkit, which is ideal for
+building high performance asyncio services.
+
+.. _Starlette: https://www.starlette.io/
+
 This documentation covers OAuth 1.0, OAuth 2.0 and OpenID Connect Client
 support for Starlette. Because all the frameworks integrations share the
-same API, it is best to read :ref:`frameworks_clients` at first.
+same API, it is best to:
+
+Read :ref:`frameworks_clients` at first.
 
 The difference between Starlette and Flask/Django integrations is Starlette
 is **async**. We will use ``await`` for the functions we need to call. But
@@ -24,20 +31,6 @@ first, let's create an :class:`OAuth` instance::
 
 The common use case for OAuth is authentication, e.g. let your users log in
 with Twitter, GitHub, Google etc.
-
-Register Remote Apps
---------------------
-
-``oauth.register`` is the same as :ref:`frameworks_clients`, please read
-that documentation at first.
-
-However, unlike Flask/Django, Starlette OAuth registry is using HTTPX
-:class:`~authlib.integrations.httpx_client.AsyncOAuth1Client` and
-:class:`~authlib.integrations.httpx_client.AsyncOAuth2Client` as the client
-backends. While Flask and Django are using the Requests version of
-:class:`~authlib.integrations.requests_client.OAuth1Session` and
-:class:`~authlib.integrations.requests_client.OAuth2Session`.
-
 
 Configuration
 -------------
@@ -58,6 +51,25 @@ take google as an example::
 
 It will load **GOOGLE_CLIENT_ID** and **GOOGLE_CLIENT_SECRET** from the
 environment.
+
+Register Remote Apps
+--------------------
+
+``oauth.register`` is the same as :ref:`frameworks_clients`::
+
+    oauth.register(
+        'google',
+        client_id='...',
+        client_secret='...',
+        ...
+    )
+
+However, unlike Flask/Django, Starlette OAuth registry is using HTTPX
+:class:`~authlib.integrations.httpx_client.AsyncOAuth1Client` and
+:class:`~authlib.integrations.httpx_client.AsyncOAuth2Client` as the OAuth
+backends. While Flask and Django are using the Requests version of
+:class:`~authlib.integrations.requests_client.OAuth1Session` and
+:class:`~authlib.integrations.requests_client.OAuth2Session`.
 
 
 Enable Session for OAuth 1.0
@@ -80,27 +92,50 @@ application, which requires the installation of the ``itsdangerous`` package::
 However, using the ``SessionMiddleware`` will store the temporary credential as
 a secure cookie which will expose your request token to the client.
 
-Using FastAPI
--------------
+Routes for Authorization
+------------------------
 
-Developers may not use starlette directly. For instance, FastAPI is based on
-starlette, we can also use the starlette integration in FastAPI.
+Just like the examples in :ref:`frameworks_clients`, but Starlette is **async**,
+the routes for authorization should look like::
 
-Since Authlib starlette requires using ``request`` instance, we need to
-expose that ``request`` to Authlib. According to the documentation on
-`Using the Request Directly <https://fastapi.tiangolo.com/tutorial/using-request-directly/>`_::
+    @app.route('/login')
+    async def login(request):
+        google = oauth.create_client('google')
+        redirect_uri = request.url_for('authorize')
+        return await google.authorize_redirect(request, redirect_uri)
 
-    from starlette.requests import Request
+    @app.route('/auth')
+    async def authorize(request):
+        google = oauth.create_client('google')
+        token = await google.authorize_access_token(request)
+        user = await google.parse_id_token(request, token)
+        # do something with the token and profile
+        return '...'
 
-    @app.get("/login")
-    def login_via_google(request: Request):
-        redirect_uri = 'https://example.com/auth'
-        return await oauth.google.authorize_redirect(request, redirect_uri)
+Starlette OpenID Connect
+------------------------
 
-    @app.get("/auth")
-    def auth_via_google(request: Request):
-        token = await oauth.google.authorize_access_token(request)
-        user = await oauth.google.parse_id_token(request, token)
-        return dict(user)
+An OpenID Connect client is no different than a normal OAuth 2.0 client, just add
+``openid`` scope when ``.register``. In the above example, in ``authorize``::
 
-Find out our demo on how to use starlette integration at https://github.com/authlib/demo-oauth-client
+    user = await google.parse_id_token(request, token)
+
+There is a ``id_token`` in the response ``token``. We can parse userinfo from this
+``id_token``.
+
+Here is how you can add ``openid`` scope in ``.register``::
+
+    oauth.register(
+        'google',
+        ...
+        server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+        client_kwargs={'scope': 'openid profile email'}
+    )
+
+Examples
+--------
+
+We have Starlette demos at https://github.com/authlib/demo-oauth-client
+
+1. OAuth 1.0: `Starlette Twitter login <https://github.com/authlib/demo-oauth-client/tree/master/starlette-twitter-login>`_
+2. OAuth 2.0: `Starlette Google login <https://github.com/authlib/demo-oauth-client/tree/master/starlette-google-login>`_

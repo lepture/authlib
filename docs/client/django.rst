@@ -64,7 +64,7 @@ They can be configured from your Django settings::
     }
 
 We suggest that you keep ONLY ``client_id`` and ``client_secret`` in
-your application settings, other parameters are better in `.register()`.
+your application settings, other parameters are better in ``.register()``.
 
 Saving Temporary Credential
 ---------------------------
