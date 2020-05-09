@@ -5,7 +5,7 @@ from authlib.integrations.httpx_client import (
     SIGNATURE_TYPE_BODY,
     SIGNATURE_TYPE_QUERY,
 )
-from tests.py3.utils import MockDispatch
+from tests.py3.utils import mock_dispatch
 
 oauth_url = 'https://example.com/oauth'
 
@@ -14,12 +14,12 @@ oauth_url = 'https://example.com/oauth'
 async def test_fetch_request_token_via_header():
     request_token = {'oauth_token': '1', 'oauth_token_secret': '2'}
 
-    def assert_func(request):
+    async def assert_func(request):
         auth_header = request.headers.get('authorization')
         assert 'oauth_consumer_key="id"' in auth_header
         assert 'oauth_signature=' in auth_header
 
-    dispatch = MockDispatch(request_token, assert_func=assert_func)
+    dispatch = mock_dispatch(request_token, assert_func=assert_func)
     async with AsyncOAuth1Client('id', 'secret', dispatch=dispatch) as client:
         response = await client.fetch_request_token(oauth_url)
 
@@ -30,14 +30,14 @@ async def test_fetch_request_token_via_header():
 async def test_fetch_request_token_via_body():
     request_token = {'oauth_token': '1', 'oauth_token_secret': '2'}
 
-    def assert_func(request):
+    async def assert_func(request):
         auth_header = request.headers.get('authorization')
         assert auth_header is None
 
-        assert b'oauth_consumer_key=id' in request.content
+        assert b'oauth_consumer_key=id' in await request.aread()
         assert b'&oauth_signature=' in request.content
 
-    mock_response = MockDispatch(request_token, assert_func=assert_func)
+    mock_response = mock_dispatch(request_token, assert_func=assert_func)
 
     async with AsyncOAuth1Client(
         'id', 'secret', signature_type=SIGNATURE_TYPE_BODY,
@@ -52,7 +52,7 @@ async def test_fetch_request_token_via_body():
 async def test_fetch_request_token_via_query():
     request_token = {'oauth_token': '1', 'oauth_token_secret': '2'}
 
-    def assert_func(request):
+    async def assert_func(request):
         auth_header = request.headers.get('authorization')
         assert auth_header is None
 
@@ -60,7 +60,7 @@ async def test_fetch_request_token_via_query():
         assert 'oauth_consumer_key=id' in url
         assert '&oauth_signature=' in url
 
-    mock_response = MockDispatch(request_token, assert_func=assert_func)
+    mock_response = mock_dispatch(request_token, assert_func=assert_func)
 
     async with AsyncOAuth1Client(
         'id', 'secret', signature_type=SIGNATURE_TYPE_QUERY,
@@ -75,14 +75,14 @@ async def test_fetch_request_token_via_query():
 async def test_fetch_access_token():
     request_token = {'oauth_token': '1', 'oauth_token_secret': '2'}
 
-    def assert_func(request):
+    async def assert_func(request):
         auth_header = request.headers.get('authorization')
         assert 'oauth_verifier="d"' in auth_header
         assert 'oauth_token="foo"' in auth_header
         assert 'oauth_consumer_key="id"' in auth_header
         assert 'oauth_signature=' in auth_header
 
-    mock_response = MockDispatch(request_token, assert_func=assert_func)
+    mock_response = mock_dispatch(request_token, assert_func=assert_func)
     async with AsyncOAuth1Client(
         'id', 'secret', token='foo', token_secret='bar',
         dispatch=mock_response,
@@ -97,7 +97,7 @@ async def test_fetch_access_token():
 
 @pytest.mark.asyncio
 async def test_get_via_header():
-    mock_response = MockDispatch(b'hello')
+    mock_response = mock_dispatch(b'hello')
     async with AsyncOAuth1Client(
         'id', 'secret', token='foo', token_secret='bar',
         dispatch=mock_response,
@@ -114,7 +114,7 @@ async def test_get_via_header():
 
 @pytest.mark.asyncio
 async def test_get_via_body():
-    mock_response = MockDispatch(b'hello')
+    mock_response = mock_dispatch(b'hello')
     async with AsyncOAuth1Client(
         'id', 'secret', token='foo', token_secret='bar',
         signature_type=SIGNATURE_TYPE_BODY,
@@ -128,14 +128,14 @@ async def test_get_via_body():
     auth_header = request.headers.get('authorization')
     assert auth_header is None
 
-    assert b'oauth_token=foo' in request.content
+    assert b'oauth_token=foo' in await request.aread()
     assert b'oauth_consumer_key=id' in request.content
     assert b'oauth_signature=' in request.content
 
 
 @pytest.mark.asyncio
 async def test_get_via_query():
-    mock_response = MockDispatch(b'hello')
+    mock_response = mock_dispatch(b'hello')
     async with AsyncOAuth1Client(
         'id', 'secret', token='foo', token_secret='bar',
         signature_type=SIGNATURE_TYPE_QUERY,

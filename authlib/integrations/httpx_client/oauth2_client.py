@@ -1,9 +1,6 @@
 import typing
-from httpx import AsyncClient, Auth
-from httpx.models import (
-    Request,
-    Response,
-)
+from asyncio import iscoroutinefunction
+from httpx import AsyncClient, Auth, Request, Response
 from authlib.common.urls import url_decode
 from authlib.oauth2.client import OAuth2Client as _OAuth2Client
 from authlib.oauth2.auth import ClientAuth, TokenAuth
@@ -114,8 +111,19 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
                 url = '?'.join([url, body])
             resp = await self.get(url, headers=headers, auth=auth, **kwargs)
 
-        for hook in self.compliance_hook['access_token_response']:
-            resp = hook(resp)
+        # hooks are supposed to be called in a synchronous manner,
+        # but it could be called asynchronously when all of them are coroutine functions.
+        if all(iscoroutinefunction(hook)
+               for hook in self.compliance_hook['access_token_response']):
+            for hook in self.compliance_hook['access_token_response']:
+                resp = await hook(resp)
+        else:
+            await resp.aread()
+            for hook in self.compliance_hook['access_token_response']:
+                if iscoroutinefunction(hook):
+                    resp = await hook(resp)
+                else:
+                    resp = hook(resp)
 
         return self.parse_response_token(resp.json())
 
@@ -125,8 +133,19 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
             url, data=dict(url_decode(body)), headers=headers,
             auth=auth, **kwargs)
 
-        for hook in self.compliance_hook['refresh_token_response']:
-            resp = hook(resp)
+        # hooks are supposed to be called in a synchronous manner,
+        # but it could be called asynchronously when all of them are coroutine functions.
+        if all(iscoroutinefunction(hook)
+               for hook in self.compliance_hook['refresh_token_response']):
+            for hook in self.compliance_hook['refresh_token_response']:
+                resp = await hook(resp)
+        else:
+            await resp.aread()
+            for hook in self.compliance_hook['refresh_token_response']:
+                if iscoroutinefunction(hook):
+                    resp = await hook(resp)
+                else:
+                    resp = hook(resp)
 
         token = self.parse_response_token(resp.json())
         if 'refresh_token' not in token:

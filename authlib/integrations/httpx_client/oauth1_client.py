@@ -1,11 +1,9 @@
 import typing
-from httpx import AsyncClient, Auth
-from httpx import Request, Response
+from httpx import AsyncClient, Auth, Request, Response
 from authlib.oauth1 import (
     SIGNATURE_HMAC_SHA1,
     SIGNATURE_TYPE_HEADER,
 )
-from authlib.common.encoding import to_unicode
 from authlib.oauth1 import ClientAuth
 from authlib.oauth1.client import OAuth1Client as _OAuth1Client
 from .utils import extract_client_kwargs, rebuild_request
@@ -65,8 +63,9 @@ class AsyncOAuth1Client(_OAuth1Client, AsyncClient):
 
     async def _fetch_token(self, url, **kwargs):
         resp = await self.post(url, **kwargs)
-        text = await resp.aread()
-        token = self.parse_response_token(resp.status_code, to_unicode(text))
+        await resp.aread()
+        text = resp.text
+        token = self.parse_response_token(resp.status_code, text)
         self.token = token
         return token
 

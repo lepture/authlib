@@ -1,7 +1,7 @@
 import time
 import pytest
 from authlib.integrations.httpx_client import AsyncAssertionClient
-from tests.py3.utils import MockDispatch
+from tests.py3.utils import mock_dispatch
 
 
 default_token = {
@@ -15,9 +15,9 @@ default_token = {
 
 @pytest.mark.asyncio
 async def test_refresh_token():
-    def verifier(request):
+    async def verifier(request):
         if str(request.url) == 'https://i.b/token':
-            assert b'assertion=' in request.read()
+            assert b'assertion=' in await request.aread()
 
     async with AsyncAssertionClient(
         'https://i.b/token',
@@ -27,7 +27,7 @@ async def test_refresh_token():
         audience='foo',
         alg='HS256',
         key='secret',
-        dispatch=MockDispatch(default_token, assert_func=verifier)
+        dispatch=mock_dispatch(default_token, assert_func=verifier)
     ) as client:
         await client.get('https://i.b')
 
@@ -44,7 +44,7 @@ async def test_refresh_token():
         key='secret',
         scope='email',
         claims={'test_mode': 'true'},
-        dispatch=MockDispatch(default_token, assert_func=verifier)
+        dispatch=mock_dispatch(default_token, assert_func=verifier)
     ) as client:
         await client.get('https://i.b')
         await client.get('https://i.b')

@@ -18,5 +18,12 @@ class RequestClient(RequestFactory):
 
 
 class TestCase(_TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super(TestCase, cls).setUpClass()
+        from . import settings as settings_module
+        if not settings.configured:
+            settings.configure(settings_module.__dict__)
+
     def setUp(self):
         self.factory = RequestClient()

@@ -11,6 +11,7 @@ with open('README.rst') as f:
 
 
 client_requires = ['requests']
+httpx_requires = ['httpx >= 0.12.0']
 crypto_requires = ['cryptography']
 
 
@@ -33,6 +34,7 @@ setup(
     install_requires=crypto_requires,
     extras_require={
         'client': client_requires,
+        'httpx': httpx_requires,
     },
     project_urls={
         'Documentation': 'https://docs.authlib.org/',

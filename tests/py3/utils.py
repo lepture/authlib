@@ -1,44 +1,64 @@
 import json
-from httpx import Response
-from httpx.dispatch.base import AsyncDispatcher
+from httpx import ASGIDispatch, Request
 
 
-class MockDispatch(AsyncDispatcher):
-    def __init__(self, body=b'', status_code=200, headers=None,
-                 assert_func=None):
-        if headers is None:
-            headers = {}
-        if isinstance(body, dict):
-            body = json.dumps(body).encode()
-            headers['Content-Type'] = 'application/json'
-        else:
-            if isinstance(body, str):
-                body = body.encode()
-            headers['Content-Type'] = 'application/x-www-form-urlencoded'
-
-        self.body = body
-        self.status_code = status_code
-        self.headers = headers
-        self.assert_func = assert_func
-
-    async def send(self, request, verify=None, cert=None, timeout=None):
-        if self.assert_func:
-            self.assert_func(request)
-
-        return Response(
-            self.status_code,
-            content=self.body,
-            headers=self.headers,
-            request=request,
-        )
+async def read_request(scope, receive):
+    body = bytearray()
+    while True:
+        req = await receive()
+        assert req["type"] == "http.request"
+        assert "body" in req
+        assert "more_body" in req
+        body.extend(req["body"])
+        if not req["more_body"]:
+            break
+    return Request(
+        method=scope["method"],
+        url="{}://{}{}".format(scope["scheme"], scope["server"], scope["path"]),
+        params=str(scope["query_string"]),
+        headers=scope["headers"],
+        data=bytes(body),
+    )
 
 
-class PathMapDispatch(AsyncDispatcher):
-    def __init__(self, path_maps):
-        self.path_maps = path_maps
+def mock_dispatch(body=b'', status_code=200, headers=None, assert_func=None):
+    if headers is None:
+        headers = {}
+    if isinstance(body, dict):
+        body = json.dumps(body).encode()
+        headers['Content-Type'] = 'application/json'
+    else:
+        if isinstance(body, str):
+            body = body.encode()
+        headers['Content-Type'] = 'application/x-www-form-urlencoded'
 
-    async def send(self, request, verify=None, cert=None, timeout=None):
-        rv = self.path_maps[request.url.path]
+    async def asgiapp(scope, receive, send):
+        request = await read_request(scope, receive)
+        if assert_func:
+            await assert_func(request)
+        await send({
+            "type": "http.response.start",
+            "status": status_code,
+            "headers": headers.items(),
+        })
+        await send({
+            "type": "http.response.body",
+            "body": body,
+            "more_body": False,
+        })
+
+    return ASGIDispatch(asgiapp)
+
+
+def path_map_dispatch(path_maps, assert_func=None):
+    async def asgiapp(scope, receive, send):
+        request = await read_request(scope, receive)
+        if assert_func:
+            await assert_func(request)
+
+        path = scope["path"]
+
+        rv = path_maps[path]
         status_code = rv.get('status_code', 200)
         body = rv.get('body')
         headers = rv.get('headers', {})
@@ -50,9 +70,15 @@ class PathMapDispatch(AsyncDispatcher):
                 body = body.encode()
             headers['Content-Type'] = 'application/x-www-form-urlencoded'
 
-        return Response(
-            status_code,
-            content=body,
-            headers=headers,
-            request=request,
-        )
+        await send({
+            "type": "http.response.start",
+            "status": status_code,
+            "headers": headers.items(),
+        })
+        await send({
+            "type": "http.response.body",
+            "body": body,
+            "more_body": False,
+        })
+
+    return ASGIDispatch(asgiapp)

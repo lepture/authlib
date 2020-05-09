@@ -1,5 +1,6 @@
-from httpx import URL
-from httpx.content_streams import ByteStream
+import typing
+
+from httpx import URL, Request
 from authlib.common.encoding import to_bytes
 
 
@@ -19,12 +20,14 @@ def extract_client_kwargs(kwargs):
     return client_kwargs
 
 
-def rebuild_request(request, url, headers, body):
-    request.url = URL(url)
-    request.headers.update(headers)
-    if body:
-        body = to_bytes(body)
-        if body != request.content:
-            request._content = body
-            request.stream = ByteStream(body)
-    return request
+def rebuild_request(request: Request, url: typing.Union[str, URL],
+                    headers: typing.Mapping[typing.AnyStr, typing.AnyStr], body: typing.AnyStr):
+    new_request = Request(
+        method=request.method,
+        url=URL(url),
+        headers=request.headers,
+        data=to_bytes(body) if body is not None else None,
+        stream=request.stream if body is None else None,
+    )
+    new_request.headers.update(headers)
+    return new_request
