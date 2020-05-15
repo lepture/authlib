@@ -10,6 +10,8 @@ from .oauth2_server import create_authorization_server
 
 
 class AuthorizationCodeGrant(CodeGrantMixin, _AuthorizationCodeGrant):
+    TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic', 'client_secret_post', 'none']
+
     def create_authorization_code(self, client, grant_user, request):
         return generate_authorization_code(client, grant_user, request)
 

@@ -4,7 +4,7 @@ from authlib.common.encoding import to_bytes, to_unicode, urlsafe_b64encode
 from ..rfc6749.errors import InvalidRequestError, InvalidGrantError
 
 
-CODE_VERIFIER_PATTERN = re.compile(r'^[a-zA-Z0-9\-\.\_\~]{43,128}$')
+CODE_VERIFIER_PATTERN = re.compile(r'^[a-zA-Z0-9\-._~]{43,128}$')
 
 
 def create_s256_code_challenge(code_verifier):

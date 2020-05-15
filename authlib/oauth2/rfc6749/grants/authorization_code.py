@@ -48,9 +48,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         +---------+       (w/ Optional Refresh Token)
     """
     #: Allowed client auth methods for token endpoint
-    TOKEN_ENDPOINT_AUTH_METHODS = [
-        'client_secret_basic', 'client_secret_post', 'none'
-    ]
+    TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic', 'client_secret_post']
 
     #: Generated "code" length
     AUTHORIZATION_CODE_LENGTH = 48

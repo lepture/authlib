@@ -13,6 +13,8 @@ from .oauth2_server import create_authorization_server
 
 
 class AuthorizationCodeGrant(CodeGrantMixin, grants.AuthorizationCodeGrant):
+    TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic', 'client_secret_post', 'none']
+
     def create_authorization_code(self, client, grant_user, request):
         code_challenge = request.data.get('code_challenge')
         code_challenge_method = request.data.get('code_challenge_method')
