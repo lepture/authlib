@@ -15,7 +15,7 @@ async def run_fetch_userinfo(payload, compliance_fix=None):
     async def fetch_token(request):
         return get_bearer_token()
 
-    dispatch = PathMapDispatch({
+    app = PathMapDispatch({
         '/userinfo': {'body': payload}
     })
 
@@ -27,7 +27,7 @@ async def run_fetch_userinfo(payload, compliance_fix=None):
         userinfo_endpoint='https://i.b/userinfo',
         userinfo_compliance_fix=compliance_fix,
         client_kwargs={
-            'dispatch': dispatch,
+            'app': app,
         }
     )
 
@@ -125,7 +125,7 @@ async def test_force_fetch_jwks_uri():
         aud='dev', exp=3600, nonce='n',
     )
 
-    dispatch = PathMapDispatch({
+    app = PathMapDispatch({
         '/jwks': {'body': read_file_path('jwks_public.json')}
     })
 
@@ -138,7 +138,7 @@ async def test_force_fetch_jwks_uri():
         jwks_uri='https://i.b/jwks',
         issuer='https://i.b',
         client_kwargs={
-            'dispatch': dispatch,
+            'app': app,
         }
     )
 

@@ -1,9 +1,9 @@
 import json
-from httpx import Response
-from httpx.dispatch.base import AsyncDispatcher
+from starlette.requests import Request
+from starlette.responses import Response
 
 
-class MockDispatch(AsyncDispatcher):
+class MockDispatch:
     def __init__(self, body=b'', status_code=200, headers=None,
                  assert_func=None):
         if headers is None:
@@ -21,23 +21,27 @@ class MockDispatch(AsyncDispatcher):
         self.headers = headers
         self.assert_func = assert_func
 
-    async def send(self, request, verify=None, cert=None, timeout=None):
-        if self.assert_func:
-            self.assert_func(request)
+    async def __call__(self, scope, receive, send):
+        request = Request(scope, receive=receive)
 
-        return Response(
-            self.status_code,
+        if self.assert_func:
+            await self.assert_func(request)
+
+        response = Response(
+            status_code=self.status_code,
             content=self.body,
             headers=self.headers,
-            request=request,
         )
+        await response(scope, receive, send)
 
 
-class PathMapDispatch(AsyncDispatcher):
+class PathMapDispatch:
     def __init__(self, path_maps):
         self.path_maps = path_maps
 
-    async def send(self, request, verify=None, cert=None, timeout=None):
+    async def __call__(self, scope, receive, send):
+        request = Request(scope, receive=receive)
+
         rv = self.path_maps[request.url.path]
         status_code = rv.get('status_code', 200)
         body = rv.get('body')
@@ -50,9 +54,9 @@ class PathMapDispatch(AsyncDispatcher):
                 body = body.encode()
             headers['Content-Type'] = 'application/x-www-form-urlencoded'
 
-        return Response(
-            status_code,
+        response = Response(
+            status_code=status_code,
             content=body,
             headers=headers,
-            request=request,
         )
+        await response(scope, receive, send)

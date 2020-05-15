@@ -14,13 +14,13 @@ oauth_url = 'https://example.com/oauth'
 async def test_fetch_request_token_via_header():
     request_token = {'oauth_token': '1', 'oauth_token_secret': '2'}
 
-    def assert_func(request):
+    async def assert_func(request):
         auth_header = request.headers.get('authorization')
         assert 'oauth_consumer_key="id"' in auth_header
         assert 'oauth_signature=' in auth_header
 
-    dispatch = MockDispatch(request_token, assert_func=assert_func)
-    async with AsyncOAuth1Client('id', 'secret', dispatch=dispatch) as client:
+    app = MockDispatch(request_token, assert_func=assert_func)
+    async with AsyncOAuth1Client('id', 'secret', app=app) as client:
         response = await client.fetch_request_token(oauth_url)
 
     assert response == request_token
@@ -30,18 +30,19 @@ async def test_fetch_request_token_via_header():
 async def test_fetch_request_token_via_body():
     request_token = {'oauth_token': '1', 'oauth_token_secret': '2'}
 
-    def assert_func(request):
+    async def assert_func(request):
         auth_header = request.headers.get('authorization')
         assert auth_header is None
 
-        assert b'oauth_consumer_key=id' in request.content
-        assert b'&oauth_signature=' in request.content
+        content = await request.body()
+        assert b'oauth_consumer_key=id' in content
+        assert b'&oauth_signature=' in content
 
     mock_response = MockDispatch(request_token, assert_func=assert_func)
 
     async with AsyncOAuth1Client(
         'id', 'secret', signature_type=SIGNATURE_TYPE_BODY,
-        dispatch=mock_response,
+        app=mock_response,
     ) as client:
         response = await client.fetch_request_token(oauth_url)
 
@@ -52,7 +53,7 @@ async def test_fetch_request_token_via_body():
 async def test_fetch_request_token_via_query():
     request_token = {'oauth_token': '1', 'oauth_token_secret': '2'}
 
-    def assert_func(request):
+    async def assert_func(request):
         auth_header = request.headers.get('authorization')
         assert auth_header is None
 
@@ -64,7 +65,7 @@ async def test_fetch_request_token_via_query():
 
     async with AsyncOAuth1Client(
         'id', 'secret', signature_type=SIGNATURE_TYPE_QUERY,
-        dispatch=mock_response,
+        app=mock_response,
     ) as client:
         response = await client.fetch_request_token(oauth_url)
 
@@ -75,7 +76,7 @@ async def test_fetch_request_token_via_query():
 async def test_fetch_access_token():
     request_token = {'oauth_token': '1', 'oauth_token_secret': '2'}
 
-    def assert_func(request):
+    async def assert_func(request):
         auth_header = request.headers.get('authorization')
         assert 'oauth_verifier="d"' in auth_header
         assert 'oauth_token="foo"' in auth_header
@@ -85,7 +86,7 @@ async def test_fetch_access_token():
     mock_response = MockDispatch(request_token, assert_func=assert_func)
     async with AsyncOAuth1Client(
         'id', 'secret', token='foo', token_secret='bar',
-        dispatch=mock_response,
+        app=mock_response,
     ) as client:
         with pytest.raises(OAuthError):
             await client.fetch_access_token(oauth_url)
@@ -100,7 +101,7 @@ async def test_get_via_header():
     mock_response = MockDispatch(b'hello')
     async with AsyncOAuth1Client(
         'id', 'secret', token='foo', token_secret='bar',
-        dispatch=mock_response,
+        app=mock_response,
     ) as client:
         response = await client.get('https://example.com/')
 
@@ -118,7 +119,7 @@ async def test_get_via_body():
     async with AsyncOAuth1Client(
         'id', 'secret', token='foo', token_secret='bar',
         signature_type=SIGNATURE_TYPE_BODY,
-        dispatch=mock_response,
+        app=mock_response,
     ) as client:
         response = await client.post('https://example.com/')
 
@@ -139,7 +140,7 @@ async def test_get_via_query():
     async with AsyncOAuth1Client(
         'id', 'secret', token='foo', token_secret='bar',
         signature_type=SIGNATURE_TYPE_QUERY,
-        dispatch=mock_response,
+        app=mock_response,
     ) as client:
         response = await client.get('https://example.com/')
 
