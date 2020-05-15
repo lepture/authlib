@@ -1,9 +1,5 @@
 import typing
-from httpx import AsyncClient, Auth
-from httpx.models import (
-    Request,
-    Response,
-)
+from httpx import AsyncClient, Auth, Request, Response
 from authlib.common.urls import url_decode
 from authlib.oauth2.client import OAuth2Client as _OAuth2Client
 from authlib.oauth2.auth import ClientAuth, TokenAuth

@@ -1,6 +1,5 @@
 import typing
-from httpx import AsyncClient, Auth
-from httpx import Request, Response
+from httpx import AsyncClient, Auth, Request, Response
 from authlib.oauth1 import (
     SIGNATURE_HMAC_SHA1,
     SIGNATURE_TYPE_HEADER,
