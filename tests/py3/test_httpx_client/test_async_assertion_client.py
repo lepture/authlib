@@ -15,9 +15,10 @@ default_token = {
 
 @pytest.mark.asyncio
 async def test_refresh_token():
-    def verifier(request):
+    async def verifier(request):
+        content = await request.body()
         if str(request.url) == 'https://i.b/token':
-            assert b'assertion=' in request.read()
+            assert b'assertion=' in content
 
     async with AsyncAssertionClient(
         'https://i.b/token',
@@ -27,7 +28,7 @@ async def test_refresh_token():
         audience='foo',
         alg='HS256',
         key='secret',
-        dispatch=MockDispatch(default_token, assert_func=verifier)
+        app=MockDispatch(default_token, assert_func=verifier)
     ) as client:
         await client.get('https://i.b')
 
@@ -44,7 +45,7 @@ async def test_refresh_token():
         key='secret',
         scope='email',
         claims={'test_mode': 'true'},
-        dispatch=MockDispatch(default_token, assert_func=verifier)
+        app=MockDispatch(default_token, assert_func=verifier)
     ) as client:
         await client.get('https://i.b')
         await client.get('https://i.b')

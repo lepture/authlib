@@ -39,7 +39,7 @@ def test_register_with_overwrite():
 @pytest.mark.asyncio
 async def test_oauth1_authorize():
     oauth = OAuth()
-    dispatch = PathMapDispatch({
+    app = PathMapDispatch({
         '/request-token': {'body': 'oauth_token=foo&oauth_verifier=baz'},
         '/token': {'body': 'oauth_token=a&oauth_token_secret=b'},
     })
@@ -52,7 +52,7 @@ async def test_oauth1_authorize():
         access_token_url='https://i.b/token',
         authorize_url='https://i.b/authorize',
         client_kwargs={
-            'dispatch': dispatch,
+            'app': app,
         }
     )
 
@@ -74,7 +74,7 @@ async def test_oauth1_authorize():
 @pytest.mark.asyncio
 async def test_oauth2_authorize():
     oauth = OAuth()
-    dispatch = PathMapDispatch({
+    app = PathMapDispatch({
         '/token': {'body': get_bearer_token()}
     })
     client = oauth.register(
@@ -85,7 +85,7 @@ async def test_oauth2_authorize():
         access_token_url='https://i.b/token',
         authorize_url='https://i.b/authorize',
         client_kwargs={
-            'dispatch': dispatch,
+            'app': app,
         }
     )
 
@@ -113,7 +113,7 @@ async def test_oauth2_authorize():
 
 @pytest.mark.asyncio
 async def test_oauth2_authorize_code_challenge():
-    dispatch = PathMapDispatch({
+    app = PathMapDispatch({
         '/token': {'body': get_bearer_token()}
     })
     oauth = OAuth()
@@ -125,7 +125,7 @@ async def test_oauth2_authorize_code_challenge():
         authorize_url='https://i.b/authorize',
         client_kwargs={
             'code_challenge_method': 'S256',
-            'dispatch': dispatch,
+            'app': app,
         },
     )
 
@@ -163,7 +163,7 @@ async def test_with_fetch_token_in_register():
     async def fetch_token(request):
         return {'access_token': 'dev', 'token_type': 'bearer'}
 
-    dispatch = PathMapDispatch({
+    app = PathMapDispatch({
         '/user': {'body': {'sub': '123'}}
     })
     oauth = OAuth()
@@ -176,7 +176,7 @@ async def test_with_fetch_token_in_register():
         authorize_url='https://i.b/authorize',
         fetch_token=fetch_token,
         client_kwargs={
-            'dispatch': dispatch,
+            'app': app,
         }
     )
 
@@ -191,7 +191,7 @@ async def test_with_fetch_token_in_oauth():
     async def fetch_token(name, request):
         return {'access_token': 'dev', 'token_type': 'bearer'}
 
-    dispatch = PathMapDispatch({
+    app = PathMapDispatch({
         '/user': {'body': {'sub': '123'}}
     })
     oauth = OAuth(fetch_token=fetch_token)
@@ -203,7 +203,7 @@ async def test_with_fetch_token_in_oauth():
         access_token_url='https://i.b/token',
         authorize_url='https://i.b/authorize',
         client_kwargs={
-            'dispatch': dispatch,
+            'app': app,
         }
     )
 
@@ -216,7 +216,7 @@ async def test_with_fetch_token_in_oauth():
 @pytest.mark.asyncio
 async def test_request_withhold_token():
     oauth = OAuth()
-    dispatch = PathMapDispatch({
+    app = PathMapDispatch({
         '/user': {'body': {'sub': '123'}}
     })
     client = oauth.register(
@@ -227,7 +227,7 @@ async def test_request_withhold_token():
         access_token_url="https://i.b/token",
         authorize_url="https://i.b/authorize",
         client_kwargs={
-            'dispatch': dispatch,
+            'app': app,
         }
     )
     req_scope = {'type': 'http', 'session': {}}
@@ -252,7 +252,7 @@ async def test_oauth2_authorize_with_metadata():
         await client.create_authorization_url(req)
 
 
-    dispatch = PathMapDispatch({
+    app = PathMapDispatch({
         '/.well-known/openid-configuration': {'body': {
             'authorization_endpoint': 'https://i.b/authorize'
         }}
@@ -265,7 +265,7 @@ async def test_oauth2_authorize_with_metadata():
         access_token_url='https://i.b/token',
         server_metadata_url='https://i.b/.well-known/openid-configuration',
         client_kwargs={
-            'dispatch': dispatch,
+            'app': app,
         }
     )
     resp = await client.authorize_redirect(req, 'https://b.com/bar')

@@ -22,7 +22,7 @@ default_token = {
 
 @pytest.mark.asyncio
 async def test_add_token_to_header():
-    def assert_func(request):
+    async def assert_func(request):
         token = 'Bearer ' + default_token['access_token']
         auth_header = request.headers.get('authorization')
         assert auth_header == token
@@ -31,7 +31,7 @@ async def test_add_token_to_header():
     async with AsyncOAuth2Client(
             'foo',
             token=default_token,
-            dispatch=mock_response
+            app=mock_response
     ) as client:
         resp = await client.get('https://i.b')
 
@@ -41,15 +41,16 @@ async def test_add_token_to_header():
 
 @pytest.mark.asyncio
 async def test_add_token_to_body():
-    def assert_func(request):
-        assert default_token['access_token'] in request.content.decode()
+    async def assert_func(request):
+        content = await request.body()
+        assert default_token['access_token'] in content.decode()
 
     mock_response = MockDispatch({'a': 'a'}, assert_func=assert_func)
     async with AsyncOAuth2Client(
             'foo',
             token=default_token,
             token_placement='body',
-            dispatch=mock_response
+            app=mock_response
     ) as client:
         resp = await client.get('https://i.b')
 
@@ -59,7 +60,7 @@ async def test_add_token_to_body():
 
 @pytest.mark.asyncio
 async def test_add_token_to_uri():
-    def assert_func(request):
+    async def assert_func(request):
         assert default_token['access_token'] in str(request.url)
 
     mock_response = MockDispatch({'a': 'a'}, assert_func=assert_func)
@@ -67,7 +68,7 @@ async def test_add_token_to_uri():
             'foo',
             token=default_token,
             token_placement='uri',
-            dispatch=mock_response
+            app=mock_response
     ) as client:
         resp = await client.get('https://i.b')
 
@@ -115,27 +116,28 @@ def test_token_from_fragment():
 async def test_fetch_token_post():
     url = 'https://example.com/token'
 
-    def assert_func(request):
-        body = request.content.decode()
-        assert 'code=v' in body
-        assert 'client_id=' in body
-        assert 'grant_type=authorization_code' in body
+    async def assert_func(request):
+        content = await request.body()
+        content = content.decode()
+        assert 'code=v' in content
+        assert 'client_id=' in content
+        assert 'grant_type=authorization_code' in content
 
     mock_response = MockDispatch(default_token, assert_func=assert_func)
-    async with AsyncOAuth2Client('foo', dispatch=mock_response) as client:
+    async with AsyncOAuth2Client('foo', app=mock_response) as client:
         token = await client.fetch_token(url, authorization_response='https://i.b/?code=v')
         assert token == default_token
 
     async with AsyncOAuth2Client(
             'foo',
             token_endpoint_auth_method='none',
-            dispatch=mock_response
+            app=mock_response
     ) as client:
         token = await client.fetch_token(url, code='v')
         assert token == default_token
 
     mock_response = MockDispatch({'error': 'invalid_request'})
-    async with AsyncOAuth2Client('foo', dispatch=mock_response) as client:
+    async with AsyncOAuth2Client('foo', app=mock_response) as client:
         with pytest.raises(OAuthError):
             await client.fetch_token(url)
 
@@ -144,14 +146,14 @@ async def test_fetch_token_post():
 async def test_fetch_token_get():
     url = 'https://example.com/token'
 
-    def assert_func(request):
+    async def assert_func(request):
         url = str(request.url)
         assert 'code=v' in url
         assert 'client_id=' in url
         assert 'grant_type=authorization_code' in url
 
     mock_response = MockDispatch(default_token, assert_func=assert_func)
-    async with AsyncOAuth2Client('foo', dispatch=mock_response) as client:
+    async with AsyncOAuth2Client('foo', app=mock_response) as client:
         authorization_response = 'https://i.b/?code=v'
         token = await client.fetch_token(
             url, authorization_response=authorization_response, method='GET')
@@ -160,7 +162,7 @@ async def test_fetch_token_get():
     async with AsyncOAuth2Client(
             'foo',
             token_endpoint_auth_method='none',
-            dispatch=mock_response
+            app=mock_response
     ) as client:
         token = await client.fetch_token(url, code='v', method='GET')
         assert token == default_token
@@ -173,18 +175,19 @@ async def test_fetch_token_get():
 async def test_token_auth_method_client_secret_post():
     url = 'https://example.com/token'
 
-    def assert_func(request):
-        body = request.content.decode()
-        assert 'code=v' in body
-        assert 'client_id=' in body
-        assert 'client_secret=bar' in body
-        assert 'grant_type=authorization_code' in body
+    async def assert_func(request):
+        content = await request.body()
+        content = content.decode()
+        assert 'code=v' in content
+        assert 'client_id=' in content
+        assert 'client_secret=bar' in content
+        assert 'grant_type=authorization_code' in content
 
     mock_response = MockDispatch(default_token, assert_func=assert_func)
     async with AsyncOAuth2Client(
             'foo', 'bar',
             token_endpoint_auth_method='client_secret_post',
-            dispatch=mock_response
+            app=mock_response
     ) as client:
         token = await client.fetch_token(url, code='v')
 
@@ -200,8 +203,8 @@ async def test_access_token_response_hook():
         return resp
 
     access_token_response_hook = mock.Mock(side_effect=_access_token_response_hook)
-    dispatch = MockDispatch(default_token)
-    async with AsyncOAuth2Client('foo', token=default_token, dispatch=dispatch) as sess:
+    app = MockDispatch(default_token)
+    async with AsyncOAuth2Client('foo', token=default_token, app=app) as sess:
         sess.register_compliance_hook(
             'access_token_response',
             access_token_response_hook
@@ -214,14 +217,15 @@ async def test_access_token_response_hook():
 async def test_password_grant_type():
     url = 'https://example.com/token'
 
-    def assert_func(request):
-        body = request.content.decode()
-        assert 'username=v' in body
-        assert 'scope=profile' in body
-        assert 'grant_type=password' in body
+    async def assert_func(request):
+        content = await request.body()
+        content = content.decode()
+        assert 'username=v' in content
+        assert 'scope=profile' in content
+        assert 'grant_type=password' in content
 
-    dispatch = MockDispatch(default_token, assert_func=assert_func)
-    async with AsyncOAuth2Client('foo', scope='profile', dispatch=dispatch) as sess:
+    app = MockDispatch(default_token, assert_func=assert_func)
+    async with AsyncOAuth2Client('foo', scope='profile', app=app) as sess:
         token = await sess.fetch_token(url, username='v', password='v')
         assert token == default_token
 
@@ -234,13 +238,14 @@ async def test_password_grant_type():
 async def test_client_credentials_type():
     url = 'https://example.com/token'
 
-    def assert_func(request):
-        body = request.content.decode()
-        assert 'scope=profile' in body
-        assert 'grant_type=client_credentials' in body
+    async def assert_func(request):
+        content = await request.body()
+        content = content.decode()
+        assert 'scope=profile' in content
+        assert 'grant_type=client_credentials' in content
 
-    dispatch = MockDispatch(default_token, assert_func=assert_func)
-    async with AsyncOAuth2Client('foo', scope='profile', dispatch=dispatch) as sess:
+    app = MockDispatch(default_token, assert_func=assert_func)
+    async with AsyncOAuth2Client('foo', scope='profile', app=app) as sess:
         token = await sess.fetch_token(url)
         assert token == default_token
 
@@ -257,9 +262,9 @@ async def test_cleans_previous_token_before_fetching_new_one():
     new_token['expires_at'] = now + 3600
     url = 'https://example.com/token'
 
-    dispatch = MockDispatch(new_token)
+    app = MockDispatch(new_token)
     with mock.patch('time.time', lambda: now):
-        async with AsyncOAuth2Client('foo', token=default_token, dispatch=dispatch) as sess:
+        async with AsyncOAuth2Client('foo', token=default_token, app=app) as sess:
             assert await sess.fetch_token(url) == new_token
 
 
@@ -283,10 +288,10 @@ async def test_auto_refresh_token():
         token_type='bearer', expires_at=100
     )
 
-    dispatch = MockDispatch(default_token)
+    app = MockDispatch(default_token)
     async with AsyncOAuth2Client(
             'foo', token=old_token, token_endpoint='https://i.b/token',
-            update_token=update_token, dispatch=dispatch
+            update_token=update_token, app=app
     ) as sess:
         await sess.get('https://i.b/user')
         assert update_token.called is True
@@ -298,7 +303,7 @@ async def test_auto_refresh_token():
     )
     async with AsyncOAuth2Client(
             'foo', token=old_token, token_endpoint='https://i.b/token',
-            update_token=update_token, dispatch=dispatch
+            update_token=update_token, app=app
     ) as sess:
         with pytest.raises(OAuthError):
             await sess.get('https://i.b/user')
@@ -319,13 +324,13 @@ async def test_auto_refresh_token2():
         expires_at=100
     )
 
-    dispatch = MockDispatch(default_token)
+    app = MockDispatch(default_token)
 
     async with AsyncOAuth2Client(
             'foo', token=old_token,
             token_endpoint='https://i.b/token',
             grant_type='client_credentials',
-            dispatch=dispatch,
+            app=app,
     ) as client:
         await client.get('https://i.b/user')
         assert update_token.called is False
@@ -333,7 +338,7 @@ async def test_auto_refresh_token2():
     async with AsyncOAuth2Client(
             'foo', token=old_token, token_endpoint='https://i.b/token',
             update_token=update_token, grant_type='client_credentials',
-            dispatch=dispatch,
+            app=app,
     ) as client:
         await client.get('https://i.b/user')
         assert update_token.called is True
@@ -353,12 +358,12 @@ async def test_auto_refresh_token3():
         expires_at=100
     )
 
-    dispatch = MockDispatch(default_token)
+    app = MockDispatch(default_token)
 
     async with AsyncOAuth2Client(
             'foo', token=old_token, token_endpoint='https://i.b/token',
             update_token=update_token, grant_type='client_credentials',
-            dispatch=dispatch,
+            app=app,
     ) as client:
         await client.post('https://i.b/user', json={'foo': 'bar'})
         assert update_token.called is True
@@ -367,9 +372,9 @@ async def test_auto_refresh_token3():
 @pytest.mark.asyncio
 async def test_revoke_token():
     answer = {'status': 'ok'}
-    dispatch = MockDispatch(answer)
+    app = MockDispatch(answer)
 
-    async with AsyncOAuth2Client('a', dispatch=dispatch) as sess:
+    async with AsyncOAuth2Client('a', app=app) as sess:
         resp = await sess.revoke_token('https://i.b/token', 'hi')
         assert resp.json() == answer
 
