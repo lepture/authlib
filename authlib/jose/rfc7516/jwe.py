@@ -182,14 +182,18 @@ class JsonWebEncryption(object):
         if enc not in self._enc_algorithms:
             raise UnsupportedEncryptionAlgorithmError()
 
-        zip = header.get('zip')
-        if zip and zip not in self._zip_algorithms:
+        _zip = header.get('zip')
+        if _zip and _zip not in self._zip_algorithms:
             raise UnsupportedCompressionAlgorithmError()
 
     def _post_validate_header(self, header, alg):
+        # only validate private headers when developers set
+        # private headers explicitly
+        if self._private_headers is None:
+            return
+
         names = self.REGISTERED_HEADER_PARAMETER_NAMES.copy()
-        if self._private_headers:
-            names = names.union(self._private_headers)
+        names = names.union(self._private_headers)
 
         if alg.EXTRA_HEADERS:
             names = names.union(alg.EXTRA_HEADERS)

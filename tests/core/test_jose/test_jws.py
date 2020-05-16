@@ -179,7 +179,7 @@ class JWSTest(unittest.TestCase):
         self.assertRaises(errors.DecodeError, jws.deserialize_json, s, '')
 
     def test_validate_header(self):
-        jws = JsonWebSignature(algorithms=JWS_ALGORITHMS)
+        jws = JsonWebSignature(algorithms=JWS_ALGORITHMS, private_headers=[])
         protected = {'alg': 'HS256', 'invalid': 'k'}
         header = {'protected': protected, 'header': {'kid': 'a'}}
         self.assertRaises(
@@ -187,5 +187,9 @@ class JWSTest(unittest.TestCase):
             jws.serialize, header, b'hello', 'secret'
         )
         jws = JsonWebSignature(algorithms=JWS_ALGORITHMS, private_headers=['invalid'])
+        s = jws.serialize(header, b'hello', 'secret')
+        self.assertIsInstance(s, dict)
+
+        jws = JsonWebSignature(algorithms=JWS_ALGORITHMS)
         s = jws.serialize(header, b'hello', 'secret')
         self.assertIsInstance(s, dict)

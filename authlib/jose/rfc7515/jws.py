@@ -262,13 +262,15 @@ class JsonWebSignature(object):
         if alg not in self._algorithms:
             raise UnsupportedAlgorithmError()
 
-        names = self.REGISTERED_HEADER_PARAMETER_NAMES.copy()
-        if self._private_headers:
+        # only validate private headers when developers set
+        # private headers explicitly
+        if self._private_headers is not None:
+            names = self.REGISTERED_HEADER_PARAMETER_NAMES.copy()
             names = names.union(self._private_headers)
 
-        for k in header:
-            if k not in names:
-                raise InvalidHeaderParameterName(k)
+            for k in header:
+                if k not in names:
+                    raise InvalidHeaderParameterName(k)
 
     def _validate_json_jws(self, payload_segment, payload, header_obj, key):
         protected_segment = header_obj.get('protected')
