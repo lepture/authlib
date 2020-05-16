@@ -87,7 +87,7 @@ class CodeChallenge(object):
         challenge = self.get_authorization_code_challenge(authorization_code)
 
         # ignore, it is the normal RFC6749 authorization_code request
-        if not challenge:
+        if not challenge and not verifier:
             return
 
         # challenge exists, code_verifier is required
