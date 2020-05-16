@@ -30,6 +30,7 @@ Generic, spec-compliant implementation to build clients and providers:
   - [ ] RFC7592: OAuth 2.0 Dynamic Client Registration Management Protocol
   - [RFC7636: Proof Key for Code Exchange by OAuth Public Clients](https://docs.authlib.org/en/latest/specs/rfc7636.html)
   - [RFC7662: OAuth 2.0 Token Introspection](https://docs.authlib.org/en/latest/specs/rfc7662.html)
+  - [RFC8414: OAuth 2.0 Authorization Server Metadata](https://docs.authlib.org/en/latest/specs/rfc8414.html)
   - [RFC8628: OAuth 2.0 Device Authorization Grant](https://docs.authlib.org/en/latest/specs/rfc8628.html)
 - [Javascript Object Signing and Encryption](https://docs.authlib.org/en/latest/jose/index.html)
   - [RFC7515: JSON Web Signature](https://docs.authlib.org/en/latest/jose/jws.html)
