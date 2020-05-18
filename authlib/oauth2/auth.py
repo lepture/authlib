@@ -77,6 +77,7 @@ class TokenAuth(object):
         * body
         * uri
     """
+    DEFAULT_TOKEN_TYPE = 'bearer'
     SIGN_METHODS = {
         'bearer': add_bearer_token
     }
@@ -91,7 +92,7 @@ class TokenAuth(object):
         self.token = OAuth2Token.from_dict(token)
 
     def prepare(self, uri, headers, body):
-        token_type = self.token['token_type']
+        token_type = self.token.get('token_type', self.DEFAULT_TOKEN_TYPE)
         sign = self.SIGN_METHODS[token_type.lower()]
         uri, headers, body = sign(
             self.token['access_token'],
