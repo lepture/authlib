@@ -7,6 +7,19 @@ Changelog
 Here you can see the full list of changes between each Authlib release.
 
 
+Version 0.14.3
+--------------
+
+**Released on May 18, 2020.**
+
+- Fix HTTPX integration via :gh:`PR#232` and :gh:`PR#233`.
+- Add "bearer" as default token type for OAuth 2 Client.
+- JWS and JWE don't validate private headers by default.
+- Remove ``none`` auth method for authorization code by default.
+- Allow usage of user provided ``code_verifier`` via :gh:`issue#216`.
+- Add ``introspect_token`` method on OAuth 2 Client via :gh:`issue#224`.
+
+
 Version 0.14.2
 --------------
 
@@ -138,39 +151,13 @@ Small changes and bug fixes in this release:
 **Experiment Features**: There is an experiment ``aiohttp`` client for OAuth1
 and OAuth2 in ``authlib.client.aiohttp``.
 
-Version 0.10
-------------
-
-**Released on Oct 12, 2018.**
-
-The most important change in this version is grant extension system. When
-registering a grant, developers can pass extensions to the grant::
-
-    authorization_server.register_grant(GrantClass, [extension])
-
-Find Flask :ref:`flask_oauth2_grant_extensions` implementation.
-
-RFC implementations and updates in this release:
-
-- RFC8414: OAuth 2.0 Authorization Server Metadata
-- RFC7636: make CodeChallenge a grant extension :ref:`specs/rfc7636`
-- OIDC: make OpenIDCode a grant extension
-
-Besides that, there are other improvements:
-
-- Export ``save_authorize_state`` method on Flask and Django client
-- Add ``fetch_token`` to Django OAuth client
-- Add scope operator for ``@require_oauth`` :ref:`flask_oauth2_multiple_scopes`
-- Fix two OAuth clients in the same Flask route :gh:`PR#85`
-
-**Deprecate Changes**: find how to solve the deprecate issues via https://git.io/fAmW1
-
 
 Old Versions
 ------------
 
 Find old changelog at https://github.com/lepture/authlib/releases
 
+- Version 0.10.0: Released on Oct 12, 2018
 - Version 0.9.0: Released on Aug 12, 2018
 - Version 0.8.0: Released on Jun 17, 2018
 - Version 0.7.0: Released on Apr 28, 2018
