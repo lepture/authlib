@@ -1,5 +1,6 @@
 from werkzeug.utils import import_string
 from flask import Response, json
+from authlib.deprecate import deprecate
 from authlib.oauth2 import (
     OAuth2Request,
     HttpRequest,
@@ -69,7 +70,7 @@ class AuthorizationServer(_AuthorizationServer):
 
         self.config.setdefault('error_uris', app.config.get('OAUTH2_ERROR_URIS'))
         if app.config.get('OAUTH2_JWT_ENABLED'):
-            # TODO: deprecate
+            deprecate('Define "get_jwt_config" in OpenID Connect grants', '1.0')
             self.init_jwt_config(app.config)
 
     def init_jwt_config(self, config):

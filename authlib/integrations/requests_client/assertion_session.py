@@ -1,4 +1,5 @@
 from requests import Session
+from authlib.deprecate import deprecate
 from authlib.oauth2.rfc7521 import AssertionClient
 from authlib.oauth2.rfc7523 import JWTBearerGrant
 from .oauth2_session import OAuth2Auth
@@ -29,7 +30,7 @@ class AssertionSession(AssertionClient, Session):
 
         token_url = kwargs.pop('token_url', None)
         if token_url:
-            # TODO: deprecate
+            deprecate('Use "token_endpoint" instead of "token_url"', '1.0')
             token_endpoint = token_url
 
         AssertionClient.__init__(

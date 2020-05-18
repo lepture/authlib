@@ -1,4 +1,5 @@
 import logging
+from authlib.deprecate import deprecate
 from authlib.common.urls import add_params_to_uri
 from authlib.common.security import generate_token
 from .base import BaseGrant, AuthorizationEndpointMixin, TokenEndpointMixin
@@ -150,7 +151,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
             self.request.user = grant_user
 
             if hasattr(self, 'create_authorization_code'):
-                # TODO: deprecate
+                deprecate('Use "generate_authorization_code" instead', '1.0')
                 code = self.create_authorization_code(
                     self.request.client, grant_user, self.request)
             else:
@@ -329,7 +330,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         :return: authorization_code object
         """
         if hasattr(self, 'parse_authorization_code'):
-            # TODO: deprecate
+            deprecate('Use "query_authorization_code" instead', '1.0')
             return self.parse_authorization_code(code, client)
         raise NotImplementedError()
 
