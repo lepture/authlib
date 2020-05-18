@@ -115,7 +115,13 @@ async def test_get_via_header():
 
 @pytest.mark.asyncio
 async def test_get_via_body():
-    mock_response = MockDispatch(b'hello')
+    async def assert_func(request):
+        content = await request.body()
+        assert b'oauth_token=foo' in content
+        assert b'oauth_consumer_key=id' in content
+        assert b'oauth_signature=' in content
+
+    mock_response = MockDispatch(b'hello', assert_func=assert_func)
     async with AsyncOAuth1Client(
         'id', 'secret', token='foo', token_secret='bar',
         signature_type=SIGNATURE_TYPE_BODY,
@@ -128,10 +134,6 @@ async def test_get_via_body():
     request = response.request
     auth_header = request.headers.get('authorization')
     assert auth_header is None
-
-    assert b'oauth_token=foo' in request.content
-    assert b'oauth_consumer_key=id' in request.content
-    assert b'oauth_signature=' in request.content
 
 
 @pytest.mark.asyncio

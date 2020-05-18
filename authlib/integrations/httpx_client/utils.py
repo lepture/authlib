@@ -1,5 +1,3 @@
-from httpx import URL
-from httpx.content_streams import ByteStream
 from authlib.common.encoding import to_bytes
 
 
@@ -17,14 +15,3 @@ def extract_client_kwargs(kwargs):
         if k in kwargs:
             client_kwargs[k] = kwargs.pop(k)
     return client_kwargs
-
-
-def rebuild_request(request, url, headers, body):
-    request.url = URL(url)
-    request.headers.update(headers)
-    if body:
-        body = to_bytes(body)
-        if body != request.content:
-            request._content = body
-            request.stream = ByteStream(body)
-    return request
