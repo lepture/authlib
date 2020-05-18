@@ -300,23 +300,31 @@ hooks are provided to solve those problems:
 * ``refresh_token_response``: invoked before refresh token parsing.
 * ``protected_request``: invoked before making a request.
 
-For instance, linkedin is using a ``oauth2_access_token`` parameter in query
-string to protect users' resources, let's fix it::
+For instance, Stackoverflow MUST add a `site` parameter in query
+string to protect users' resources. And stackoverflow's response is
+not in JSON. Let's fix it::
 
-    from authlib.common.urls import add_params_to_uri
+    from authlib.common.urls import add_params_to_uri, url_decode
 
     def _non_compliant_param_name(url, headers, data):
-        access_token = session.token.get('access_token')
-        token = [('oauth2_access_token', access_token)]
-        url = add_params_to_uri(url, token)
-        return url, headers, data
+        params = {'site': 'stackoverflow'}
+        url = add_params_to_uri(url, params)
+        return url, headers, body
+
+    def _fix_token_response(resp):
+        data = dict(url_decode(resp.text))
+        data['token_type'] = 'Bearer'
+        data['expires_in'] = int(data['expires'])
+        resp.json = lambda: data
+        return resp
 
     session.register_compliance_hook(
         'protected_request', _non_compliant_param_name)
+    session.register_compliance_hook(
+        'access_token_response', _fix_token_response)
 
 If you find a non standard OAuth 2 services, and you can't fix it. Please
 report it in GitHub issues.
-
 
 .. _oidc_session:
 
