@@ -1,10 +1,10 @@
 [coverage:run]
 branch = True
 omit =
-    authlib/client/*
-    authlib/flask/*
-    authlib/django/*
-    authlib/specs/*
+    authlib/integrations/base_client/async_app.py
+    authlib/integrations/httpx_client/*
+    authlib/integrations/starlette_client/*
+
 
 [coverage:report]
 exclude_lines =
