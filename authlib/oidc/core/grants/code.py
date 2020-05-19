@@ -10,7 +10,6 @@
 
 import logging
 from authlib.deprecate import deprecate
-from authlib.oauth2.rfc6749 import grants
 from authlib.oauth2.rfc6749.util import scope_to_list
 from .util import (
     is_openid_scope,
@@ -135,24 +134,3 @@ class OpenIDCode(object):
                 'after_validate_consent_request',
                 validate_request_prompt
             )
-
-
-class OpenIDCodeGrant(grants.AuthorizationCodeGrant):  # pragma: no cover
-    TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic']
-
-    def __init__(self, *args, **kwargs):
-        deprecate('Deprecate "OpenIDCodeGrant".', '1.0', 'fjPsV', 'oi')
-
-        super(OpenIDCodeGrant, self).__init__(*args, **kwargs)
-        config = self.server.config
-        extension = OpenIDCode(
-            key=config['jwt_key'],
-            alg=config['jwt_alg'],
-            iss=config['jwt_iss'],
-            exp=config['jwt_exp'],
-            exists_nonce=self.exists_nonce,
-        )
-        extension(self)
-
-    def exists_nonce(self, nonce, request):
-        raise NotImplementedError()
