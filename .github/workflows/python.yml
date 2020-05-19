@@ -22,7 +22,7 @@ jobs:
       matrix:
         python:
         - version: 2.7
-          toxenv: py27,flask
+          toxenv: py27,py27-flask
         - version: 3.6
           toxenv: py36,flask,django,async
         - version: 3.7
