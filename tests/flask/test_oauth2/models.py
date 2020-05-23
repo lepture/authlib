@@ -1,6 +1,5 @@
 import time
 from flask_sqlalchemy import SQLAlchemy
-from authlib.common.security import generate_token
 from authlib.integrations.sqla_oauth2 import (
     OAuth2ClientMixin,
     OAuth2TokenMixin,
@@ -55,7 +54,7 @@ class Token(db.Model, OAuth2TokenMixin):
 
 
 class CodeGrantMixin(object):
-    def parse_authorization_code(self, code, client):
+    def query_authorization_code(self, code, client):
         item = AuthorizationCode.query.filter_by(
             code=code, client_id=client.client_id).first()
         if item and not item.is_expired():
@@ -69,20 +68,21 @@ class CodeGrantMixin(object):
         return User.query.get(authorization_code.user_id)
 
 
-def generate_authorization_code(client, grant_user, request, **extra):
-    code = generate_token(48)
-    item = AuthorizationCode(
+def save_authorization_code(code, request):
+    client = request.client
+    auth_code = AuthorizationCode(
         code=code,
         client_id=client.client_id,
         redirect_uri=request.redirect_uri,
-        response_type=request.response_type,
         scope=request.scope,
-        user_id=grant_user.get_user_id(),
-        **extra
+        nonce=request.data.get('nonce'),
+        user_id=request.user.id,
+        code_challenge=request.data.get('code_challenge'),
+        code_challenge_method = request.data.get('code_challenge_method'),
     )
-    db.session.add(item)
+    db.session.add(auth_code)
     db.session.commit()
-    return code
+    return auth_code
 
 
 def exists_nonce(nonce, req):

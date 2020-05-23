@@ -1,4 +1,6 @@
 import logging
+from authlib.deprecate import deprecate
+from authlib.common.security import generate_token
 from authlib.oauth2.rfc6749 import InvalidScopeError
 from authlib.oauth2.rfc6749.grants.authorization_code import (
     validate_code_authorization_request
@@ -10,33 +12,37 @@ log = logging.getLogger(__name__)
 
 
 class OpenIDHybridGrant(OpenIDImplicitGrant):
+    #: Generated "code" length
+    AUTHORIZATION_CODE_LENGTH = 48
+
     RESPONSE_TYPES = {'code id_token', 'code token', 'code id_token token'}
     GRANT_TYPE = 'code'
     DEFAULT_RESPONSE_MODE = 'fragment'
 
-    def create_authorization_code(self, client, grant_user, request):
-        """Save authorization_code for later use. Developers should implement
+    def generate_authorization_code(self):
+        """"The method to generate "code" value for authorization code data.
+        Developers may rewrite this method, or customize the code length with::
+
+            class MyAuthorizationCodeGrant(AuthorizationCodeGrant):
+                AUTHORIZATION_CODE_LENGTH = 32  # default is 48
+        """
+        return generate_token(self.AUTHORIZATION_CODE_LENGTH)
+
+    def save_authorization_code(self, code, request):
+        """Save authorization_code for later use. Developers MUST implement
         it in subclass. Here is an example::
 
-            from authlib.common.security import generate_token
-
-            def create_authorization_code(self, client, request):
-                code = generate_token(48)
+            def save_authorization_code(self, code, request):
+                client = request.client
                 item = AuthorizationCode(
                     code=code,
                     client_id=client.client_id,
                     redirect_uri=request.redirect_uri,
                     scope=request.scope,
                     nonce=request.data.get('nonce'),
-                    user_id=grant_user.get_user_id(),
+                    user_id=request.user.id,
                 )
                 item.save()
-                return code
-
-        :param client: the client that requesting the token.
-        :param grant_user: the resource owner that grant the permission.
-        :param request: OAuth2Request instance.
-        :return: code string
         """
         raise NotImplementedError()
 
@@ -58,10 +64,14 @@ class OpenIDHybridGrant(OpenIDImplicitGrant):
         self.request.user = grant_user
         client = self.request.client
 
-        code = self.create_authorization_code(
-            client, grant_user, self.request)
-        params = [('code', code)]
+        if hasattr(self, 'create_authorization_code'):  # pragma: no cover
+            deprecate('Use "generate_authorization_code" instead', '1.0')
+            code = self.create_authorization_code(client, grant_user, self.request)
+        else:
+            code = self.generate_authorization_code()
+            self.save_authorization_code(code, self.request)
 
+        params = [('code', code)]
         token = self.generate_token(
             client, 'implicit',
             user=grant_user,

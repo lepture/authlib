@@ -4,7 +4,7 @@ from authlib.oauth2.rfc6749.grants import (
     AuthorizationCodeGrant as _AuthorizationCodeGrant,
 )
 from .models import db, User, Client, AuthorizationCode
-from .models import CodeGrantMixin, generate_authorization_code
+from .models import CodeGrantMixin, save_authorization_code
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
 
@@ -12,8 +12,8 @@ from .oauth2_server import create_authorization_server
 class AuthorizationCodeGrant(CodeGrantMixin, _AuthorizationCodeGrant):
     TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic', 'client_secret_post', 'none']
 
-    def create_authorization_code(self, client, grant_user, request):
-        return generate_authorization_code(client, grant_user, request)
+    def save_authorization_code(self, code, request):
+        return save_authorization_code(code, request)
 
 
 class AuthorizationCodeTest(TestCase):

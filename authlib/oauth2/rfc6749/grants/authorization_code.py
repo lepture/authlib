@@ -146,27 +146,24 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
             resource owner, otherwise pass None.
         :returns: (status_code, body, headers)
         """
-        state = self.request.state
-        if grant_user:
-            self.request.user = grant_user
+        if not grant_user:
+            raise AccessDeniedError(state=self.request.state, redirect_uri=redirect_uri)
 
-            if hasattr(self, 'create_authorization_code'):
-                deprecate('Use "generate_authorization_code" instead', '1.0')
-                code = self.create_authorization_code(
-                    self.request.client, grant_user, self.request)
-            else:
-                code = self.generate_authorization_code()
-                self.save_authorization_code(code, self.request)
-
-            params = [('code', code)]
-            if state:
-                params.append(('state', state))
-            uri = add_params_to_uri(redirect_uri, params)
-            headers = [('Location', uri)]
-            return 302, '', headers
-
+        self.request.user = grant_user
+        if hasattr(self, 'create_authorization_code'):  # pragma: no cover
+            deprecate('Use "generate_authorization_code" instead', '1.0')
+            client = self.request.client
+            code = self.create_authorization_code(client, grant_user, self.request)
         else:
-            raise AccessDeniedError(state=state, redirect_uri=redirect_uri)
+            code = self.generate_authorization_code()
+            self.save_authorization_code(code, self.request)
+
+        params = [('code', code)]
+        if self.request.state:
+            params.append(('state', self.request.state))
+        uri = add_params_to_uri(redirect_uri, params)
+        headers = [('Location', uri)]
+        return 302, '', headers
 
     def validate_token_request(self):
         """The client makes a request to the token endpoint by sending the
@@ -318,7 +315,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         """
         raise NotImplementedError()
 
-    def query_authorization_code(self, code, client):
+    def query_authorization_code(self, code, client):  # pragma: no cover
         """Get authorization_code from previously savings. Developers MUST
         implement it in subclass::
 

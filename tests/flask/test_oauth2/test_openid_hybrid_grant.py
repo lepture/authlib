@@ -10,7 +10,7 @@ from authlib.oauth2.rfc6749.grants import (
     AuthorizationCodeGrant as _AuthorizationCodeGrant,
 )
 from .models import db, User, Client, exists_nonce
-from .models import CodeGrantMixin, generate_authorization_code
+from .models import CodeGrantMixin, save_authorization_code
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
 
@@ -18,9 +18,8 @@ JWT_CONFIG = {'iss': 'Authlib', 'key': 'secret', 'alg': 'HS256', 'exp': 3600}
 
 
 class AuthorizationCodeGrant(CodeGrantMixin, _AuthorizationCodeGrant):
-    def create_authorization_code(self, client, grant_user, request):
-        nonce = request.data.get('nonce')
-        return generate_authorization_code(client, grant_user, request, nonce=nonce)
+    def save_authorization_code(self, code, request):
+        return save_authorization_code(code, request)
 
 
 class OpenIDCode(_OpenIDCode):
@@ -35,10 +34,8 @@ class OpenIDCode(_OpenIDCode):
 
 
 class OpenIDHybridGrant(_OpenIDHybridGrant):
-    def create_authorization_code(self, client, grant_user, request):
-        nonce = request.data.get('nonce')
-        return generate_authorization_code(
-            client, grant_user, request, nonce=nonce)
+    def save_authorization_code(self, code, request):
+        return save_authorization_code(code, request)
 
     def get_jwt_config(self):
         return dict(JWT_CONFIG)
