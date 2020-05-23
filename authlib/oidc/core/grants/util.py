@@ -5,7 +5,6 @@ from authlib.oauth2.rfc6749.util import scope_to_list
 from authlib.jose import JWT
 from authlib.common.encoding import to_native
 from authlib.common.urls import add_params_to_uri, quote_url
-from ..claims import UserInfo
 from ..util import create_half_hash
 from ..errors import (
     LoginRequiredError,
@@ -52,9 +51,7 @@ def validate_nonce(request, exists_nonce, required=False):
     nonce = request.data.get('nonce')
     if not nonce:
         if required:
-            raise InvalidRequestError(
-                'Missing "nonce" in request.'
-            )
+            raise InvalidRequestError('Missing "nonce" in request.')
         return True
 
     if exists_nonce(nonce, request):
@@ -77,7 +74,7 @@ def generate_id_token(
 def create_response_mode_response(redirect_uri, params, response_mode):
     if response_mode == 'form_post':
         tpl = (
-            '<html><head><title>Authlib</title></head>'
+            '<html><head><title>Redirecting</title></head>'
             '<body onload="javascript:document.forms[0].submit()">'
             '<form method="post" action="{}">{}</form></body></html>'
         )
@@ -142,18 +139,6 @@ def _generate_id_token_payload(
     if access_token:
         payload['at_hash'] = to_native(create_half_hash(access_token, alg))
     return payload
-
-
-def _generate_user_info(user, scopes):  # pragma: no cover
-    # OpenID Connect authorization code flow
-    user_info = user.generate_user_info(scopes)
-    if not isinstance(user_info, UserInfo):
-        raise RuntimeError(
-            'generate_user_info should return UserInfo instance.')
-
-    if 'sub' not in user_info:
-        user_info['sub'] = str(user.get_user_id())
-    return user_info
 
 
 def _jwt_encode(alg, payload, key):

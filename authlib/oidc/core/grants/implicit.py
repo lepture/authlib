@@ -1,19 +1,16 @@
 import logging
-from authlib.deprecate import deprecate
 from authlib.oauth2.rfc6749 import (
     OAuth2Error,
     InvalidScopeError,
     AccessDeniedError,
+    ImplicitGrant,
 )
-from authlib.oauth2.rfc6749.grants import ImplicitGrant
-from authlib.oauth2.rfc6749.util import scope_to_list
 from .util import (
     is_openid_scope,
     validate_nonce,
     validate_request_prompt,
     create_response_mode_response,
     generate_id_token,
-    _generate_user_info,
 )
 
 log = logging.getLogger(__name__)
@@ -39,7 +36,7 @@ class OpenIDImplicitGrant(ImplicitGrant):
         """
         raise NotImplementedError()
 
-    def get_jwt_config(self):  # pragma: no cover
+    def get_jwt_config(self):
         """Get the JWT configuration for OpenIDImplicitGrant. The JWT
         configuration will be used to generate ``id_token``. Developers
         MUST implement this method in subclass, e.g.::
@@ -54,15 +51,9 @@ class OpenIDImplicitGrant(ImplicitGrant):
 
         :return: dict
         """
-        deprecate('Missing "OpenIDImplicitGrant.get_jwt_config"', '1.0', 'fjPsV', 'oi')
-        config = self.server.config
-        key = config['jwt_key']
-        alg = config['jwt_alg']
-        iss = config['jwt_iss']
-        exp = config['jwt_exp']
-        return dict(key=key, alg=alg, iss=iss, exp=exp)
+        raise NotImplementedError()
 
-    def generate_user_info(self, user, scope):  # pragma: no cover
+    def generate_user_info(self, user, scope):
         """Provide user information for the given scope. Developers
         MUST implement this method in subclass, e.g.::
 
@@ -78,9 +69,7 @@ class OpenIDImplicitGrant(ImplicitGrant):
         :param scope: scope of the token
         :return: ``authlib.oidc.core.UserInfo`` instance
         """
-        deprecate('Missing "OpenIDImplicitGrant.generate_user_info"', '1.0', 'fjPsV', 'oi')
-        scopes = scope_to_list(scope)
-        return _generate_user_info(user, scopes)
+        raise NotImplementedError()
 
     def get_audiences(self, request):
         """Parse `aud` value for id_token, default value is client id. Developers

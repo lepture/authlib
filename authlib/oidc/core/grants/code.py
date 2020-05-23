@@ -9,14 +9,11 @@
 """
 
 import logging
-from authlib.deprecate import deprecate
-from authlib.oauth2.rfc6749.util import scope_to_list
 from .util import (
     is_openid_scope,
     validate_nonce,
     validate_request_prompt,
     generate_id_token,
-    _generate_user_info,
 )
 
 log = logging.getLogger(__name__)
@@ -25,20 +22,10 @@ log = logging.getLogger(__name__)
 class OpenIDCode(object):
     """An extension from OpenID Connect for "grant_type=code" request.
     """
-    def __init__(self, require_nonce=False, **kwargs):
+    def __init__(self, require_nonce=False):
         self.require_nonce = require_nonce
-        if 'required_nonce' in kwargs:
-            deprecate('Use "require_nonce" instead', '1.0')
-            if kwargs['required_nonce']:
-                self.require_nonce = True
 
-        self.key = kwargs.get('key')
-        self.alg = kwargs.get('alg')
-        self.iss = kwargs.get('iss')
-        self.exp = kwargs.get('exp')
-        self._exists_nonce = kwargs.get('exists_nonce')
-
-    def exists_nonce(self, nonce, request):  # pragma: no cover
+    def exists_nonce(self, nonce, request):
         """Check if the given nonce is existing in your database. Developers
         MUST implement this method in subclass, e.g.::
 
@@ -52,8 +39,7 @@ class OpenIDCode(object):
         :param request: OAuth2Request instance
         :return: Boolean
         """
-        deprecate('Missing "OpenIDCode.exists_nonce"', '1.0', 'fjPsV', 'oi')
-        return self._exists_nonce(nonce, request)
+        raise NotImplementedError()
 
     def get_jwt_config(self, grant):  # pragma: no cover
         """Get the JWT configuration for OpenIDCode extension. The JWT
@@ -71,8 +57,7 @@ class OpenIDCode(object):
         :param grant: AuthorizationCodeGrant instance
         :return: dict
         """
-        deprecate('Missing "OpenIDCode.get_jwt_config"', '1.0', 'fjPsV', 'oi')
-        return dict(key=self.key, alg=self.alg, iss=self.iss, exp=self.exp)
+        raise NotImplementedError()
 
     def generate_user_info(self, user, scope):  # pragma: no cover
         """Provide user information for the given scope. Developers
@@ -90,9 +75,7 @@ class OpenIDCode(object):
         :param scope: scope of the token
         :return: ``authlib.oidc.core.UserInfo`` instance
         """
-        deprecate('Missing "OpenIDCode.generate_user_info"', '1.0', 'fjPsV', 'oi')
-        scopes = scope_to_list(scope)
-        return _generate_user_info(user, scopes)
+        raise NotImplementedError()
 
     def get_audiences(self, request):
         """Parse `aud` value for id_token, default value is client id. Developers
