@@ -2,16 +2,24 @@ import json
 from authlib.oauth2.rfc6749 import grants, errors
 from authlib.common.urls import urlparse, url_decode
 from django.test import override_settings
-from .models import User, Client
-from .models import CodeGrantMixin, generate_authorization_code
+from .models import User, Client, OAuth2Code
+from .models import CodeGrantMixin
 from .oauth2_server import TestCase
 
 
 class AuthorizationCodeGrant(CodeGrantMixin, grants.AuthorizationCodeGrant):
     TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic', 'client_secret_post', 'none']
 
-    def create_authorization_code(self, client, grant_user, request):
-        return generate_authorization_code(client, grant_user, request)
+    def save_authorization_code(self, code, request):
+        auth_code = OAuth2Code(
+            code=code,
+            client_id=request.client.client_id,
+            redirect_uri=request.redirect_uri,
+            response_type=request.response_type,
+            scope=request.scope,
+            user=request.user,
+        )
+        auth_code.save()
 
 
 class AuthorizationCodeTest(TestCase):

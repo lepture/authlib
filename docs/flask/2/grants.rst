@@ -30,24 +30,22 @@ kept in a database or a cache like redis. Here is a SQLAlchemy mixin for
 Implement this grant by subclass :class:`AuthorizationCodeGrant`::
 
     from authlib.oauth2.rfc6749 import grants
-    from authlib.common.security import generate_token
 
     class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
-        def create_authorization_code(self, client, grant_user, request):
-            # you can use other method to generate this code
-            code = generate_token(48)
-            item = AuthorizationCode(
+        def save_authorization_code(self, code, request):
+            client = request.client
+            auth_code = AuthorizationCode(
                 code=code,
                 client_id=client.client_id,
                 redirect_uri=request.redirect_uri,
                 scope=request.scope,
-                user_id=grant_user.get_user_id(),
+                user_id=request.user.id,
             )
-            db.session.add(item)
+            db.session.add(auth_code)
             db.session.commit()
-            return code
+            return auth_code
 
-        def parse_authorization_code(self, code, client):
+        def query_authorization_code(self, code, client):
             item = AuthorizationCode.query.filter_by(
                 code=code, client_id=client.client_id).first()
             if item and not item.is_expired():

@@ -35,29 +35,26 @@ The new database SHOULD contain two more columns:
 2. code_challenge_method: A VARCHAR
 
 And the ``AuthorizationCodeGrant`` should record the ``code_challenge`` and
-``code_challenge_method`` into database in ``create_authorization_code``
+``code_challenge_method`` into database in ``save_authorization_code``
 method::
 
 
     class MyAuthorizationCodeGrant(AuthorizationCodeGrant):
-        def create_authorization_code(self, client, grant_user, request):
-            code = generate_token(48)
-
+        def save_authorization_code(self, code, request):
             # NOTICE BELOW
             code_challenge = request.data.get('code_challenge')
             code_challenge_method = request.data.get('code_challenge_method')
-            item = AuthorizationCode(
+            auth_code = AuthorizationCode(
                 code=code,
-                client_id=client.client_id,
+                client_id=request.client.client_id,
                 redirect_uri=request.redirect_uri,
                 scope=request.scope,
-                user_id=grant_user.get_user_id(),
+                user_id=request.user.id,
                 code_challenge=code_challenge,
                 code_challenge_method=code_challenge_method,
             )
-            db.session.add(item)
-            db.session.commit()
-            return code
+            auth_code.save()
+            return auth_code
 
 
 Now you can register your ``AuthorizationCodeGrant`` with the extension::

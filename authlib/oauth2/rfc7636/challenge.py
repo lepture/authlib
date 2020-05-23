@@ -30,9 +30,9 @@ class CodeChallenge(object):
     sending extra "code_challenge" and "code_verifier" to the authorization
     server.
 
-    The AuthorizationCodeGrant SHOULD save the code_challenge and
-    code_challenge_method into database when create_authorization_code. Then
-    register this extension via::
+    The AuthorizationCodeGrant SHOULD save the ``code_challenge`` and
+    ``code_challenge_method`` into database when ``save_authorization_code``.
+    Then register this extension via::
 
         server.register_grant(
             AuthorizationCodeGrant,

@@ -121,7 +121,7 @@ class OAuth2Code(Model, AuthorizationCodeMixin):
 
 
 class CodeGrantMixin(object):
-    def parse_authorization_code(self, code, client):
+    def query_authorization_code(self, code, client):
         try:
             item = OAuth2Code.objects.get(code=code, client_id=client.client_id)
         except OAuth2Code.DoesNotExist:
