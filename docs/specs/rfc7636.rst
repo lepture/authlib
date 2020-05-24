@@ -20,8 +20,6 @@ to the authorization server.
 Using RFC7636 in Authorization Code Grant
 -----------------------------------------
 
-.. versionadded:: v0.10
-
 In order to apply proof key for code exchange, you need to register the
 :class:`CodeChallenge` extension to ``AuthorizationCodeGrant``. But before
 that, we need to re-design our AuthorizationCode database.
@@ -40,6 +38,9 @@ method::
 
 
     class MyAuthorizationCodeGrant(AuthorizationCodeGrant):
+        # YOU MAY NEED TO ADD "none" METHOD FOR AUTHORIZATION WITHOUT CLIENT SECRET
+        TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic', 'client_secret_post', 'none']
+
         def save_authorization_code(self, code, request):
             # NOTICE BELOW
             code_challenge = request.data.get('code_challenge')
