@@ -1,0 +1,75 @@
+RFC8037: CFRG Elliptic Curve Diffie-Hellman (ECDH) and Signatures in JSON Object Signing and Encryption (JOSE)
+==============================================================================================================
+
+.. meta::
+    :description: API references on "X25519", "X448", "Ed25519", and "Ed448" algorithms for JWK. And "EdDSA"
+                  signing data using "JSON Web Signature (JWS)".
+
+
+Algorithms for JWS
+------------------
+
+In RFC8037, algorithm "EdDSA" is defined for JWS. Use Edwards-curve Digital
+Signature Algorithm (EdDSA) for signing data using "JSON Web Signature (JWS)"::
+
+    from authlib.jose import JsonWebSignature
+    from authlib.jose.rfc8037 import JWS_ALGORITHMS
+
+    # This JWS_ALGORITHMS contains only "EdDSA" alg.
+    jws = JsonWebSignature(algorithms=JWS_ALGORITHMS)
+
+    protected = {'alg': 'EdDSA'}
+    payload = b'example'
+
+    with open('ed25519-pkcs8.pem', 'rb') as f:
+        secret = f.read()
+    jws.serialize_compact(protected, payload, secret)
+
+Learn how to use other JWS functions at :ref:`jws_guide`.
+
+It can also be used in JSON Web Token (JWT)::
+
+    from authlib.jose import JsonWebToken
+    from authlib.jose.rfc8037 import JWS_ALGORITHMS
+
+    jwt = JsonWebToken(algorithms=JWS_ALGORITHMS)
+
+    with open('ed25519-pkcs8.pem', 'rb') as f:
+        key = f.read()
+
+    header = {'alg': 'EdDSA'}
+    payload = {'iss': 'Authlib', 'sub': '123', ...}
+    s = jwt.encode(header, payload, key)
+
+If you want to support more than just ``EdDSA``::
+
+    from authlib.jose.rfc7518 import JWS_ALGORITHMS as RFC7518_ALGORITHMS
+    from authlib.jose.rfc8037 import JWS_ALGORITHMS as RFC8037_ALGORITHMS
+
+    JWS_ALGORITHMS = RFC7518_ALGORITHMS + RFC8037_ALGORITHMS
+
+Algorithms for JWK
+------------------
+
+In RFC8037, algorithms "Ed25519", "Ed448", "X25519", "X448" are defined for JWK.
+Loads and dumps Json Web Keys with::
+
+    from authlib.jose import JsonWebKey
+    from authlib.jose.rfc8037 import JWK_ALGORITHMS
+
+    jwk = JsonWebKey(JWK_ALGORITHMS)
+
+    with open('ed25519-pkcs8.pem', 'rb') as f:
+        key = f.read()
+
+    # MUST use "OKP" as "kty" value
+    jwk.dumps(key, 'OKP')
+
+Learn how to use other JWK functions at :ref:`jwk_guide`.
+
+Algorithms for JWE
+------------------
+
+"X25519", "X448" keys are used in "epk" for ECDH-ES algorithms.
+
+(NOT IMPLEMENTED YET)

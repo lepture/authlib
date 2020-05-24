@@ -21,6 +21,7 @@ works.
     rfc7591
     rfc7636
     rfc7662
+    rfc8037
     rfc8414
     rfc8628
     oidc
