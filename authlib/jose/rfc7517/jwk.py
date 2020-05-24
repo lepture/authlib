@@ -1,11 +1,9 @@
-from ._backends import EC_TYPES, RSA_TYPES
-
-
 class JWKAlgorithm(object):
     name = None
     description = None
     algorithm_type = 'JWK'
     algorithm_location = 'kty'
+    key_types = (str, bytes)
 
     """Interface for JWK algorithm. JWA specification (RFC7518) SHOULD
     implement the algorithms for JWK with this base implementation.
@@ -44,24 +42,6 @@ class JsonWebKey(object):
 
         self._algorithms[algorithm.name] = algorithm
 
-    def _load_obj(self, obj):
-        kty = obj['kty']
-        alg = self._algorithms[kty]
-        return alg.loads(obj)
-
-    def _load_jwk_set(self, obj, kid):
-        if isinstance(obj, (tuple, list)):
-            keys = obj
-        elif 'keys' in obj:
-            keys = obj['keys']
-        else:
-            raise ValueError('Invalid JWK set format')
-
-        for key in keys:
-            if key.get('kid') == kid:
-                return self._load_obj(key)
-        raise ValueError('Invalid JWK kid')
-
     def loads(self, obj, kid=None):
         """Loads JSON Web Key object into a public/private key.
 
@@ -84,20 +64,43 @@ class JsonWebKey(object):
         :return: JWK dict
         """
         if kty is None:
-            if isinstance(key, EC_TYPES):
-                kty = 'EC'
-            elif isinstance(key, RSA_TYPES):
-                kty = 'RSA'
-            else:
-                kty = 'oct'
+            alg = self._find_key_alg(key)
+        else:
+            alg = self._algorithms[kty]
 
-        alg = self._algorithms[kty]
+        if not alg:
+            raise ValueError('Unsupported key for JWK')
+
         obj = alg.dumps(alg.prepare_key(key))
 
         if params:
             _add_other_params(obj, params)
 
         return obj
+
+    def _load_obj(self, obj):
+        kty = obj['kty']
+        alg = self._algorithms[kty]
+        return alg.loads(obj)
+
+    def _load_jwk_set(self, obj, kid):
+        if isinstance(obj, (tuple, list)):
+            keys = obj
+        elif 'keys' in obj:
+            keys = obj['keys']
+        else:
+            raise ValueError('Invalid JWK set format')
+
+        for key in keys:
+            if key.get('kid') == kid:
+                return self._load_obj(key)
+        raise ValueError('Invalid JWK kid')
+
+    def _find_key_alg(self, key):
+        for kty in self._algorithms:
+            alg = self._algorithms[kty]
+            if isinstance(key, alg.key_types):
+                return alg
 
 
 def _add_other_params(obj, params):

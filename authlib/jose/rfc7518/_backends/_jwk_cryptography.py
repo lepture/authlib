@@ -33,12 +33,13 @@ invalid_strings = [
 
 class RSAAlgorithm(JWKAlgorithm):
     name = 'RSA'
+    key_types = (RSAPrivateKey, RSAPublicKey)
 
     def loads_other_primes_info(self, obj):
         raise NotImplementedError()
 
     def prepare_key(self, key):
-        if isinstance(key, (RSAPrivateKey, RSAPublicKey)):
+        if isinstance(key, self.key_types):
             return key
         return _load_key(key, b'ssh-rsa')
 
@@ -131,6 +132,8 @@ class RSAAlgorithm(JWKAlgorithm):
 
 class ECAlgorithm(JWKAlgorithm):
     name = 'EC'
+    key_types = (EllipticCurvePrivateKey, EllipticCurvePublicKey)
+
     # http://tools.ietf.org/html/rfc4492#appendix-A
     # https://tools.ietf.org/html/rfc7518#section-6.2.1.1
     DSS_CURVES = {
@@ -145,7 +148,7 @@ class ECAlgorithm(JWKAlgorithm):
     }
 
     def prepare_key(self, key):
-        if isinstance(key, (EllipticCurvePrivateKey, EllipticCurvePublicKey)):
+        if isinstance(key, self.key_types):
             return key
         return _load_key(key, b'ecdsa-sha2-')
 
