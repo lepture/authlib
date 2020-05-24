@@ -7,9 +7,6 @@
 
     .. _`Section 6`: https://tools.ietf.org/html/rfc7518#section-6
 """
-from cryptography.hazmat.primitives.serialization import (
-    load_pem_private_key, load_pem_public_key, load_ssh_public_key
-)
 from cryptography.hazmat.primitives.asymmetric.rsa import (
     RSAPrivateNumbers, RSAPublicNumbers, RSAPrivateKey, RSAPublicKey,
     rsa_recover_prime_factors, rsa_crt_dmp1, rsa_crt_dmq1, rsa_crt_iqmp
@@ -20,28 +17,20 @@ from cryptography.hazmat.primitives.asymmetric.ec import (
     SECP256R1, SECP384R1, SECP521R1,
 )
 from cryptography.hazmat.backends import default_backend
+from authlib.common.encoding import base64_to_int, int_to_base64
 from authlib.jose.rfc7517 import JWKAlgorithm
-from authlib.common.encoding import to_bytes, base64_to_int, int_to_base64
-
-invalid_strings = [
-    b'-----BEGIN PUBLIC KEY-----',
-    b'-----BEGIN CERTIFICATE-----',
-    b'-----BEGIN RSA PUBLIC KEY-----',
-    b'ssh-rsa'
-]
+from ._key_cryptography import load_key
 
 
 class RSAAlgorithm(JWKAlgorithm):
     name = 'RSA'
-    key_types = (RSAPrivateKey, RSAPublicKey)
+    key_cls = (RSAPrivateKey, RSAPublicKey)
 
     def loads_other_primes_info(self, obj):
         raise NotImplementedError()
 
     def prepare_key(self, key):
-        if isinstance(key, self.key_types):
-            return key
-        return _load_key(key, b'ssh-rsa')
+        return load_key(key, b'ssh-rsa')
 
     def loads_private_key(self, obj):
         if 'oth' in obj:  # pragma: no cover
@@ -102,7 +91,7 @@ class RSAAlgorithm(JWKAlgorithm):
     def dumps_private_key(self, key):
         numbers = key.private_numbers()
         return {
-            'kty': 'RSA',
+            'kty': self.name,
             'n': int_to_base64(numbers.public_numbers.n),
             'e': int_to_base64(numbers.public_numbers.e),
             'd': int_to_base64(numbers.d),
@@ -116,7 +105,7 @@ class RSAAlgorithm(JWKAlgorithm):
     def dumps_public_key(self, key):
         numbers = key.public_numbers()
         return {
-            'kty': 'RSA',
+            'kty': self.name,
             'n': int_to_base64(numbers.n),
             'e': int_to_base64(numbers.e)
         }
@@ -132,7 +121,7 @@ class RSAAlgorithm(JWKAlgorithm):
 
 class ECAlgorithm(JWKAlgorithm):
     name = 'EC'
-    key_types = (EllipticCurvePrivateKey, EllipticCurvePublicKey)
+    key_cls = (EllipticCurvePrivateKey, EllipticCurvePublicKey)
 
     # http://tools.ietf.org/html/rfc4492#appendix-A
     # https://tools.ietf.org/html/rfc7518#section-6.2.1.1
@@ -148,9 +137,7 @@ class ECAlgorithm(JWKAlgorithm):
     }
 
     def prepare_key(self, key):
-        if isinstance(key, self.key_types):
-            return key
-        return _load_key(key, b'ecdsa-sha2-')
+        return load_key(key, b'ecdsa-sha2-')
 
     def loads(self, obj):
         for k in ['crv', 'x', 'y']:
@@ -174,7 +161,7 @@ class ECAlgorithm(JWKAlgorithm):
     def dumps_private_key(self, key):
         numbers = key.private_numbers()
         return {
-            'kty': 'EC',
+            'kty': self.name,
             'crv': self.CURVES_DSS[key.curve.name],
             'x': int_to_base64(numbers.public_numbers.x),
             'y': int_to_base64(numbers.public_numbers.y),
@@ -184,7 +171,7 @@ class ECAlgorithm(JWKAlgorithm):
     def dumps_public_key(self, key):
         numbers = key.public_numbers()
         return {
-            'kty': 'EC',
+            'kty': self.name,
             'crv': self.CURVES_DSS[numbers.curve.name],
             'x': int_to_base64(numbers.x),
             'y': int_to_base64(numbers.y)
@@ -197,23 +184,6 @@ class ECAlgorithm(JWKAlgorithm):
             return self.dumps_public_key(key)
         else:
             raise ValueError('Not a elliptic curve key')
-
-
-def _load_key(key, ssh_type):
-    key = to_bytes(key)
-    if key.startswith(ssh_type):
-        return load_ssh_public_key(key, backend=default_backend())
-
-    if b'PUBLIC' in key:
-        return load_pem_public_key(key, backend=default_backend())
-
-    if b'PRIVATE' in key:
-        return load_pem_private_key(key, password=None, backend=default_backend())
-
-    try:
-        return load_pem_private_key(key, password=None, backend=default_backend())
-    except ValueError:
-        return load_pem_public_key(key, backend=default_backend())
 
 
 JWK_ALGORITHMS = [RSAAlgorithm(), ECAlgorithm()]

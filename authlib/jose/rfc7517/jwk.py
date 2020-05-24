@@ -3,7 +3,7 @@ class JWKAlgorithm(object):
     description = None
     algorithm_type = 'JWK'
     algorithm_location = 'kty'
-    key_types = (str, bytes)
+    key_cls = (bytes,)
 
     """Interface for JWK algorithm. JWA specification (RFC7518) SHOULD
     implement the algorithms for JWK with this base implementation.
@@ -71,7 +71,9 @@ class JsonWebKey(object):
         if not alg:
             raise ValueError('Unsupported key for JWK')
 
-        obj = alg.dumps(alg.prepare_key(key))
+        if not isinstance(key, alg.key_cls):
+            key = alg.prepare_key(key)
+        obj = alg.dumps(key)
 
         if params:
             _add_other_params(obj, params)
@@ -99,7 +101,7 @@ class JsonWebKey(object):
     def _find_key_alg(self, key):
         for kty in self._algorithms:
             alg = self._algorithms[kty]
-            if isinstance(key, alg.key_types):
+            if isinstance(key, alg.key_cls):
                 return alg
 
 
