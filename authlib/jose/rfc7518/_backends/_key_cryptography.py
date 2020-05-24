@@ -13,28 +13,26 @@ from authlib.common.encoding import to_bytes
 
 
 class RSAKey(object):
+    private_key_cls = RSAPrivateKey
+    public_key_cls = RSAPublicKey
+
     def prepare_private_key(self, key):
-        if isinstance(key, RSAPrivateKey):
-            return key
         key = to_bytes(key)
         return load_pem_private_key(key, password=None, backend=default_backend())
 
     def prepare_public_key(self, key):
-        if isinstance(key, RSAPublicKey):
-            return key
         return load_key(key, b'ssh-rsa', key_type='public')
 
 
 class ECKey(object):
+    private_key_cls = EllipticCurvePrivateKey
+    public_key_cls = EllipticCurvePublicKey
+
     def prepare_private_key(self, key):
-        if isinstance(key, EllipticCurvePrivateKey):
-            return key
         key = to_bytes(key)
         return load_pem_private_key(key, password=None, backend=default_backend())
 
     def prepare_public_key(self, key):
-        if isinstance(key, EllipticCurvePublicKey):
-            return key
         return load_key(key, b'ecdsa-sha2-', key_type='public')
 
 

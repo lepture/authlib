@@ -6,6 +6,8 @@ class JWSAlgorithm(object):
     description = None
     algorithm_type = 'JWS'
     algorithm_location = 'alg'
+    private_key_cls = bytes
+    public_key_cls = bytes
 
     def prepare_private_key(self, key):
         """Prepare key for sign signature."""
