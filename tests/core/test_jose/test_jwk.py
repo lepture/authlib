@@ -1,6 +1,6 @@
 import unittest
 from authlib.jose import JsonWebKey, jwk
-from authlib.jose.rfc7517.jwk import EC_TYPES, RSA_TYPES
+from authlib.jose.rfc8037 import JWK_ALGORITHMS
 from authlib.common.encoding import base64_to_int
 from tests.util import read_file_path
 
@@ -22,7 +22,6 @@ class JWKTest(unittest.TestCase):
         # https://tools.ietf.org/html/rfc7520#section-3.1
         obj = read_file_path('ec_public.json')
         key = jwk.loads(obj)
-        self.assertIsInstance(key, EC_TYPES[1])
         new_obj = jwk.dumps(key)
         self.assertEqual(new_obj['crv'], obj['crv'])
         self.assertBase64IntEqual(new_obj['x'], obj['x'])
@@ -32,7 +31,6 @@ class JWKTest(unittest.TestCase):
         # https://tools.ietf.org/html/rfc7520#section-3.2
         obj = read_file_path('ec_private.json')
         key = jwk.loads(obj)
-        self.assertIsInstance(key, EC_TYPES[0])
         new_obj = jwk.dumps(key, 'EC')
         self.assertEqual(new_obj['crv'], obj['crv'])
         self.assertBase64IntEqual(new_obj['x'], obj['x'])
@@ -47,7 +45,6 @@ class JWKTest(unittest.TestCase):
         # https://tools.ietf.org/html/rfc7520#section-3.3
         obj = read_file_path('jwk_public.json')
         key = jwk.loads(obj)
-        self.assertIsInstance(key, RSA_TYPES[1])
         new_obj = jwk.dumps(key)
         self.assertBase64IntEqual(new_obj['n'], obj['n'])
         self.assertBase64IntEqual(new_obj['e'], obj['e'])
@@ -56,7 +53,6 @@ class JWKTest(unittest.TestCase):
         # https://tools.ietf.org/html/rfc7520#section-3.4
         obj = RSA_PRIVATE_KEY
         key = jwk.loads(obj)
-        self.assertIsInstance(key, RSA_TYPES[0])
         new_obj = jwk.dumps(key, 'RSA')
         self.assertBase64IntEqual(new_obj['n'], obj['n'])
         self.assertBase64IntEqual(new_obj['e'], obj['e'])
@@ -77,7 +73,6 @@ class JWKTest(unittest.TestCase):
             "e": "AQAB"
         }
         key = jwk.loads(obj)
-        self.assertIsInstance(key, RSA_TYPES[0])
         new_obj = jwk.dumps(key, 'RSA')
         self.assertBase64IntEqual(new_obj['n'], obj['n'])
         self.assertBase64IntEqual(new_obj['e'], obj['e'])
@@ -101,6 +96,52 @@ class JWKTest(unittest.TestCase):
         self.assertRaises(ValueError, jwk.loads, obj)
         self.assertRaises(ValueError, jwk.loads, {'kty': 'RSA'})
         self.assertRaises(ValueError, jwk.dumps, '', 'RSA')
+
+    def test_dumps_okp_public_key(self):
+        key = read_file_path('ed25519-ssh.pub')
+        jwk = JsonWebKey(JWK_ALGORITHMS)
+        self.assertRaises(ValueError, jwk.dumps, key)
+
+        obj = jwk.dumps(key, 'OKP')
+        self.assertEqual(obj['kty'], 'OKP')
+        self.assertEqual(obj['crv'], 'Ed25519')
+
+        key = read_file_path('ed25519-pub.pem')
+        obj = jwk.dumps(key, 'OKP')
+        self.assertEqual(obj['kty'], 'OKP')
+        self.assertEqual(obj['crv'], 'Ed25519')
+
+    def test_loads_okp_public_key(self):
+        obj = {
+            "x": "AD9E0JYnpV-OxZbd8aN1t4z71Vtf6JcJC7TYHT0HDbg",
+            "crv": "Ed25519",
+            "kty": "OKP"
+        }
+        jwk = JsonWebKey(JWK_ALGORITHMS)
+        key = jwk.loads(obj)
+        new_obj = jwk.dumps(key)
+        self.assertEqual(obj['x'], new_obj['x'])
+
+    def test_dumps_okp_private_key(self):
+        key = read_file_path('ed25519-pkcs8.pem')
+        jwk = JsonWebKey(JWK_ALGORITHMS)
+        self.assertRaises(ValueError, jwk.dumps, key)
+        obj = jwk.dumps(key, 'OKP')
+        self.assertEqual(obj['kty'], 'OKP')
+        self.assertEqual(obj['crv'], 'Ed25519')
+        self.assertIn('d', obj)
+
+    def test_loads_okp_private_key(self):
+        obj = {
+            'x': '11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo',
+            'd': 'nWGxne_9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A',
+            'crv': 'Ed25519',
+            'kty': 'OKP'
+        }
+        jwk = JsonWebKey(JWK_ALGORITHMS)
+        key = jwk.loads(obj)
+        new_obj = jwk.dumps(key)
+        self.assertEqual(obj['d'], new_obj['d'])
 
     def test_mac_computation(self):
         # https://tools.ietf.org/html/rfc7520#section-3.5

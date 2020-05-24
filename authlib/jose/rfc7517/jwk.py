@@ -73,6 +73,7 @@ class JsonWebKey(object):
 
         if not isinstance(key, alg.key_cls):
             key = alg.prepare_key(key)
+
         obj = alg.dumps(key)
 
         if params:

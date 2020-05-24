@@ -13,7 +13,10 @@ from cryptography.hazmat.primitives.asymmetric.x448 import (
 from cryptography.hazmat.primitives.serialization import (
     Encoding, PublicFormat, PrivateFormat, NoEncryption
 )
-from authlib.common.encoding import urlsafe_b64decode, urlsafe_b64encode
+from authlib.common.encoding import (
+    to_unicode, to_bytes,
+    urlsafe_b64decode, urlsafe_b64encode,
+)
 from ..rfc7517 import JWKAlgorithm
 from ..rfc7518._backends._key_cryptography import load_key
 
@@ -61,9 +64,12 @@ class OKPAlgorithm(JWKAlgorithm):
         # The parameter "d" MUST be present for private keys
         if 'd' in obj:
             crv_key = keys[1]
-            return crv_key.from_private_bytes(urlsafe_b64decode(obj['d']))
+            d_bytes = urlsafe_b64decode(to_bytes(obj['d']))
+            return crv_key.from_private_bytes(d_bytes)
+
         crv_key = keys[0]
-        return crv_key.from_public_bytes(urlsafe_b64decode(obj['x']))
+        x_bytes = urlsafe_b64decode(to_bytes(obj['x']))
+        return crv_key.from_public_bytes(x_bytes)
 
     def dumps(self, key):
         crv = self.get_key_curve(key)
@@ -86,10 +92,10 @@ class OKPAlgorithm(JWKAlgorithm):
             PrivateFormat.Raw,
             NoEncryption()
         )
-        obj['d'] = urlsafe_b64encode(d_bytes)
+        obj['d'] = to_unicode(urlsafe_b64encode(d_bytes))
         return obj
 
     @staticmethod
     def dumps_public_key(key):
         x_bytes = key.public_bytes(Encoding.Raw, PublicFormat.Raw)
-        return {'x': urlsafe_b64encode(x_bytes)}
+        return {'x': to_unicode(urlsafe_b64encode(x_bytes))}
