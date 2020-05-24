@@ -1,6 +1,6 @@
 import unittest
 from authlib.jose import JsonWebKey, jwk
-from authlib.jose.rfc8037 import JWK_ALGORITHMS
+from authlib.jose.rfc8037 import JWK_ALGORITHMS as RFC8037_ALGORITHMS
 from authlib.common.encoding import base64_to_int
 from tests.util import read_file_path
 
@@ -99,7 +99,7 @@ class JWKTest(unittest.TestCase):
 
     def test_dumps_okp_public_key(self):
         key = read_file_path('ed25519-ssh.pub')
-        jwk = JsonWebKey(JWK_ALGORITHMS)
+        jwk = JsonWebKey(RFC8037_ALGORITHMS)
         self.assertRaises(ValueError, jwk.dumps, key)
 
         obj = jwk.dumps(key, 'OKP')
@@ -117,14 +117,14 @@ class JWKTest(unittest.TestCase):
             "crv": "Ed25519",
             "kty": "OKP"
         }
-        jwk = JsonWebKey(JWK_ALGORITHMS)
+        jwk = JsonWebKey(RFC8037_ALGORITHMS)
         key = jwk.loads(obj)
         new_obj = jwk.dumps(key)
         self.assertEqual(obj['x'], new_obj['x'])
 
     def test_dumps_okp_private_key(self):
         key = read_file_path('ed25519-pkcs8.pem')
-        jwk = JsonWebKey(JWK_ALGORITHMS)
+        jwk = JsonWebKey(RFC8037_ALGORITHMS)
         self.assertRaises(ValueError, jwk.dumps, key)
         obj = jwk.dumps(key, 'OKP')
         self.assertEqual(obj['kty'], 'OKP')
@@ -138,7 +138,7 @@ class JWKTest(unittest.TestCase):
             'crv': 'Ed25519',
             'kty': 'OKP'
         }
-        jwk = JsonWebKey(JWK_ALGORITHMS)
+        jwk = JsonWebKey(RFC8037_ALGORITHMS)
         key = jwk.loads(obj)
         new_obj = jwk.dumps(key)
         self.assertEqual(obj['d'], new_obj['d'])

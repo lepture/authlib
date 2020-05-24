@@ -2,6 +2,7 @@ import unittest
 import json
 from authlib.jose import JsonWebSignature, JWS_ALGORITHMS, JWE_ALGORITHMS
 from authlib.jose import errors
+from authlib.jose.rfc8037 import JWS_ALGORITHMS as RFC8037_ALGORITHMS
 from tests.util import read_file_path
 
 
@@ -193,3 +194,13 @@ class JWSTest(unittest.TestCase):
         jws = JsonWebSignature(algorithms=JWS_ALGORITHMS)
         s = jws.serialize(header, b'hello', 'secret')
         self.assertIsInstance(s, dict)
+
+    def test_EdDSA_alg(self):
+        jws = JsonWebSignature(algorithms=RFC8037_ALGORITHMS)
+        private_key = read_file_path('ed25519-pkcs8.pem')
+        public_key = read_file_path('ed25519-pub.pem')
+        s = jws.serialize({'alg': 'EdDSA'}, 'hello', private_key)
+        data = jws.deserialize(s, public_key)
+        header, payload = data['header'], data['payload']
+        self.assertEqual(payload, b'hello')
+        self.assertEqual(header['alg'], 'EdDSA')
