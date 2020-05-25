@@ -15,7 +15,8 @@ from authlib.common.encoding import (
     urlsafe_b64encode
 )
 from authlib.jose.rfc7516 import JWEAlgorithm
-from ._key_cryptography import RSAKey
+from ._key_cryptography import RSAKey, ECKey
+from ._jwk_cryptography import rsa_alg, ec_alg
 from ..oct_key import OctKey
 
 
@@ -30,7 +31,9 @@ class RSAAlgorithm(JWEAlgorithm):
         self.padding = pad_fn
 
     def prepare_key(self, raw_data):
-        return RSAKey.from_raw(raw_data)
+        key = RSAKey.from_raw(raw_data)
+        rsa_alg.loads(key)
+        return key
 
     def wrap(self, cek, headers, key):
         op_key = key.get_operation_key('wrapKey')
@@ -127,6 +130,27 @@ class AESGCMAlgorithm(JWEAlgorithm):
         d = cipher.decryptor()
         cek = d.update(ek) + d.finalize()
         return cek
+
+
+class ECDHAlgorithm(JWEAlgorithm):
+    def __init__(self, key_size=None):
+        if key_size is None:
+            self.name = 'ECDH-ES'
+        else:
+            self.name = 'ECDH-ES+A{}KW'.format(key_size)
+        self.description = None
+        self.key_size = key_size
+
+    def prepare_key(self, raw_data):
+        key = ECKey.from_raw(raw_data)
+        ec_alg.loads(key)
+        return key
+
+    def wrap(self, cek, headers, key):
+        pass
+
+    def unwrap(self, ek, headers, key):
+        pass
 
 
 JWE_ALG_ALGORITHMS = [

@@ -25,11 +25,19 @@ from .rfc7518 import (
     ECKey,
 )
 from .rfc7519 import JWT, JsonWebToken, BaseClaims, JWTClaims
+from .rfc8037 import (
+    JWS_ALGORITHMS as RFC8037_JWS_ALGORITHMS,
+    JWK_ALGORITHMS as RFC8037_JWK_ALGORITHMS,
+)
 from .jwk import jwk
 
 # attach algorithms
+JWS_ALGORITHMS = JWS_ALGORITHMS + RFC8037_JWS_ALGORITHMS
 JsonWebSignature.JWS_AVAILABLE_ALGORITHMS = {alg.name: alg for alg in JWS_ALGORITHMS}
+
 JsonWebEncryption.JWE_AVAILABLE_ALGORITHMS = {alg.name: alg for alg in JWE_ALGORITHMS}
+
+JWK_ALGORITHMS = JWK_ALGORITHMS + RFC8037_JWK_ALGORITHMS
 JsonWebKey.JWK_AVAILABLE_ALGORITHMS = {alg.name: alg for alg in JWK_ALGORITHMS}
 
 # compatible imports

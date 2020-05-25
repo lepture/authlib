@@ -27,7 +27,7 @@ class Key(object):
         self.raw_data = raw_data
         self._params = params
         self.key_data = None
-        self.dict_data = None
+        self.dict_data = {}
 
     def as_key(self):
         return self.key_data
@@ -78,35 +78,35 @@ class Key(object):
 
     @property
     def kid(self):
-        return self._params.get('kid')
+        return self.dict_data.get('kid') or self._params.get('kid')
 
     @property
     def alg(self):
-        return self._params.get('alg')
+        return self.dict_data.get('alg') or self._params.get('alg')
 
     @property
     def use(self):
-        return self._params.get('use')
+        return self.dict_data.get('use') or self._params.get('use')
 
     @property
     def key_ops(self):
-        return self._params.get('key_ops')
+        return self.dict_data.get('key_ops') or self._params.get('key_ops')
 
     @property
     def x5u(self):
-        return self._params.get('x5u')
+        return self.dict_data.get('x5u') or self._params.get('x5u')
 
     @property
     def x5c(self):
-        return self._params.get('x5c')
+        return self.dict_data.get('x5c') or self._params.get('x5c')
 
     @property
     def x5t(self):
-        return self._params.get('x5t')
+        return self.dict_data.get('x5t') or self._params.get('x5t')
 
     @property
     def x5t_s256(self):
-        return self._params.get('x5t#S256')
+        return self.dict_data.get('x5t#S256') or self._params.get('x5t#S256')
 
     def get_supported_key_ops(self):
         raise NotImplementedError()

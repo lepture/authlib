@@ -11,8 +11,6 @@ class JWEAlgorithm(object):
     description = None
     algorithm_type = 'JWE'
     algorithm_location = 'alg'
-    private_key_cls = bytes
-    public_key_cls = bytes
 
     def prepare_key(self, raw_data):
         raise NotImplementedError

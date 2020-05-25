@@ -75,12 +75,11 @@ class JsonWebKey(object):
         if key is not None:
             return key
 
-        if kid is None:
-            alg, key = self.prepare(obj)
-            alg.loads(key)
-            return key
-
-        raise ValueError('Invalid JSON Web Key')
+        alg, key = self.prepare(obj)
+        alg.loads(key)
+        if kid and kid != key.kid:
+            raise ValueError('Key "kid" not matching')
+        return key
 
     def dumps(self, key, kty=None, **params):
         """Generate JWK format for the given public/private key.
