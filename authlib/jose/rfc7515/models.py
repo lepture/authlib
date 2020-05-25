@@ -6,16 +6,10 @@ class JWSAlgorithm(object):
     description = None
     algorithm_type = 'JWS'
     algorithm_location = 'alg'
-    private_key_cls = bytes
-    public_key_cls = bytes
 
-    def prepare_private_key(self, key):
-        """Prepare key for sign signature."""
-        raise NotImplementedError
-
-    def prepare_public_key(self, key):
-        """Prepare key for verify signature."""
-        raise NotImplementedError
+    def prepare_key(self, raw_data):
+        """Prepare key for signing and verifying signature."""
+        raise NotImplementedError()
 
     def sign(self, msg, key):
         """Sign the text msg with a private/sign key.
@@ -26,12 +20,12 @@ class JWSAlgorithm(object):
         """
         raise NotImplementedError
 
-    def verify(self, msg, key, sig):
+    def verify(self, msg, sig, key):
         """Verify the signature of text msg with a public/verify key.
 
         :param msg: message bytes to be signed
-        :param key: public key to verify the signature
         :param sig: result signature to be compared
+        :param key: public key to verify the signature
         :return: boolean
         """
         raise NotImplementedError

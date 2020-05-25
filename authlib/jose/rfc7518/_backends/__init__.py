@@ -17,3 +17,9 @@ try:
     from ._jwk_cryptography import JWK_ALGORITHMS
 except ImportError:
     JWK_ALGORITHMS = []
+
+try:
+    from ._key_cryptography import RSAKey, ECKey
+except ImportError:
+    RSAKey = None
+    ECKey = None

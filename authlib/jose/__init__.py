@@ -20,11 +20,12 @@ from .rfc7518 import (
     JWE_ENC_ALGORITHMS,
     JWE_ZIP_ALGORITHMS,
     JWK_ALGORITHMS,
+    OctKey,
+    RSAKey,
+    ECKey,
 )
 from .rfc7519 import JWT, JsonWebToken, BaseClaims, JWTClaims
 from .jwk import jwk
-
-jwt = JsonWebToken()
 
 # attach algorithms
 JsonWebSignature.JWS_AVAILABLE_ALGORITHMS = {alg.name: alg for alg in JWS_ALGORITHMS}
@@ -35,6 +36,8 @@ JsonWebKey.JWK_AVAILABLE_ALGORITHMS = {alg.name: alg for alg in JWK_ALGORITHMS}
 JWS = JsonWebSignature
 JWE = JsonWebEncryption
 JWK = JsonWebKey
+
+jwt = JsonWebToken()
 
 
 __all__ = [
@@ -49,6 +52,8 @@ __all__ = [
     'JWE_ENC_ALGORITHMS',
     'JWE_ZIP_ALGORITHMS',
     'JWK_ALGORITHMS',
+
+    'OctKey', 'RSAKey', 'ECKey',
 
     'JWT', 'JsonWebToken', 'BaseClaims', 'JWTClaims',
     'jwk', 'jwt',

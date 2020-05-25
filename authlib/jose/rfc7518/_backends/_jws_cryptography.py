@@ -17,10 +17,11 @@ from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.exceptions import InvalidSignature
 from authlib.jose.rfc7515 import JWSAlgorithm
 from ._key_cryptography import RSAKey, ECKey
+from ._jwk_cryptography import rsa_alg, ec_alg
 from ..util import encode_int, decode_int
 
 
-class RSAAlgorithm(RSAKey, JWSAlgorithm):
+class RSAAlgorithm(JWSAlgorithm):
     """RSA using SHA algorithms for JWS. Available algorithms:
 
     - RS256: RSASSA-PKCS1-v1_5 using SHA-256
@@ -37,18 +38,25 @@ class RSAAlgorithm(RSAKey, JWSAlgorithm):
         self.hash_alg = getattr(self, 'SHA{}'.format(sha_type))
         self.padding = padding.PKCS1v15()
 
-    def sign(self, msg, key):
-        return key.sign(msg, self.padding, self.hash_alg())
+    def prepare_key(self, raw_data):
+        key = RSAKey.from_raw(raw_data)
+        rsa_alg.loads(key)
+        return key
 
-    def verify(self, msg, key, sig):
+    def sign(self, msg, key):
+        op_key = key.get_operation_key('sign')
+        return op_key.sign(msg, self.padding, self.hash_alg())
+
+    def verify(self, msg, sig, key):
+        op_key = key.get_operation_key('verify')
         try:
-            key.verify(sig, msg, self.padding, self.hash_alg())
+            op_key.verify(sig, msg, self.padding, self.hash_alg())
             return True
         except InvalidSignature:
             return False
 
 
-class ECAlgorithm(ECKey, JWSAlgorithm):
+class ECAlgorithm(JWSAlgorithm):
     """ECDSA using SHA algorithms for JWS. Available algorithms:
 
     - ES256: ECDSA using P-256 and SHA-256
@@ -64,14 +72,20 @@ class ECAlgorithm(ECKey, JWSAlgorithm):
         self.description = 'ECDSA using P-{} and SHA-{}'.format(sha_type, sha_type)
         self.hash_alg = getattr(self, 'SHA{}'.format(sha_type))
 
+    def prepare_key(self, raw_data):
+        key = ECKey.from_raw(raw_data)
+        ec_alg.loads(key)
+        return key
+
     def sign(self, msg, key):
-        der_sig = key.sign(msg, ECDSA(self.hash_alg()))
+        op_key = key.get_operation_key('sign')
+        der_sig = op_key.sign(msg, ECDSA(self.hash_alg()))
         r, s = decode_dss_signature(der_sig)
-        size = key.curve.key_size
+        size = key.curve_key_size
         return encode_int(r, size) + encode_int(s, size)
 
-    def verify(self, msg, key, sig):
-        key_size = key.curve.key_size
+    def verify(self, msg, sig, key):
+        key_size = key.curve_key_size
         length = (key_size + 7) // 8
 
         if len(sig) != 2 * length:
@@ -82,13 +96,14 @@ class ECAlgorithm(ECKey, JWSAlgorithm):
         der_sig = encode_dss_signature(r, s)
 
         try:
-            key.verify(der_sig, msg, ECDSA(self.hash_alg()))
+            op_key = key.get_operation_key('verify')
+            op_key.verify(der_sig, msg, ECDSA(self.hash_alg()))
             return True
         except InvalidSignature:
             return False
 
 
-class RSAPSSAlgorithm(RSAKey, JWSAlgorithm):
+class RSAPSSAlgorithm(JWSAlgorithm):
     """RSASSA-PSS using SHA algorithms for JWS. Available algorithms:
 
     - PS256: RSASSA-PSS using SHA-256 and MGF1 with SHA-256
@@ -105,8 +120,14 @@ class RSAPSSAlgorithm(RSAKey, JWSAlgorithm):
         self.description = tpl.format(sha_type, sha_type)
         self.hash_alg = getattr(self, 'SHA{}'.format(sha_type))
 
+    def prepare_key(self, raw_data):
+        key = RSAKey.from_raw(raw_data)
+        rsa_alg.loads(key)
+        return key
+
     def sign(self, msg, key):
-        return key.sign(
+        op_key = key.get_operation_key('sign')
+        return op_key.sign(
             msg,
             padding.PSS(
                 mgf=padding.MGF1(self.hash_alg()),
@@ -115,9 +136,10 @@ class RSAPSSAlgorithm(RSAKey, JWSAlgorithm):
             self.hash_alg()
         )
 
-    def verify(self, msg, key, sig):
+    def verify(self, msg, sig, key):
+        op_key = key.get_operation_key('verify')
         try:
-            key.verify(
+            op_key.verify(
                 sig,
                 msg,
                 padding.PSS(

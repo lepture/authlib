@@ -73,7 +73,7 @@ class JWKTest(unittest.TestCase):
             "e": "AQAB"
         }
         key = jwk.loads(obj)
-        new_obj = jwk.dumps(key, 'RSA')
+        new_obj = jwk.dumps(key.key_data, 'RSA')
         self.assertBase64IntEqual(new_obj['n'], obj['n'])
         self.assertBase64IntEqual(new_obj['e'], obj['e'])
         self.assertBase64IntEqual(new_obj['d'], obj['d'])
@@ -155,7 +155,7 @@ class JWKTest(unittest.TestCase):
         key = jwk.loads(obj)
         new_obj = jwk.dumps(key)
         self.assertEqual(obj['k'], new_obj['k'])
-        self.assertNotIn('use', new_obj)
+        self.assertIn('use', new_obj)
 
         new_obj = jwk.dumps(key, use='sig')
         self.assertEqual(new_obj['use'], 'sig')

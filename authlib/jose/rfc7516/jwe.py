@@ -136,7 +136,7 @@ class JsonWebEncryption(object):
 
         self._pre_validate_header(protected)
         algorithm, enc_alg, key = self._prepare_alg_enc_key(
-            protected, key, private=True)
+            protected, key)
         self._post_validate_header(protected, algorithm)
 
         cek = algorithm.unwrap(ek, protected, key)
@@ -161,9 +161,9 @@ class JsonWebEncryption(object):
             return zip_alg.decompress(to_bytes(s))
         return s
 
-    def _prepare_alg_enc_key(self, header, key, private=False):
+    def _prepare_alg_enc_key(self, header, key):
         algorithm, key = prepare_algorithm_key(
-            self._alg_algorithms, header, None, key, private=private)
+            self._alg_algorithms, header, None, key)
         enc_alg = self._enc_algorithms[header['enc']]
         return algorithm, enc_alg, key
 

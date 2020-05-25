@@ -14,10 +14,7 @@ class JWEAlgorithm(object):
     private_key_cls = bytes
     public_key_cls = bytes
 
-    def prepare_private_key(self, key):
-        raise NotImplementedError
-
-    def prepare_public_key(self, key):
+    def prepare_key(self, raw_data):
         raise NotImplementedError
 
     def wrap(self, cek, headers, key):

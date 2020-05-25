@@ -16,9 +16,10 @@ from authlib.common.encoding import (
 )
 from authlib.jose.rfc7516 import JWEAlgorithm
 from ._key_cryptography import RSAKey
+from ..oct_key import OctKey
 
 
-class RSAAlgorithm(RSAKey, JWEAlgorithm):
+class RSAAlgorithm(JWEAlgorithm):
     #: A key of size 2048 bits or larger MUST be used with these algorithms
     #: RSA1_5, RSA-OAEP, RSA-OAEP-256
     key_size = 2048
@@ -28,15 +29,20 @@ class RSAAlgorithm(RSAKey, JWEAlgorithm):
         self.description = description
         self.padding = pad_fn
 
+    def prepare_key(self, raw_data):
+        return RSAKey.from_raw(raw_data)
+
     def wrap(self, cek, headers, key):
-        if key.key_size < self.key_size:
+        op_key = key.get_operation_key('wrapKey')
+        if op_key.key_size < self.key_size:
             raise ValueError('A key of size 2048 bits or larger MUST be used')
-        ek = key.encrypt(cek, self.padding)
+        ek = op_key.encrypt(cek, self.padding)
         return ek
 
     def unwrap(self, ek, headers, key):
         # it will raise ValueError if failed
-        return key.decrypt(ek, self.padding)
+        op_key = key.get_operation_key('unwrapKey')
+        return op_key.decrypt(ek, self.padding)
 
 
 class AESAlgorithm(JWEAlgorithm):
@@ -45,25 +51,24 @@ class AESAlgorithm(JWEAlgorithm):
         self.description = 'AES Key Wrap using {}-bit key'.format(key_size)
         self.key_size = key_size
 
+    def prepare_key(self, raw_data):
+        return OctKey.from_raw(raw_data)
+
     def _check_key(self, key):
         if len(key) * 8 != self.key_size:
             raise ValueError(
                 'A key of size {} bits is required.'.format(self.key_size))
 
-    def prepare_private_key(self, key):
-        return to_bytes(key)
-
-    def prepare_public_key(self, key):
-        return to_bytes(key)
-
     def wrap(self, cek, headers, key):
-        self._check_key(key)
-        ek = aes_key_wrap(key, cek, default_backend())
+        op_key = key.get_operation_key('wrapKey')
+        self._check_key(op_key)
+        ek = aes_key_wrap(op_key, cek, default_backend())
         return ek
 
     def unwrap(self, ek, headers, key):
-        self._check_key(key)
-        cek = aes_key_unwrap(key, ek, default_backend())
+        op_key = key.get_operation_key('unwrapKey')
+        self._check_key(op_key)
+        cek = aes_key_unwrap(op_key, ek, default_backend())
         return cek
 
 
@@ -75,19 +80,17 @@ class AESGCMAlgorithm(JWEAlgorithm):
         self.description = 'Key wrapping with AES GCM using {}-bit key'.format(key_size)
         self.key_size = key_size
 
+    def prepare_key(self, raw_data):
+        return OctKey.from_raw(raw_data)
+
     def _check_key(self, key):
         if len(key) * 8 != self.key_size:
             raise ValueError(
                 'A key of size {} bits is required.'.format(self.key_size))
 
-    def prepare_private_key(self, key):
-        return to_bytes(key)
-
-    def prepare_public_key(self, key):
-        return to_bytes(key)
-
     def wrap(self, cek, headers, key):
-        self._check_key(key)
+        op_key = key.get_operation_key('wrapKey')
+        self._check_key(op_key)
 
         #: https://tools.ietf.org/html/rfc7518#section-4.7.1.1
         #: The "iv" (initialization vector) Header Parameter value is the
@@ -95,7 +98,7 @@ class AESGCMAlgorithm(JWEAlgorithm):
         iv_size = 96
         iv = os.urandom(iv_size // 8)
 
-        cipher = Cipher(AES(key), GCM(iv), backend=default_backend())
+        cipher = Cipher(AES(op_key), GCM(iv), backend=default_backend())
         enc = cipher.encryptor()
         ek = enc.update(cek) + enc.finalize()
 
@@ -106,7 +109,8 @@ class AESGCMAlgorithm(JWEAlgorithm):
         return {'ek': ek, 'header': h}
 
     def unwrap(self, ek, headers, key):
-        self._check_key(key)
+        op_key = key.get_operation_key('unwrapKey')
+        self._check_key(op_key)
 
         iv = headers.get('iv')
         if not iv:
@@ -119,7 +123,7 @@ class AESGCMAlgorithm(JWEAlgorithm):
         iv = urlsafe_b64decode(to_bytes(iv))
         tag = urlsafe_b64decode(to_bytes(tag))
 
-        cipher = Cipher(AES(key), GCM(iv, tag), backend=default_backend())
+        cipher = Cipher(AES(op_key), GCM(iv, tag), backend=default_backend())
         d = cipher.decryptor()
         cek = d.update(ek) + d.finalize()
         return cek

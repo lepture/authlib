@@ -75,7 +75,7 @@ class JsonWebSignature(object):
         # calculate signature
         signing_input = b'.'.join([protected_segment, payload_segment])
         algorithm, key = prepare_algorithm_key(
-            self._algorithms, jws_header, payload, key, private=True)
+            self._algorithms, jws_header, payload, key)
         signature = urlsafe_b64encode(algorithm.sign(signing_input, key))
         return b'.'.join([protected_segment, payload_segment, signature])
 
@@ -113,7 +113,7 @@ class JsonWebSignature(object):
         rv = JWSObject(jws_header, payload, 'compact')
         algorithm, key = prepare_algorithm_key(
             self._algorithms, jws_header, payload, key)
-        if algorithm.verify(signing_input, key, signature):
+        if algorithm.verify(signing_input, signature, key):
             return rv
         raise BadSignatureError(rv)
 
@@ -142,7 +142,7 @@ class JsonWebSignature(object):
         def _sign(jws_header):
             self._validate_header(jws_header)
             _alg, _key = prepare_algorithm_key(
-                self._algorithms, jws_header, payload, key, private=True)
+                self._algorithms, jws_header, payload, key)
 
             protected_segment = json_b64encode(jws_header.protected)
             signing_input = b'.'.join([protected_segment, payload_segment])
@@ -294,7 +294,7 @@ class JsonWebSignature(object):
             self._algorithms, jws_header, payload, key)
         signing_input = b'.'.join([protected_segment, payload_segment])
         signature = _extract_signature(to_bytes(signature_segment))
-        if algorithm.verify(signing_input, key, signature):
+        if algorithm.verify(signing_input, signature, key):
             return jws_header, True
         return jws_header, False
 

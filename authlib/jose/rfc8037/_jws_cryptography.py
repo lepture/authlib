@@ -1,14 +1,9 @@
-from cryptography.hazmat.primitives.serialization import (
-    load_pem_private_key,
-)
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PublicKey, Ed25519PrivateKey
 )
-from cryptography.hazmat.backends import default_backend
-from authlib.common.encoding import to_bytes
 from authlib.jose.rfc7515 import JWSAlgorithm
-from ..rfc7518._backends._key_cryptography import load_key
+from ._key_cryptography import OKPKey
 
 
 class EdDSAAlgorithm(JWSAlgorithm):
@@ -17,19 +12,17 @@ class EdDSAAlgorithm(JWSAlgorithm):
     private_key_cls = Ed25519PrivateKey
     public_key_cls = Ed25519PublicKey
 
-    def prepare_private_key(self, key):
-        key = to_bytes(key)
-        return load_pem_private_key(key, password=None, backend=default_backend())
-
-    def prepare_public_key(self, key):
-        return load_key(key, b'ssh-ed25519', key_type='public')
+    def prepare_key(self, raw_data):
+        return OKPKey.from_raw(raw_data)
 
     def sign(self, msg, key):
-        return key.sign(msg)
+        op_key = key.get_operation_key('sign')
+        return op_key.sign(msg)
 
-    def verify(self, msg, key, sig):
+    def verify(self, msg, sig, key):
+        op_key = key.get_operation_key('verify')
         try:
-            key.verify(sig, msg)
+            op_key.verify(sig, msg)
             return True
         except InvalidSignature:
             return False

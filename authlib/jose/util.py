@@ -2,19 +2,12 @@ import binascii
 from authlib.common.encoding import urlsafe_b64decode, json_loads
 
 
-def prepare_algorithm_key(algorithms, header, payload, key, private=False):
+def prepare_algorithm_key(algorithms, header, payload, key):
     algorithm = algorithms[header['alg']]
     if callable(key):
         key = key(header, payload)
 
-    if private:
-        if isinstance(key, algorithm.private_key_cls):
-            return algorithm, key
-        key = algorithm.prepare_private_key(key)
-    else:
-        if isinstance(key, algorithm.public_key_cls):
-            return algorithm, key
-        key = algorithm.prepare_public_key(key)
+    key = algorithm.prepare_key(key)
     return algorithm, key
 
 
