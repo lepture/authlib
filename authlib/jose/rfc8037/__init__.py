@@ -1,10 +1,6 @@
-try:
-    from ._jwk_cryptography import OKPAlgorithm
-    from ._jws_cryptography import EdDSAAlgorithm
-    JWK_ALGORITHMS = [OKPAlgorithm()]
-    JWS_ALGORITHMS = [EdDSAAlgorithm()]
-except ImportError:
-    JWK_ALGORITHMS = []
-    JWS_ALGORITHMS = []
+from .okp_key import OKPKey
+from ._jws_cryptography import EdDSAAlgorithm
+JWS_ALGORITHMS = [EdDSAAlgorithm()]
 
-__all__ = ['JWK_ALGORITHMS', 'JWS_ALGORITHMS']
+
+__all__ = ['JWS_ALGORITHMS', 'OKPKey']

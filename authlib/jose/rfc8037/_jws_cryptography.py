@@ -3,7 +3,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PublicKey, Ed25519PrivateKey
 )
 from authlib.jose.rfc7515 import JWSAlgorithm
-from ._key_cryptography import OKPKey
+from .okp_key import OKPKey
 
 
 class EdDSAAlgorithm(JWSAlgorithm):
@@ -13,7 +13,7 @@ class EdDSAAlgorithm(JWSAlgorithm):
     public_key_cls = Ed25519PublicKey
 
     def prepare_key(self, raw_data):
-        return OKPKey.from_raw(raw_data)
+        return OKPKey.import_key(raw_data)
 
     def sign(self, msg, key):
         op_key = key.get_operation_key('sign')

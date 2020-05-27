@@ -16,8 +16,7 @@ from cryptography.hazmat.primitives.asymmetric.ec import ECDSA
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.exceptions import InvalidSignature
 from authlib.jose.rfc7515 import JWSAlgorithm
-from ._key_cryptography import RSAKey, ECKey
-from ._jwk_cryptography import rsa_alg, ec_alg
+from ._keys_cryptography import RSAKey, ECKey
 from ..util import encode_int, decode_int
 
 
@@ -39,9 +38,7 @@ class RSAAlgorithm(JWSAlgorithm):
         self.padding = padding.PKCS1v15()
 
     def prepare_key(self, raw_data):
-        key = RSAKey.from_raw(raw_data)
-        rsa_alg.loads(key)
-        return key
+        return RSAKey.import_key(raw_data)
 
     def sign(self, msg, key):
         op_key = key.get_operation_key('sign')
@@ -73,9 +70,7 @@ class ECAlgorithm(JWSAlgorithm):
         self.hash_alg = getattr(self, 'SHA{}'.format(sha_type))
 
     def prepare_key(self, raw_data):
-        key = ECKey.from_raw(raw_data)
-        ec_alg.loads(key)
-        return key
+        return ECKey.import_key(raw_data)
 
     def sign(self, msg, key):
         op_key = key.get_operation_key('sign')
@@ -121,9 +116,7 @@ class RSAPSSAlgorithm(JWSAlgorithm):
         self.hash_alg = getattr(self, 'SHA{}'.format(sha_type))
 
     def prepare_key(self, raw_data):
-        key = RSAKey.from_raw(raw_data)
-        rsa_alg.loads(key)
-        return key
+        return RSAKey.import_key(raw_data)
 
     def sign(self, msg, key):
         op_key = key.get_operation_key('sign')

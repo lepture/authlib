@@ -5,7 +5,6 @@ from .jwe_algorithms import (
     JWE_ENC_ALGORITHMS,
     JWE_ZIP_ALGORITHMS,
 )
-from .jwk_algorithms import JWK_ALGORITHMS
 from .oct_key import OctKey
 from ._backends import RSAKey, ECKey
 
@@ -16,7 +15,6 @@ __all__ = [
     'JWE_ALG_ALGORITHMS',
     'JWE_ENC_ALGORITHMS',
     'JWE_ZIP_ALGORITHMS',
-    'JWK_ALGORITHMS',
     'OctKey',
     'RSAKey',
     'ECKey',

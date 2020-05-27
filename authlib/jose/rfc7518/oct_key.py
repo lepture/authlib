@@ -1,28 +1,44 @@
-from authlib.common.encoding import to_bytes
+from authlib.common.encoding import (
+    to_bytes, to_unicode,
+    urlsafe_b64encode, urlsafe_b64decode,
+)
+from authlib.common.security import generate_token
 from authlib.jose.rfc7517 import Key
 
 
 class OctKey(Key):
     kty = 'oct'
-    required_key_fields = ['k']
+    REQUIRED_JSON_FIELDS = ['k']
 
-    def get_supported_key_ops(self):
-        return ['sign', 'verify', 'wrapKey', 'unwrapKey']
-
-    def get_operation_key(self, key_op):
-        self.check_operation(key_op)
-        return self.key_data
+    def get_op_key(self, key_op):
+        if key_op in self.ALLOWED_KEY_OPS:
+            return self.raw_key
 
     @classmethod
-    def from_raw(cls, raw_data, **params):
-        if isinstance(raw_data, cls):
-            raw_data.update(**params)
-            return raw_data
-
-        key = cls(raw_data, **params)
-        if isinstance(raw_data, dict):
-            key.check_key_fields(raw_data)
-            key.dict_data = raw_data
+    def import_key(cls, raw, options=None):
+        if isinstance(raw, dict):
+            cls.check_required_fields(raw)
+            payload = raw
+            raw_key = urlsafe_b64decode(to_bytes(payload['k']))
         else:
-            key.key_data = to_bytes(raw_data)
-        return key
+            raw_key = to_bytes(raw)
+            k = to_unicode(urlsafe_b64encode(raw_key))
+            payload = {'k': k}
+
+        if options is not None:
+            payload.update(options)
+
+        obj = cls(payload)
+        obj.raw_key = raw_key
+        obj.key_type = 'secret'
+        return obj
+
+    @classmethod
+    def generate_key(cls, bit_size=256, options=None, is_private=True):
+        if not is_private:
+            raise ValueError('oct key can not be generated as public')
+
+        if bit_size % 8 != 0:
+            raise ValueError('Invalid bit size for oct key')
+
+        return cls.import_key(generate_token(bit_size / 8), options)

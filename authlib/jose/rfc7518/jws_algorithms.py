@@ -11,8 +11,8 @@
 import hmac
 import hashlib
 from ._backends import JWS_ALGORITHMS as _ALGORITHMS
-from ..rfc7515 import JWSAlgorithm
 from .oct_key import OctKey
+from ..rfc7515 import JWSAlgorithm
 
 
 class NoneAlgorithm(JWSAlgorithm):
@@ -46,7 +46,7 @@ class HMACAlgorithm(JWSAlgorithm):
         self.hash_alg = getattr(self, 'SHA{}'.format(sha_type))
 
     def prepare_key(self, raw_data):
-        return OctKey.from_raw(raw_data)
+        return OctKey.import_key(raw_data)
 
     def sign(self, msg, key):
         # it is faster than the one in cryptography

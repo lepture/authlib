@@ -7,8 +7,8 @@
 
     https://tools.ietf.org/html/rfc7517
 """
-from .jwk import JsonWebKey, JWKAlgorithm
-from .key import Key
+from .jwk import JsonWebKey
+from .models import Key
 
 
-__all__ = ['JsonWebKey', 'JWKAlgorithm', 'Key']
+__all__ = ['JsonWebKey', 'Key']
