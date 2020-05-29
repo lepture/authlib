@@ -1,8 +1,7 @@
 from authlib.common.encoding import text_types, json_loads
 from .rfc7517 import JsonWebKey
-from .rfc7518 import JWK_ALGORITHMS
 
-jwk = JsonWebKey(algorithms=JWK_ALGORITHMS)
+jwk = JsonWebKey()
 
 
 def _load_jwk(key, header):

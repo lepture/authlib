@@ -41,11 +41,11 @@ class RSAAlgorithm(JWSAlgorithm):
         return RSAKey.import_key(raw_data)
 
     def sign(self, msg, key):
-        op_key = key.get_operation_key('sign')
+        op_key = key.get_op_key('sign')
         return op_key.sign(msg, self.padding, self.hash_alg())
 
     def verify(self, msg, sig, key):
-        op_key = key.get_operation_key('verify')
+        op_key = key.get_op_key('verify')
         try:
             op_key.verify(sig, msg, self.padding, self.hash_alg())
             return True
@@ -73,7 +73,7 @@ class ECAlgorithm(JWSAlgorithm):
         return ECKey.import_key(raw_data)
 
     def sign(self, msg, key):
-        op_key = key.get_operation_key('sign')
+        op_key = key.get_op_key('sign')
         der_sig = op_key.sign(msg, ECDSA(self.hash_alg()))
         r, s = decode_dss_signature(der_sig)
         size = key.curve_key_size
@@ -91,7 +91,7 @@ class ECAlgorithm(JWSAlgorithm):
         der_sig = encode_dss_signature(r, s)
 
         try:
-            op_key = key.get_operation_key('verify')
+            op_key = key.get_op_key('verify')
             op_key.verify(der_sig, msg, ECDSA(self.hash_alg()))
             return True
         except InvalidSignature:
@@ -119,7 +119,7 @@ class RSAPSSAlgorithm(JWSAlgorithm):
         return RSAKey.import_key(raw_data)
 
     def sign(self, msg, key):
-        op_key = key.get_operation_key('sign')
+        op_key = key.get_op_key('sign')
         return op_key.sign(
             msg,
             padding.PSS(
@@ -130,7 +130,7 @@ class RSAPSSAlgorithm(JWSAlgorithm):
         )
 
     def verify(self, msg, sig, key):
-        op_key = key.get_operation_key('verify')
+        op_key = key.get_op_key('verify')
         try:
             op_key.verify(
                 sig,

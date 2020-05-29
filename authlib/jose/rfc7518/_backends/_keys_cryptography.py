@@ -24,7 +24,8 @@ class RSAKey(Key):
     REQUIRED_JSON_FIELDS = ['e', 'n']
 
     def get_op_key(self, key_op):
-        return
+        # TODO
+        return self.raw_key
 
     def as_pem(self):
         return
@@ -130,7 +131,8 @@ class ECKey(Key):
     RAW_KEY_CLS = (EllipticCurvePublicKey, EllipticCurvePrivateKeyWithSerialization)
 
     def get_op_key(self, key_op):
-        return
+        # TODO
+        return self.raw_key
 
     def as_pem(self):
         return

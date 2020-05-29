@@ -16,11 +16,11 @@ class EdDSAAlgorithm(JWSAlgorithm):
         return OKPKey.import_key(raw_data)
 
     def sign(self, msg, key):
-        op_key = key.get_operation_key('sign')
+        op_key = key.get_op_key('sign')
         return op_key.sign(msg)
 
     def verify(self, msg, sig, key):
-        op_key = key.get_operation_key('verify')
+        op_key = key.get_op_key('verify')
         try:
             op_key.verify(sig, msg)
             return True

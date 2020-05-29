@@ -33,7 +33,7 @@ class RSAAlgorithm(JWEAlgorithm):
         return RSAKey.import_key(raw_data)
 
     def wrap(self, cek, headers, key):
-        op_key = key.get_operation_key('wrapKey')
+        op_key = key.get_op_key('wrapKey')
         if op_key.key_size < self.key_size:
             raise ValueError('A key of size 2048 bits or larger MUST be used')
         ek = op_key.encrypt(cek, self.padding)
@@ -41,7 +41,7 @@ class RSAAlgorithm(JWEAlgorithm):
 
     def unwrap(self, ek, headers, key):
         # it will raise ValueError if failed
-        op_key = key.get_operation_key('unwrapKey')
+        op_key = key.get_op_key('unwrapKey')
         return op_key.decrypt(ek, self.padding)
 
 
@@ -60,13 +60,13 @@ class AESAlgorithm(JWEAlgorithm):
                 'A key of size {} bits is required.'.format(self.key_size))
 
     def wrap(self, cek, headers, key):
-        op_key = key.get_operation_key('wrapKey')
+        op_key = key.get_op_key('wrapKey')
         self._check_key(op_key)
         ek = aes_key_wrap(op_key, cek, default_backend())
         return ek
 
     def unwrap(self, ek, headers, key):
-        op_key = key.get_operation_key('unwrapKey')
+        op_key = key.get_op_key('unwrapKey')
         self._check_key(op_key)
         cek = aes_key_unwrap(op_key, ek, default_backend())
         return cek
@@ -89,7 +89,7 @@ class AESGCMAlgorithm(JWEAlgorithm):
                 'A key of size {} bits is required.'.format(self.key_size))
 
     def wrap(self, cek, headers, key):
-        op_key = key.get_operation_key('wrapKey')
+        op_key = key.get_op_key('wrapKey')
         self._check_key(op_key)
 
         #: https://tools.ietf.org/html/rfc7518#section-4.7.1.1
@@ -109,7 +109,7 @@ class AESGCMAlgorithm(JWEAlgorithm):
         return {'ek': ek, 'header': h}
 
     def unwrap(self, ek, headers, key):
-        op_key = key.get_operation_key('unwrapKey')
+        op_key = key.get_op_key('unwrapKey')
         self._check_key(op_key)
 
         iv = headers.get('iv')

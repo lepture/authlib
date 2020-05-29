@@ -50,7 +50,7 @@ class HMACAlgorithm(JWSAlgorithm):
 
     def sign(self, msg, key):
         # it is faster than the one in cryptography
-        op_key = key.get_operation_key('sign')
+        op_key = key.get_op_key('sign')
         return hmac.new(op_key, msg, self.hash_alg).digest()
 
     def verify(self, msg, sig, key):
