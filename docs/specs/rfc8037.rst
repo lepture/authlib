@@ -5,6 +5,7 @@ RFC8037: CFRG Elliptic Curve Diffie-Hellman (ECDH) and Signatures in JSON Object
     :description: API references on "X25519", "X448", "Ed25519", and "Ed448" algorithms for JWK. And "EdDSA"
                   signing data using "JSON Web Signature (JWS)".
 
+.. versionadded:: v0.15
 
 Algorithms for JWS
 ------------------
@@ -55,15 +56,12 @@ In RFC8037, algorithms "Ed25519", "Ed448", "X25519", "X448" are defined for JWK.
 Loads and dumps Json Web Keys with::
 
     from authlib.jose import JsonWebKey
-    from authlib.jose.rfc8037 import JWK_ALGORITHMS
-
-    jwk = JsonWebKey(JWK_ALGORITHMS)
 
     with open('ed25519-pkcs8.pem', 'rb') as f:
         key = f.read()
 
     # MUST use "OKP" as "kty" value
-    jwk.dumps(key, 'OKP')
+    JsonWebKey.import_key(key, {'kty': 'OKP'})
 
 Learn how to use other JWK functions at :ref:`jwk_guide`.
 

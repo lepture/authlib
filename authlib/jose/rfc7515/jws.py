@@ -33,12 +33,14 @@ class JsonWebSignature(object):
     JWS_AVAILABLE_ALGORITHMS = None
 
     def __init__(self, algorithms, private_headers=None):
-        self._algorithms = {}
         self._private_headers = private_headers
 
         if isinstance(algorithms, list):
+            self._algorithms = {}
             for algorithm in algorithms:
                 self.register_algorithm(algorithm)
+        elif algorithms is None:
+            self._algorithms = dict(self.JWS_AVAILABLE_ALGORITHMS)
 
     def register_algorithm(self, algorithm):
         if isinstance(algorithm, str) and self.JWS_AVAILABLE_ALGORITHMS:

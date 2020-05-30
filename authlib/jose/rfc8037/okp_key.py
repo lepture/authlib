@@ -18,7 +18,7 @@ from authlib.common.encoding import (
     urlsafe_b64decode, urlsafe_b64encode,
 )
 from authlib.jose.rfc7517 import Key
-from ..rfc7518._backends import import_key
+from ..rfc7518 import import_key
 
 
 PUBLIC_KEYS_MAP = {
@@ -47,8 +47,16 @@ class OKPKey(Key):
         X448PublicKey, X448PrivateKey,
     )
 
-    def get_op_key(self, key_op):
-        return self.raw_key
+    @staticmethod
+    def get_key_curve(key):
+        if isinstance(key, (Ed25519PublicKey, Ed25519PrivateKey)):
+            return 'Ed25519'
+        elif isinstance(key, (Ed448PublicKey, Ed448PrivateKey)):
+            return 'Ed448'
+        elif isinstance(key, (X25519PublicKey, X25519PrivateKey)):
+            return 'X25519'
+        elif isinstance(key, (X448PublicKey, X448PrivateKey)):
+            return 'X448'
 
     @staticmethod
     def loads_private_key(obj):
@@ -76,14 +84,17 @@ class OKPKey(Key):
     @staticmethod
     def dumps_public_key(raw_key):
         x_bytes = raw_key.public_bytes(Encoding.Raw, PublicFormat.Raw)
-        return {'x': to_unicode(urlsafe_b64encode(x_bytes))}
+        return {
+            'crv': OKPKey.get_key_curve(raw_key),
+            'x': to_unicode(urlsafe_b64encode(x_bytes)),
+        }
 
     @classmethod
     def import_key(cls, raw, options=None):
         return import_key(
             cls, raw,
             PUBLIC_KEY_TUPLE, PRIVATE_KEY_TUPLE,
-            b'ecdsa-sha2-', options
+            b'ssh-ed25519', options
         )
 
     @classmethod

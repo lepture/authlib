@@ -54,7 +54,9 @@ class HMACAlgorithm(JWSAlgorithm):
         return hmac.new(op_key, msg, self.hash_alg).digest()
 
     def verify(self, msg, sig, key):
-        return hmac.compare_digest(sig, self.sign(msg, key))
+        op_key = key.get_op_key('verify')
+        v_sig = hmac.new(op_key, msg, self.hash_alg).digest()
+        return hmac.compare_digest(sig, v_sig)
 
 
 JWS_ALGORITHMS = _ALGORITHMS + [

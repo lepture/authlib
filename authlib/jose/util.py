@@ -6,7 +6,8 @@ def prepare_algorithm_key(algorithms, header, payload, key):
     algorithm = algorithms[header['alg']]
     if callable(key):
         key = key(header, payload)
-
+    elif 'jwk' in header:
+        key = header['jwk']
     key = algorithm.prepare_key(key)
     return algorithm, key
 

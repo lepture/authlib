@@ -11,8 +11,8 @@ class OctKey(Key):
     REQUIRED_JSON_FIELDS = ['k']
 
     def get_op_key(self, key_op):
-        if key_op in self.ALLOWED_KEY_OPS:
-            return self.raw_key
+        self.check_key_op(key_op)
+        return self.raw_key
 
     @classmethod
     def import_key(cls, raw, options=None):

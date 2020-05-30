@@ -1,7 +1,7 @@
 import time
 import logging
 from authlib.common.urls import urlparse
-from authlib.jose import JsonWebToken, jwk
+from authlib.jose import JsonWebToken, JsonWebKey
 from authlib.oidc.core import UserInfo, CodeIDToken, ImplicitIDToken
 from .base_app import BaseApp
 from .errors import (
@@ -163,13 +163,13 @@ class RemoteApp(BaseApp):
             return None
 
         def load_key(header, payload):
-            jwk_set = self.fetch_jwk_set()
+            jwk_set = JsonWebKey.import_key_set(self.fetch_jwk_set())
             try:
-                return jwk.loads(jwk_set, header.get('kid'))
+                return jwk_set.find_by_kid(header.get('kid'))
             except ValueError:
                 # re-try with new jwk set
-                jwk_set = self.fetch_jwk_set(force=True)
-                return jwk.loads(jwk_set, header.get('kid'))
+                jwk_set = JsonWebKey.import_key_set(self.fetch_jwk_set(force=True))
+                return jwk_set.find_by_kid(header.get('kid'))
 
         nonce = self.framework.get_session_data(request, 'nonce')
         claims_params = dict(

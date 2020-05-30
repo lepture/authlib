@@ -35,8 +35,11 @@ class JsonWebEncryption(object):
         self._zip_algorithms = {}
         self._private_headers = private_headers
 
-        if algorithms:
+        if isinstance(algorithms, list):
             for algorithm in algorithms:
+                self.register_algorithm(algorithm)
+        elif algorithms is None:
+            for algorithm in self.JWE_AVAILABLE_ALGORITHMS:
                 self.register_algorithm(algorithm)
 
     def register_algorithm(self, algorithm):

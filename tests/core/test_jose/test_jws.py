@@ -90,6 +90,10 @@ class JWSTest(unittest.TestCase):
         self.assertEqual(payload, b'hello')
         self.assertEqual(header['alg'], 'RS256')
 
+        # can deserialize with private key
+        data2 = jws.deserialize(s, private_key)
+        self.assertEqual(data, data2)
+
         ssh_pub_key = read_file_path('ssh_public.pem')
         self.assertRaises(errors.BadSignatureError, jws.deserialize, s, ssh_pub_key)
 

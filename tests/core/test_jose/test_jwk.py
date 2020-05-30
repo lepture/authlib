@@ -1,6 +1,5 @@
 import unittest
-from authlib.jose import JsonWebKey, jwk
-from authlib.jose.rfc8037 import JWK_ALGORITHMS as RFC8037_ALGORITHMS
+from authlib.jose import jwk
 from authlib.common.encoding import base64_to_int
 from tests.util import read_file_path
 
@@ -10,13 +9,6 @@ RSA_PRIVATE_KEY = read_file_path('jwk_private.json')
 class JWKTest(unittest.TestCase):
     def assertBase64IntEqual(self, x, y):
         self.assertEqual(base64_to_int(x), base64_to_int(y))
-
-    def test_register_invalid_algorithms(self):
-        self.assertRaises(
-            ValueError,
-            JsonWebKey,
-            ['INVALID']
-        )
 
     def test_ec_public_key(self):
         # https://tools.ietf.org/html/rfc7520#section-3.1
@@ -73,7 +65,7 @@ class JWKTest(unittest.TestCase):
             "e": "AQAB"
         }
         key = jwk.loads(obj)
-        new_obj = jwk.dumps(key.key_data, 'RSA')
+        new_obj = jwk.dumps(key.raw_key, 'RSA')
         self.assertBase64IntEqual(new_obj['n'], obj['n'])
         self.assertBase64IntEqual(new_obj['e'], obj['e'])
         self.assertBase64IntEqual(new_obj['d'], obj['d'])
@@ -99,7 +91,6 @@ class JWKTest(unittest.TestCase):
 
     def test_dumps_okp_public_key(self):
         key = read_file_path('ed25519-ssh.pub')
-        jwk = JsonWebKey(RFC8037_ALGORITHMS)
         self.assertRaises(ValueError, jwk.dumps, key)
 
         obj = jwk.dumps(key, 'OKP')
@@ -117,15 +108,12 @@ class JWKTest(unittest.TestCase):
             "crv": "Ed25519",
             "kty": "OKP"
         }
-        jwk = JsonWebKey(RFC8037_ALGORITHMS)
         key = jwk.loads(obj)
         new_obj = jwk.dumps(key)
         self.assertEqual(obj['x'], new_obj['x'])
 
     def test_dumps_okp_private_key(self):
         key = read_file_path('ed25519-pkcs8.pem')
-        jwk = JsonWebKey(RFC8037_ALGORITHMS)
-        self.assertRaises(ValueError, jwk.dumps, key)
         obj = jwk.dumps(key, 'OKP')
         self.assertEqual(obj['kty'], 'OKP')
         self.assertEqual(obj['crv'], 'Ed25519')
@@ -138,7 +126,6 @@ class JWKTest(unittest.TestCase):
             'crv': 'Ed25519',
             'kty': 'OKP'
         }
-        jwk = JsonWebKey(RFC8037_ALGORITHMS)
         key = jwk.loads(obj)
         new_obj = jwk.dumps(key)
         self.assertEqual(obj['d'], new_obj['d'])
@@ -171,7 +158,6 @@ class JWKTest(unittest.TestCase):
             "alg": "HS256",
             "k": "hJtXIZ2uSN5kbQfbtTNWbpdmhkV8FJG-Onbc6mxCcYg"
         }
-        self.assertRaises(ValueError, jwk.loads, obj, 'invalid-kid')
         self.assertRaises(ValueError, jwk.loads, [obj], 'invalid-kid')
 
     def test_jwk_dumps_ssh(self):

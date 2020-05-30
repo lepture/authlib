@@ -5,21 +5,10 @@ from authlib.common.encoding import (
     text_types, to_bytes, to_unicode,
     json_loads, json_dumps,
 )
-from authlib.jose.jwk import load_key, create_key_func
-from authlib.jose.errors import DecodeError, InsecureClaimError
 from .claims import JWTClaims
+from ..errors import DecodeError, InsecureClaimError
 from ..rfc7515 import JsonWebSignature
 from ..rfc7516 import JsonWebEncryption
-from ..rfc7518 import JWS_ALGORITHMS, JWE_ALGORITHMS
-
-
-_AVAILABLE_ALGORITHMS = {}
-_AVAILABLE_ALGORITHMS.update(
-    {alg.name: alg for alg in JWS_ALGORITHMS}
-)
-_AVAILABLE_ALGORITHMS.update(
-    {alg.name: alg for alg in JWE_ALGORITHMS}
-)
 
 
 class JsonWebToken(object):
@@ -36,26 +25,29 @@ class JsonWebToken(object):
 
     def __init__(self, algorithms=None, private_headers=None):
         if algorithms is None:
-            self._jws = JsonWebSignature(JWS_ALGORITHMS, private_headers)
-            self._jwe = JsonWebEncryption(JWE_ALGORITHMS, private_headers)
-        else:
             self._jws = JsonWebSignature(None, private_headers)
             self._jwe = JsonWebEncryption(None, private_headers)
+        else:
+            self._jws = JsonWebSignature([], private_headers)
+            self._jwe = JsonWebEncryption([], private_headers)
 
             if isinstance(algorithms, (tuple, list)):
                 for algorithm in algorithms:
                     self.register_algorithm(algorithm)
-            elif isinstance(algorithms, text_types):
+            else:
                 self.register_algorithm(algorithms)
 
     def register_algorithm(self, algorithm):
         if isinstance(algorithm, text_types):
-            algorithm = _AVAILABLE_ALGORITHMS.get(algorithm)
-
-        if algorithm.algorithm_type == 'JWS':
-            self._jws.register_algorithm(algorithm)
-        elif algorithm.algorithm_type == 'JWE':
-            self._jwe.register_algorithm(algorithm)
+            if algorithm in JsonWebSignature.JWS_AVAILABLE_ALGORITHMS:
+                self._jws.register_algorithm(algorithm)
+            elif algorithm in JsonWebEncryption.JWE_AVAILABLE_ALGORITHMS:
+                self._jwe.register_algorithm(algorithm)
+        else:
+            if algorithm.algorithm_type == 'JWS':
+                self._jws.register_algorithm(algorithm)
+            elif algorithm.algorithm_type == 'JWE':
+                self._jwe.register_algorithm(algorithm)
 
     def check_sensitive_data(self, payload):
         """Check if payload contains sensitive information."""
@@ -89,7 +81,6 @@ class JsonWebToken(object):
         if check:
             self.check_sensitive_data(payload)
 
-        key = load_key(key, header, payload)
         text = to_bytes(json_dumps(payload))
         if 'enc' in header:
             return self._jwe.serialize_compact(header, text, key)
@@ -113,14 +104,12 @@ class JsonWebToken(object):
         if claims_cls is None:
             claims_cls = JWTClaims
 
-        key_func = create_key_func(key)
-
         s = to_bytes(s)
         dot_count = s.count(b'.')
         if dot_count == 2:
-            data = self._jws.deserialize_compact(s, key_func, decode_payload)
+            data = self._jws.deserialize_compact(s, key, decode_payload)
         elif dot_count == 4:
-            data = self._jwe.deserialize_compact(s, key_func, decode_payload)
+            data = self._jwe.deserialize_compact(s, key, decode_payload)
         else:
             raise DecodeError('Invalid input segments length')
         return claims_cls(
