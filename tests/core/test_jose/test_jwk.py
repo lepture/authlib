@@ -174,6 +174,9 @@ class JWKTest(unittest.TestCase):
         self.assertEqual(key.thumbprint(), expected)
 
     def test_rsa_key_generate_pem(self):
+        self.assertRaises(ValueError, RSAKey.generate_key, 256)
+        self.assertRaises(ValueError, RSAKey.generate_key, 2001)
+
         key1 = RSAKey.generate_key(is_private=True)
         self.assertIn(b'PRIVATE', key1.as_pem(is_private=True))
         self.assertIn(b'PUBLIC', key1.as_pem(is_private=False))

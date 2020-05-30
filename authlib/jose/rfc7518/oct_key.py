@@ -37,12 +37,12 @@ class OctKey(Key):
         return obj
 
     @classmethod
-    def generate_key(cls, bit_size=256, options=None, is_private=False):
+    def generate_key(cls, key_size=256, options=None, is_private=False):
         """Generate a ``OctKey`` with the given bit size."""
         if not is_private:
             raise ValueError('oct key can not be generated as public')
 
-        if bit_size % 8 != 0:
+        if key_size % 8 != 0:
             raise ValueError('Invalid bit size for oct key')
 
-        return cls.import_key(generate_token(bit_size / 8), options)
+        return cls.import_key(generate_token(key_size / 8), options)

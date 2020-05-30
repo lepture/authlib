@@ -121,7 +121,10 @@ class RSAKey(Key):
 
     @classmethod
     def generate_key(cls, key_size=2048, options=None, is_private=False):
-        # TODO: key_size validation
+        if key_size < 512:
+            raise ValueError('key_size must not be less than 512')
+        if key_size % 8 != 0:
+            raise ValueError('Invalid key_size for RSAKey')
         raw_key = rsa.generate_private_key(
             public_exponent=65537,
             key_size=key_size,
@@ -215,7 +218,7 @@ class ECKey(Key):
         )
 
     @classmethod
-    def generate_key(cls, crv, options=None, is_private=False):
+    def generate_key(cls, crv='P-256', options=None, is_private=False):
         if crv not in cls.DSS_CURVES:
             raise ValueError('Invalid crv value: "{}"'.format(crv))
         raw_key = ec.generate_private_key(

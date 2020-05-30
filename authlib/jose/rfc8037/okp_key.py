@@ -114,7 +114,7 @@ class OKPKey(Key):
         )
 
     @classmethod
-    def generate_key(cls, crv, options=None, is_private=False):
+    def generate_key(cls, crv='Ed25519', options=None, is_private=False):
         if crv not in PRIVATE_KEYS_MAP:
             raise ValueError('Invalid crv value: "{}"'.format(crv))
         private_key_cls = PRIVATE_KEYS_MAP[crv]
