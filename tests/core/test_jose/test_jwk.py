@@ -1,5 +1,6 @@
 import unittest
 from authlib.jose import jwk, JsonWebKey
+from authlib.jose import RSAKey, ECKey, OKPKey
 from authlib.common.encoding import base64_to_int
 from tests.util import read_file_path
 
@@ -171,3 +172,34 @@ class JWKTest(unittest.TestCase):
         key = JsonWebKey.import_key(data)
         expected = 'NzbLsXh8uDCcd-6MNwXF4W_7noWXFZAfHkxZsRGC9Xs'
         self.assertEqual(key.thumbprint(), expected)
+
+    def test_rsa_key_generate_pem(self):
+        key1 = RSAKey.generate_key(is_private=True)
+        self.assertIn(b'PRIVATE', key1.as_pem(is_private=True))
+        self.assertIn(b'PUBLIC', key1.as_pem(is_private=False))
+
+        key2 = RSAKey.generate_key(is_private=False)
+        self.assertRaises(ValueError, key2.as_pem, True)
+        self.assertIn(b'PUBLIC', key2.as_pem(is_private=False))
+
+    def test_ec_key_generate_pem(self):
+        self.assertRaises(ValueError, ECKey.generate_key, 'invalid')
+
+        key1 = ECKey.generate_key('P-384', is_private=True)
+        self.assertIn(b'PRIVATE', key1.as_pem(is_private=True))
+        self.assertIn(b'PUBLIC', key1.as_pem(is_private=False))
+
+        key2 = ECKey.generate_key('P-256', is_private=False)
+        self.assertRaises(ValueError, key2.as_pem, True)
+        self.assertIn(b'PUBLIC', key2.as_pem(is_private=False))
+
+    def test_okp_key_generate_pem(self):
+        self.assertRaises(ValueError, OKPKey.generate_key, 'invalid')
+
+        key1 = OKPKey.generate_key('Ed25519', is_private=True)
+        self.assertIn(b'PRIVATE', key1.as_pem(is_private=True))
+        self.assertIn(b'PUBLIC', key1.as_pem(is_private=False))
+
+        key2 = OKPKey.generate_key('X25519', is_private=False)
+        self.assertRaises(ValueError, key2.as_pem, True)
+        self.assertIn(b'PUBLIC', key2.as_pem(is_private=False))

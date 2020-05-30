@@ -120,7 +120,7 @@ class RSAKey(Key):
         )
 
     @classmethod
-    def generate_key(cls, key_size, options=None, is_private=False):
+    def generate_key(cls, key_size=2048, options=None, is_private=False):
         # TODO: key_size validation
         raw_key = rsa.generate_private_key(
             public_exponent=65537,
@@ -219,7 +219,7 @@ class ECKey(Key):
         if crv not in cls.DSS_CURVES:
             raise ValueError('Invalid crv value: "{}"'.format(crv))
         raw_key = ec.generate_private_key(
-            curve=cls.DSS_CURVES[crv],
+            curve=cls.DSS_CURVES[crv](),
             backend=default_backend(),
         )
         if not is_private:
@@ -323,5 +323,5 @@ def export_key(key, encoding=None, is_private=False, password=None):
 
     return raw_key.public_bytes(
         encoding=encoding,
-        format=PublicFormat.PKCS1,
+        format=PublicFormat.SubjectPublicKeyInfo,
     )
