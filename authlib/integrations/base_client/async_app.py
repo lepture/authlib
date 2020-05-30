@@ -1,7 +1,7 @@
 import time
 import logging
 from authlib.common.urls import urlparse
-from authlib.jose import JsonWebToken
+from authlib.jose import JsonWebToken, JsonWebKey
 from authlib.oidc.core import UserInfo, CodeIDToken, ImplicitIDToken
 from .base_app import BaseApp
 from .errors import (
@@ -166,7 +166,8 @@ class AsyncRemoteApp(BaseApp):
         jwk_set = await self._fetch_jwk_set()
         try:
             claims = jwt.decode(
-                token['id_token'], key=jwk_set,
+                token['id_token'],
+                key=JsonWebKey.import_key_set(jwk_set),
                 claims_cls=claims_cls,
                 claims_options=claims_options,
                 claims_params=claims_params,
@@ -174,7 +175,8 @@ class AsyncRemoteApp(BaseApp):
         except ValueError:
             jwk_set = await self._fetch_jwk_set(force=True)
             claims = jwt.decode(
-                token['id_token'], key=jwk_set,
+                token['id_token'],
+                key=JsonWebKey.import_key_set(jwk_set),
                 claims_cls=claims_cls,
                 claims_options=claims_options,
                 claims_params=claims_params,

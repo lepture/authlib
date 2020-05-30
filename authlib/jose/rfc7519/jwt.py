@@ -9,6 +9,7 @@ from .claims import JWTClaims
 from ..errors import DecodeError, InsecureClaimError
 from ..rfc7515 import JsonWebSignature
 from ..rfc7516 import JsonWebEncryption
+from ..rfc7517 import KeySet
 
 
 class JsonWebToken(object):
@@ -81,6 +82,9 @@ class JsonWebToken(object):
         if check:
             self.check_sensitive_data(payload)
 
+        if isinstance(key, KeySet):
+            key = key.find_by_kid(header.get('kid'))
+
         text = to_bytes(json_dumps(payload))
         if 'enc' in header:
             return self._jwe.serialize_compact(header, text, key)
@@ -104,12 +108,18 @@ class JsonWebToken(object):
         if claims_cls is None:
             claims_cls = JWTClaims
 
+        if isinstance(key, KeySet):
+            def load_key(header, payload):
+                return key.find_by_kid(header.get('kid'))
+        else:
+            load_key = key
+
         s = to_bytes(s)
         dot_count = s.count(b'.')
         if dot_count == 2:
-            data = self._jws.deserialize_compact(s, key, decode_payload)
+            data = self._jws.deserialize_compact(s, load_key, decode_payload)
         elif dot_count == 4:
-            data = self._jwe.deserialize_compact(s, key, decode_payload)
+            data = self._jwe.deserialize_compact(s, load_key, decode_payload)
         else:
             raise DecodeError('Invalid input segments length')
         return claims_cls(
