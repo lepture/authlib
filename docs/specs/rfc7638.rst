@@ -1,0 +1,28 @@
+RFC7638: JSON Web Key (JWK) Thumbprint
+======================================
+
+.. versionadded:: v0.15
+
+.. automodule:: authlib.jose
+
+This RFC7638_ is used for computing a hash value over a JSON Web Key (JWK).
+The value can be used as an identity of the JWK.
+
+.. _RFC7638: https://tools.ietf.org/html/rfc7638
+
+The ``.thumbprint`` method is defined on the ``Key`` class, you can use it
+directly::
+
+    from authlib.jose import JsonWebKey
+
+    raw = read_file('rsa.pem')
+    key = JsonWebKey.import_key(raw)
+
+    key.thumbprint()
+
+If a key has no ``kid``, you can add the value of ``.thumbprint()`` as a kid::
+
+    key['kid'] = key.thumbprint()
+
+This method is available on every Key class, including :class:`OctKey`,
+:class:`RSAKey`, :class:`ECKey`, and :class:`OKPKey`.

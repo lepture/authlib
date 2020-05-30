@@ -1,4 +1,4 @@
-from authlib.common.encoding import text_types, json_loads, to_bytes
+from authlib.common.encoding import text_types, json_loads
 from .rfc7517 import KeySet
 from .rfc7518 import (
     OctKey,

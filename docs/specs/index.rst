@@ -20,6 +20,7 @@ works.
     rfc7523
     rfc7591
     rfc7636
+    rfc7638
     rfc7662
     rfc8037
     rfc8414

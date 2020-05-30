@@ -1,4 +1,11 @@
-from authlib.common.encoding import json_dumps
+import hashlib
+from collections import OrderedDict
+from authlib.common.encoding import (
+    json_dumps,
+    to_bytes,
+    to_unicode,
+    urlsafe_b64encode,
+)
 
 
 class Key(dict):
@@ -69,6 +76,21 @@ class Key(dict):
     def as_pem(self):
         """Represent this key as string in PEM format."""
         raise RuntimeError('Not supported')
+
+    def thumbprint(self):
+        """Implementation of RFC7638 JSON Web Key (JWK) Thumbprint."""
+        fields = list(self.REQUIRED_JSON_FIELDS)
+        fields.append('kty')
+        fields.sort()
+        data = OrderedDict()
+
+        obj = self.as_dict()
+        for k in fields:
+            data[k] = obj[k]
+
+        json_data = json_dumps(data)
+        digest_data = hashlib.sha256(to_bytes(json_data)).digest()
+        return to_unicode(urlsafe_b64encode(digest_data))
 
     @classmethod
     def check_required_fields(cls, data):

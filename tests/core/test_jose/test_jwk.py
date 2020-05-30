@@ -1,5 +1,5 @@
 import unittest
-from authlib.jose import jwk
+from authlib.jose import jwk, JsonWebKey
 from authlib.common.encoding import base64_to_int
 from tests.util import read_file_path
 
@@ -164,3 +164,10 @@ class JWKTest(unittest.TestCase):
         key = read_file_path('ssh_public.pem')
         obj = jwk.dumps(key, kty='RSA')
         self.assertEqual(obj['kty'], 'RSA')
+
+    def test_thumbprint(self):
+        # https://tools.ietf.org/html/rfc7638#section-3.1
+        data = read_file_path('thumbprint_example.json')
+        key = JsonWebKey.import_key(data)
+        expected = 'NzbLsXh8uDCcd-6MNwXF4W_7noWXFZAfHkxZsRGC9Xs'
+        self.assertEqual(key.thumbprint(), expected)
