@@ -139,6 +139,8 @@ class ECDHAlgorithm(JWEAlgorithm):
         self.key_size = key_size
 
     def prepare_key(self, raw_data):
+        if hasattr(raw_data, 'curve_key_size'):
+            return raw_data
         return ECKey.import_key(raw_data)
 
     def wrap(self, cek, headers, key):

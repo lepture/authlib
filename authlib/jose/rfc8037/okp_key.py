@@ -18,7 +18,7 @@ from authlib.common.encoding import (
     urlsafe_b64decode, urlsafe_b64encode,
 )
 from authlib.jose.rfc7517 import Key
-from ..rfc7518 import import_key
+from ..rfc7518 import import_key, export_key
 
 
 PUBLIC_KEYS_MAP = {
@@ -48,6 +48,19 @@ class OKPKey(Key):
         X25519PublicKey, X25519PrivateKey,
         X448PublicKey, X448PrivateKey,
     )
+
+    def as_pem(self, is_private=False, password=None):
+        """Export key into PEM format bytes.
+
+        :param is_private: export private key or public key
+        :param password: encrypt private key with password
+        :return: bytes
+        """
+        return export_key(self, is_private=is_private, password=password)
+
+    @property
+    def curve_key_size(self):
+        raise NotImplementedError()
 
     @staticmethod
     def get_key_curve(key):
@@ -102,4 +115,10 @@ class OKPKey(Key):
 
     @classmethod
     def generate_key(cls, crv, options=None, is_private=False):
-        pass
+        if crv not in PRIVATE_KEYS_MAP:
+            raise ValueError('Invalid crv value: "{}"'.format(crv))
+        private_key_cls = PRIVATE_KEYS_MAP[crv]
+        raw_key = private_key_cls.generate()
+        if not is_private:
+            raw_key = raw_key.public_key()
+        return cls.import_key(raw_key, options=options)

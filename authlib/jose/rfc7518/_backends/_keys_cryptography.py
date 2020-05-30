@@ -1,12 +1,16 @@
 from cryptography.x509 import load_pem_x509_certificate
 from cryptography.hazmat.primitives.serialization import (
-    load_pem_private_key, load_pem_public_key, load_ssh_public_key
+    load_pem_private_key, load_pem_public_key, load_ssh_public_key,
+    Encoding, PrivateFormat, PublicFormat,
+    BestAvailableEncryption, NoEncryption,
 )
+from cryptography.hazmat.primitives.asymmetric import rsa
 from cryptography.hazmat.primitives.asymmetric.rsa import (
     RSAPublicKey, RSAPrivateKeyWithSerialization,
     RSAPrivateNumbers, RSAPublicNumbers,
     rsa_recover_prime_factors, rsa_crt_dmp1, rsa_crt_dmq1, rsa_crt_iqmp
 )
+from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.ec import (
     EllipticCurvePublicKey, EllipticCurvePrivateKeyWithSerialization,
     EllipticCurvePrivateNumbers, EllipticCurvePublicNumbers,
@@ -25,8 +29,14 @@ class RSAKey(Key):
     RAW_KEY_CLS = (RSAPublicKey, RSAPrivateKeyWithSerialization)
     REQUIRED_JSON_FIELDS = ['e', 'n']
 
-    def as_pem(self):
-        return
+    def as_pem(self, is_private=False, password=None):
+        """Export key into PEM format bytes.
+
+        :param is_private: export private key or public key
+        :param password: encrypt private key with password
+        :return: bytes
+        """
+        return export_key(self, is_private=is_private, password=password)
 
     @staticmethod
     def dumps_private_key(raw_key):
@@ -110,8 +120,16 @@ class RSAKey(Key):
         )
 
     @classmethod
-    def generate_key(cls, crv_or_size, options=None, is_private=False):
-        pass
+    def generate_key(cls, key_size, options=None, is_private=False):
+        # TODO: key_size validation
+        raw_key = rsa.generate_private_key(
+            public_exponent=65537,
+            key_size=key_size,
+            backend=default_backend(),
+        )
+        if not is_private:
+            raw_key = raw_key.public_key()
+        return cls.import_key(raw_key, options=options)
 
 
 class ECKey(Key):
@@ -131,11 +149,14 @@ class ECKey(Key):
     REQUIRED_JSON_FIELDS = ['crv', 'x', 'y']
     RAW_KEY_CLS = (EllipticCurvePublicKey, EllipticCurvePrivateKeyWithSerialization)
 
-    def get_op_key(self, key_op):
-        return self.raw_key
+    def as_pem(self, is_private=False, password=None):
+        """Export key into PEM format bytes.
 
-    def as_pem(self):
-        return
+        :param is_private: export private key or public key
+        :param password: encrypt private key with password
+        :return: bytes
+        """
+        return export_key(self, is_private=is_private, password=password)
 
     @property
     def curve_key_size(self):
@@ -197,7 +218,13 @@ class ECKey(Key):
     def generate_key(cls, crv, options=None, is_private=False):
         if crv not in cls.DSS_CURVES:
             raise ValueError('Invalid crv value: "{}"'.format(crv))
-        # TODO
+        raw_key = ec.generate_private_key(
+            curve=cls.DSS_CURVES[crv],
+            backend=default_backend(),
+        )
+        if not is_private:
+            raw_key = raw_key.public_key()
+        return cls.import_key(raw_key, options=options)
 
 
 def load_pem_key(raw, ssh_type=None, key_type=None, password=None):
@@ -266,3 +293,35 @@ def import_key(cls, raw, public_key_cls, private_key_cls, ssh_type=None, options
     obj.raw_key = raw_key
     obj.key_type = key_type
     return obj
+
+
+def export_key(key, encoding=None, is_private=False, password=None):
+    if encoding is None or encoding == 'PEM':
+        encoding = Encoding.PEM
+    elif encoding == 'DER':
+        encoding = Encoding.DER
+    else:
+        raise ValueError('Invalid encoding: {!r}'.format(encoding))
+
+    if is_private:
+        if key.key_type == 'private':
+            if password is None:
+                encryption_algorithm = NoEncryption()
+            else:
+                encryption_algorithm = BestAvailableEncryption(to_bytes(password))
+            return key.raw_key.private_bytes(
+                encoding=encoding,
+                format=PrivateFormat.PKCS8,
+                encryption_algorithm=encryption_algorithm,
+            )
+        raise ValueError('This is a public key')
+
+    if key.key_type == 'private':
+        raw_key = key.raw_key.public_key()
+    else:
+        raw_key = key.raw_key
+
+    return raw_key.public_bytes(
+        encoding=encoding,
+        format=PublicFormat.PKCS1,
+    )

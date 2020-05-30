@@ -6,7 +6,10 @@ from .jwe_algorithms import (
     JWE_ZIP_ALGORITHMS,
 )
 from .oct_key import OctKey
-from ._backends import RSAKey, ECKey, import_key, load_pem_key
+from ._backends import (
+    RSAKey, ECKey,
+    import_key, load_pem_key, export_key,
+)
 
 
 __all__ = [
@@ -20,4 +23,5 @@ __all__ = [
     'ECKey',
     'import_key',
     'load_pem_key',
+    'export_key',
 ]
