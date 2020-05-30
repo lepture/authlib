@@ -12,7 +12,7 @@ from .rfc7515 import (
 from .rfc7516 import (
     JsonWebEncryption, JWEAlgorithm, JWEEncAlgorithm, JWEZipAlgorithm,
 )
-from .rfc7517 import Key
+from .rfc7517 import Key, KeySet
 from .rfc7518 import (
     JWS_ALGORITHMS,
     JWE_ALGORITHMS,
@@ -56,7 +56,7 @@ __all__ = [
     'JWS', 'JsonWebSignature', 'JWSAlgorithm', 'JWSHeader', 'JWSObject',
     'JWE', 'JsonWebEncryption', 'JWEAlgorithm', 'JWEEncAlgorithm', 'JWEZipAlgorithm',
 
-    'JWK', 'JsonWebKey', 'Key',
+    'JWK', 'JsonWebKey', 'Key', 'KeySet',
 
     'JWS_ALGORITHMS',
     'JWE_ALGORITHMS',

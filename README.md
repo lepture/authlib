@@ -38,7 +38,9 @@ Generic, spec-compliant implementation to build clients and providers:
   - [RFC7517: JSON Web Key](https://docs.authlib.org/en/latest/jose/jwk.html)
   - [RFC7518: JSON Web Algorithms](https://docs.authlib.org/en/latest/specs/rfc7518.html)
   - [RFC7519: JSON Web Token](https://docs.authlib.org/en/latest/jose/jwt.html)
+  - [ ] RFC7638: JSON Web Key (JWK) Thumbprint
   - [ ] RFC7797: JSON Web Signature (JWS) Unencoded Payload Option
+  - [RFC8037: ECDH in JWS and JWE](https://docs.authlib.org/en/latest/specs/rfc8037.html)
 - [OpenID Connect 1.0](https://docs.authlib.org/en/latest/specs/oidc.html)
   - [x] OpenID Connect Core 1.0
   - [x] OpenID Connect Discovery 1.0

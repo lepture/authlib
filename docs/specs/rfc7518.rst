@@ -103,12 +103,7 @@ Algorithms for JWK
 ------------------
 
 This section defines the parameters for keys using the algorithms via
-RFC7518 `Section 6`_. The interface for JWK Algorithms are all inherited from
-:class:`authlib.jose.JWKAlgorithm`. The available values of ``kty``:
-
-1. EC: Elliptic Curve (requires extra crypto backends)
-2. RSA: RSA (requires extra crypto backends)
-3. oct
+RFC7518 `Section 6`_.
 
 Find how to use them in :ref:`jwk_guide`.
 

@@ -14,10 +14,9 @@ In RFC8037, algorithm "EdDSA" is defined for JWS. Use Edwards-curve Digital
 Signature Algorithm (EdDSA) for signing data using "JSON Web Signature (JWS)"::
 
     from authlib.jose import JsonWebSignature
-    from authlib.jose.rfc8037 import JWS_ALGORITHMS
 
-    # This JWS_ALGORITHMS contains only "EdDSA" alg.
-    jws = JsonWebSignature(algorithms=JWS_ALGORITHMS)
+    # only allow "EdDSA" alg value
+    jws = JsonWebSignature(algorithms=['EdDSA'])
 
     protected = {'alg': 'EdDSA'}
     payload = b'example'
@@ -31,9 +30,8 @@ Learn how to use other JWS functions at :ref:`jws_guide`.
 It can also be used in JSON Web Token (JWT)::
 
     from authlib.jose import JsonWebToken
-    from authlib.jose.rfc8037 import JWS_ALGORITHMS
 
-    jwt = JsonWebToken(algorithms=JWS_ALGORITHMS)
+    jwt = JsonWebToken(algorithms=['EdDSA'])
 
     with open('ed25519-pkcs8.pem', 'rb') as f:
         key = f.read()
@@ -42,12 +40,6 @@ It can also be used in JSON Web Token (JWT)::
     payload = {'iss': 'Authlib', 'sub': '123', ...}
     s = jwt.encode(header, payload, key)
 
-If you want to support more than just ``EdDSA``::
-
-    from authlib.jose.rfc7518 import JWS_ALGORITHMS as RFC7518_ALGORITHMS
-    from authlib.jose.rfc8037 import JWS_ALGORITHMS as RFC8037_ALGORITHMS
-
-    JWS_ALGORITHMS = RFC7518_ALGORITHMS + RFC8037_ALGORITHMS
 
 Algorithms for JWK
 ------------------
@@ -71,3 +63,10 @@ Algorithms for JWE
 "X25519", "X448" keys are used in "epk" for ECDH-ES algorithms.
 
 (NOT IMPLEMENTED YET)
+
+API Reference
+-------------
+
+.. autoclass:: authlib.jose.OKPKey
+   :member-order: bysource
+   :members:

@@ -19,11 +19,23 @@ class JsonWebKey(object):
 
     @classmethod
     def generate_key(cls, kty, crv_or_size, options=None, is_private=False):
+        """Generate a Key with the given key type, curve name or bit size.
+
+        :param kty: string of ``oct``, ``RSA``, ``EC``, ``OKP``
+        :param crv_or_size: curve name or bit size
+        :param options: a dict of other options for Key
+        :param is_private: create a private key or public key
+        :return: Key instance
+        """
         key_cls = cls.JWK_KEY_CLS[kty]
         return key_cls.generate_key(crv_or_size, options, is_private)
 
     @classmethod
     def import_key(cls, raw, options=None):
+        """Import a Key from bytes, string, PEM or dict.
+
+        :return: Key instance
+        """
         kty = None
         if options is not None:
             kty = options.get('kty')
@@ -43,6 +55,10 @@ class JsonWebKey(object):
 
     @classmethod
     def import_key_set(cls, raw):
+        """Import KeySet from string, dict or a list of keys.
+
+        :return: KeySet instance
+        """
         if isinstance(raw, text_types) and \
                 raw.startswith('{') and raw.endswith('}'):
             raw = json_loads(raw)

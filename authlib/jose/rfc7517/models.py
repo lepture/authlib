@@ -2,6 +2,7 @@ from authlib.common.encoding import json_dumps
 
 
 class Key(dict):
+    """This is the base class for a JSON Web Key."""
     kty = '_'
 
     ALLOWED_PARAMS = [
@@ -26,12 +27,23 @@ class Key(dict):
         self.raw_key = None
 
     def get_op_key(self, key_op):
+        """Get the raw key for the given key_op. This method will also
+        check if the given key_op is supported by this key.
+
+        :param key_op: key operation value, such as "sign", "encrypt".
+        :return: raw key
+        """
         self.check_key_op(key_op)
         if key_op in self.PUBLIC_KEY_OPS and self.key_type == 'private':
             return self.raw_key.public_key()
         return self.raw_key
 
     def check_key_op(self, key_op):
+        """Check if the given key_op is supported by this key.
+
+        :param key_op: key operation value, such as "sign", "encrypt".
+        :raise: ValueError
+        """
         allowed_key_ops = self.get('key_ops')
         if allowed_key_ops is not None and key_op not in allowed_key_ops:
             raise ValueError('Unsupported key_op "{}"'.format(key_op))
@@ -39,16 +51,23 @@ class Key(dict):
         if key_op in self.PRIVATE_KEY_OPS and self.key_type == 'public':
             raise ValueError('Invalid key_op "{}" for public key'.format(key_op))
 
+    def as_key(self):
+        """Represent this key as raw key."""
+        return self.raw_key
+
     def as_dict(self):
+        """Represent this key as a dict of the JSON Web Key."""
         obj = dict(self)
         obj['kty'] = self.kty
         return obj
 
     def as_json(self):
+        """Represent this key as a JSON string."""
         obj = self.as_dict()
         return json_dumps(obj)
 
     def as_pem(self):
+        """Represent this key as string in PEM format."""
         raise RuntimeError('Not supported')
 
     @classmethod
@@ -67,13 +86,27 @@ class Key(dict):
 
 
 class KeySet(object):
+    """This class represents a JSON Web Key Set."""
+
     def __init__(self, keys):
         self.keys = keys
 
     def as_dict(self):
+        """Represent this key as a dict of the JSON Web Key Set."""
         return {'keys': [k.as_dict() for k in self.keys]}
 
+    def as_json(self):
+        """Represent this key set as a JSON string."""
+        obj = self.as_dict()
+        return json_dumps(obj)
+
     def find_by_kid(self, kid):
+        """Find the key matches the given kid value.
+
+        :param kid: A string of kid
+        :return: Key instance
+        :raise: ValueError
+        """
         for k in self.keys:
             if k.get('kid') == kid:
                 return k

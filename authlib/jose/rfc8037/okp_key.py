@@ -38,6 +38,8 @@ PRIVATE_KEY_TUPLE = tuple(PRIVATE_KEYS_MAP.values())
 
 
 class OKPKey(Key):
+    """Key class of the ``OKP`` key type."""
+
     kty = 'OKP'
     REQUIRED_JSON_FIELDS = ['crv', 'x']
     RAW_KEY_CLS = (
@@ -91,6 +93,7 @@ class OKPKey(Key):
 
     @classmethod
     def import_key(cls, raw, options=None):
+        """Import a key from PEM or dict data."""
         return import_key(
             cls, raw,
             PUBLIC_KEY_TUPLE, PRIVATE_KEY_TUPLE,

@@ -19,6 +19,8 @@ from authlib.common.encoding import base64_to_int, int_to_base64
 
 
 class RSAKey(Key):
+    """Key class of the ``RSA`` key type."""
+
     kty = 'RSA'
     RAW_KEY_CLS = (RSAPublicKey, RSAPrivateKeyWithSerialization)
     REQUIRED_JSON_FIELDS = ['e', 'n']
@@ -100,6 +102,7 @@ class RSAKey(Key):
 
     @classmethod
     def import_key(cls, raw, options=None):
+        """Import a key from PEM or dict data."""
         return import_key(
             cls, raw,
             RSAPublicKey, RSAPrivateKeyWithSerialization,
@@ -112,6 +115,8 @@ class RSAKey(Key):
 
 
 class ECKey(Key):
+    """Key class of the ``EC`` key type."""
+
     kty = 'EC'
     DSS_CURVES = {
         'P-256': SECP256R1,
@@ -181,6 +186,7 @@ class ECKey(Key):
 
     @classmethod
     def import_key(cls, raw, options=None):
+        """Import a key from PEM or dict data."""
         return import_key(
             cls, raw,
             EllipticCurvePublicKey, EllipticCurvePrivateKeyWithSerialization,

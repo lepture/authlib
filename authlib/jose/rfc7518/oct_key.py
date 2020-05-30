@@ -7,6 +7,8 @@ from authlib.jose.rfc7517 import Key
 
 
 class OctKey(Key):
+    """Key class of the ``oct`` key type."""
+
     kty = 'oct'
     REQUIRED_JSON_FIELDS = ['k']
 
@@ -16,6 +18,7 @@ class OctKey(Key):
 
     @classmethod
     def import_key(cls, raw, options=None):
+        """Import a key from bytes, string, or dict data."""
         if isinstance(raw, dict):
             cls.check_required_fields(raw)
             payload = raw
@@ -34,7 +37,8 @@ class OctKey(Key):
         return obj
 
     @classmethod
-    def generate_key(cls, bit_size=256, options=None, is_private=True):
+    def generate_key(cls, bit_size=256, options=None, is_private=False):
+        """Generate a ``OctKey`` with the given bit size."""
         if not is_private:
             raise ValueError('oct key can not be generated as public')
 

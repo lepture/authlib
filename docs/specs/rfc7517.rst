@@ -20,6 +20,22 @@ API Reference
    :members:
 
 
-.. autoclass:: authlib.jose.JWKAlgorithm
+.. autoclass:: authlib.jose.Key
+   :member-order: bysource
+   :members:
+
+.. autoclass:: authlib.jose.KeySet
+   :member-order: bysource
+   :members:
+
+.. autoclass:: authlib.jose.OctKey
+   :member-order: bysource
+   :members:
+
+.. autoclass:: authlib.jose.RSAKey
+   :member-order: bysource
+   :members:
+
+.. autoclass:: authlib.jose.ECKey
    :member-order: bysource
    :members:
