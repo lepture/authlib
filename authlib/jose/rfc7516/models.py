@@ -18,7 +18,7 @@ class JWEAlgorithm(object):
     def wrap(self, enc_alg, headers, key):
         raise NotImplementedError
 
-    def unwrap(self, ek, headers, key):
+    def unwrap(self, enc_alg, ek, headers, key):
         raise NotImplementedError
 
 

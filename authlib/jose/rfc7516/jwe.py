@@ -141,7 +141,7 @@ class JsonWebEncryption(object):
             protected, key)
         self._post_validate_header(protected, algorithm)
 
-        cek = algorithm.unwrap(ek, protected, key)
+        cek = algorithm.unwrap(enc_alg, ek, protected, key)
         aad = to_bytes(protected_s, 'ascii')
         msg = enc_alg.decrypt(ciphertext, aad, iv, tag, cek)
 

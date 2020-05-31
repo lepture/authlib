@@ -19,6 +19,7 @@ from .rfc7518 import (
     JWE_ALG_ALGORITHMS,
     JWE_ENC_ALGORITHMS,
     JWE_ZIP_ALGORITHMS,
+    ECDHAlgorithm,
     OctKey,
     RSAKey,
     ECKey,
@@ -31,6 +32,7 @@ from .rfc8037 import (
 from .jwk import JsonWebKey
 
 # attach algorithms
+ECDHAlgorithm.ALLOWED_KEY_CLS = (ECKey, OKPKey)
 JWS_ALGORITHMS = JWS_ALGORITHMS + RFC8037_JWS_ALGORITHMS
 JsonWebSignature.JWS_AVAILABLE_ALGORITHMS = {alg.name: alg for alg in JWS_ALGORITHMS}
 JsonWebEncryption.JWE_AVAILABLE_ALGORITHMS = {alg.name: alg for alg in JWE_ALGORITHMS}

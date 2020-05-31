@@ -1,4 +1,5 @@
 import os
+import struct
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.backends import default_backend
@@ -9,6 +10,7 @@ from cryptography.hazmat.primitives.keywrap import (
 from cryptography.hazmat.primitives.ciphers import Cipher
 from cryptography.hazmat.primitives.ciphers.algorithms import AES
 from cryptography.hazmat.primitives.ciphers.modes import GCM
+from cryptography.hazmat.primitives.kdf.concatkdf import ConcatKDFHash
 from authlib.common.encoding import (
     to_bytes, to_native,
     urlsafe_b64decode,
@@ -40,10 +42,14 @@ class RSAAlgorithm(JWEAlgorithm):
         ek = op_key.encrypt(cek, self.padding)
         return {'ek': ek, 'cek': cek}
 
-    def unwrap(self, ek, headers, key):
+    def unwrap(self, enc_alg, ek, headers, key):
         # it will raise ValueError if failed
         op_key = key.get_op_key('unwrapKey')
-        return op_key.decrypt(ek, self.padding)
+        cek = op_key.decrypt(ek, self.padding)
+        print(cek, enc_alg.key_size)
+        if len(cek) * 8 != enc_alg.CEK_SIZE:
+            raise ValueError('Invalid "cek" length')
+        return cek
 
 
 class AESAlgorithm(JWEAlgorithm):
@@ -67,10 +73,12 @@ class AESAlgorithm(JWEAlgorithm):
         ek = aes_key_wrap(op_key, cek, default_backend())
         return {'ek': ek, 'cek': cek}
 
-    def unwrap(self, ek, headers, key):
+    def unwrap(self, enc_alg, ek, headers, key):
         op_key = key.get_op_key('unwrapKey')
         self._check_key(op_key)
         cek = aes_key_unwrap(op_key, ek, default_backend())
+        if len(cek) * 8 != enc_alg.CEK_SIZE:
+            raise ValueError('Invalid "cek" length')
         return cek
 
 
@@ -111,7 +119,7 @@ class AESGCMAlgorithm(JWEAlgorithm):
         }
         return {'ek': ek, 'cek': cek, 'header': h}
 
-    def unwrap(self, ek, headers, key):
+    def unwrap(self, enc_alg, ek, headers, key):
         op_key = key.get_op_key('unwrapKey')
         self._check_key(op_key)
 
@@ -129,10 +137,15 @@ class AESGCMAlgorithm(JWEAlgorithm):
         cipher = Cipher(AES(op_key), GCM(iv, tag), backend=default_backend())
         d = cipher.decryptor()
         cek = d.update(ek) + d.finalize()
+        if len(cek) * 8 != enc_alg.CEK_SIZE:
+            raise ValueError('Invalid "cek" length')
         return cek
 
 
 class ECDHAlgorithm(JWEAlgorithm):
+    EXTRA_HEADERS = ['epk']
+    ALLOWED_KEY_CLS = ECKey
+
     # https://tools.ietf.org/html/rfc7518#section-4.6
     def __init__(self, key_size=None):
         if key_size is None:
@@ -141,17 +154,89 @@ class ECDHAlgorithm(JWEAlgorithm):
             self.name = 'ECDH-ES+A{}KW'.format(key_size)
         self.description = None
         self.key_size = key_size
+        self.aeskw = AESAlgorithm(key_size)
 
     def prepare_key(self, raw_data):
-        if hasattr(raw_data, 'curve_key_size'):
+        if isinstance(raw_data, self.ALLOWED_KEY_CLS):
             return raw_data
         return ECKey.import_key(raw_data)
 
-    def wrap(self, enc_alg, headers, key):
-        pass
+    def deliver(self, key, pubkey, headers, bit_size):
+        # AlgorithmID
+        if self.key_size is None:
+            alg_id = _uint32_len_input(headers['enc'])
+        else:
+            alg_id = _uint32_len_input(headers['alg'])
 
-    def unwrap(self, ek, headers, key):
-        pass
+        # PartyUInfo
+        apu_info = _uint32_len_input(headers.get('apu'), True)
+
+        # PartyVInfo
+        apv_info = _uint32_len_input(headers.get('apv'), True)
+
+        # SuppPubInfo
+        pub_info = struct.pack('>I', bit_size)
+
+        other_info = alg_id + apu_info + apv_info + pub_info
+        shared_key = key.exchange_shared_key(pubkey)
+        ckdf = ConcatKDFHash(
+            algorithm=hashes.SHA256(),
+            length=bit_size / 8,
+            otherinfo=other_info,
+            backend=default_backend()
+        )
+        return ckdf.derive(shared_key)
+
+    def wrap(self, enc_alg, headers, key):
+        if self.key_size is None:
+            bit_size = enc_alg.key_size
+        else:
+            bit_size = self.key_size
+
+        epk = key.generate_key(key['crv'], is_private=True)
+        public_key = key.get_op_key('wrapKey')
+        dk = self.deliver(epk, public_key, headers, bit_size)
+
+        # REQUIRED_JSON_FIELDS contains only public fields
+        pub_epk = {k: epk[k] for k in epk.REQUIRED_JSON_FIELDS}
+        pub_epk['kty'] = epk.kty
+        h = {'epk': pub_epk}
+        if self.key_size is None:
+            return {'ek': '', 'cek': dk, 'header': h}
+
+        kek = self.aeskw.prepare_key(urlsafe_b64encode(dk))
+        rv = self.aeskw.wrap(enc_alg, headers, kek)
+        rv['header'] = h
+        return rv
+
+    def unwrap(self, enc_alg, ek, headers, key):
+        if 'epk' not in headers:
+            raise ValueError('Missing "epk" in headers')
+
+        if self.key_size is None:
+            bit_size = enc_alg.key_size
+        else:
+            bit_size = self.key_size
+
+        epk = key.import_key(headers['epk'])
+        public_key = epk.get_op_key('wrappKey')
+        dk = self.deliver(key, public_key, headers, bit_size)
+
+        if self.key_size is None:
+            return dk
+
+        kek = self.aeskw.prepare_key(urlsafe_b64encode(dk))
+        return self.aeskw.unwrap(enc_alg, ek, headers, kek)
+
+
+def _uint32_len_input(s, base64=False):
+    if not s:
+        return b'\x00\x00\x00\x00'
+    if base64:
+        s = urlsafe_b64decode(to_bytes(s))
+    else:
+        s = to_bytes(s)
+    return struct.pack('>I', len(s)) + s
 
 
 JWE_ALG_ALGORITHMS = [
@@ -169,13 +254,13 @@ JWE_ALG_ALGORITHMS = [
     AESGCMAlgorithm(128),  # A128GCMKW
     AESGCMAlgorithm(192),  # A192GCMKW
     AESGCMAlgorithm(256),  # A256GCMKW
+    ECDHAlgorithm(None),  # ECDH-ES
+    ECDHAlgorithm(128),  # ECDH-ES+A128KW
+    ECDHAlgorithm(192),  # ECDH-ES+A192KW
+    ECDHAlgorithm(256),  # ECDH-ES+A256KW
 ]
 
 # 'dir': '',
-# 'ECDH-ES': '',
-# 'ECDH-ES+A128KW': '',
-# 'ECDH-ES+A192KW': '',
-# 'ECDH-ES+A256KW': '',
 # 'PBES2-HS256+A128KW': '',
 # 'PBES2-HS384+A192KW': '',
 # 'PBES2-HS512+A256KW': '',

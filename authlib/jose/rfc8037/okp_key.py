@@ -58,6 +58,12 @@ class OKPKey(Key):
         """
         return export_key(self, is_private=is_private, password=password)
 
+    def exchange_shared_key(self, pubkey):
+        # used in ECDHAlgorithm
+        if isinstance(self.raw_key, (X25519PrivateKey, X448PrivateKey)):
+            return self.raw_key.exchange(pubkey)
+        raise ValueError('Invalid key for exchanging shared key')
+
     @property
     def curve_key_size(self):
         raise NotImplementedError()

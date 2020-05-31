@@ -7,7 +7,7 @@ from .jwe_algorithms import (
 )
 from .oct_key import OctKey
 from ._backends import (
-    RSAKey, ECKey,
+    RSAKey, ECKey, ECDHAlgorithm,
     import_key, load_pem_key, export_key,
 )
 
@@ -18,6 +18,7 @@ __all__ = [
     'JWE_ALG_ALGORITHMS',
     'JWE_ENC_ALGORITHMS',
     'JWE_ZIP_ALGORITHMS',
+    'ECDHAlgorithm',
     'OctKey',
     'RSAKey',
     'ECKey',

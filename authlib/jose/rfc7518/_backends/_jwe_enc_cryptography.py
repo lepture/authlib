@@ -29,8 +29,11 @@ class CBCHS2EncAlgorithm(JWEEncAlgorithm):
         tpl = 'AES_{}_CBC_HMAC_SHA_{} authenticated encryption algorithm'
         self.description = tpl.format(key_size, hash_type)
 
+        # bit length
         self.key_size = key_size
-        self.key_bytes_length = key_size // 8
+        # byte length
+        self.key_len = key_size // 8
+
         self.CEK_SIZE = key_size * 2
         self.hash_alg = getattr(hashlib, 'sha{}'.format(hash_type))
 
@@ -38,7 +41,7 @@ class CBCHS2EncAlgorithm(JWEEncAlgorithm):
         al = encode_int(len(aad) * 8, 64)
         msg = aad + iv + ciphertext + al
         d = hmac.new(key, msg, self.hash_alg).digest()
-        return d[:self.key_bytes_length]
+        return d[:self.key_len]
 
     def encrypt(self, msg, aad, iv, key):
         """Key Encryption with AES_CBC_HMAC_SHA2.
@@ -50,8 +53,8 @@ class CBCHS2EncAlgorithm(JWEEncAlgorithm):
         :return: (ciphertext, iv, tag)
         """
         self.check_iv(iv)
-        hkey = key[:self.key_bytes_length]
-        ekey = key[self.key_bytes_length:]
+        hkey = key[:self.key_len]
+        ekey = key[self.key_len:]
 
         pad = PKCS7(AES.block_size).padder()
         padded_data = pad.update(msg) + pad.finalize()
@@ -73,8 +76,8 @@ class CBCHS2EncAlgorithm(JWEEncAlgorithm):
         :return: message
         """
         self.check_iv(iv)
-        hkey = key[:self.key_bytes_length]
-        dkey = key[self.key_bytes_length:]
+        hkey = key[:self.key_len]
+        dkey = key[self.key_len:]
 
         _tag = self._hmac(ciphertext, aad, iv, hkey)
         if not hmac.compare_digest(_tag, tag):
