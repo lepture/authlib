@@ -143,7 +143,7 @@ class AESGCMAlgorithm(JWEAlgorithm):
 
 
 class ECDHAlgorithm(JWEAlgorithm):
-    EXTRA_HEADERS = ['epk']
+    EXTRA_HEADERS = ['epk', 'apu', 'apv']
     ALLOWED_KEY_CLS = ECKey
 
     # https://tools.ietf.org/html/rfc7518#section-4.6
@@ -164,15 +164,15 @@ class ECDHAlgorithm(JWEAlgorithm):
     def deliver(self, key, pubkey, headers, bit_size):
         # AlgorithmID
         if self.key_size is None:
-            alg_id = _uint32_len_input(headers['enc'])
+            alg_id = _u32be_len_input(headers['enc'])
         else:
-            alg_id = _uint32_len_input(headers['alg'])
+            alg_id = _u32be_len_input(headers['alg'])
 
         # PartyUInfo
-        apu_info = _uint32_len_input(headers.get('apu'), True)
+        apu_info = _u32be_len_input(headers.get('apu'), True)
 
         # PartyVInfo
-        apv_info = _uint32_len_input(headers.get('apv'), True)
+        apv_info = _u32be_len_input(headers.get('apv'), True)
 
         # SuppPubInfo
         pub_info = struct.pack('>I', bit_size)
@@ -181,7 +181,7 @@ class ECDHAlgorithm(JWEAlgorithm):
         shared_key = key.exchange_shared_key(pubkey)
         ckdf = ConcatKDFHash(
             algorithm=hashes.SHA256(),
-            length=bit_size / 8,
+            length=bit_size // 8,
             otherinfo=other_info,
             backend=default_backend()
         )
@@ -229,7 +229,7 @@ class ECDHAlgorithm(JWEAlgorithm):
         return self.aeskw.unwrap(enc_alg, ek, headers, kek)
 
 
-def _uint32_len_input(s, base64=False):
+def _u32be_len_input(s, base64=False):
     if not s:
         return b'\x00\x00\x00\x00'
     if base64:

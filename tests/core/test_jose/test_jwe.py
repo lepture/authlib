@@ -2,6 +2,7 @@ import os
 import unittest
 from authlib.jose import errors
 from authlib.jose import JsonWebEncryption, JWE_ALGORITHMS, JWS_ALGORITHMS
+from authlib.common.encoding import urlsafe_b64encode
 from tests.util import read_file_path
 
 
@@ -128,7 +129,7 @@ class JWETest(unittest.TestCase):
         self.assertEqual(payload, b'hello')
         self.assertEqual(header['alg'], 'RSA-OAEP')
 
-    def test_aes_JsonWebEncryption(self):
+    def test_aes_jwe(self):
         jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
         sizes = [128, 192, 256]
         _enc_choices = [
@@ -153,7 +154,7 @@ class JWETest(unittest.TestCase):
             protected, b'hello', b'invalid-key'
         )
 
-    def test_aes_gcm_JsonWebEncryption(self):
+    def test_aes_gcm_jwe(self):
         jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
         sizes = [128, 192, 256]
         _enc_choices = [
@@ -177,3 +178,33 @@ class JWETest(unittest.TestCase):
             jwe.serialize_compact,
             protected, b'hello', b'invalid-key'
         )
+
+    def test_ecdh_key_agreement_computation(self):
+        # https://tools.ietf.org/html/rfc7518#appendix-C
+        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
+        alice_key = {
+            "kty": "EC",
+            "crv": "P-256",
+            "x": "gI0GAILBdu7T53akrFmMyGcsF3n5dO7MmwNBHKW5SV0",
+            "y": "SLW_xSffzlPWrHEVI30DHM_4egVwt3NQqeUD7nMFpps",
+            "d": "0_NxaRPUMQoAJt50Gz8YiTr8gRTwyEaCumd-MToTmIo"
+         }
+        bob_key = {
+            "kty": "EC",
+            "crv": "P-256",
+            "x": "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
+            "y": "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck",
+            "d": "VEmDZpDXXK8p8N0Cndsxs924q6nS1RXFASRl6BfUqdw"
+        }
+        headers = {
+            "alg": "ECDH-ES",
+            "enc": "A128GCM",
+            "apu": "QWxpY2U",
+            "apv": "Qm9i",
+        }
+        alg = jwe._alg_algorithms['ECDH-ES']
+        key = alg.prepare_key(alice_key)
+        bob_key = alg.prepare_key(bob_key)
+        public_key = bob_key.get_op_key('wrapKey')
+        dk = alg.deliver(key, public_key, headers, 128)
+        self.assertEqual(urlsafe_b64encode(dk), b'VqqN6vgjbSBcIijNcacQGg')
