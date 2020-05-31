@@ -202,9 +202,9 @@ class ECDHAlgorithm(JWEAlgorithm):
         pub_epk['kty'] = epk.kty
         h = {'epk': pub_epk}
         if self.key_size is None:
-            return {'ek': '', 'cek': dk, 'header': h}
+            return {'ek': b'', 'cek': dk, 'header': h}
 
-        kek = self.aeskw.prepare_key(urlsafe_b64encode(dk))
+        kek = self.aeskw.prepare_key(dk)
         rv = self.aeskw.wrap(enc_alg, headers, kek)
         rv['header'] = h
         return rv
@@ -225,7 +225,7 @@ class ECDHAlgorithm(JWEAlgorithm):
         if self.key_size is None:
             return dk
 
-        kek = self.aeskw.prepare_key(urlsafe_b64encode(dk))
+        kek = self.aeskw.prepare_key(dk)
         return self.aeskw.unwrap(enc_alg, ek, headers, kek)
 
 

@@ -1,6 +1,7 @@
 import os
 import unittest
 from authlib.jose import errors
+from authlib.jose import OKPKey
 from authlib.jose import JsonWebEncryption, JWE_ALGORITHMS, JWS_ALGORITHMS
 from authlib.common.encoding import urlsafe_b64encode
 from tests.util import read_file_path
@@ -188,7 +189,7 @@ class JWETest(unittest.TestCase):
             "x": "gI0GAILBdu7T53akrFmMyGcsF3n5dO7MmwNBHKW5SV0",
             "y": "SLW_xSffzlPWrHEVI30DHM_4egVwt3NQqeUD7nMFpps",
             "d": "0_NxaRPUMQoAJt50Gz8YiTr8gRTwyEaCumd-MToTmIo"
-         }
+        }
         bob_key = {
             "kty": "EC",
             "crv": "P-256",
@@ -208,3 +209,46 @@ class JWETest(unittest.TestCase):
         public_key = bob_key.get_op_key('wrapKey')
         dk = alg.deliver(key, public_key, headers, 128)
         self.assertEqual(urlsafe_b64encode(dk), b'VqqN6vgjbSBcIijNcacQGg')
+
+    def test_ecdh_es_jwe(self):
+        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
+        key = {
+            "kty": "EC",
+            "crv": "P-256",
+            "x": "gI0GAILBdu7T53akrFmMyGcsF3n5dO7MmwNBHKW5SV0",
+            "y": "SLW_xSffzlPWrHEVI30DHM_4egVwt3NQqeUD7nMFpps",
+            "d": "0_NxaRPUMQoAJt50Gz8YiTr8gRTwyEaCumd-MToTmIo"
+        }
+        for alg in ["ECDH-ES", "ECDH-ES+A128KW", "ECDH-ES+A192KW", "ECDH-ES+A256KW"]:
+            protected = {'alg': alg, 'enc': 'A128GCM'}
+            data = jwe.serialize_compact(protected, b'hello', key)
+            rv = jwe.deserialize_compact(data, key)
+            self.assertEqual(rv['payload'], b'hello')
+
+    def test_ecdh_es_with_okp(self):
+        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
+        key = OKPKey.generate_key('X25519', is_private=True)
+        for alg in ["ECDH-ES", "ECDH-ES+A128KW", "ECDH-ES+A192KW", "ECDH-ES+A256KW"]:
+            protected = {'alg': alg, 'enc': 'A128GCM'}
+            data = jwe.serialize_compact(protected, b'hello', key)
+            rv = jwe.deserialize_compact(data, key)
+            self.assertEqual(rv['payload'], b'hello')
+
+    def test_ecdh_es_raise(self):
+        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
+        protected = {'alg': 'ECDH-ES', 'enc': 'A128GCM'}
+        key = {
+            "kty": "EC",
+            "crv": "P-256",
+            "x": "gI0GAILBdu7T53akrFmMyGcsF3n5dO7MmwNBHKW5SV0",
+            "y": "SLW_xSffzlPWrHEVI30DHM_4egVwt3NQqeUD7nMFpps",
+        }
+        data = jwe.serialize_compact(protected, b'hello', key)
+        self.assertRaises(ValueError, jwe.deserialize_compact, data, key)
+
+        key = OKPKey.generate_key('Ed25519', is_private=True)
+        self.assertRaises(
+            ValueError,
+            jwe.serialize_compact,
+            protected, b'hello', key
+        )
