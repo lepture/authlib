@@ -15,7 +15,7 @@ class JWEAlgorithm(object):
     def prepare_key(self, raw_data):
         raise NotImplementedError
 
-    def wrap(self, cek, headers, key):
+    def wrap(self, enc_alg, headers, key):
         raise NotImplementedError
 
     def unwrap(self, ek, headers, key):

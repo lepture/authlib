@@ -85,16 +85,15 @@ class JsonWebEncryption(object):
         self._post_validate_header(protected, algorithm)
 
         # step 2: Generate a random Content Encryption Key (CEK)
-        cek = enc_alg.generate_cek()
+        # use enc_alg.generate_cek() in .wrap method
 
         # step 3: Encrypt the CEK with the recipient's public key
-        ek = algorithm.wrap(cek, protected, key)
-        if isinstance(ek, dict):
+        wrapped = algorithm.wrap(enc_alg, protected, key)
+        cek = wrapped['cek']
+        ek = wrapped['ek']
+        if 'header' in wrapped:
             # AESGCMKW algorithm contains iv, tag in header
-            header = ek.get('header')
-            if header:
-                protected.update(header)
-            ek = ek.get('ek')
+            protected.update(wrapped['header'])
 
         # step 4: Generate a random JWE Initialization Vector
         iv = enc_alg.generate_iv()

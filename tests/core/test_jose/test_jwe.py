@@ -153,22 +153,6 @@ class JWETest(unittest.TestCase):
             protected, b'hello', b'invalid-key'
         )
 
-    def test_rsa_alg(self):
-        alg = JsonWebEncryption.JWE_AVAILABLE_ALGORITHMS['RSA-OAEP']
-        pub_key = alg.prepare_key(
-            read_file_path('rsa_public.pem'))
-        private_key = alg.prepare_key(
-            read_file_path('rsa_private.pem'))
-        cek = (
-            b'\xb1\xa1\xf4\x80T\x8f\xe1s?\xb4\x03\xffk\x9a\xd4\xf6\x8a\x07'
-            b'n[p."i/\x82\xcb.z\xea@\xfc'
-        )
-        ek = alg.wrap(cek, {}, pub_key)
-        self.assertEqual(alg.unwrap(ek, {}, private_key), cek)
-
-        invalid_ek = b'a' + ek[1:]
-        self.assertRaises(ValueError, alg.unwrap, invalid_ek, {}, private_key)
-
     def test_aes_gcm_JsonWebEncryption(self):
         jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
         sizes = [128, 192, 256]

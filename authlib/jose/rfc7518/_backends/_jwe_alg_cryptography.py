@@ -32,12 +32,13 @@ class RSAAlgorithm(JWEAlgorithm):
     def prepare_key(self, raw_data):
         return RSAKey.import_key(raw_data)
 
-    def wrap(self, cek, headers, key):
+    def wrap(self, enc_alg, headers, key):
+        cek = enc_alg.generate_cek()
         op_key = key.get_op_key('wrapKey')
         if op_key.key_size < self.key_size:
             raise ValueError('A key of size 2048 bits or larger MUST be used')
         ek = op_key.encrypt(cek, self.padding)
-        return ek
+        return {'ek': ek, 'cek': cek}
 
     def unwrap(self, ek, headers, key):
         # it will raise ValueError if failed
@@ -59,11 +60,12 @@ class AESAlgorithm(JWEAlgorithm):
             raise ValueError(
                 'A key of size {} bits is required.'.format(self.key_size))
 
-    def wrap(self, cek, headers, key):
+    def wrap(self, enc_alg, headers, key):
+        cek = enc_alg.generate_cek()
         op_key = key.get_op_key('wrapKey')
         self._check_key(op_key)
         ek = aes_key_wrap(op_key, cek, default_backend())
-        return ek
+        return {'ek': ek, 'cek': cek}
 
     def unwrap(self, ek, headers, key):
         op_key = key.get_op_key('unwrapKey')
@@ -88,7 +90,8 @@ class AESGCMAlgorithm(JWEAlgorithm):
             raise ValueError(
                 'A key of size {} bits is required.'.format(self.key_size))
 
-    def wrap(self, cek, headers, key):
+    def wrap(self, enc_alg, headers, key):
+        cek = enc_alg.generate_cek()
         op_key = key.get_op_key('wrapKey')
         self._check_key(op_key)
 
@@ -106,7 +109,7 @@ class AESGCMAlgorithm(JWEAlgorithm):
             'iv': to_native(urlsafe_b64encode(iv)),
             'tag': to_native(urlsafe_b64encode(enc.tag))
         }
-        return {'ek': ek, 'header': h}
+        return {'ek': ek, 'cek': cek, 'header': h}
 
     def unwrap(self, ek, headers, key):
         op_key = key.get_op_key('unwrapKey')
@@ -130,6 +133,7 @@ class AESGCMAlgorithm(JWEAlgorithm):
 
 
 class ECDHAlgorithm(JWEAlgorithm):
+    # https://tools.ietf.org/html/rfc7518#section-4.6
     def __init__(self, key_size=None):
         if key_size is None:
             self.name = 'ECDH-ES'
@@ -143,7 +147,7 @@ class ECDHAlgorithm(JWEAlgorithm):
             return raw_data
         return ECKey.import_key(raw_data)
 
-    def wrap(self, cek, headers, key):
+    def wrap(self, enc_alg, headers, key):
         pass
 
     def unwrap(self, ek, headers, key):
