@@ -45,4 +45,4 @@ class OctKey(Key):
         if key_size % 8 != 0:
             raise ValueError('Invalid bit size for oct key')
 
-        return cls.import_key(generate_token(key_size / 8), options)
+        return cls.import_key(generate_token(key_size // 8), options)

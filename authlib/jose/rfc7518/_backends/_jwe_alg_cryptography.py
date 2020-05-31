@@ -150,9 +150,12 @@ class ECDHAlgorithm(JWEAlgorithm):
     def __init__(self, key_size=None):
         if key_size is None:
             self.name = 'ECDH-ES'
+            self.description = 'ECDH-ES in the Direct Key Agreement mode'
         else:
             self.name = 'ECDH-ES+A{}KW'.format(key_size)
-        self.description = None
+            self.description = (
+                'ECDH-ES using Concat KDF and CEK wrapped '
+                'with A{}KW').format(key_size)
         self.key_size = key_size
         self.aeskw = AESAlgorithm(key_size)
 
@@ -260,7 +263,6 @@ JWE_ALG_ALGORITHMS = [
     ECDHAlgorithm(256),  # ECDH-ES+A256KW
 ]
 
-# 'dir': '',
 # 'PBES2-HS256+A128KW': '',
 # 'PBES2-HS384+A192KW': '',
 # 'PBES2-HS512+A256KW': '',

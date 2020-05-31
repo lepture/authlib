@@ -1,7 +1,7 @@
 import os
 import unittest
 from authlib.jose import errors
-from authlib.jose import OKPKey
+from authlib.jose import OctKey, OKPKey
 from authlib.jose import JsonWebEncryption, JWE_ALGORITHMS, JWS_ALGORITHMS
 from authlib.common.encoding import urlsafe_b64encode
 from tests.util import read_file_path
@@ -251,4 +251,21 @@ class JWETest(unittest.TestCase):
             ValueError,
             jwe.serialize_compact,
             protected, b'hello', key
+        )
+
+    def test_dir_alg(self):
+        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
+        key = OctKey.generate_key(128, is_private=True)
+        protected = {'alg': 'dir', 'enc': 'A128GCM'}
+        data = jwe.serialize_compact(protected, b'hello', key)
+        rv = jwe.deserialize_compact(data, key)
+        self.assertEqual(rv['payload'], b'hello')
+
+        key2 = OctKey.generate_key(256, is_private=True)
+        self.assertRaises(ValueError, jwe.deserialize_compact, data, key2)
+
+        self.assertRaises(
+            ValueError,
+            jwe.serialize_compact,
+            protected, b'hello', key2
         )
