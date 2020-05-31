@@ -85,6 +85,10 @@ Current available algorithms for ``alg``:
 7. A128GCMKW: Key wrapping with AES GCM using 128-bit key
 8. A192GCMKW: Key wrapping with AES GCM using 192-bit key
 9. A256GCMKW: Key wrapping with AES GCM using 256-bit key
+10. ECDH-ES: In the Direct Key Agreement mode
+11. ECDH-ES+A128KW: using Concat KDF and CEK wrapped with A128KW
+12. ECDH-ES+A192KW: using Concat KDF and CEK wrapped with A192KW
+13. ECDH-ES+A256KW: using Concat KDF and CEK wrapped with A256KW
 
 Current available algorithms for ``enc``:
 

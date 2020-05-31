@@ -61,8 +61,23 @@ Algorithms for JWE
 ------------------
 
 "X25519", "X448" keys are used in "epk" for ECDH-ES algorithms.
+Just use the ``X25519`` and ``X448`` key for ``ECDH-ES`` in JWE::
 
-(NOT IMPLEMENTED YET)
+    from authlib.jose import OKPKey
+    from authlib.jose import JsonWebEncryption, JWE_ALGORITHMS
+
+    jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
+
+    with open('X25519.pem', 'rb') as f:
+        key = OKPKey.import_key(f.read())
+
+    protected = {
+        "alg": "ECDH-ES",
+        "enc": "A128GCM",
+        "apu": "QWxpY2U",
+        "apv": "Qm9i",
+    }
+    jwe.serialize_compact(protected, b'hello', key)
 
 API Reference
 -------------
