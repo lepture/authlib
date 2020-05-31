@@ -199,4 +199,4 @@ If using ``httpx``, pass this ``auth`` to access protected resources::
     import httpx
 
     url = 'https://api.twitter.com/1.1/account/verify_credentials.json'
-    resp = httpx.get(url, auth=auth)
+    resp = await httpx.get(url, auth=auth)

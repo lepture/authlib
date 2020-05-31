@@ -52,11 +52,13 @@ FastAPI OAuth 1.0 Client
 ------------------------
 
 We have a blog post about how to create Twitter login in FastAPI:
+
 https://blog.authlib.org/2020/fastapi-twitter-login
 
 FastAPI OAuth 2.0 Client
 ------------------------
 
-We have an example about Google login here:
+We have a blog post about how to create Google login in FastAPI:
 
-https://github.com/authlib/demo-oauth-client/tree/master/fastapi-google-login
+https://blog.authlib.org/2020/fastapi-google-login
+

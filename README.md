@@ -59,6 +59,8 @@ Connect third party OAuth providers with Authlib built-in client integrations:
   - [AsyncAssertionClient](https://docs.authlib.org/en/latest/client/httpx.html#async-service-account)
 - [Flask OAuth Client](https://docs.authlib.org/en/latest/client/flask.html)
 - [Django OAuth Client](https://docs.authlib.org/en/latest/client/django.html)
+- [Starlette OAuth Client](https://docs.authlib.org/en/latest/client/starlette.html)
+- [FastAPI OAuth Client](https://docs.authlib.org/en/latest/client/fastapi.html)
 
 Build your own OAuth 1.0, OAuth 2.0, and OpenID Connect providers:
 
