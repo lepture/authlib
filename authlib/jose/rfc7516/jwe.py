@@ -92,7 +92,6 @@ class JsonWebEncryption(object):
         cek = wrapped['cek']
         ek = wrapped['ek']
         if 'header' in wrapped:
-            # AESGCMKW algorithm contains iv, tag in header
             protected.update(wrapped['header'])
 
         # step 4: Generate a random JWE Initialization Vector

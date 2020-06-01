@@ -27,6 +27,7 @@ Become a backer `GitHub Sponsors`_ or via Patreon_:
 
 * `Evilham <https://github.com/evilham>`_
 * `Aveline <https://github.com/ym>`_
+* `Callam <https://github.com/cal97g>`_
 
 .. _`GitHub Sponsors`: https://github.com/sponsors/lepture
 .. _Patreon: https://www.patreon.com/lepture

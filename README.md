@@ -127,6 +127,9 @@ Authlib offers two licenses:
 Companies can purchase a commercial license at
 [Authlib Plans](https://authlib.org/plans).
 
+**If your company is creating a closed source OAuth provider, it is strongly
+suggested that your company purchasing a commercial license.**
+
 ## Support
 
 If you need any help, you can always ask questions on StackOverflow with
