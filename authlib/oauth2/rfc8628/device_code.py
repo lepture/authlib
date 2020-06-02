@@ -6,7 +6,7 @@ from ..rfc6749.errors import (
     UnauthorizedClientError,
     AccessDeniedError,
 )
-from ..rfc6749.grants import BaseGrant, TokenEndpointMixin
+from ..rfc6749 import BaseGrant, TokenEndpointMixin
 from .errors import (
     AuthorizationPendingError,
     ExpiredTokenError,
@@ -122,9 +122,8 @@ class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
         client = self.request.client
         scope = self.request.credential.get_scope()
         token = self.generate_token(
-            client, self.GRANT_TYPE,
             user=self.request.user,
-            scope=client.get_allowed_scope(scope),
+            scope=scope,
             include_refresh_token=client.check_grant_type('refresh_token'),
         )
         log.debug('Issue token %r to %r', token, client)

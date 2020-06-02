@@ -73,9 +73,9 @@ class OpenIDHybridGrant(OpenIDImplicitGrant):
 
         params = [('code', code)]
         token = self.generate_token(
-            client, 'implicit',
+            grant_type='implicit',
             user=grant_user,
-            scope=client.get_allowed_scope(self.request.scope),
+            scope=self.request.scope,
             include_refresh_token=False
         )
 

@@ -10,7 +10,7 @@
     https://tools.ietf.org/html/rfc7523
 """
 
-from .grant import JWTBearerGrant
+from .jwt_bearer import JWTBearerGrant
 from .client import (
     JWTBearerClientAssertion,
 )

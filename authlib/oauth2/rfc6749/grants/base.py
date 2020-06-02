@@ -29,10 +29,19 @@ class BaseGrant(object):
     def client(self):
         return self.request.client
 
-    def generate_token(self, client, grant_type, user=None, scope=None,
+    def generate_token(self, user=None, scope=None, grant_type=None,
                        expires_in=None, include_refresh_token=True):
+
+        if grant_type is None:
+            grant_type = self.GRANT_TYPE
+
+        client = self.request.client
+        if scope is not None:
+            scope = client.get_allowed_scope(scope)
+
         return self.server.generate_token(
-            client, grant_type,
+            client=client,
+            grant_type=grant_type,
             user=user,
             scope=scope,
             expires_in=expires_in,

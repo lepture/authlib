@@ -121,7 +121,7 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
             raise InvalidRequestError('There is no "user" for this token.')
 
         client = self.request.client
-        token = self.issue_token(client, user, credential)
+        token = self.issue_token(user, credential)
         log.debug('Issue token %r to %r', token, client)
 
         self.request.user = user
@@ -130,14 +130,13 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
         self.revoke_old_credential(credential)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
-    def issue_token(self, client, user, credential):
+    def issue_token(self, user, credential):
         expires_in = credential.get_expires_in()
         scope = self.request.scope
         if not scope:
             scope = credential.get_scope()
 
         token = self.generate_token(
-            client, self.GRANT_TYPE,
             user=user,
             expires_in=expires_in,
             scope=scope,

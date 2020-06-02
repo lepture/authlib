@@ -1,7 +1,7 @@
 import logging
 from authlib.jose import jwt
 from authlib.jose.errors import JoseError
-from ..rfc6749.grants import BaseGrant, TokenEndpointMixin
+from ..rfc6749 import BaseGrant, TokenEndpointMixin
 from ..rfc6749 import (
     UnauthorizedClientError,
     InvalidRequestError,
@@ -105,13 +105,11 @@ class JWTBearerGrant(BaseGrant, TokenEndpointMixin):
         """If valid and authorized, the authorization server issues an access
         token.
         """
-        client = self.request.client
         token = self.generate_token(
-            client, self.GRANT_TYPE,
-            scope=client.get_allowed_scope(self.request.scope),
+            scope=self.request.scope,
             include_refresh_token=False,
         )
-        log.debug('Issue token %r to %r', token, client)
+        log.debug('Issue token %r to %r', token, self.request.client)
         self.save_token(token)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 

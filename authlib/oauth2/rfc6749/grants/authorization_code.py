@@ -275,10 +275,8 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
 
         scope = authorization_code.get_scope()
         token = self.generate_token(
-            client,
-            self.GRANT_TYPE,
             user=user,
-            scope=client.get_allowed_scope(scope),
+            scope=scope,
             include_refresh_token=client.check_grant_type('refresh_token'),
         )
         log.debug('Issue token %r to %r', token, client)
