@@ -1,5 +1,4 @@
 from sqlalchemy import Column, String, Text, Integer
-from werkzeug.utils import cached_property
 from authlib.common.encoding import json_loads, json_dumps
 from authlib.oauth2.rfc6749 import ClientMixin
 from authlib.oauth2.rfc6749.util import scope_to_list, list_to_scope
@@ -26,10 +25,14 @@ class OAuth2ClientMixin(ClientMixin):
             client_secret_expires_at=self.client_secret_expires_at,
         )
 
-    @cached_property
+    @property
     def client_metadata(self):
+        if 'client_metadata' in self.__dict__:
+            return self.__dict__['client_metadata']
         if self._client_metadata:
-            return json_loads(self._client_metadata)
+            data = json_loads(self._client_metadata)
+            self.__dict__['client_metadata'] = data
+            return data
         return {}
 
     def set_client_metadata(self, value):
