@@ -1,5 +1,5 @@
 <a href="https://authlib.org/">
-<img align="right" width="120" height="120" src="https://authlib.org/logo.svg">
+<img align="right" width="120" height="120" src="https://authlib.org/assets/logo.svg">
 </a>
 
 # Authlib
