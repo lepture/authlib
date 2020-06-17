@@ -29,6 +29,7 @@ from .rfc8037 import (
     OKPKey,
     JWS_ALGORITHMS as RFC8037_JWS_ALGORITHMS,
 )
+from .errors import JoseError
 from .jwk import JsonWebKey
 
 # attach algorithms
@@ -55,6 +56,8 @@ jwt = JsonWebToken()
 
 
 __all__ = [
+    'JoseError',
+
     'JWS', 'JsonWebSignature', 'JWSAlgorithm', 'JWSHeader', 'JWSObject',
     'JWE', 'JsonWebEncryption', 'JWEAlgorithm', 'JWEEncAlgorithm', 'JWEZipAlgorithm',
 

@@ -1,4 +1,4 @@
-from authlib.jose import BaseClaims
+from authlib.jose import BaseClaims, JsonWebKey
 from authlib.jose.errors import InvalidClaimError
 from authlib.common.urls import is_valid_url
 
@@ -176,11 +176,12 @@ class ClientMetadataClaims(BaseClaims):
                 raise InvalidClaimError('jwks')
 
             jwks = self['jwks']
-            if isinstance(jwks, dict) and 'keys' in jwks:
-                if all([_is_valid_public_jwk(k) for k in jwks['keys']]):
-                    return True
-
-            raise InvalidClaimError('jwks')
+            try:
+                key_set = JsonWebKey.import_key_set(jwks)
+                if not key_set:
+                    raise InvalidClaimError('jwks')
+            except ValueError:
+                raise InvalidClaimError('jwks')
 
     def validate_software_id(self):
         """A unique identifier string (e.g., a Universally Unique Identifier
@@ -215,7 +216,3 @@ class ClientMetadataClaims(BaseClaims):
             uri = self.get(key)
         if uri and not is_valid_url(uri):
             raise InvalidClaimError(key)
-
-
-def _is_valid_public_jwk(obj):
-    return 'kty' in obj and 'n' in obj and 'e' in obj
