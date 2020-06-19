@@ -5,7 +5,7 @@
     JOSE implementation in Authlib. Tracking the status of JOSE specs at
     https://tools.ietf.org/wg/jose/
 """
-
+from .drafts import JWE_ENC_ALGORITHMS as DRAFT_JWE_ENC_ALGORITHMS
 from .rfc7515 import (
     JsonWebSignature, JWSAlgorithm, JWSHeader, JWSObject,
 )
@@ -34,6 +34,8 @@ from .jwk import JsonWebKey
 # attach algorithms
 ECDHAlgorithm.ALLOWED_KEY_CLS = (ECKey, OKPKey)
 JWS_ALGORITHMS = JWS_ALGORITHMS + RFC8037_JWS_ALGORITHMS
+JWE_ENC_ALGORITHMS.extend(DRAFT_JWE_ENC_ALGORITHMS)
+JWE_ALGORITHMS.extend(DRAFT_JWE_ENC_ALGORITHMS)
 JsonWebSignature.JWS_AVAILABLE_ALGORITHMS = {alg.name: alg for alg in JWS_ALGORITHMS}
 JsonWebEncryption.JWE_AVAILABLE_ALGORITHMS = {alg.name: alg for alg in JWE_ALGORITHMS}
 
