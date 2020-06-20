@@ -30,22 +30,8 @@ class JsonWebEncryption(object):
     ZIP_REGISTRY = {}
 
     def __init__(self, algorithms=None, private_headers=None):
-        self.algorithms_registry = self.get_algorithms_registry()
-
         self._algorithms = algorithms
         self._private_headers = private_headers
-
-        if algorithms is not None:
-            for alg in algorithms:
-                if alg not in self.algorithms_registry:
-                    raise ValueError('Unsupported algorithm for JWE, {!r}'.format(alg))
-
-    @classmethod
-    def get_algorithms_registry(cls):
-        rv = dict(cls.ALG_REGISTRY)
-        rv.update(cls.ENC_REGISTRY)
-        rv.update(cls.ZIP_REGISTRY)
-        return rv
 
     @classmethod
     def register_algorithm(cls, algorithm):

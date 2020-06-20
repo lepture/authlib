@@ -33,10 +33,6 @@ class JsonWebSignature(object):
 
     def __init__(self, algorithms=None, private_headers=None):
         self._private_headers = private_headers
-        if algorithms is not None:
-            for alg in algorithms:
-                if alg not in self.ALGORITHMS_REGISTRY:
-                    raise ValueError('Unsupported algorithm for JWS, {!r}'.format(alg))
         self._algorithms = algorithms
 
     @classmethod

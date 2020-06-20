@@ -25,30 +25,8 @@ class JsonWebToken(object):
     ]), re.DOTALL)
 
     def __init__(self, algorithms=None, private_headers=None):
-        if algorithms is None:
-            self._jws = JsonWebSignature(None, private_headers)
-            self._jwe = JsonWebEncryption(None, private_headers)
-        else:
-            self._jws = JsonWebSignature([], private_headers)
-            self._jwe = JsonWebEncryption([], private_headers)
-
-            if isinstance(algorithms, (tuple, list)):
-                for algorithm in algorithms:
-                    self.register_algorithm(algorithm)
-            else:
-                self.register_algorithm(algorithms)
-
-    def register_algorithm(self, algorithm):
-        if isinstance(algorithm, text_types):
-            if algorithm in JsonWebSignature.JWS_AVAILABLE_ALGORITHMS:
-                self._jws.register_algorithm(algorithm)
-            elif algorithm in JsonWebEncryption.JWE_AVAILABLE_ALGORITHMS:
-                self._jwe.register_algorithm(algorithm)
-        else:
-            if algorithm.algorithm_type == 'JWS':
-                self._jws.register_algorithm(algorithm)
-            elif algorithm.algorithm_type == 'JWE':
-                self._jwe.register_algorithm(algorithm)
+        self._jws = JsonWebSignature(algorithms, private_headers=private_headers)
+        self._jwe = JsonWebEncryption(algorithms, private_headers=private_headers)
 
     def check_sensitive_data(self, payload):
         """Check if payload contains sensitive information."""

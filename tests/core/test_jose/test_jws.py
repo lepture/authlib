@@ -6,13 +6,6 @@ from tests.util import read_file_path
 
 
 class JWSTest(unittest.TestCase):
-    def test_register_invalid_algorithms(self):
-        self.assertRaises(
-            ValueError,
-            JsonWebSignature,
-            ['INVALID']
-        )
-
     def test_invalid_input(self):
         jws = JsonWebSignature()
         self.assertRaises(errors.DecodeError, jws.deserialize, 'a', 'k')

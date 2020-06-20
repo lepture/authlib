@@ -8,13 +8,6 @@ from tests.util import read_file_path
 
 
 class JWETest(unittest.TestCase):
-    def test_register_invalid_algorithms(self):
-        self.assertRaises(
-            ValueError,
-            JsonWebEncryption,
-            ['INVALID']
-        )
-
     def test_not_enough_segments(self):
         s = 'a.b.c'
         jwe = JsonWebEncryption()
