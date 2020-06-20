@@ -49,6 +49,11 @@ class UnsupportedCompressionAlgorithmError(JoseError):
     description = 'Unsupported "zip" value in header'
 
 
+class InvalidUseError(JoseError):
+    error = 'invalid_use'
+    description = 'Key "use" is not valid for your usage'
+
+
 class InvalidClaimError(JoseError):
     error = 'invalid_claim'
 

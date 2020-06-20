@@ -2,7 +2,7 @@ import unittest
 import datetime
 from authlib.jose import errors
 from authlib.jose import JsonWebToken, JWTClaims, jwt
-from authlib.jose.errors import UnsupportedAlgorithmError
+from authlib.jose.errors import UnsupportedAlgorithmError, InvalidUseError
 from tests.util import read_file_path
 
 

@@ -222,7 +222,7 @@ class ECDHAlgorithm(JWEAlgorithm):
             bit_size = self.key_size
 
         epk = key.import_key(headers['epk'])
-        public_key = epk.get_op_key('wrappKey')
+        public_key = epk.get_op_key('wrapKey')
         dk = self.deliver(key, public_key, headers, bit_size)
 
         if self.key_size is None:

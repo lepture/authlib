@@ -6,6 +6,7 @@ from authlib.common.encoding import (
     to_unicode,
     urlsafe_b64encode,
 )
+from ..errors import InvalidUseError
 
 
 class Key(dict):
@@ -33,30 +34,48 @@ class Key(dict):
         self.key_type = 'secret'
         self.raw_key = None
 
-    def get_op_key(self, key_op):
+    def get_op_key(self, operation):
         """Get the raw key for the given key_op. This method will also
         check if the given key_op is supported by this key.
 
-        :param key_op: key operation value, such as "sign", "encrypt".
+        :param operation: key operation value, such as "sign", "encrypt".
         :return: raw key
         """
-        self.check_key_op(key_op)
-        if key_op in self.PUBLIC_KEY_OPS and self.key_type == 'private':
+        self.check_key_op(operation)
+        if operation in self.PUBLIC_KEY_OPS:
+            return self.get_public_key()
+        return self.get_private_key()
+
+    def get_public_key(self):
+        if self.key_type == 'private':
             return self.raw_key.public_key()
         return self.raw_key
 
-    def check_key_op(self, key_op):
+    def get_private_key(self):
+        if self.key_type == 'private':
+            return self.raw_key
+
+    def check_key_op(self, operation):
         """Check if the given key_op is supported by this key.
 
-        :param key_op: key operation value, such as "sign", "encrypt".
+        :param operation: key operation value, such as "sign", "encrypt".
         :raise: ValueError
         """
-        allowed_key_ops = self.get('key_ops')
-        if allowed_key_ops is not None and key_op not in allowed_key_ops:
-            raise ValueError('Unsupported key_op "{}"'.format(key_op))
+        key_ops = self.get('key_ops')
+        if key_ops is not None and operation not in key_ops:
+            raise ValueError('Unsupported key_op "{}"'.format(operation))
 
-        if key_op in self.PRIVATE_KEY_OPS and self.key_type == 'public':
-            raise ValueError('Invalid key_op "{}" for public key'.format(key_op))
+        if operation in self.PRIVATE_KEY_OPS and self.key_type == 'public':
+            raise ValueError('Invalid key_op "{}" for public key'.format(operation))
+
+        use = self.get('use')
+        if use:
+            if operation in ['sign', 'verify']:
+                if use != 'sig':
+                    raise InvalidUseError()
+            elif operation in ['decrypt', 'encrypt', 'wrapKey', 'unwrapKey']:
+                if use != 'enc':
+                    raise InvalidUseError()
 
     def as_key(self):
         """Represent this key as raw key."""
