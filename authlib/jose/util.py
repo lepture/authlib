@@ -2,16 +2,6 @@ import binascii
 from authlib.common.encoding import urlsafe_b64decode, json_loads
 
 
-def prepare_algorithm_key(algorithms, header, payload, key):
-    algorithm = algorithms[header['alg']]
-    if callable(key):
-        key = key(header, payload)
-    elif 'jwk' in header:
-        key = header['jwk']
-    key = algorithm.prepare_key(key)
-    return algorithm, key
-
-
 def extract_header(header_segment, error_cls):
     header_data = extract_segment(header_segment, error_cls, 'header')
 

@@ -1,13 +1,7 @@
 import zlib
-from ._backends import JWE_ALG_ALGORITHMS as _JWE_ALG_ALGORITHMS, JWE_ENC_ALGORITHMS
+from ._backends import JWE_ALG_ALGORITHMS, JWE_ENC_ALGORITHMS
 from .oct_key import OctKey
-from ..rfc7516 import JWEAlgorithm, JWEZipAlgorithm
-
-
-__all__ = [
-    'JWE_ALG_ALGORITHMS', 'JWE_ENC_ALGORITHMS',
-    'JWE_ZIP_ALGORITHMS', 'JWE_ALGORITHMS',
-]
+from ..rfc7516 import JWEAlgorithm, JWEZipAlgorithm, JsonWebEncryption
 
 
 class DirectAlgorithm(JWEAlgorithm):
@@ -45,6 +39,12 @@ class DeflateZipAlgorithm(JWEZipAlgorithm):
         return zlib.decompress(s, -zlib.MAX_WBITS)
 
 
-JWE_ALG_ALGORITHMS = [DirectAlgorithm()] + _JWE_ALG_ALGORITHMS
-JWE_ZIP_ALGORITHMS = [DeflateZipAlgorithm()]
-JWE_ALGORITHMS = JWE_ALG_ALGORITHMS + JWE_ENC_ALGORITHMS + JWE_ZIP_ALGORITHMS
+def register_jwe_rfc7518():
+    JsonWebEncryption.register_algorithm(DirectAlgorithm())
+    JsonWebEncryption.register_algorithm(DeflateZipAlgorithm())
+
+    for algorithm in JWE_ALG_ALGORITHMS:
+        JsonWebEncryption.register_algorithm(algorithm)
+
+    for algorithm in JWE_ENC_ALGORITHMS:
+        JsonWebEncryption.register_algorithm(algorithm)

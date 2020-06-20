@@ -1,10 +1,5 @@
 from .jws_algorithms import register_jws_rfc7518
-from .jwe_algorithms import (
-    JWE_ALGORITHMS,
-    JWE_ALG_ALGORITHMS,
-    JWE_ENC_ALGORITHMS,
-    JWE_ZIP_ALGORITHMS,
-)
+from .jwe_algorithms import register_jwe_rfc7518
 from .oct_key import OctKey
 from ._backends import (
     RSAKey, ECKey, ECDHAlgorithm,
@@ -13,10 +8,7 @@ from ._backends import (
 
 __all__ = [
     'register_jws_rfc7518',
-    'JWE_ALGORITHMS',
-    'JWE_ALG_ALGORITHMS',
-    'JWE_ENC_ALGORITHMS',
-    'JWE_ZIP_ALGORITHMS',
+    'register_jwe_rfc7518',
     'ECDHAlgorithm',
     'OctKey',
     'RSAKey',

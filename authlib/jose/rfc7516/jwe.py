@@ -4,7 +4,6 @@ from authlib.common.encoding import (
 from authlib.jose.util import (
     extract_header,
     extract_segment,
-    prepare_algorithm_key,
 )
 from authlib.jose.errors import (
     DecodeError,
@@ -26,38 +25,78 @@ class JsonWebEncryption(object):
         'typ', 'cty', 'crit'
     ])
 
-    #: Defined available JWS algorithms
-    JWE_AVAILABLE_ALGORITHMS = None
+    ALG_REGISTRY = {}
+    ENC_REGISTRY = {}
+    ZIP_REGISTRY = {}
 
-    def __init__(self, algorithms, private_headers=None):
-        self._alg_algorithms = {}
-        self._enc_algorithms = {}
-        self._zip_algorithms = {}
+    def __init__(self, algorithms=None, private_headers=None):
+        self.algorithms_registry = self.get_algorithms_registry()
+
+        self._algorithms = algorithms
         self._private_headers = private_headers
 
-        if isinstance(algorithms, list):
-            for algorithm in algorithms:
-                self.register_algorithm(algorithm)
-        elif algorithms is None:
-            for algorithm in self.JWE_AVAILABLE_ALGORITHMS:
-                self.register_algorithm(algorithm)
+        if algorithms is not None:
+            for alg in algorithms:
+                if alg not in self.algorithms_registry:
+                    raise ValueError('Unsupported algorithm for JWE, {!r}'.format(alg))
 
-    def register_algorithm(self, algorithm):
+    @classmethod
+    def get_algorithms_registry(cls):
+        rv = dict(cls.ALG_REGISTRY)
+        rv.update(cls.ENC_REGISTRY)
+        rv.update(cls.ZIP_REGISTRY)
+        return rv
+
+    @classmethod
+    def register_algorithm(cls, algorithm):
         """Register an algorithm for ``alg`` or ``enc`` or ``zip`` of JWE."""
-
-        if isinstance(algorithm, str) and self.JWE_AVAILABLE_ALGORITHMS:
-            algorithm = self.JWE_AVAILABLE_ALGORITHMS.get(algorithm)
-
         if not algorithm or algorithm.algorithm_type != 'JWE':
             raise ValueError(
                 'Invalid algorithm for JWE, {!r}'.format(algorithm))
 
         if algorithm.algorithm_location == 'alg':
-            self._alg_algorithms[algorithm.name] = algorithm
+            cls.ALG_REGISTRY[algorithm.name] = algorithm
         elif algorithm.algorithm_location == 'enc':
-            self._enc_algorithms[algorithm.name] = algorithm
+            cls.ENC_REGISTRY[algorithm.name] = algorithm
         elif algorithm.algorithm_location == 'zip':
-            self._zip_algorithms[algorithm.name] = algorithm
+            cls.ZIP_REGISTRY[algorithm.name] = algorithm
+
+    def get_header_alg(self, header):
+        if 'alg' not in header:
+            raise MissingAlgorithmError()
+
+        alg = header['alg']
+        if self._algorithms and alg not in self._algorithms:
+            raise UnsupportedAlgorithmError()
+        if alg not in self.ALG_REGISTRY:
+            raise UnsupportedAlgorithmError()
+        return self.ALG_REGISTRY[alg]
+
+    def get_header_enc(self, header):
+        if 'enc' not in header:
+            raise MissingEncryptionAlgorithmError()
+        enc = header['enc']
+        if self._algorithms and enc not in self._algorithms:
+            raise UnsupportedEncryptionAlgorithmError()
+        if enc not in self.ENC_REGISTRY:
+            raise UnsupportedEncryptionAlgorithmError()
+        return self.ENC_REGISTRY[enc]
+
+    def get_header_zip(self, header):
+        if 'zip' in header:
+            z = header['zip']
+            if self._algorithms and z not in self._algorithms:
+                raise UnsupportedCompressionAlgorithmError()
+            if z not in self.ZIP_REGISTRY:
+                raise UnsupportedCompressionAlgorithmError()
+            return self.ZIP_REGISTRY[z]
+
+    def prepare_key(self, header, key):
+        if callable(key):
+            key = key(header, None)
+        elif 'jwk' in header:
+            key = header['jwk']
+        return key
 
     def serialize_compact(self, protected, payload, key):
         """Generate a JWE Compact Serialization. The JWE Compact Serialization
@@ -79,23 +118,29 @@ class JsonWebEncryption(object):
         :param key: Private key used to generate signature
         :return: byte
         """
-        self._pre_validate_header(protected)
-        # step 1: Prepare algorithms
-        algorithm, enc_alg, key = self._prepare_alg_enc_key(protected, key)
-        self._post_validate_header(protected, algorithm)
+
+        # step 1: Prepare algorithms & key
+        alg = self.get_header_alg(protected)
+        enc = self.get_header_enc(protected)
+        zip_alg = self.get_header_zip(protected)
+        self._validate_private_headers(protected, alg)
+
+        key = prepare_key(alg, protected, key)
+
+        # self._post_validate_header(protected, algorithm)
 
         # step 2: Generate a random Content Encryption Key (CEK)
         # use enc_alg.generate_cek() in .wrap method
 
         # step 3: Encrypt the CEK with the recipient's public key
-        wrapped = algorithm.wrap(enc_alg, protected, key)
+        wrapped = alg.wrap(enc, protected, key)
         cek = wrapped['cek']
         ek = wrapped['ek']
         if 'header' in wrapped:
             protected.update(wrapped['header'])
 
         # step 4: Generate a random JWE Initialization Vector
-        iv = enc_alg.generate_iv()
+        iv = enc.generate_iv()
 
         # step 5: Let the Additional Authenticated Data encryption parameter
         # be ASCII(BASE64URL(UTF8(JWE Protected Header)))
@@ -103,10 +148,13 @@ class JsonWebEncryption(object):
         aad = to_bytes(protected_segment, 'ascii')
 
         # step 6: compress message if required
-        msg = self._zip_compress(payload, protected)
+        if zip_alg:
+            msg = zip_alg.compress(to_bytes(payload))
+        else:
+            msg = to_bytes(payload)
 
         # step 7: perform encryption
-        ciphertext, tag = enc_alg.encrypt(msg, aad, iv, cek)
+        ciphertext, tag = enc.encrypt(msg, aad, iv, cek)
         return b'.'.join([
             protected_segment,
             urlsafe_b64encode(ek),
@@ -135,59 +183,27 @@ class JsonWebEncryption(object):
         ciphertext = extract_segment(ciphertext_s, DecodeError, 'ciphertext')
         tag = extract_segment(tag_s, DecodeError, 'authentication tag')
 
-        self._pre_validate_header(protected)
-        algorithm, enc_alg, key = self._prepare_alg_enc_key(
-            protected, key)
-        self._post_validate_header(protected, algorithm)
+        alg = self.get_header_alg(protected)
+        enc = self.get_header_enc(protected)
+        zip_alg = self.get_header_zip(protected)
+        self._validate_private_headers(protected, alg)
 
-        cek = algorithm.unwrap(enc_alg, ek, protected, key)
+        key = prepare_key(alg, protected, key)
+
+        cek = alg.unwrap(enc, ek, protected, key)
         aad = to_bytes(protected_s, 'ascii')
-        msg = enc_alg.decrypt(ciphertext, aad, iv, tag, cek)
+        msg = enc.decrypt(ciphertext, aad, iv, tag, cek)
 
-        payload = self._zip_decompress(msg, protected)
+        if zip_alg:
+            payload = zip_alg.decompress(to_bytes(msg))
+        else:
+            payload = msg
+
         if decode:
             payload = decode(payload)
         return {'header': protected, 'payload': payload}
 
-    def _zip_compress(self, s, header):
-        s = to_bytes(s)
-        if 'zip' in header:
-            zip_alg = self._zip_algorithms[header['zip']]
-            return zip_alg.compress(s)
-        return s
-
-    def _zip_decompress(self, s, header):
-        if 'zip' in header:
-            zip_alg = self._zip_algorithms[header['zip']]
-            return zip_alg.decompress(to_bytes(s))
-        return s
-
-    def _prepare_alg_enc_key(self, header, key):
-        algorithm, key = prepare_algorithm_key(
-            self._alg_algorithms, header, None, key)
-        enc_alg = self._enc_algorithms[header['enc']]
-        return algorithm, enc_alg, key
-
-    def _pre_validate_header(self, header):
-        if 'alg' not in header:
-            raise MissingAlgorithmError()
-
-        alg = header['alg']
-        if alg not in self._alg_algorithms:
-            raise UnsupportedAlgorithmError()
-
-        if 'enc' not in header:
-            raise MissingEncryptionAlgorithmError()
-
-        enc = header['enc']
-        if enc not in self._enc_algorithms:
-            raise UnsupportedEncryptionAlgorithmError()
-
-        _zip = header.get('zip')
-        if _zip and _zip not in self._zip_algorithms:
-            raise UnsupportedCompressionAlgorithmError()
-
-    def _post_validate_header(self, header, alg):
+    def _validate_private_headers(self, header, alg):
         # only validate private headers when developers set
         # private headers explicitly
         if self._private_headers is None:
@@ -202,3 +218,11 @@ class JsonWebEncryption(object):
         for k in header:
             if k not in names:
                 raise InvalidHeaderParameterName(k)
+
+
+def prepare_key(alg, header, key):
+    if callable(key):
+        key = key(header, None)
+    elif 'jwk' in header:
+        key = header['jwk']
+    return alg.prepare_key(key)

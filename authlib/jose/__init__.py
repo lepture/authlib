@@ -5,7 +5,6 @@
     JOSE implementation in Authlib. Tracking the status of JOSE specs at
     https://tools.ietf.org/wg/jose/
 """
-from .drafts import JWE_ENC_ALGORITHMS as DRAFT_JWE_ENC_ALGORITHMS
 from .rfc7515 import (
     JsonWebSignature, JWSAlgorithm, JWSHeader, JWSObject,
 )
@@ -15,10 +14,7 @@ from .rfc7516 import (
 from .rfc7517 import Key, KeySet
 from .rfc7518 import (
     register_jws_rfc7518,
-    JWE_ALGORITHMS,
-    JWE_ALG_ALGORITHMS,
-    JWE_ENC_ALGORITHMS,
-    JWE_ZIP_ALGORITHMS,
+    register_jwe_rfc7518,
     ECDHAlgorithm,
     OctKey,
     RSAKey,
@@ -26,19 +22,19 @@ from .rfc7518 import (
 )
 from .rfc7519 import JsonWebToken, BaseClaims, JWTClaims
 from .rfc8037 import OKPKey, register_jws_rfc8037
+from .drafts import register_jwe_draft
+
 from .errors import JoseError
 from .jwk import JsonWebKey
 
 # register algorithms
 register_jws_rfc7518()
+register_jwe_rfc7518()
 register_jws_rfc8037()
+register_jwe_draft()
 
 # attach algorithms
 ECDHAlgorithm.ALLOWED_KEY_CLS = (ECKey, OKPKey)
-
-JWE_ENC_ALGORITHMS.extend(DRAFT_JWE_ENC_ALGORITHMS)
-JWE_ALGORITHMS.extend(DRAFT_JWE_ENC_ALGORITHMS)
-JsonWebEncryption.JWE_AVAILABLE_ALGORITHMS = {alg.name: alg for alg in JWE_ALGORITHMS}
 
 # register supported keys
 JsonWebKey.JWK_KEY_CLS = {
@@ -49,7 +45,11 @@ JsonWebKey.JWK_KEY_CLS = {
 }
 
 # compatible constants
-JWS_ALGORITHMS = JsonWebSignature.ALGORITHMS_REGISTRY.keys()
+JWS_ALGORITHMS = list(JsonWebSignature.ALGORITHMS_REGISTRY.keys())
+JWE_ALG_ALGORITHMS = list(JsonWebEncryption.ALG_REGISTRY.keys())
+JWE_ENC_ALGORITHMS = list(JsonWebEncryption.ENC_REGISTRY.keys())
+JWE_ZIP_ALGORITHMS = list(JsonWebEncryption.ZIP_REGISTRY.keys())
+JWE_ALGORITHMS = JWE_ALG_ALGORITHMS + JWE_ENC_ALGORITHMS + JWE_ZIP_ALGORITHMS
 
 # compatible imports
 JWS = JsonWebSignature
@@ -67,12 +67,6 @@ __all__ = [
     'JWE', 'JsonWebEncryption', 'JWEAlgorithm', 'JWEEncAlgorithm', 'JWEZipAlgorithm',
 
     'JWK', 'JsonWebKey', 'Key', 'KeySet',
-
-    'JWS_ALGORITHMS',
-    'JWE_ALGORITHMS',
-    'JWE_ALG_ALGORITHMS',
-    'JWE_ENC_ALGORITHMS',
-    'JWE_ZIP_ALGORITHMS',
 
     'OctKey', 'RSAKey', 'ECKey', 'OKPKey',
 

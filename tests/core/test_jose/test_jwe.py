@@ -2,7 +2,7 @@ import os
 import unittest
 from authlib.jose import errors
 from authlib.jose import OctKey, OKPKey
-from authlib.jose import JsonWebEncryption, JWE_ALGORITHMS, JWS_ALGORITHMS
+from authlib.jose import JsonWebEncryption
 from authlib.common.encoding import urlsafe_b64encode
 from tests.util import read_file_path
 
@@ -15,16 +15,9 @@ class JWETest(unittest.TestCase):
             ['INVALID']
         )
 
-        jwe = JsonWebEncryption(algorithms=[])
-        self.assertRaises(
-            ValueError,
-            jwe.register_algorithm,
-            JWS_ALGORITHMS[0]
-        )
-
     def test_not_enough_segments(self):
         s = 'a.b.c'
-        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
+        jwe = JsonWebEncryption()
         self.assertRaises(
             errors.DecodeError,
             jwe.deserialize_compact,
@@ -32,7 +25,7 @@ class JWETest(unittest.TestCase):
         )
 
     def test_invalid_header(self):
-        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
+        jwe = JsonWebEncryption()
         public_key = read_file_path('rsa_public.pem')
         self.assertRaises(
             errors.MissingAlgorithmError,
@@ -62,7 +55,7 @@ class JWETest(unittest.TestCase):
         public_key = read_file_path('rsa_public.pem')
         private_key = read_file_path('rsa_private.pem')
 
-        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
+        jwe = JsonWebEncryption()
         s = jwe.serialize_compact(
             {'alg': 'RSA-OAEP', 'enc': 'A256GCM'},
             'hello', public_key
@@ -107,7 +100,7 @@ class JWETest(unittest.TestCase):
         )
 
     def test_compact_rsa(self):
-        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
+        jwe = JsonWebEncryption()
         s = jwe.serialize_compact(
             {'alg': 'RSA-OAEP', 'enc': 'A256GCM'},
             'hello',
@@ -119,7 +112,7 @@ class JWETest(unittest.TestCase):
         self.assertEqual(header['alg'], 'RSA-OAEP')
 
     def test_with_zip_header(self):
-        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
+        jwe = JsonWebEncryption()
         s = jwe.serialize_compact(
             {'alg': 'RSA-OAEP', 'enc': 'A128CBC-HS256', 'zip': 'DEF'},
             'hello',
@@ -131,7 +124,7 @@ class JWETest(unittest.TestCase):
         self.assertEqual(header['alg'], 'RSA-OAEP')
 
     def test_aes_jwe(self):
-        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
+        jwe = JsonWebEncryption()
         sizes = [128, 192, 256]
         _enc_choices = [
             'A128CBC-HS256', 'A192CBC-HS384', 'A256CBC-HS512',
@@ -147,7 +140,7 @@ class JWETest(unittest.TestCase):
                 self.assertEqual(rv['payload'], b'hello')
 
     def test_ase_jwe_invalid_key(self):
-        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
+        jwe = JsonWebEncryption()
         protected = {'alg': 'A128KW', 'enc': 'A128GCM'}
         self.assertRaises(
             ValueError,
@@ -156,7 +149,7 @@ class JWETest(unittest.TestCase):
         )
 
     def test_aes_gcm_jwe(self):
-        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
+        jwe = JsonWebEncryption()
         sizes = [128, 192, 256]
         _enc_choices = [
             'A128CBC-HS256', 'A192CBC-HS384', 'A256CBC-HS512',
@@ -172,7 +165,7 @@ class JWETest(unittest.TestCase):
                 self.assertEqual(rv['payload'], b'hello')
 
     def test_ase_gcm_jwe_invalid_key(self):
-        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
+        jwe = JsonWebEncryption()
         protected = {'alg': 'A128GCMKW', 'enc': 'A128GCM'}
         self.assertRaises(
             ValueError,
@@ -182,7 +175,6 @@ class JWETest(unittest.TestCase):
 
     def test_ecdh_key_agreement_computation(self):
         # https://tools.ietf.org/html/rfc7518#appendix-C
-        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
         alice_key = {
             "kty": "EC",
             "crv": "P-256",
@@ -203,7 +195,7 @@ class JWETest(unittest.TestCase):
             "apu": "QWxpY2U",
             "apv": "Qm9i",
         }
-        alg = jwe._alg_algorithms['ECDH-ES']
+        alg = JsonWebEncryption.ALG_REGISTRY['ECDH-ES']
         key = alg.prepare_key(alice_key)
         bob_key = alg.prepare_key(bob_key)
         public_key = bob_key.get_op_key('wrapKey')
@@ -211,7 +203,7 @@ class JWETest(unittest.TestCase):
         self.assertEqual(urlsafe_b64encode(dk), b'VqqN6vgjbSBcIijNcacQGg')
 
     def test_ecdh_es_jwe(self):
-        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
+        jwe = JsonWebEncryption()
         key = {
             "kty": "EC",
             "crv": "P-256",
@@ -226,7 +218,7 @@ class JWETest(unittest.TestCase):
             self.assertEqual(rv['payload'], b'hello')
 
     def test_ecdh_es_with_okp(self):
-        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
+        jwe = JsonWebEncryption()
         key = OKPKey.generate_key('X25519', is_private=True)
         for alg in ["ECDH-ES", "ECDH-ES+A128KW", "ECDH-ES+A192KW", "ECDH-ES+A256KW"]:
             protected = {'alg': alg, 'enc': 'A128GCM'}
@@ -235,7 +227,7 @@ class JWETest(unittest.TestCase):
             self.assertEqual(rv['payload'], b'hello')
 
     def test_ecdh_es_raise(self):
-        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
+        jwe = JsonWebEncryption()
         protected = {'alg': 'ECDH-ES', 'enc': 'A128GCM'}
         key = {
             "kty": "EC",
@@ -254,7 +246,7 @@ class JWETest(unittest.TestCase):
         )
 
     def test_dir_alg(self):
-        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
+        jwe = JsonWebEncryption()
         key = OctKey.generate_key(128, is_private=True)
         protected = {'alg': 'dir', 'enc': 'A128GCM'}
         data = jwe.serialize_compact(protected, b'hello', key)
@@ -271,7 +263,7 @@ class JWETest(unittest.TestCase):
         )
 
     def test_dir_alg_c20p(self):
-        jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
+        jwe = JsonWebEncryption()
         key = OctKey.generate_key(256, is_private=True)
         protected = {'alg': 'dir', 'enc': 'C20P'}
         data = jwe.serialize_compact(protected, b'hello', key)

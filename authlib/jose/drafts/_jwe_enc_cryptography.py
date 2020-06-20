@@ -7,7 +7,7 @@
     .. _`Section 4`: https://tools.ietf.org/html/draft-amringer-jose-chacha-02#section-4
 """
 from cryptography.hazmat.primitives.ciphers.aead import ChaCha20Poly1305
-from authlib.jose.rfc7516 import JWEEncAlgorithm
+from authlib.jose.rfc7516 import JWEEncAlgorithm, JsonWebEncryption
 
 
 class C20PEncAlgorithm(JWEEncAlgorithm):
@@ -50,6 +50,5 @@ class C20PEncAlgorithm(JWEEncAlgorithm):
         return chacha.decrypt(iv, ciphertext + tag, aad)
 
 
-JWE_ENC_ALGORITHMS = [
-    C20PEncAlgorithm(256),  # C20P
-]
+def register_jwe_draft():
+    JsonWebEncryption.register_algorithm(C20PEncAlgorithm(256))  # C20P

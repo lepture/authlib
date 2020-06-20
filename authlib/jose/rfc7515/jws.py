@@ -33,9 +33,7 @@ class JsonWebSignature(object):
 
     def __init__(self, algorithms=None, private_headers=None):
         self._private_headers = private_headers
-        if algorithms is None:
-            algorithms = self.ALGORITHMS_REGISTRY.keys()
-        else:
+        if algorithms is not None:
             for alg in algorithms:
                 if alg not in self.ALGORITHMS_REGISTRY:
                     raise ValueError('Unsupported algorithm for JWS, {!r}'.format(alg))
@@ -48,17 +46,19 @@ class JsonWebSignature(object):
                 'Invalid algorithm for JWS, {!r}'.format(algorithm))
         cls.ALGORITHMS_REGISTRY[algorithm.name] = algorithm
 
-    def get_header_algorithm(self, header):
+    def get_header_alg(self, header):
         if 'alg' not in header:
             raise MissingAlgorithmError()
 
         alg = header['alg']
-        if alg not in self._algorithms:
+        if self._algorithms and alg not in self._algorithms:
+            raise UnsupportedAlgorithmError()
+        if alg not in self.ALGORITHMS_REGISTRY:
             raise UnsupportedAlgorithmError()
         return self.ALGORITHMS_REGISTRY[alg]
 
     def prepare_algorithm_key(self, header, payload, key):
-        algorithm = self.get_header_algorithm(header)
+        algorithm = self.get_header_alg(header)
         if callable(key):
             key = key(header, payload)
         elif 'jwk' in header:

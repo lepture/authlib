@@ -1,7 +1,3 @@
-from .jwe_algorithms import JWE_ENC_ALGORITHMS, JWE_ALGORITHMS
+from ._jwe_enc_cryptography import register_jwe_draft
 
-
-__all__ = [
-    'JWE_ENC_ALGORITHMS',
-    'JWE_ALGORITHMS'
-]
+__all__ = ['register_jwe_draft']

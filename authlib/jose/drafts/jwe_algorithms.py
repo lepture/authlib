@@ -1,8 +1,0 @@
-from ._backends import JWE_ENC_ALGORITHMS
-
-
-__all__ = [
-    'JWE_ENC_ALGORITHMS',
-    'JWE_ALGORITHMS',
-]
-JWE_ALGORITHMS = JWE_ENC_ALGORITHMS
