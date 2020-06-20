@@ -64,9 +64,9 @@ Algorithms for JWE
 Just use the ``X25519`` and ``X448`` key for ``ECDH-ES`` in JWE::
 
     from authlib.jose import OKPKey
-    from authlib.jose import JsonWebEncryption, JWE_ALGORITHMS
+    from authlib.jose import JsonWebEncryption
 
-    jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
+    jwe = JsonWebEncryption()
 
     with open('X25519.pem', 'rb') as f:
         key = OKPKey.import_key(f.read())

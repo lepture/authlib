@@ -54,9 +54,8 @@ Generate a JWE compact serialization would be easy with
 :meth:`JsonWebEncryption.serialize_compact`, build a JWE instance with JWA::
 
     from authlib.jose import JsonWebEncryption
-    from authlib.jose import JWE_ALGORITHMS
 
-    jwe = JsonWebEncryption(algorithms=JWE_ALGORITHMS)
+    jwe = JsonWebEncryption()
     protected = {'alg': 'RSA-OAEP', 'enc': 'A256GCM'}
     payload = b'hello'
     with open('rsa_public.pem', 'rb') as f:
