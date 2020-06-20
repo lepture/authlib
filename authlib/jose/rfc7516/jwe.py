@@ -47,43 +47,6 @@ class JsonWebEncryption(object):
         elif algorithm.algorithm_location == 'zip':
             cls.ZIP_REGISTRY[algorithm.name] = algorithm
 
-    def get_header_alg(self, header):
-        if 'alg' not in header:
-            raise MissingAlgorithmError()
-
-        alg = header['alg']
-        if self._algorithms and alg not in self._algorithms:
-            raise UnsupportedAlgorithmError()
-        if alg not in self.ALG_REGISTRY:
-            raise UnsupportedAlgorithmError()
-        return self.ALG_REGISTRY[alg]
-
-    def get_header_enc(self, header):
-        if 'enc' not in header:
-            raise MissingEncryptionAlgorithmError()
-        enc = header['enc']
-        if self._algorithms and enc not in self._algorithms:
-            raise UnsupportedEncryptionAlgorithmError()
-        if enc not in self.ENC_REGISTRY:
-            raise UnsupportedEncryptionAlgorithmError()
-        return self.ENC_REGISTRY[enc]
-
-    def get_header_zip(self, header):
-        if 'zip' in header:
-            z = header['zip']
-            if self._algorithms and z not in self._algorithms:
-                raise UnsupportedCompressionAlgorithmError()
-            if z not in self.ZIP_REGISTRY:
-                raise UnsupportedCompressionAlgorithmError()
-            return self.ZIP_REGISTRY[z]
-
-    def prepare_key(self, header, key):
-        if callable(key):
-            key = key(header, None)
-        elif 'jwk' in header:
-            key = header['jwk']
-        return key
-
     def serialize_compact(self, protected, payload, key):
         """Generate a JWE Compact Serialization. The JWE Compact Serialization
         represents encrypted content as a compact, URL-safe string.  This
@@ -188,6 +151,36 @@ class JsonWebEncryption(object):
         if decode:
             payload = decode(payload)
         return {'header': protected, 'payload': payload}
+
+    def get_header_alg(self, header):
+        if 'alg' not in header:
+            raise MissingAlgorithmError()
+
+        alg = header['alg']
+        if self._algorithms and alg not in self._algorithms:
+            raise UnsupportedAlgorithmError()
+        if alg not in self.ALG_REGISTRY:
+            raise UnsupportedAlgorithmError()
+        return self.ALG_REGISTRY[alg]
+
+    def get_header_enc(self, header):
+        if 'enc' not in header:
+            raise MissingEncryptionAlgorithmError()
+        enc = header['enc']
+        if self._algorithms and enc not in self._algorithms:
+            raise UnsupportedEncryptionAlgorithmError()
+        if enc not in self.ENC_REGISTRY:
+            raise UnsupportedEncryptionAlgorithmError()
+        return self.ENC_REGISTRY[enc]
+
+    def get_header_zip(self, header):
+        if 'zip' in header:
+            z = header['zip']
+            if self._algorithms and z not in self._algorithms:
+                raise UnsupportedCompressionAlgorithmError()
+            if z not in self.ZIP_REGISTRY:
+                raise UnsupportedCompressionAlgorithmError()
+            return self.ZIP_REGISTRY[z]
 
     def _validate_private_headers(self, header, alg):
         # only validate private headers when developers set
