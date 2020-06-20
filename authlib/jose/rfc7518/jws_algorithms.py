@@ -10,9 +10,9 @@
 
 import hmac
 import hashlib
-from ._backends import JWS_ALGORITHMS as _ALGORITHMS
+from ._backends import JWS_ALGORITHMS
 from .oct_key import OctKey
-from ..rfc7515 import JWSAlgorithm
+from ..rfc7515 import JWSAlgorithm, JsonWebSignature
 
 
 class NoneAlgorithm(JWSAlgorithm):
@@ -59,9 +59,10 @@ class HMACAlgorithm(JWSAlgorithm):
         return hmac.compare_digest(sig, v_sig)
 
 
-JWS_ALGORITHMS = _ALGORITHMS + [
-    NoneAlgorithm(),
-    HMACAlgorithm(256),
-    HMACAlgorithm(384),
-    HMACAlgorithm(512),
-]
+def register_jws_rfc7518():
+    JsonWebSignature.register_algorithm(NoneAlgorithm())
+    JsonWebSignature.register_algorithm(HMACAlgorithm(256))
+    JsonWebSignature.register_algorithm(HMACAlgorithm(384))
+    JsonWebSignature.register_algorithm(HMACAlgorithm(512))
+    for algorithm in JWS_ALGORITHMS:
+        JsonWebSignature.register_algorithm(algorithm)

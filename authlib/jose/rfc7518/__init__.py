@@ -1,4 +1,4 @@
-from .jws_algorithms import JWS_ALGORITHMS
+from .jws_algorithms import register_jws_rfc7518
 from .jwe_algorithms import (
     JWE_ALGORITHMS,
     JWE_ALG_ALGORITHMS,
@@ -11,9 +11,8 @@ from ._backends import (
     import_key, load_pem_key, export_key,
 )
 
-
 __all__ = [
-    'JWS_ALGORITHMS',
+    'register_jws_rfc7518',
     'JWE_ALGORITHMS',
     'JWE_ALG_ALGORITHMS',
     'JWE_ENC_ALGORITHMS',

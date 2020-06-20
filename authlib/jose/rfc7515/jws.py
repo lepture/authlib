@@ -6,7 +6,6 @@ from authlib.common.encoding import (
     json_loads,
 )
 from authlib.jose.util import (
-    prepare_algorithm_key,
     extract_header,
     extract_segment,
 )
@@ -29,28 +28,43 @@ class JsonWebSignature(object):
         'typ', 'cty', 'crit'
     ])
 
-    #: Defined available JWS algorithms
-    JWS_AVAILABLE_ALGORITHMS = None
+    #: Defined available JWS algorithms in the registry
+    ALGORITHMS_REGISTRY = {}
 
-    def __init__(self, algorithms, private_headers=None):
+    def __init__(self, algorithms=None, private_headers=None):
         self._private_headers = private_headers
+        if algorithms is None:
+            algorithms = self.ALGORITHMS_REGISTRY.keys()
+        else:
+            for alg in algorithms:
+                if alg not in self.ALGORITHMS_REGISTRY:
+                    raise ValueError('Unsupported algorithm for JWS, {!r}'.format(alg))
+        self._algorithms = algorithms
 
-        if isinstance(algorithms, list):
-            self._algorithms = {}
-            for algorithm in algorithms:
-                self.register_algorithm(algorithm)
-        elif algorithms is None:
-            self._algorithms = dict(self.JWS_AVAILABLE_ALGORITHMS)
-
-    def register_algorithm(self, algorithm):
-        if isinstance(algorithm, str) and self.JWS_AVAILABLE_ALGORITHMS:
-            algorithm = self.JWS_AVAILABLE_ALGORITHMS.get(algorithm)
-
+    @classmethod
+    def register_algorithm(cls, algorithm):
         if not algorithm or algorithm.algorithm_type != 'JWS':
             raise ValueError(
                 'Invalid algorithm for JWS, {!r}'.format(algorithm))
+        cls.ALGORITHMS_REGISTRY[algorithm.name] = algorithm
 
-        self._algorithms[algorithm.name] = algorithm
+    def get_header_algorithm(self, header):
+        if 'alg' not in header:
+            raise MissingAlgorithmError()
+
+        alg = header['alg']
+        if alg not in self._algorithms:
+            raise UnsupportedAlgorithmError()
+        return self.ALGORITHMS_REGISTRY[alg]
+
+    def prepare_algorithm_key(self, header, payload, key):
+        algorithm = self.get_header_algorithm(header)
+        if callable(key):
+            key = key(header, payload)
+        elif 'jwk' in header:
+            key = header['jwk']
+        key = algorithm.prepare_key(key)
+        return algorithm, key
 
     def serialize_compact(self, protected, payload, key):
         """Generate a JWS Compact Serialization. The JWS Compact Serialization
@@ -69,15 +83,14 @@ class JsonWebSignature(object):
         :return: byte
         """
         jws_header = JWSHeader(protected, None)
-        self._validate_header(jws_header)
+        self._validate_private_headers(protected)
+        algorithm, key = self.prepare_algorithm_key(protected, payload, key)
 
         protected_segment = json_b64encode(jws_header.protected)
         payload_segment = urlsafe_b64encode(to_bytes(payload))
 
         # calculate signature
         signing_input = b'.'.join([protected_segment, payload_segment])
-        algorithm, key = prepare_algorithm_key(
-            self._algorithms, jws_header, payload, key)
         signature = urlsafe_b64encode(algorithm.sign(signing_input, key))
         return b'.'.join([protected_segment, payload_segment, signature])
 
@@ -109,12 +122,8 @@ class JsonWebSignature(object):
             payload = decode(payload)
 
         signature = _extract_signature(signature_segment)
-
-        self._validate_header(jws_header)
-
         rv = JWSObject(jws_header, payload, 'compact')
-        algorithm, key = prepare_algorithm_key(
-            self._algorithms, jws_header, payload, key)
+        algorithm, key = self.prepare_algorithm_key(jws_header, payload, key)
         if algorithm.verify(signing_input, signature, key):
             return rv
         raise BadSignatureError(rv)
@@ -142,9 +151,8 @@ class JsonWebSignature(object):
         payload_segment = json_b64encode(payload)
 
         def _sign(jws_header):
-            self._validate_header(jws_header)
-            _alg, _key = prepare_algorithm_key(
-                self._algorithms, jws_header, payload, key)
+            self._validate_private_headers(jws_header)
+            _alg, _key = self.prepare_algorithm_key(jws_header, payload, key)
 
             protected_segment = json_b64encode(jws_header.protected)
             signing_input = b'.'.join([protected_segment, payload_segment])
@@ -256,14 +264,7 @@ class JsonWebSignature(object):
             return self.deserialize_json(s, key, decode)
         return self.deserialize_compact(s, key, decode)
 
-    def _validate_header(self, header):
-        if 'alg' not in header:
-            raise MissingAlgorithmError()
-
-        alg = header['alg']
-        if alg not in self._algorithms:
-            raise UnsupportedAlgorithmError()
-
+    def _validate_private_headers(self, header):
         # only validate private headers when developers set
         # private headers explicitly
         if self._private_headers is not None:
@@ -288,12 +289,9 @@ class JsonWebSignature(object):
         header = header_obj.get('header')
         if header and not isinstance(header, dict):
             raise DecodeError('Invalid "header" value')
+
         jws_header = JWSHeader(protected, header)
-
-        self._validate_header(jws_header)
-
-        algorithm, key = prepare_algorithm_key(
-            self._algorithms, jws_header, payload, key)
+        algorithm, key = self.prepare_algorithm_key(jws_header, payload, key)
         signing_input = b'.'.join([protected_segment, payload_segment])
         signature = _extract_signature(to_bytes(signature_segment))
         if algorithm.verify(signing_input, signature, key):

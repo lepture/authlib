@@ -2,7 +2,7 @@ from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric.ed25519 import (
     Ed25519PublicKey, Ed25519PrivateKey
 )
-from authlib.jose.rfc7515 import JWSAlgorithm
+from authlib.jose.rfc7515 import JWSAlgorithm, JsonWebSignature
 from .okp_key import OKPKey
 
 
@@ -26,3 +26,7 @@ class EdDSAAlgorithm(JWSAlgorithm):
             return True
         except InvalidSignature:
             return False
+
+
+def register_jws_rfc8037():
+    JsonWebSignature.register_algorithm(EdDSAAlgorithm())
