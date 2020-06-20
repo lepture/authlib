@@ -10,8 +10,8 @@
 
 import hmac
 import hashlib
-from ._backends import JWS_ALGORITHMS
 from .oct_key import OctKey
+from ._cryptography_backends import JWS_ALGORITHMS
 from ..rfc7515 import JWSAlgorithm, JsonWebSignature
 
 

@@ -17,7 +17,7 @@ from authlib.common.encoding import (
     urlsafe_b64encode
 )
 from authlib.jose.rfc7516 import JWEAlgorithm
-from ._keys_cryptography import RSAKey, ECKey
+from ._keys import RSAKey, ECKey
 from ..oct_key import OctKey
 
 

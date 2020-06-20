@@ -1,6 +1,6 @@
 import zlib
-from ._backends import JWE_ALG_ALGORITHMS, JWE_ENC_ALGORITHMS
 from .oct_key import OctKey
+from ._cryptography_backends import JWE_ALG_ALGORITHMS, JWE_ENC_ALGORITHMS
 from ..rfc7516 import JWEAlgorithm, JWEZipAlgorithm, JsonWebEncryption
 
 

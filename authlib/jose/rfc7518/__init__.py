@@ -1,7 +1,7 @@
 from .jws_algorithms import register_jws_rfc7518
 from .jwe_algorithms import register_jwe_rfc7518
 from .oct_key import OctKey
-from ._backends import (
+from ._cryptography_backends import (
     RSAKey, ECKey, ECDHAlgorithm,
     import_key, load_pem_key, export_key,
 )

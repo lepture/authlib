@@ -16,7 +16,7 @@ from cryptography.hazmat.primitives.asymmetric.ec import ECDSA
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.exceptions import InvalidSignature
 from authlib.jose.rfc7515 import JWSAlgorithm
-from ._keys_cryptography import RSAKey, ECKey
+from ._keys import RSAKey, ECKey
 from ..util import encode_int, decode_int
 
 
