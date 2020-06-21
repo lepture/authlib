@@ -169,10 +169,9 @@ This solutions works because Python requests (and most of the packages)
 overwrites the default value for ssl verifications from environment
 variables ``CURL_CA_BUNDLE`` and ``REQUESTS_CA_BUNDLE``.
 
-This hack will **only work** with ``CURL_CA_BUDLE``, as you can see
-in `requests/sessions.py`_ :
+This hack will **only work** with ``CURL_CA_BUNDLE``, as you can see
+in `requests/sessions.py`_ ::
 
-::
     verify = (os.environ.get('REQUESTS_CA_BUNDLE')
     or os.environ.get('CURL_CA_BUNDLE'))
 
