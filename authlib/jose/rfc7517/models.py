@@ -81,10 +81,12 @@ class Key(dict):
         """Represent this key as raw key."""
         return self.raw_key
 
-    def as_dict(self):
+    def as_dict(self, add_kid=False):
         """Represent this key as a dict of the JSON Web Key."""
         obj = dict(self)
         obj['kty'] = self.kty
+        if add_kid and 'kid' not in obj:
+            obj['kid'] = self.thumbprint()
         return obj
 
     def as_json(self):
@@ -134,7 +136,7 @@ class KeySet(object):
 
     def as_dict(self):
         """Represent this key as a dict of the JSON Web Key Set."""
-        return {'keys': [k.as_dict() for k in self.keys]}
+        return {'keys': [k.as_dict(True) for k in self.keys]}
 
     def as_json(self):
         """Represent this key set as a JSON string."""

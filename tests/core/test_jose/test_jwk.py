@@ -1,5 +1,5 @@
 import unittest
-from authlib.jose import jwk, JsonWebKey
+from authlib.jose import jwk, JsonWebKey, KeySet
 from authlib.jose import RSAKey, ECKey, OKPKey
 from authlib.common.encoding import base64_to_int
 from tests.util import read_file_path
@@ -19,6 +19,7 @@ class JWKTest(unittest.TestCase):
         self.assertEqual(new_obj['crv'], obj['crv'])
         self.assertBase64IntEqual(new_obj['x'], obj['x'])
         self.assertBase64IntEqual(new_obj['y'], obj['y'])
+        self.assertEqual(key.as_json()[0], '{')
 
     def test_ec_private_key(self):
         # https://tools.ietf.org/html/rfc7520#section-3.2
@@ -172,6 +173,13 @@ class JWKTest(unittest.TestCase):
         key = JsonWebKey.import_key(data)
         expected = 'NzbLsXh8uDCcd-6MNwXF4W_7noWXFZAfHkxZsRGC9Xs'
         self.assertEqual(key.thumbprint(), expected)
+
+    def test_key_set(self):
+        key = RSAKey.generate_key(is_private=True)
+        key_set = KeySet([key])
+        obj = key_set.as_dict()['keys'][0]
+        self.assertIn('kid', obj)
+        self.assertEqual(key_set.as_json()[0], '{')
 
     def test_rsa_key_generate_pem(self):
         self.assertRaises(ValueError, RSAKey.generate_key, 256)
