@@ -121,8 +121,8 @@ Tidelift will coordinate the fix and disclosure.
 
 Authlib offers two licenses:
 
-1. BSD for open source projects
-2. Commercial license for closed source projects
+1. BSD (LICENSE)
+2. COMMERCIAL-LICENSE
 
 Companies can purchase a commercial license at
 [Authlib Plans](https://authlib.org/plans).
