@@ -1,5 +1,5 @@
 from authlib.consts import default_json_headers
-from ..errors import InvalidRequestError
+from ..errors import InvalidRequestError, InvalidGrantError
 
 
 class BaseGrant(object):
@@ -106,7 +106,12 @@ class TokenEndpointMixin(object):
 
     @classmethod
     def check_token_endpoint(cls, request):
-        return request.grant_type == cls.GRANT_TYPE
+        if request.grant_type == cls.GRANT_TYPE:
+            return True
+
+        error = "Grant type %s does not match grant type %s." % (
+            request.grant_type, cls.GRANT_TYPE)
+        raise InvalidGrantError(error)
 
     def validate_token_request(self):
         raise NotImplementedError()
@@ -121,14 +126,23 @@ class AuthorizationEndpointMixin(object):
 
     @classmethod
     def check_authorization_endpoint(cls, request):
-        return request.response_type in cls.RESPONSE_TYPES
+        if request.response_type in cls.RESPONSE_TYPES:
+            return True
+
+        error = "Response type %s not in available response types %s" % (
+            request.response_type,
+            cls.RESPONSE_TYPES
+        )
+        raise InvalidGrantError(error)
 
     @staticmethod
     def validate_authorization_redirect_uri(request, client):
         if request.redirect_uri:
             if not client.check_redirect_uri(request.redirect_uri):
+                error = "Redirect uri %s not in client redirect uris %s." % (
+                    request.redirect_uri, client.redirect_uris)
                 raise InvalidRequestError(
-                    'Invalid "redirect_uri" in request.',
+                    error,
                     state=request.state,
                 )
             return request.redirect_uri

@@ -157,9 +157,12 @@ class AuthorizationServer(object):
         :return: grant instance
         """
         for (grant_cls, extensions) in self._token_grants:
-            if grant_cls.check_token_endpoint(request) and \
-                    request.method in grant_cls.TOKEN_ENDPOINT_HTTP_METHODS:
-                return _create_grant(grant_cls, extensions, request, self)
+            if grant_cls.check_token_endpoint(request):
+                if request.method in grant_cls.TOKEN_ENDPOINT_HTTP_METHODS:
+                    return _create_grant(grant_cls, extensions, request, self)
+                error = "%s not in available methods %s." % (
+                    request.method, grant_cls.TOKEN_ENDPOINT_HTTP_METHODS)
+                raise InvalidGrantError(error)
         raise InvalidGrantError()
 
     def create_endpoint_response(self, name, request=None):
