@@ -22,6 +22,8 @@ Server.
 SQLAlchemy Help Functions
 -------------------------
 
+.. warning:: We will drop ``sqla_oauth2`` module in version 1.0.
+
 .. module:: authlib.integrations.sqla_oauth1
 
 .. autofunction:: create_query_client_func

@@ -9,3 +9,4 @@ OAuth 1.0, OAuth 2.0, and OpenID Connect.
 
     1/index
     2/index
+    oidc/index

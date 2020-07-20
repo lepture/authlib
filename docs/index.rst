@@ -28,9 +28,9 @@ libraries such as Flask, Django, Requests, HTTPX, Starlette, FastAPI, and etc.
     :maxdepth: 2
 
     basic/index
-    oauth/index
     client/index
     jose/index
+    oauth/index
     flask/index
     django/index
     specs/index
