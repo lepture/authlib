@@ -15,7 +15,7 @@ in Django. Instead, we will learn how the Django implementation works, and some
 technical details in an OAuth 2.0 provider.
 
 At the very beginning, we need to have some basic understanding of
-:ref:`the OAuth 2.0 <understand_oauth2>`.
+:ref:`the OAuth 2.0 <intro_oauth2>`.
 
 .. important::
 

@@ -3,10 +3,10 @@
         grant types, roles, authentication methods and etc.
     :image: https://user-images.githubusercontent.com/290496/48670041-e5803e00-eb53-11e8-91a9-3776276d6bf6.png
 
-.. _understand_oauth2:
+.. _intro_oauth2:
 
-Understand OAuth 2.0
-====================
+Introduce OAuth 2.0
+===================
 
     The OAuth 2.0 authorization framework enables a third-party application to
     obtain limited access to an HTTP service, either on behalf of a resource owner

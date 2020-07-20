@@ -1,7 +1,8 @@
-.. Authlib documentation master file, created by
-   sphinx-quickstart on Wed Nov  1 11:04:52 2017.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. meta::
+    :description: The ultimate Python library in building OAuth 1.0, OAuth 2.0, OpenID Connect providers and clients,
+         with built-in JSON Web Signature (JWS), JSON Web Encryption (JWE), JSON Web Key (JWK),
+         and JSON Web Token (JWT) support.
+    :image: https://repository-images.githubusercontent.com/108510280/cab09300-d0ad-11e9-8113-ed9e6ba76927
 
 Authlib: Python Authentication
 ==============================
@@ -13,17 +14,21 @@ It is designed from low level specifications implementations to high level
 frameworks integrations, to meet the needs of everyone.
 
 Authlib is compatible with Python2.7+ and Python3.6+.
+(We will drop Python 2 support when Authlib 1.0 is released)
 
 User's Guide
 ------------
 
 This part of the documentation begins with some background information
-about Authlib, and installation of Authlib.
+about Authlib, and installation of Authlib. Then it will explain OAuth 1.0,
+OAuth 2.0, and JOSE. At last, it shows the implementation in frameworks, and
+libraries such as Flask, Django, Requests, HTTPX, Starlette, FastAPI, and etc.
 
 .. toctree::
     :maxdepth: 2
 
     basic/index
+    oauth/index
     client/index
     jose/index
     flask/index

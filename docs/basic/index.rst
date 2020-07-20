@@ -9,5 +9,4 @@ about Authlib, and installation of Authlib.
 
     intro
     install
-    oauth1
-    oauth2
+    logging

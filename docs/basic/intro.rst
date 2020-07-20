@@ -57,31 +57,6 @@ example, instead of a pre-configured server, Authlib takes advantage of
 If you find anything not that extendable, you can ask help on StackOverflow or
 open an issue on GitHub.
 
-Specification
--------------
-
-Authlib is a spec-compliant library which follows the latest specifications.
-We keep the generic tool functions in a ``specs`` module. When there is a
-auth-related specification, we add it into ``specs``.
-
-Currently, these specs are in the warehouse:
-
-- :badge:`done` :ref:`specs/rfc5849`
-- :badge:`done` :ref:`specs/rfc6749`
-- :badge:`done` :ref:`specs/rfc6750`
-- :badge:`done` :ref:`specs/rfc7009`
-- :badge:`done` :ref:`specs/rfc7515`
-- :badge:`done` :ref:`specs/rfc7516`
-- :badge:`done` :ref:`specs/rfc7517`
-- :badge:`done` :ref:`specs/rfc7518`
-- :badge:`done` :ref:`specs/rfc7519`
-- :badge:`done` :ref:`specs/rfc7523`
-- :badge-blue:`beta` :ref:`specs/rfc7591`
-- :badge:`done` :ref:`specs/rfc7636`
-- :badge:`done` :ref:`specs/rfc7662`
-- :badge-blue:`beta` :ref:`specs/rfc8628`
-- :badge:`done` :ref:`specs/oidc`
-
 Credits
 -------
 

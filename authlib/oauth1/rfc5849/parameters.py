@@ -22,15 +22,14 @@ def prepare_headers(oauth_params, headers=None, realm=None):
 
     For example::
 
-        Authorization: OAuth realm="Example",
-            oauth_consumer_key="0685bd9184jfhq22",
-            oauth_token="ad180jjd733klru7",
+        Authorization: OAuth realm="Photos",
+            oauth_consumer_key="dpf43f3p2l4k3l03",
             oauth_signature_method="HMAC-SHA1",
-            oauth_signature="wOJIO9A2W5mFwDgiDvZbTSMK%2FPY%3D",
             oauth_timestamp="137131200",
-            oauth_nonce="4572616e48616d6d65724c61686176",
+            oauth_nonce="wIjqoS",
+            oauth_callback="http%3A%2F%2Fprinter.example.com%2Fready",
+            oauth_signature="74KNZJeDHnMBp0EMJ9ZHt%2FXKycU%3D",
             oauth_version="1.0"
-
 
     .. _`section 3.5.1`: https://tools.ietf.org/html/rfc5849#section-3.5.1
     .. _`RFC2617`: https://tools.ietf.org/html/rfc2617
