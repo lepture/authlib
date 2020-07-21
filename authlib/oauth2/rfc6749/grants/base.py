@@ -128,7 +128,7 @@ class AuthorizationEndpointMixin(object):
         if request.redirect_uri:
             if not client.check_redirect_uri(request.redirect_uri):
                 raise InvalidRequestError(
-                    'Invalid "redirect_uri" in request.',
+                    'Redirect URI {!r} is not supported by client.'.format(request.redirect_uri),
                     state=request.state,
                 )
             return request.redirect_uri

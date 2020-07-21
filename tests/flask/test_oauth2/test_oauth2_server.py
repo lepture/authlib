@@ -80,7 +80,7 @@ class AuthorizationTest(TestCase):
             'code': 'x',
         })
         data = json.loads(rv.data)
-        self.assertEqual(data['error'], 'invalid_grant')
+        self.assertEqual(data['error'], 'unsupported_grant_type')
 
 
 class ResourceTest(TestCase):

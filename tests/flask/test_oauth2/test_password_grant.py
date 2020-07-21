@@ -83,7 +83,7 @@ class PasswordTest(TestCase):
             'grant_type': 'password',
         }), headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_grant')
+        self.assertEqual(resp['error'], 'unsupported_grant_type')
 
         rv = self.client.post('/oauth/token', data={
             'grant_type': 'password',

@@ -71,7 +71,7 @@ class PasswordTest(TestCase):
         resp = server.create_token_response(request)
         self.assertEqual(resp.status_code, 400)
         data = json.loads(resp.content)
-        self.assertEqual(data['error'], 'invalid_grant')
+        self.assertEqual(data['error'], 'unsupported_grant_type')
 
     def test_unauthorized_client(self):
         server = self.create_server()
