@@ -29,6 +29,7 @@ class BaseApp(object):
     :param api_base_url: The base API endpoint to make requests simple
     :param client_kwargs: Extra keyword arguments for session
     :param server_metadata_url: Discover server metadata from this URL
+    :param user_agent: Define a custom user agent to be used in HTTP request
     :param kwargs: Extra server metadata
 
     Create an instance of ``RemoteApp``. If ``request_token_url`` is configured,
@@ -52,7 +53,6 @@ class BaseApp(object):
             client_kwargs={'scope': 'user:email'},
         )
     """
-    DEFAULT_USER_AGENT = default_user_agent
     OAUTH_APP_CONFIG = None
 
     def __init__(
@@ -62,7 +62,7 @@ class BaseApp(object):
             access_token_url=None, access_token_params=None,
             authorize_url=None, authorize_params=None,
             api_base_url=None, client_kwargs=None, server_metadata_url=None,
-            compliance_fix=None, client_auth_methods=None, **kwargs):
+            compliance_fix=None, client_auth_methods=None, user_agent=None, **kwargs):
 
         self.framework = framework
         self.name = name
@@ -81,6 +81,7 @@ class BaseApp(object):
         self.client_auth_methods = client_auth_methods
         self._fetch_token = fetch_token
         self._update_token = update_token
+        self._user_agent = user_agent or default_user_agent
 
         self._server_metadata_url = server_metadata_url
         self.server_metadata = kwargs
@@ -115,7 +116,7 @@ class BaseApp(object):
             if self.compliance_fix:
                 self.compliance_fix(session)
 
-        session.headers['User-Agent'] = self.DEFAULT_USER_AGENT
+        session.headers['User-Agent'] = self._user_agent
         return session
 
     def _retrieve_oauth2_access_token_params(self, request, params):
@@ -172,6 +173,7 @@ class BaseApp(object):
                 code_verifier = generate_token(48)
                 kwargs['code_verifier'] = code_verifier
             rv['code_verifier'] = code_verifier
+            log.debug('Using code_verifier: {!r}'.format(code_verifier))
 
         scope = kwargs.get('scope', client.scope)
         if scope and scope.startswith('openid'):
