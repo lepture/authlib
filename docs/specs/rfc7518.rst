@@ -52,7 +52,7 @@ This section is defined by RFC7518 `Section 3.4`_.
 
 1. ES256: ECDSA using P-256 and SHA-256
 2. ES384: ECDSA using P-384 and SHA-384
-3. ES384: ECDSA using P-521 and SHA-521
+3. ES384: ECDSA using P-521 and SHA-512
 
 Digital Signature with RSASSA-PSS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
