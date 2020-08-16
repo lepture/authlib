@@ -34,18 +34,21 @@ class ClientRegistrationEndpoint(object):
         return self.create_registration_response(request)
 
     def create_registration_response(self, request):
-        user = self.authenticate_user(request)
-        if not user:
+        token = self.authenticate_token(request)
+        if not token:
             raise AccessDeniedError()
 
-        request.user = user
+        request.credential = token
 
         client_metadata = self.extract_client_metadata(request)
         client_info = self.generate_client_info()
         body = {}
         body.update(client_metadata)
         body.update(client_info)
-        self.save_client(client_info, client_metadata, user)
+        client = self.save_client(client_info, client_metadata, request)
+        registration_info = self.generate_client_registration_info(client, request)
+        if registration_info:
+            body.update(registration_info)
         return 201, body, default_json_headers
 
     def extract_client_metadata(self, request):
@@ -135,6 +138,12 @@ class ClientRegistrationEndpoint(object):
             client_secret_expires_at=client_secret_expires_at,
         )
 
+    def generate_client_registration_info(self, client, request):
+        """Generate ```registration_client_uri`` and ``registration_access_token``
+        for RFC7592. This method returns ``None`` by default. Developers MAY rewrite
+        this method to return registration information."""
+        return None
+
     def create_endpoint_request(self, request):
         return self.server.create_json_request(request)
 
@@ -150,15 +159,15 @@ class ClientRegistrationEndpoint(object):
         """
         return binascii.hexlify(os.urandom(24)).decode('ascii')
 
-    def authenticate_user(self, request):
-        """Authenticate current user who is requesting to register a client.
+    def authenticate_token(self, request):
+        """Authenticate current credential who is requesting to register a client.
         Developers MUST implement this method in subclass::
 
-            def authenticate_user(self, request):
+            def authenticate_token(self, request):
                 auth = request.headers.get('Authorization')
-                return get_user_by_auth(auth)
+                return get_token_by_auth(auth)
 
-        :return: user instance
+        :return: token instance
         """
         raise NotImplementedError()
 
@@ -168,19 +177,18 @@ class ClientRegistrationEndpoint(object):
         method in subclass::
 
             def resolve_public_key(self, request):
-                return get_public_key_from_user(request.user)
+                return get_public_key_from_user(request.credential)
 
         :return: JWK or Key string
         """
         raise NotImplementedError()
 
-    def save_client(self, client_info, client_metadata, user):
+    def save_client(self, client_info, client_metadata, request):
         """Save client into database. Developers MUST implement this method
         in subclass::
 
-            def save_client(self, client_info, client_metadata, user):
+            def save_client(self, client_info, client_metadata, request):
                 client = OAuthClient(
-                    user_id=user.id,
                     client_id=client_info['client_id'],
                     client_secret=client_info['client_secret'],
                     ...

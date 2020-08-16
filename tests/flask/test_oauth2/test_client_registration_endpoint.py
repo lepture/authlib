@@ -10,17 +10,18 @@ from .oauth2_server import create_authorization_server
 class ClientRegistrationEndpoint(_ClientRegistrationEndpoint):
     software_statement_alg_values_supported = ['RS256']
 
-    def authenticate_user(self, request):
+    def authenticate_token(self, request):
         auth_header = request.headers.get('Authorization')
         if auth_header:
-            return User.query.get(1)
+            request.user_id = 1
+            return auth_header
 
     def resolve_public_key(self, request):
         return read_file_path('rsa_public.pem')
 
-    def save_client(self, client_info, client_metadata, user):
+    def save_client(self, client_info, client_metadata, request):
         client = Client(
-            user_id=user.id,
+            user_id=request.user_id,
             **client_info
         )
         client.set_client_metadata(client_metadata)

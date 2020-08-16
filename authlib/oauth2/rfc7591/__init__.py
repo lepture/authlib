@@ -1,3 +1,12 @@
+"""
+    authlib.oauth2.rfc7591
+    ~~~~~~~~~~~~~~~~~~~~~~
+
+    This module represents a direct implementation of
+    OAuth 2.0 Dynamic Client Registration Protocol.
+
+    https://tools.ietf.org/html/rfc7591
+"""
 
 
 from .claims import ClientMetadataClaims
