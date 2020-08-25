@@ -197,5 +197,8 @@ class RemoteApp(BaseApp):
             claims_options=claims_options,
             claims_params=claims_params,
         )
+        # https://github.com/lepture/authlib/issues/259
+        if claims.get('nonce_supported') is False:
+            claims.params['nonce'] = None
         claims.validate(leeway=leeway)
         return UserInfo(claims)
