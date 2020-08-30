@@ -1,6 +1,3 @@
-from authlib.common.encoding import to_bytes
-
-
 HTTPX_CLIENT_KWARGS = [
     'headers', 'cookies', 'verify', 'cert', 'http_versions',
     'proxies', 'timeout', 'pool_limits', 'max_redirects',
