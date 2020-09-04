@@ -110,7 +110,7 @@ class AsyncRemoteApp(BaseApp):
             url = urlparse.urljoin(self.api_base_url, url)
 
         withhold_token = kwargs.get('withhold_token')
-        if token and not withhold_token:
+        if not withhold_token:
             metadata = await self.load_server_metadata()
         else:
             metadata = {}
