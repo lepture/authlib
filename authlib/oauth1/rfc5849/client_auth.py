@@ -143,6 +143,7 @@ class ClientAuth(object):
             headers = {}
 
         oauth_params = self.get_oauth_params(nonce, timestamp)
+        oauth_params = sorted(oauth_params, key=lambda tup: tup[0])
         uri, headers, body = self._render(uri, headers, body, oauth_params)
 
         sig = self.get_oauth_signature(method, uri, headers, body)

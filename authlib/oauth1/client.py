@@ -171,7 +171,8 @@ class OAuth1Client(object):
         try:
             text = text.strip()
             if text.startswith('{'):
-                token = json_loads(text)
+                json_response = json_loads(text)
+                token = {'oauth_token': json_response['data']['token']}
             else:
                 token = dict(url_decode(text))
         except (TypeError, ValueError) as e:
