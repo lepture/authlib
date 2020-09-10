@@ -5,7 +5,7 @@ from ..base_client import FrameworkIntegration, RemoteApp
 from ..requests_client import OAuth1Session, OAuth2Session
 
 
-token_update = Signal(providing_args=['name', 'token', 'refresh_token', 'access_token'])
+token_update = Signal()
 
 
 class DjangoIntegration(FrameworkIntegration):
