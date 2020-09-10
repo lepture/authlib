@@ -1,3 +1,4 @@
+import asyncio
 import typing
 from httpx import AsyncClient, Auth, Request, Response
 from authlib.common.urls import url_decode
@@ -57,6 +58,11 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
         client_kwargs = self._extract_session_request_params(kwargs)
         AsyncClient.__init__(self, **client_kwargs)
 
+        # We use a "reverse" Event to synchronize coroutines to prevent
+        # multiple concurrent attempts to refresh the same token
+        self._token_refresh_event = asyncio.Event()
+        self._token_refresh_event.set()
+
         _OAuth2Client.__init__(
             self, session=None,
             client_id=client_id, client_secret=client_secret,
@@ -85,17 +91,24 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
             method, url, auth=auth, **kwargs)
 
     async def ensure_active_token(self):
-        refresh_token = self.token.get('refresh_token')
-        url = self.metadata.get('token_endpoint')
-        if refresh_token and url:
-            await self.refresh_token(url, refresh_token=refresh_token)
-        elif self.metadata.get('grant_type') == 'client_credentials':
-            access_token = self.token['access_token']
-            token = await self.fetch_token(url, grant_type='client_credentials')
-            if self.update_token:
-                await self.update_token(token, access_token=access_token)
-        else:
-            raise InvalidTokenError()
+        if self._token_refresh_event.is_set():
+            # Unset the event so other coroutines don't try to update the token
+            self._token_refresh_event.clear()
+            refresh_token = self.token.get('refresh_token')
+            url = self.metadata.get('token_endpoint')
+            if refresh_token and url:
+                await self.refresh_token(url, refresh_token=refresh_token)
+            elif self.metadata.get('grant_type') == 'client_credentials':
+                access_token = self.token['access_token']
+                token = await self.fetch_token(url, grant_type='client_credentials')
+                if self.update_token:
+                    await self.update_token(token, access_token=access_token)
+            else:
+                raise InvalidTokenError()
+            # Notify coroutines that token is refreshed
+            self._token_refresh_event.set()
+            return
+        await self._token_refresh_event.wait() # wait until the token is ready
 
     async def _fetch_token(self, url, body='', headers=None, auth=None,
                            method='POST', **kwargs):
