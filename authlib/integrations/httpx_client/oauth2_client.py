@@ -1,7 +1,7 @@
 import asyncio
 import typing
 from httpx import AsyncClient, Auth, Client, Request, Response
-from httpx._config import UnsetType
+from httpx._config import UNSET
 from authlib.common.urls import url_decode
 from authlib.oauth2.client import OAuth2Client as _OAuth2Client
 from authlib.oauth2.auth import ClientAuth, TokenAuth
@@ -79,7 +79,7 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
         raise OAuthError(error_type, error_description)
 
     async def request(self, method, url, withhold_token=False, auth=None, **kwargs):
-        if not withhold_token and isinstance(auth, UnsetType):
+        if not withhold_token and auth is UNSET:
             if not self.token:
                 raise MissingTokenError()
 
@@ -170,7 +170,7 @@ class OAuth2Client(_OAuth2Client, Client):
         Client.__init__(self, **client_kwargs)
 
         _OAuth2Client.__init__(
-            self, session=None,
+            self, session=self,
             client_id=client_id, client_secret=client_secret,
             token_endpoint_auth_method=token_endpoint_auth_method,
             revocation_endpoint_auth_method=revocation_endpoint_auth_method,
@@ -184,7 +184,7 @@ class OAuth2Client(_OAuth2Client, Client):
         raise OAuthError(error_type, error_description)
 
     def request(self, method, url, withhold_token=False, auth=None, **kwargs):
-        if not withhold_token and isinstance(auth, UnsetType):
+        if not withhold_token and auth is UNSET:
             if not self.token:
                 raise MissingTokenError()
 
@@ -208,44 +208,3 @@ class OAuth2Client(_OAuth2Client, Client):
                 self.update_token(token, access_token=access_token)
         else:
             raise InvalidTokenError()
-
-    def _fetch_token(self, url, body='', headers=None, auth=None,
-                     method='POST', **kwargs):
-        if method.upper() == 'POST':
-            resp = self.post(
-                url, data=dict(url_decode(body)), headers=headers,
-                auth=auth, **kwargs)
-        else:
-            if '?' in url:
-                url = '&'.join([url, body])
-            else:
-                url = '?'.join([url, body])
-            resp = self.get(url, headers=headers, auth=auth, **kwargs)
-
-        for hook in self.compliance_hook['access_token_response']:
-            resp = hook(resp)
-
-        return self.parse_response_token(resp.json())
-
-    def _refresh_token(self, url, refresh_token=None, body='',
-                             headers=None, auth=None, **kwargs):
-        resp = self.post(
-            url, data=dict(url_decode(body)), headers=headers,
-            auth=auth, **kwargs)
-
-        for hook in self.compliance_hook['refresh_token_response']:
-            resp = hook(resp)
-
-        token = self.parse_response_token(resp.json())
-        if 'refresh_token' not in token:
-            self.token['refresh_token'] = refresh_token
-
-        if self.update_token:
-            self.update_token(self.token, refresh_token=refresh_token)
-
-        return self.token
-
-    def _http_post(self, url, body=None, auth=None, headers=None, **kwargs):
-        return self.post(
-            url, data=dict(url_decode(body)),
-            headers=headers, auth=auth, **kwargs)

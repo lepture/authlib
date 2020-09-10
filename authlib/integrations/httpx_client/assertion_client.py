@@ -1,5 +1,5 @@
 from httpx import AsyncClient, Client
-from httpx._config import UnsetType
+from httpx._config import UNSET
 from authlib.oauth2.rfc7521 import AssertionClient as _AssertionClient
 from authlib.oauth2.rfc7523 import JWTBearerGrant
 from authlib.oauth2 import OAuth2Error
@@ -32,7 +32,7 @@ class AsyncAssertionClient(_AssertionClient, AsyncClient):
 
     async def request(self, method, url, withhold_token=False, auth=None, **kwargs):
         """Send request with auto refresh token feature."""
-        if not withhold_token and isinstance(auth, UnsetType):
+        if not withhold_token and auth is UNSET:
             if not self.token or self.token.is_expired():
                 await self.refresh_token()
 
@@ -53,6 +53,7 @@ class AsyncAssertionClient(_AssertionClient, AsyncClient):
         self.token = token
         return self.token
 
+
 class AssertionClient(_AssertionClient, Client):
     token_auth_class = OAuth2Auth
     JWT_BEARER_GRANT_TYPE = JWTBearerGrant.GRANT_TYPE
@@ -68,7 +69,7 @@ class AssertionClient(_AssertionClient, Client):
         Client.__init__(self, **client_kwargs)
 
         _AssertionClient.__init__(
-            self, session=None,
+            self, session=self,
             token_endpoint=token_endpoint, issuer=issuer, subject=subject,
             audience=audience, grant_type=grant_type, claims=claims,
             token_placement=token_placement, scope=scope, **kwargs
@@ -76,23 +77,10 @@ class AssertionClient(_AssertionClient, Client):
 
     def request(self, method, url, withhold_token=False, auth=None, **kwargs):
         """Send request with auto refresh token feature."""
-        if not withhold_token and isinstance(auth, UnsetType):
+        if not withhold_token and auth is UNSET:
             if not self.token or self.token.is_expired():
                 self.refresh_token()
 
             auth = self.token_auth
         return super(AssertionClient, self).request(
             method, url, auth=auth, **kwargs)
-
-    def _refresh_token(self, data):
-        resp = self.request(
-            'POST', self.token_endpoint, data=data, withhold_token=True)
-
-        token = resp.json()
-        if 'error' in token:
-            raise OAuth2Error(
-                error=token['error'],
-                description=token.get('error_description')
-            )
-        self.token = token
-        return self.token
