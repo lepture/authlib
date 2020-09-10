@@ -382,7 +382,7 @@ async def test_auto_refresh_token4():
         expires_at=100
     )
 
-    app = MockDispatch(default_token)
+    app = AsyncMockDispatch(default_token)
 
     async with AsyncOAuth2Client(
             'foo', token=old_token, token_endpoint='https://i.b/token',
