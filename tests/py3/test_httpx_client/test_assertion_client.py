@@ -1,7 +1,7 @@
 import time
 import pytest
-from authlib.integrations.httpx_client import AsyncAssertionClient
-from tests.py3.utils import AsyncMockDispatch
+from authlib.integrations.httpx_client import AssertionClient
+from tests.py3.utils import MockDispatch
 
 
 default_token = {
@@ -14,27 +14,27 @@ default_token = {
 
 
 @pytest.mark.asyncio
-async def test_refresh_token():
-    async def verifier(request):
-        content = await request.body()
+def test_refresh_token():
+    def verifier(request):
+        content = request.form
         if str(request.url) == 'https://i.b/token':
-            assert b'assertion=' in content
+            assert 'assertion' in content
 
-    async with AsyncAssertionClient(
+    with AssertionClient(
         'https://i.b/token',
-        grant_type=AsyncAssertionClient.JWT_BEARER_GRANT_TYPE,
+        grant_type=AssertionClient.JWT_BEARER_GRANT_TYPE,
         issuer='foo',
         subject='foo',
         audience='foo',
         alg='HS256',
         key='secret',
-        app=AsyncMockDispatch(default_token, assert_func=verifier)
+        app=MockDispatch(default_token, assert_func=verifier)
     ) as client:
-        await client.get('https://i.b')
+        client.get('https://i.b')
 
     # trigger more case
     now = int(time.time())
-    async with AsyncAssertionClient(
+    with AssertionClient(
         'https://i.b/token',
         issuer='foo',
         subject=None,
@@ -45,15 +45,15 @@ async def test_refresh_token():
         key='secret',
         scope='email',
         claims={'test_mode': 'true'},
-        app=AsyncMockDispatch(default_token, assert_func=verifier)
+        app=MockDispatch(default_token, assert_func=verifier)
     ) as client:
-        await client.get('https://i.b')
-        await client.get('https://i.b')
+        client.get('https://i.b')
+        client.get('https://i.b')
 
 
 @pytest.mark.asyncio
-async def test_without_alg():
-    async with AsyncAssertionClient(
+def test_without_alg():
+    with AssertionClient(
         'https://i.b/token',
         issuer='foo',
         subject='foo',
@@ -61,4 +61,4 @@ async def test_without_alg():
         key='secret',
     ) as client:
         with pytest.raises(ValueError):
-            await client.get('https://i.b')
+            client.get('https://i.b')

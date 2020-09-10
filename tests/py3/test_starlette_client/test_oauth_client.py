@@ -2,7 +2,7 @@ import pytest
 from starlette.config import Config
 from starlette.requests import Request
 from authlib.integrations.starlette_client import OAuth
-from tests.py3.utils import PathMapDispatch
+from tests.py3.utils import AsyncPathMapDispatch
 from tests.client_base import get_bearer_token
 
 
@@ -39,7 +39,7 @@ def test_register_with_overwrite():
 @pytest.mark.asyncio
 async def test_oauth1_authorize():
     oauth = OAuth()
-    app = PathMapDispatch({
+    app = AsyncPathMapDispatch({
         '/request-token': {'body': 'oauth_token=foo&oauth_verifier=baz'},
         '/token': {'body': 'oauth_token=a&oauth_token_secret=b'},
     })
@@ -74,7 +74,7 @@ async def test_oauth1_authorize():
 @pytest.mark.asyncio
 async def test_oauth2_authorize():
     oauth = OAuth()
-    app = PathMapDispatch({
+    app = AsyncPathMapDispatch({
         '/token': {'body': get_bearer_token()}
     })
     client = oauth.register(
@@ -113,7 +113,7 @@ async def test_oauth2_authorize():
 
 @pytest.mark.asyncio
 async def test_oauth2_authorize_code_challenge():
-    app = PathMapDispatch({
+    app = AsyncPathMapDispatch({
         '/token': {'body': get_bearer_token()}
     })
     oauth = OAuth()
@@ -163,7 +163,7 @@ async def test_with_fetch_token_in_register():
     async def fetch_token(request):
         return {'access_token': 'dev', 'token_type': 'bearer'}
 
-    app = PathMapDispatch({
+    app = AsyncPathMapDispatch({
         '/user': {'body': {'sub': '123'}}
     })
     oauth = OAuth()
@@ -191,7 +191,7 @@ async def test_with_fetch_token_in_oauth():
     async def fetch_token(name, request):
         return {'access_token': 'dev', 'token_type': 'bearer'}
 
-    app = PathMapDispatch({
+    app = AsyncPathMapDispatch({
         '/user': {'body': {'sub': '123'}}
     })
     oauth = OAuth(fetch_token=fetch_token)
@@ -216,7 +216,7 @@ async def test_with_fetch_token_in_oauth():
 @pytest.mark.asyncio
 async def test_request_withhold_token():
     oauth = OAuth()
-    app = PathMapDispatch({
+    app = AsyncPathMapDispatch({
         '/user': {'body': {'sub': '123'}}
     })
     client = oauth.register(
@@ -252,7 +252,7 @@ async def test_oauth2_authorize_with_metadata():
         await client.create_authorization_url(req)
 
 
-    app = PathMapDispatch({
+    app = AsyncPathMapDispatch({
         '/.well-known/openid-configuration': {'body': {
             'authorization_endpoint': 'https://i.b/authorize'
         }}
