@@ -1,5 +1,6 @@
 import typing
 from httpx import AsyncClient, Auth, Client, Request, Response
+from httpx._config import UnsetType
 from authlib.common.urls import url_decode
 from authlib.oauth2.client import OAuth2Client as _OAuth2Client
 from authlib.oauth2.auth import ClientAuth, TokenAuth
@@ -72,7 +73,7 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
         raise OAuthError(error_type, error_description)
 
     async def request(self, method, url, withhold_token=False, auth=None, **kwargs):
-        if not withhold_token and auth is None:
+        if not withhold_token and isinstance(auth, UnsetType):
             if not self.token:
                 raise MissingTokenError()
 
@@ -170,7 +171,7 @@ class OAuth2Client(_OAuth2Client, Client):
         raise OAuthError(error_type, error_description)
 
     def request(self, method, url, withhold_token=False, auth=None, **kwargs):
-        if not withhold_token and auth is None:
+        if not withhold_token and isinstance(auth, UnsetType):
             if not self.token:
                 raise MissingTokenError()
 

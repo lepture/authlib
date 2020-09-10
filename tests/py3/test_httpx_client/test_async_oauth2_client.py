@@ -387,6 +387,6 @@ async def test_revoke_token():
 
 @pytest.mark.asyncio
 async def test_request_without_token():
-    async with AsyncOAuth2Client('a') as client:
+    async with AsyncOAuth2Client('a', app=AsyncMockDispatch()) as client:
         with pytest.raises(OAuthError):
             await client.get('https://i.b/token')

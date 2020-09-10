@@ -59,6 +59,7 @@ def test_without_alg():
         subject='foo',
         audience='foo',
         key='secret',
+        app=MockDispatch(default_token)
     ) as client:
         with pytest.raises(ValueError):
             client.get('https://i.b')

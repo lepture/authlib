@@ -1,4 +1,5 @@
 from httpx import AsyncClient, Client
+from httpx._config import UnsetType
 from authlib.oauth2.rfc7521 import AssertionClient as _AssertionClient
 from authlib.oauth2.rfc7523 import JWTBearerGrant
 from authlib.oauth2 import OAuth2Error
@@ -31,7 +32,7 @@ class AsyncAssertionClient(_AssertionClient, AsyncClient):
 
     async def request(self, method, url, withhold_token=False, auth=None, **kwargs):
         """Send request with auto refresh token feature."""
-        if not withhold_token and auth is None:
+        if not withhold_token and isinstance(auth, UnsetType):
             if not self.token or self.token.is_expired():
                 await self.refresh_token()
 
@@ -75,7 +76,7 @@ class AssertionClient(_AssertionClient, Client):
 
     def request(self, method, url, withhold_token=False, auth=None, **kwargs):
         """Send request with auto refresh token feature."""
-        if not withhold_token and auth is None:
+        if not withhold_token and isinstance(auth, UnsetType):
             if not self.token or self.token.is_expired():
                 self.refresh_token()
 

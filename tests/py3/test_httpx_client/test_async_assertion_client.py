@@ -59,6 +59,7 @@ async def test_without_alg():
         subject='foo',
         audience='foo',
         key='secret',
+        app=AsyncMockDispatch()
     ) as client:
         with pytest.raises(ValueError):
             await client.get('https://i.b')

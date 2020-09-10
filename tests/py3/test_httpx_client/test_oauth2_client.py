@@ -369,6 +369,6 @@ def test_revoke_token():
 
 
 def test_request_without_token():
-    with OAuth2Client('a') as client:
+    with OAuth2Client('a', app=MockDispatch()) as client:
         with pytest.raises(OAuthError):
             client.get('https://i.b/token')
