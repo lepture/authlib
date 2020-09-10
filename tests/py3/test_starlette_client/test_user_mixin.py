@@ -5,7 +5,7 @@ from authlib.jose import jwk
 from authlib.jose.errors import InvalidClaimError
 from authlib.oidc.core.grants.util import generate_id_token
 from tests.util import read_file_path
-from tests.py3.utils import PathMapDispatch
+from tests.py3.utils import AsyncPathMapDispatch
 from tests.client_base import get_bearer_token
 
 
@@ -15,7 +15,7 @@ async def run_fetch_userinfo(payload, compliance_fix=None):
     async def fetch_token(request):
         return get_bearer_token()
 
-    app = PathMapDispatch({
+    app = AsyncPathMapDispatch({
         '/userinfo': {'body': payload}
     })
 
@@ -125,7 +125,7 @@ async def test_force_fetch_jwks_uri():
         aud='dev', exp=3600, nonce='n',
     )
 
-    app = PathMapDispatch({
+    app = AsyncPathMapDispatch({
         '/jwks': {'body': read_file_path('jwks_public.json')}
     })
 

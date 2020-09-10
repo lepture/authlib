@@ -15,6 +15,9 @@ OAuth for HTTPX
 HTTPX is a next-generation HTTP client for Python. Authlib enables OAuth 1.0
 and OAuth 2.0 for HTTPX with its async versions:
 
+* :class:`OAuth1Client`
+* :class:`OAuth2Client`
+* :class:`AssertionClient`
 * :class:`AsyncOAuth1Client`
 * :class:`AsyncOAuth2Client`
 * :class:`AsyncAssertionClient`
