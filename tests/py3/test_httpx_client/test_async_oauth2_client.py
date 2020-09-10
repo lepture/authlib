@@ -1,3 +1,4 @@
+import asyncio
 import mock
 import time
 import pytest
@@ -368,6 +369,29 @@ async def test_auto_refresh_token3():
         await client.post('https://i.b/user', json={'foo': 'bar'})
         assert update_token.called is True
 
+@pytest.mark.asyncio
+async def test_auto_refresh_token4():
+    async def _update_token(token, refresh_token=None, access_token=None):
+        await asyncio.sleep(0.1) # artificial sleep to force other coroutines to wake
+
+    update_token = mock.Mock(side_effect=_update_token)
+
+    old_token = dict(
+        access_token='a',
+        token_type='bearer',
+        expires_at=100
+    )
+
+    app = MockDispatch(default_token)
+
+    async with AsyncOAuth2Client(
+            'foo', token=old_token, token_endpoint='https://i.b/token',
+            update_token=update_token, grant_type='client_credentials',
+            app=app,
+    ) as client:
+        coroutines = [client.get('https://i.b/user') for x in range(10)]
+        await asyncio.gather(*coroutines)
+        update_token.assert_called_once()
 
 @pytest.mark.asyncio
 async def test_revoke_token():
