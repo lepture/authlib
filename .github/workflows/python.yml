@@ -24,11 +24,11 @@ jobs:
         - version: 2.7
           toxenv: py27,py27-flask
         - version: 3.6
-          toxenv: py36,flask,django,async
+          toxenv: py36,flask,django,py3
         - version: 3.7
-          toxenv: py37,flask,django,async
+          toxenv: py37,flask,django,py3
         - version: 3.8
-          toxenv: py38,flask,django,async
+          toxenv: py38,flask,django,py3
 
     steps:
     - uses: actions/checkout@v2

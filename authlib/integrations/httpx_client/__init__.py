@@ -6,12 +6,12 @@ from authlib.oauth1 import (
     SIGNATURE_TYPE_QUERY,
     SIGNATURE_TYPE_BODY,
 )
-from .oauth1_client import OAuth1Auth, AsyncOAuth1Client
+from .oauth1_client import OAuth1Auth, AsyncOAuth1Client, OAuth1Client
 from .oauth2_client import (
-    OAuth2Auth, OAuth2ClientAuth,
+    OAuth2Auth, OAuth2Client, OAuth2ClientAuth,
     AsyncOAuth2Client,
 )
-from .assertion_client import AsyncAssertionClient
+from .assertion_client import AssertionClient, AsyncAssertionClient
 from ..base_client import OAuthError
 
 
