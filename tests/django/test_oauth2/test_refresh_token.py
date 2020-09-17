@@ -101,8 +101,7 @@ class RefreshTokenTest(TestCase):
         resp = server.create_token_response(request)
         self.assertEqual(resp.status_code, 400)
         data = json.loads(resp.content)
-        self.assertEqual(data['error'], 'invalid_request')
-        self.assertIn('Invalid', data['error_description'])
+        self.assertEqual(data['error'], 'invalid_grant')
 
     def test_invalid_scope(self):
         server = self.create_server()
