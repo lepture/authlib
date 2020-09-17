@@ -102,8 +102,7 @@ class RefreshTokenTest(TestCase):
             'refresh_token': 'foo',
         }, headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_request')
-        self.assertIn('Invalid', resp['error_description'])
+        self.assertEqual(resp['error'], 'invalid_grant')
 
     def test_invalid_scope(self):
         self.prepare_data()
@@ -209,7 +208,7 @@ class RefreshTokenTest(TestCase):
         }, headers=headers)
         self.assertEqual(rv.status_code, 400)
         resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_request')
+        self.assertEqual(resp['error'], 'invalid_grant')
 
     def test_token_generator(self):
         m = 'tests.flask.test_oauth2.oauth2_server:token_generator'
