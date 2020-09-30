@@ -49,6 +49,6 @@ version:
 	@echo $(VERSION)
 
 publish: override VERSION := $(if $(VERSION),$(VERSION),)
-publish: WHEEL_FILENAME := deming_core-$(VERSION)-py3-$(OS)-$(CPU_ARCH).whl
+publish: WHEEL_FILENAME := authlib-$(VERSION)-py3-$(OS)-$(CPU_ARCH).whl
 publish:
 	curl -F package=@dist/$(WHEEL_FILENAME) https://$(GEMFURY_AUTH_TOKEN)@push.fury.io/quartic-ai/
