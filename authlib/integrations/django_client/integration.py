@@ -41,10 +41,12 @@ class DjangoIntegration(FrameworkIntegration):
     @staticmethod
     def load_config(oauth, name, params):
         auth_client = OauthClient.objects.get(name=name)
-        config = {}
-        config[auth_client.name] = {}
-        config[auth_client.name]['client_id'] = auth_client.oauth_client_id
-        config[auth_client.name]['client_secret'] = auth_client.oauth_client_secret
+        config = {
+            auth_client.name : {
+                'client_id': auth_client.oauth_client_id,
+                'client_secret': auth_client.oauth_client_secret
+            }
+        }
         if config:
             return config.get(name)
 
