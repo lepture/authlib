@@ -2,16 +2,6 @@
 import quarticpipeline.PipelineBuilder
 
 containerNodes = [
-  Test: [
-    dir: './jenkins-scripts/',
-    steps: [
-      test: [
-        file_name: 'test.sh',
-        docker_image: 'python:3.6',
-        docker_image_args: '-u root'
-      ]
-    ]
-  ],
   Publish: [
     dir: './jenkins-scripts/',
     steps: [

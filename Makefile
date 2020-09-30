@@ -8,11 +8,11 @@ OS := none
 CPU_ARCH = any
 
 help:
-	@echo "Deming-core Makefile Help:\n"\
+	@echo "authlib Makefile Help:\n"\
 	"clean:  Remove all cache and wheel packages.\n"\
-	"build:  Build deming-core wheel package via setup.py.\n"\
-	"version:  Show current deming-core version.\n"\
-	"publish:  Upload the package in dist directory that matches current deming-core version.\n"\
+	"build:  Build authlib wheel package via setup.py.\n"\
+	"version:  Show current authlib version.\n"\
+	"publish:  Upload the package in dist directory that matches current authlib version.\n"\
 	" VERSION Specify another version to upload (If there is one avaliable). "
 
 clean: clean-build clean-pyc clean-docs clean-tox
