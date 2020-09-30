@@ -3,6 +3,7 @@ from django.dispatch import Signal
 from django.http import HttpResponseRedirect
 from ..base_client import FrameworkIntegration, RemoteApp
 from ..requests_client import OAuth1Session, OAuth2Session
+from deming.models import OauthClient
 
 
 token_update = Signal()
@@ -39,7 +40,11 @@ class DjangoIntegration(FrameworkIntegration):
 
     @staticmethod
     def load_config(oauth, name, params):
-        config = getattr(settings, 'AUTHLIB_OAUTH_CLIENTS', None)
+        auth_client = OauthClient.objects.get(name=name)
+        config = {}
+        config[auth_client.name] = {}
+        config[auth_client.name]['client_id'] = auth_client.oauth_client_id
+        config[auth_client.name]['client_secret'] = auth_client.oauth_client_secret
         if config:
             return config.get(name)
 
