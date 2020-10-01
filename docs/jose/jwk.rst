@@ -5,7 +5,7 @@ JSON Web Key (JWK)
 
 .. versionchanged:: v0.15
 
-    This documentation is updated for v0.15. Please check "stable" documentation for
+    This documentation is updated for v0.15. Please check "v0.14" documentation for
     Authlib v0.14.
 
 .. module:: authlib.jose

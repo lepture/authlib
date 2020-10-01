@@ -6,6 +6,29 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 0.15
+------------
+
+**Release date not decided yet***
+
+This is the last release before v1.0. In this release, we added more RFCs
+implementations and did some refactors for JOSE:
+
+- RFC8037: CFRG Elliptic Curve Diffie-Hellman (ECDH) and Signatures in JSON Object Signing and Encryption (JOSE)
+- RFC7638: JSON Web Key (JWK) Thumbprint
+
+We also fixed bugs for integrations:
+
+- Fixed support for HTTPX>=0.14.3
+- Added OAuth clients of HTTPX back via :gh:`PR#270`
+- Fixed parallel token refreshes for HTTPX async OAuth 2 client
+- Raise OAuthError when callback contains errors via :gh:`issue#275`
+
+**Breaking Change**:
+
+1. The parameter ``algorithms`` in ``JsonWebSignature`` and ``JsonWebEncryption``
+are changed. Usually you don't have to care about it since you won't use it directly.
+2. Whole JSON Web Key is refactored, please check :ref:`jwk_guide`.
 
 Version 0.14.3
 --------------
