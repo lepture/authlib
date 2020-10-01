@@ -74,6 +74,7 @@ class AsyncOAuth1Client(_OAuth1Client, AsyncClient):
     def handle_error(error_type, error_description):
         raise OAuthError(error_type, error_description)
 
+
 class OAuth1Client(_OAuth1Client, Client):
     auth_class = OAuth1Auth
 

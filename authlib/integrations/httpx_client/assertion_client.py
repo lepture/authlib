@@ -1,5 +1,8 @@
 from httpx import AsyncClient, Client
-from httpx._config import UNSET
+try:
+    from httpx._config import UNSET
+except ImportError:
+    UNSET = None
 from authlib.oauth2.rfc7521 import AssertionClient as _AssertionClient
 from authlib.oauth2.rfc7523 import JWTBearerGrant
 from authlib.oauth2 import OAuth2Error

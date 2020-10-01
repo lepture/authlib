@@ -1,7 +1,10 @@
 import asyncio
 import typing
 from httpx import AsyncClient, Auth, Client, Request, Response
-from httpx._config import UNSET
+try:
+    from httpx._config import UNSET
+except ImportError:
+    UNSET = None
 from authlib.common.urls import url_decode
 from authlib.oauth2.client import OAuth2Client as _OAuth2Client
 from authlib.oauth2.auth import ClientAuth, TokenAuth
@@ -151,6 +154,7 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
         return self.post(
             url, data=dict(url_decode(body)),
             headers=headers, auth=auth, **kwargs)
+
 
 class OAuth2Client(_OAuth2Client, Client):
     SESSION_REQUEST_PARAMS = HTTPX_CLIENT_KWARGS
