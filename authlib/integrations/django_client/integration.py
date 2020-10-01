@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.dispatch import Signal
 from django.http import HttpResponseRedirect
-from ..base_client import FrameworkIntegration, RemoteApp
+from ..base_client import FrameworkIntegration, RemoteApp, OAuthError
 from ..requests_client import OAuth1Session, OAuth2Session
 
 
@@ -26,6 +26,11 @@ class DjangoIntegration(FrameworkIntegration):
             return request.GET.dict()
 
         if request.method == 'GET':
+            error = request.GET.get('error')
+            if error:
+                description = request.GET.get('error_description')
+                raise OAuthError(error=error, description=description)
+
             params = {
                 'code': request.GET.get('code'),
                 'state': request.GET.get('state'),

@@ -114,6 +114,22 @@ class DjangoOAuthTest(TestCase):
             token = client.authorize_access_token(request)
             self.assertEqual(token['access_token'], 'a')
 
+    def test_oauth2_authorize_access_denied(self):
+        oauth = OAuth()
+        client = oauth.register(
+            'dev',
+            client_id='dev',
+            client_secret='dev',
+            api_base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+            authorize_url='https://i.b/authorize',
+        )
+
+        with mock.patch('requests.sessions.Session.send'):
+            request = self.factory.get('/?error=access_denied&error_description=Not+Allowed')
+            request.session = self.factory.session
+            self.assertRaises(OAuthError, client.authorize_access_token, request)
+
     def test_oauth2_authorize_code_challenge(self):
         request = self.factory.get('/login')
         request.session = self.factory.session

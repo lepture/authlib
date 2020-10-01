@@ -1,6 +1,6 @@
 from flask import current_app, session
 from flask.signals import Namespace
-from ..base_client import FrameworkIntegration
+from ..base_client import FrameworkIntegration, OAuthError
 from ..requests_client import OAuth1Session, OAuth2Session
 
 _signal = Namespace()
@@ -34,6 +34,11 @@ class FlaskIntegration(FrameworkIntegration):
             return request.args.to_dict(flat=True)
 
         if request.method == 'GET':
+            error = request.args.get('error')
+            if error:
+                description = request.args.get('error_description')
+                raise OAuthError(error=error, description=description)
+
             params = {
                 'code': request.args['code'],
                 'state': request.args.get('state'),

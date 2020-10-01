@@ -1,7 +1,7 @@
 import pytest
 from starlette.config import Config
 from starlette.requests import Request
-from authlib.integrations.starlette_client import OAuth
+from authlib.integrations.starlette_client import OAuth, OAuthError
 from tests.py3.utils import AsyncPathMapDispatch
 from tests.client_base import get_bearer_token
 
@@ -109,6 +109,34 @@ async def test_oauth2_authorize():
     req = Request(req_scope)
     token = await client.authorize_access_token(req)
     assert token['access_token'] == 'a'
+
+
+@pytest.mark.asyncio
+async def test_oauth2_authorize_access_denied():
+    oauth = OAuth()
+    app = AsyncPathMapDispatch({
+        '/token': {'body': get_bearer_token()}
+    })
+    client = oauth.register(
+        'dev',
+        client_id='dev',
+        client_secret='dev',
+        api_base_url='https://i.b/api',
+        access_token_url='https://i.b/token',
+        authorize_url='https://i.b/authorize',
+        client_kwargs={
+            'app': app,
+        }
+    )
+
+    req = Request({
+        'type': 'http',
+        'session': {},
+        'path': '/',
+        'query_string': 'error=access_denied&error_description=Not+Allowed',
+    })
+    with pytest.raises(OAuthError):
+        await client.authorize_access_token(req)
 
 
 @pytest.mark.asyncio

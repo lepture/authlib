@@ -178,6 +178,24 @@ class FlaskOAuthTest(TestCase):
         with app.test_request_context():
             self.assertEqual(client.token, None)
 
+    def test_oauth2_authorize_access_denied(self):
+        app = Flask(__name__)
+        app.secret_key = '!'
+        oauth = OAuth(app)
+        client = oauth.register(
+            'dev',
+            client_id='dev',
+            client_secret='dev',
+            api_base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+            authorize_url='https://i.b/authorize'
+        )
+
+        with app.test_request_context(path='/?error=access_denied&error_description=Not+Allowed'):
+            # session is cleared in tests
+            with mock.patch('requests.sessions.Session.send'):
+                self.assertRaises(OAuthError, client.authorize_access_token)
+
     def test_oauth2_authorize_via_custom_client(self):
         class CustomRemoteApp(FlaskRemoteApp):
             OAUTH_APP_CONFIG = {'authorize_url': 'https://i.b/custom'}

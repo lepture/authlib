@@ -1,6 +1,6 @@
 from starlette.responses import RedirectResponse
 from ..httpx_client import AsyncOAuth1Client, AsyncOAuth2Client
-from ..base_client import FrameworkIntegration
+from ..base_client import FrameworkIntegration, OAuthError
 from ..base_client.async_app import AsyncRemoteApp
 
 
@@ -14,6 +14,12 @@ class StartletteIntegration(FrameworkIntegration):
     def generate_access_token_params(self, request_token_url, request):
         if request_token_url:
             return dict(request.query_params)
+
+        error = request.query_params.get('error')
+        if error:
+            description = request.query_params.get('error_description')
+            raise OAuthError(error=error, description=description)
+
         return {
             'code': request.query_params.get('code'),
             'state': request.query_params.get('state'),
