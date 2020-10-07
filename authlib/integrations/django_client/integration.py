@@ -40,6 +40,16 @@ class DjangoIntegration(FrameworkIntegration):
 
     @staticmethod
     def load_config(oauth, name, params):
+        """ 
+        Method to load config from database 
+        Parameters:
+            oauth: Instance authlib, passed internally by the package
+            name: Name used inside register method of oauth
+            params: Contains oauth parameters name inside tuple
+
+        Returns:
+            config: Configauration required by the package to load client information
+        """
         auth_client = OauthClient.objects.get(name=name)
         config = {
             auth_client.name : {
