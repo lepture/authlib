@@ -63,6 +63,7 @@ class AsyncPathMapDispatch:
         )
         await response(scope, receive, send)
 
+
 class MockDispatch:
     def __init__(self, body=b'', status_code=200, headers=None,
                  assert_func=None):

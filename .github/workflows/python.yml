@@ -21,8 +21,6 @@ jobs:
       max-parallel: 3
       matrix:
         python:
-        - version: 2.7
-          toxenv: py27,py27-flask
         - version: 3.6
           toxenv: py36,flask,django,py3
         - version: 3.7
@@ -54,7 +52,7 @@ jobs:
         coverage report
         coverage xml
 
-    - name: Upload coverage to Codecov  
+    - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1.0.5
       with:
         token: ${{ secrets.CODECOV_TOKEN }}

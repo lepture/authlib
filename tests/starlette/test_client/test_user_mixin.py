@@ -5,8 +5,8 @@ from authlib.jose import jwk
 from authlib.jose.errors import InvalidClaimError
 from authlib.oidc.core.grants.util import generate_id_token
 from tests.util import read_file_path
-from tests.py3.utils import AsyncPathMapDispatch
 from tests.client_base import get_bearer_token
+from ..utils import AsyncPathMapDispatch
 
 
 async def run_fetch_userinfo(payload, compliance_fix=None):
