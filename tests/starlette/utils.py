@@ -94,29 +94,3 @@ class MockDispatch:
             headers=self.headers,
         )
         return response(environ, start_response)
-
-
-class PathMapDispatch:
-    def __init__(self, path_maps):
-        self.path_maps = path_maps
-
-    def __call__(self, environ, start_response):
-        request = WSGIRequest(environ)
-
-        rv = self.path_maps[request.url.path]
-        status_code = rv.get('status_code', 200)
-        body = rv.get('body', b'')
-        headers = rv.get('headers', {})
-        if isinstance(body, dict):
-            body = json.dumps(body).encode()
-            headers['Content-Type'] = 'application/json'
-        else:
-            if isinstance(body, str):
-                body = body.encode()
-            headers['Content-Type'] = 'application/x-www-form-urlencoded'
-        response = WSGIResponse(
-            status=status_code,
-            response=body,
-            headers=headers,
-        )
-        return response(environ, start_response)
