@@ -9,7 +9,7 @@ Here you can see the full list of changes between each Authlib release.
 Version 0.15
 ------------
 
-**Release date not decided yet***
+**Released on Oct 10, 2020.***
 
 This is the last release before v1.0. In this release, we added more RFCs
 implementations and did some refactors for JOSE:
