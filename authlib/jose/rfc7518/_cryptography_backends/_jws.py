@@ -64,14 +64,17 @@ class ECAlgorithm(JWSAlgorithm):
     SHA384 = hashes.SHA384
     SHA512 = hashes.SHA512
 
-    def __init__(self, sha_type):
-        self.name = f'ES{sha_type}'
-        self.curve = f'P-{sha_type}'
+    def __init__(self, name, curve, sha_type):
+        self.name = name
+        self.curve = curve
         self.description = f'ECDSA using {self.curve} and SHA-{sha_type}'
         self.hash_alg = getattr(self, 'SHA{}'.format(sha_type))
 
     def prepare_key(self, raw_data):
-        return ECKey.import_key(raw_data)
+        key = ECKey.import_key(raw_data)
+        if key.curve_name != self.curve:
+            raise ValueError(f'Key for "{self.name}" not supported, only "{self.curve}" allowed')
+        return key
 
     def sign(self, msg, key):
         op_key = key.get_op_key('sign')
@@ -151,9 +154,10 @@ JWS_ALGORITHMS = [
     RSAAlgorithm(256),  # RS256
     RSAAlgorithm(384),  # RS384
     RSAAlgorithm(512),  # RS512
-    ECAlgorithm(256),  # ES256
-    ECAlgorithm(384),  # ES384
-    ECAlgorithm(512),  # ES512
+    ECAlgorithm('ES256', 'P-256', 256),
+    ECAlgorithm('ES384', 'P-384', 384),
+    ECAlgorithm('ES512', 'P-521', 512),
+    ECAlgorithm('ES256K', 'secp256k1', 256),  # defined in RFC8812
     RSAPSSAlgorithm(256),  # PS256
     RSAPSSAlgorithm(384),  # PS384
     RSAPSSAlgorithm(512),  # PS512

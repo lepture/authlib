@@ -181,7 +181,7 @@ class JWTTest(unittest.TestCase):
         payload = {'name': 'hi'}
         private_key = read_file_path('secp521r1-private.json')
         pub_key = read_file_path('secp521r1-public.json')
-        data = jwt.encode({'alg': 'ES256'}, payload, private_key)
+        data = jwt.encode({'alg': 'ES512'}, payload, private_key)
         self.assertEqual(data.count(b'.'), 2)
 
         claims = jwt.decode(data, pub_key)

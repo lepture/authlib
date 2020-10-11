@@ -222,7 +222,7 @@ class ECKey(Key):
         }
 
     @classmethod
-    def import_key(cls, raw, options=None):
+    def import_key(cls, raw, options=None) -> 'ECKey':
         """Import a key from PEM or dict data."""
         return import_key(
             cls, raw,
@@ -231,7 +231,7 @@ class ECKey(Key):
         )
 
     @classmethod
-    def generate_key(cls, crv='P-256', options=None, is_private=False):
+    def generate_key(cls, crv='P-256', options=None, is_private=False) -> 'ECKey':
         if crv not in cls.DSS_CURVES:
             raise ValueError('Invalid crv value: "{}"'.format(crv))
         raw_key = ec.generate_private_key(
