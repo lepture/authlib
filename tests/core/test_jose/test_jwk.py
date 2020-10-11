@@ -13,7 +13,7 @@ class JWKTest(unittest.TestCase):
 
     def test_ec_public_key(self):
         # https://tools.ietf.org/html/rfc7520#section-3.1
-        obj = read_file_path('ec_public.json')
+        obj = read_file_path('secp521r1-public.json')
         key = jwk.loads(obj)
         new_obj = jwk.dumps(key)
         self.assertEqual(new_obj['crv'], obj['crv'])
@@ -23,7 +23,7 @@ class JWKTest(unittest.TestCase):
 
     def test_ec_private_key(self):
         # https://tools.ietf.org/html/rfc7520#section-3.2
-        obj = read_file_path('ec_private.json')
+        obj = read_file_path('secp521r1-private.json')
         key = jwk.loads(obj)
         new_obj = jwk.dumps(key, 'EC')
         self.assertEqual(new_obj['crv'], obj['crv'])

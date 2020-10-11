@@ -65,8 +65,9 @@ class ECAlgorithm(JWSAlgorithm):
     SHA512 = hashes.SHA512
 
     def __init__(self, sha_type):
-        self.name = 'ES{}'.format(sha_type)
-        self.description = 'ECDSA using P-{} and SHA-{}'.format(sha_type, sha_type)
+        self.name = f'ES{sha_type}'
+        self.curve = f'P-{sha_type}'
+        self.description = f'ECDSA using {self.curve} and SHA-{sha_type}'
         self.hash_alg = getattr(self, 'SHA{}'.format(sha_type))
 
     def prepare_key(self, raw_data):
