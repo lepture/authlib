@@ -238,7 +238,7 @@ class ECOpenIDCodeTest(RSAOpenIDCodeTest):
             'OAUTH2_JWT_ENABLED': True,
             'OAUTH2_JWT_ISS': 'Authlib',
             'OAUTH2_JWT_KEY_PATH': get_file_path('secp521r1-private.json'),
-            'OAUTH2_JWT_ALG': 'ES256',
+            'OAUTH2_JWT_ALG': 'ES512',
         })
 
     def get_validate_key(self):
