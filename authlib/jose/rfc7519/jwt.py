@@ -9,6 +9,7 @@ from .claims import JWTClaims
 from ..errors import DecodeError, InsecureClaimError
 from ..rfc7515 import JsonWebSignature
 from ..rfc7516 import JsonWebEncryption
+from ..rfc7517 import KeySet
 
 
 class JsonWebToken(object):
@@ -60,6 +61,9 @@ class JsonWebToken(object):
             self.check_sensitive_data(payload)
 
         key = prepare_raw_key(key, header)
+        if callable(key):
+            key = key(header, payload)
+
         text = to_bytes(json_dumps(payload))
         if 'enc' in header:
             return self._jwe.serialize_compact(header, text, key)
@@ -84,7 +88,10 @@ class JsonWebToken(object):
             claims_cls = JWTClaims
 
         def load_key(header, payload):
-            return prepare_raw_key(key, header)
+            key_func = prepare_raw_key(key, header)
+            if callable(key_func):
+                return key_func(header, payload)
+            return key_func
 
         s = to_bytes(s)
         dot_count = s.count(b'.')
@@ -111,7 +118,10 @@ def decode_payload(bytes_payload):
     return payload
 
 
-def prepare_raw_key(raw, headers=None):
+def prepare_raw_key(raw, headers):
+    if isinstance(raw, KeySet):
+        return raw.find_by_kid(headers.get('kid'))
+
     if isinstance(raw, text_types) and \
             raw.startswith('{') and raw.endswith('}'):
         raw = json_loads(raw)
@@ -120,10 +130,7 @@ def prepare_raw_key(raw, headers=None):
 
     if isinstance(raw, dict) and 'keys' in raw:
         keys = raw['keys']
-        if headers is not None:
-            kid = headers.get('kid')
-        else:
-            kid = None
+        kid = headers.get('kid')
         for k in keys:
             if k.get('kid') == kid:
                 return k
