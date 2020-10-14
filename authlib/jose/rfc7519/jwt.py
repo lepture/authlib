@@ -9,7 +9,6 @@ from .claims import JWTClaims
 from ..errors import DecodeError, InsecureClaimError
 from ..rfc7515 import JsonWebSignature
 from ..rfc7516 import JsonWebEncryption
-from ..rfc7517 import KeySet
 
 
 class JsonWebToken(object):
@@ -60,9 +59,7 @@ class JsonWebToken(object):
         if check:
             self.check_sensitive_data(payload)
 
-        if isinstance(key, KeySet):
-            key = key.find_by_kid(header.get('kid'))
-
+        key = prepare_raw_key(key, header)
         text = to_bytes(json_dumps(payload))
         if 'enc' in header:
             return self._jwe.serialize_compact(header, text, key)
@@ -86,11 +83,8 @@ class JsonWebToken(object):
         if claims_cls is None:
             claims_cls = JWTClaims
 
-        if isinstance(key, KeySet):
-            def load_key(header, payload):
-                return key.find_by_kid(header.get('kid'))
-        else:
-            load_key = key
+        def load_key(header, payload):
+            return prepare_raw_key(key, header)
 
         s = to_bytes(s)
         dot_count = s.count(b'.')
@@ -115,3 +109,23 @@ def decode_payload(bytes_payload):
     if not isinstance(payload, dict):
         raise DecodeError('Invalid payload type')
     return payload
+
+
+def prepare_raw_key(raw, headers=None):
+    if isinstance(raw, text_types) and \
+            raw.startswith('{') and raw.endswith('}'):
+        raw = json_loads(raw)
+    elif isinstance(raw, (tuple, list)):
+        raw = {'keys': raw}
+
+    if isinstance(raw, dict) and 'keys' in raw:
+        keys = raw['keys']
+        if headers is not None:
+            kid = headers.get('kid')
+        else:
+            kid = None
+        for k in keys:
+            if k.get('kid') == kid:
+                return k
+        raise ValueError('Invalid JSON Web Key Set')
+    return raw
