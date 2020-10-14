@@ -6,6 +6,14 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 0.15.1
+--------------
+
+**Released on Oct 14, 2020.**
+
+- Backward compitable fix for using JWKs in JWT, via :gh:`issue#280`.
+
+
 Version 0.15
 ------------
 
