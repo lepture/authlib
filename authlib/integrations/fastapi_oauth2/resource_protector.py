@@ -1,5 +1,8 @@
+"""Implementation of authlib.oauth2.rfc6749.ResourceProtector class for FastAPI."""
+
 import functools
 from contextlib import contextmanager
+from fastapi import HTTPException
 from authlib.oauth2 import (
     OAuth2Error,
     ResourceProtector as _ResourceProtector
@@ -8,57 +11,15 @@ from authlib.oauth2.rfc6749 import (
     MissingAuthorizationError,
     HttpRequest,
 )
-from .errors import raise_http_exception
 
 
 class ResourceProtector(_ResourceProtector):
-    """A protecting method for resource servers. Creating a ``require_oauth``
-    decorator easily with ResourceProtector::
-
-        from authlib.integrations.flask_oauth2 import ResourceProtector
-
-        require_oauth = ResourceProtector()
-
-        # add bearer token validator
-        from authlib.oauth2.rfc6750 import BearerTokenValidator
-        from project.models import Token
-
-        class MyBearerTokenValidator(BearerTokenValidator):
-            def authenticate_token(self, token_string):
-                return Token.query.filter_by(access_token=token_string).first()
-
-            def request_invalid(self, request):
-                return False
-
-            def token_revoked(self, token):
-                return False
-
-        require_oauth.register_token_validator(MyBearerTokenValidator())
-
-        # protect resource with require_oauth
-
-        @app.route('/user')
-        @require_oauth('profile')
-        def user_profile():
-            user = User.query.get(current_token.user_id)
-            return jsonify(user.to_dict())
-
-    """
-    def raise_error_response(self, error):
-        """Raise HTTPException for OAuth2Error. Developers can re-implement
-        this method to customize the error response.
-
-        :param error: OAuth2Error
-        :raise: HTTPException
-        """
-        status = error.status_code
-        body = dict(error.get_body())
-        headers = error.get_headers()
-        raise_http_exception(status, body, headers)
+    """ResourceProtector class."""
 
     def acquire_token(self, request=None, scope=None, operator='AND'):
         """A method to acquire current valid token with the given scope.
 
+        :param request: request object
         :param scope: string or list of scope values
         :param operator: value of "AND" or "OR"
         :return: token object
@@ -77,31 +38,36 @@ class ResourceProtector(_ResourceProtector):
     @contextmanager
     def acquire(self, request=None, scope=None, operator='AND'):
         """The with statement of ``require_oauth``. Instead of using a
-        decorator, you can use a with statement instead::
-
-            @app.route('/api/user')
-            def user_api():
-                with require_oauth.acquire('profile') as token:
-                    user = User.query.get(token.user_id)
-                    return jsonify(user.to_dict())
-        """
+        decorator, you can use a with statement instead."""
         try:
             yield self.acquire_token(request, scope, operator)
         except OAuth2Error as error:
-            self.raise_error_response(error)
+            raise_error_response(error)
 
     def __call__(self, scope=None, operator='AND', optional=False):
-        def wrapper(f):
-            @functools.wraps(f)
+        def wrapper(func):
+            @functools.wraps(func)
             def decorated(*args, **kwargs):
                 try:
                     self.acquire_token(scope, operator)
                 except MissingAuthorizationError as error:
                     if optional:
-                        return f(*args, **kwargs)
-                    self.raise_error_response(error)
+                        return func(*args, **kwargs)
+                    raise_error_response(error)
                 except OAuth2Error as error:
-                    self.raise_error_response(error)
-                return f(*args, **kwargs)
+                    raise_error_response(error)
+                return func(*args, **kwargs)
             return decorated
         return wrapper
+
+
+def raise_error_response(error):
+    """Raise the FastAPI HTTPException method."""
+    status = error.status_code
+    body = dict(error.get_body())
+    headers = error.get_headers()
+    raise HTTPException(
+        status_code=status,
+        detail=body,
+        headers=dict(headers)
+    )
