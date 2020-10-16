@@ -1,6 +1,6 @@
+from urllib.request import parse_keqv_list, parse_http_list
 from authlib.common.urls import (
     urlparse, extract_params, url_decode,
-    parse_http_list, parse_keqv_list,
 )
 from .signature import (
     SIGNATURE_TYPE_QUERY,

@@ -2,7 +2,7 @@ import re
 import datetime
 import calendar
 from authlib.common.encoding import (
-    text_types, to_bytes, to_unicode,
+    to_bytes, to_unicode,
     json_loads, json_dumps,
 )
 from .claims import JWTClaims
@@ -37,7 +37,7 @@ class JsonWebToken(object):
 
             # check claims values
             v = payload[k]
-            if isinstance(v, text_types) and self.SENSITIVE_VALUES.search(v):
+            if isinstance(v, str) and self.SENSITIVE_VALUES.search(v):
                 raise InsecureClaimError(k)
 
     def encode(self, header, payload, key, check=True):

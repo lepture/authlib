@@ -1,7 +1,4 @@
-try:
-    from collections.abc import MutableMapping as DictMixin
-except ImportError:
-    from collections import MutableMapping as DictMixin
+from collections.abc import MutableMapping as DictMixin
 from authlib.common.encoding import to_unicode, json_loads
 
 

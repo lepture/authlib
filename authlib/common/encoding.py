@@ -1,45 +1,31 @@
-import sys
 import json
 import base64
 import struct
-
-is_py2 = sys.version_info[0] == 2
-
-if is_py2:
-    unicode_type = unicode  # noqa: F821
-    byte_type = str
-    text_types = (unicode, str)  # noqa: F821
-else:
-    unicode_type = str
-    byte_type = bytes
-    text_types = (str, )
 
 
 def to_bytes(x, charset='utf-8', errors='strict'):
     if x is None:
         return None
-    if isinstance(x, byte_type):
+    if isinstance(x, bytes):
         return x
-    if isinstance(x, unicode_type):
+    if isinstance(x, str):
         return x.encode(charset, errors)
     if isinstance(x, (int, float)):
         return str(x).encode(charset, errors)
-    return byte_type(x)
+    return bytes(x)
 
 
 def to_unicode(x, charset='utf-8', errors='strict'):
-    if x is None or isinstance(x, unicode_type):
+    if x is None or isinstance(x, str):
         return x
-    if isinstance(x, byte_type):
+    if isinstance(x, bytes):
         return x.decode(charset, errors)
-    return unicode_type(x)
+    return str(x)
 
 
 def to_native(x, encoding='ascii'):
     if isinstance(x, str):
         return x
-    if is_py2:
-        return x.encode(encoding)
     return x.decode(encoding)
 
 

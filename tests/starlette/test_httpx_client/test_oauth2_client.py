@@ -8,7 +8,7 @@ from authlib.integrations.httpx_client import (
     OAuthError,
     OAuth2Client,
 )
-from tests.py3.utils import MockDispatch
+from ..utils import MockDispatch
 
 
 default_token = {

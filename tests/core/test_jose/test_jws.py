@@ -184,6 +184,17 @@ class JWSTest(unittest.TestCase):
         s = jws.serialize(header, b'hello', 'secret')
         self.assertIsInstance(s, dict)
 
+    def test_ES512_alg(self):
+        jws = JsonWebSignature()
+        private_key = read_file_path('secp521r1-private.json')
+        public_key = read_file_path('secp521r1-public.json')
+        self.assertRaises(ValueError, jws.serialize, {'alg': 'ES256'}, 'hello', private_key)
+        s = jws.serialize({'alg': 'ES512'}, 'hello', private_key)
+        data = jws.deserialize(s, public_key)
+        header, payload = data['header'], data['payload']
+        self.assertEqual(payload, b'hello')
+        self.assertEqual(header['alg'], 'ES512')
+
     def test_EdDSA_alg(self):
         jws = JsonWebSignature(algorithms=['EdDSA'])
         private_key = read_file_path('ed25519-pkcs8.pem')
@@ -193,3 +204,13 @@ class JWSTest(unittest.TestCase):
         header, payload = data['header'], data['payload']
         self.assertEqual(payload, b'hello')
         self.assertEqual(header['alg'], 'EdDSA')
+
+    def test_ES256K_alg(self):
+        jws = JsonWebSignature(algorithms=['ES256K'])
+        private_key = read_file_path('secp256k1-private.pem')
+        public_key = read_file_path('secp256k1-pub.pem')
+        s = jws.serialize({'alg': 'ES256K'}, 'hello', private_key)
+        data = jws.deserialize(s, public_key)
+        header, payload = data['header'], data['payload']
+        self.assertEqual(payload, b'hello')
+        self.assertEqual(header['alg'], 'ES256K')

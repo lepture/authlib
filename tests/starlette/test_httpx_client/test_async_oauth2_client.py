@@ -9,7 +9,7 @@ from authlib.integrations.httpx_client import (
     OAuthError,
     AsyncOAuth2Client,
 )
-from tests.py3.utils import AsyncMockDispatch
+from ..utils import AsyncMockDispatch
 
 
 default_token = {

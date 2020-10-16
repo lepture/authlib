@@ -14,7 +14,7 @@ from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.asymmetric.ec import (
     EllipticCurvePublicKey, EllipticCurvePrivateKeyWithSerialization,
     EllipticCurvePrivateNumbers, EllipticCurvePublicNumbers,
-    SECP256R1, SECP384R1, SECP521R1,
+    SECP256R1, SECP384R1, SECP521R1, SECP256K1,
 )
 from cryptography.hazmat.backends import default_backend
 from authlib.jose.rfc7517 import Key
@@ -143,11 +143,14 @@ class ECKey(Key):
         'P-256': SECP256R1,
         'P-384': SECP384R1,
         'P-521': SECP521R1,
+        # https://tools.ietf.org/html/rfc8812#section-3.1
+        'secp256k1': SECP256K1,
     }
     CURVES_DSS = {
         SECP256R1.name: 'P-256',
         SECP384R1.name: 'P-384',
         SECP521R1.name: 'P-521',
+        SECP256K1.name: 'secp256k1',
     }
     REQUIRED_JSON_FIELDS = ['crv', 'x', 'y']
     RAW_KEY_CLS = (EllipticCurvePublicKey, EllipticCurvePrivateKeyWithSerialization)
@@ -166,6 +169,10 @@ class ECKey(Key):
         if isinstance(self.raw_key, EllipticCurvePrivateKeyWithSerialization):
             return self.raw_key.exchange(ec.ECDH(), pubkey)
         raise ValueError('Invalid key for exchanging shared key')
+
+    @property
+    def curve_name(self):
+        return self.CURVES_DSS[self.raw_key.curve.name]
 
     @property
     def curve_key_size(self):
@@ -215,7 +222,7 @@ class ECKey(Key):
         }
 
     @classmethod
-    def import_key(cls, raw, options=None):
+    def import_key(cls, raw, options=None) -> 'ECKey':
         """Import a key from PEM or dict data."""
         return import_key(
             cls, raw,
@@ -224,7 +231,7 @@ class ECKey(Key):
         )
 
     @classmethod
-    def generate_key(cls, crv='P-256', options=None, is_private=False):
+    def generate_key(cls, crv='P-256', options=None, is_private=False) -> 'ECKey':
         if crv not in cls.DSS_CURVES:
             raise ValueError('Invalid crv value: "{}"'.format(crv))
         raw_key = ec.generate_private_key(

@@ -1,7 +1,7 @@
 import time
 import pytest
-from authlib.integrations.httpx_client import AssertionClient
-from tests.py3.utils import MockDispatch
+from authlib.integrations.httpx_client import AsyncAssertionClient
+from ..utils import AsyncMockDispatch
 
 
 default_token = {
@@ -14,27 +14,27 @@ default_token = {
 
 
 @pytest.mark.asyncio
-def test_refresh_token():
-    def verifier(request):
-        content = request.form
+async def test_refresh_token():
+    async def verifier(request):
+        content = await request.body()
         if str(request.url) == 'https://i.b/token':
-            assert 'assertion' in content
+            assert b'assertion=' in content
 
-    with AssertionClient(
+    async with AsyncAssertionClient(
         'https://i.b/token',
-        grant_type=AssertionClient.JWT_BEARER_GRANT_TYPE,
+        grant_type=AsyncAssertionClient.JWT_BEARER_GRANT_TYPE,
         issuer='foo',
         subject='foo',
         audience='foo',
         alg='HS256',
         key='secret',
-        app=MockDispatch(default_token, assert_func=verifier)
+        app=AsyncMockDispatch(default_token, assert_func=verifier)
     ) as client:
-        client.get('https://i.b')
+        await client.get('https://i.b')
 
     # trigger more case
     now = int(time.time())
-    with AssertionClient(
+    async with AsyncAssertionClient(
         'https://i.b/token',
         issuer='foo',
         subject=None,
@@ -45,21 +45,21 @@ def test_refresh_token():
         key='secret',
         scope='email',
         claims={'test_mode': 'true'},
-        app=MockDispatch(default_token, assert_func=verifier)
+        app=AsyncMockDispatch(default_token, assert_func=verifier)
     ) as client:
-        client.get('https://i.b')
-        client.get('https://i.b')
+        await client.get('https://i.b')
+        await client.get('https://i.b')
 
 
 @pytest.mark.asyncio
-def test_without_alg():
-    with AssertionClient(
+async def test_without_alg():
+    async with AsyncAssertionClient(
         'https://i.b/token',
         issuer='foo',
         subject='foo',
         audience='foo',
         key='secret',
-        app=MockDispatch(default_token)
+        app=AsyncMockDispatch()
     ) as client:
         with pytest.raises(ValueError):
-            client.get('https://i.b')
+            await client.get('https://i.b')

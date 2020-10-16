@@ -1,4 +1,4 @@
-from authlib.common.encoding import text_types, json_loads
+from authlib.common.encoding import json_loads
 from .rfc7517 import KeySet
 from .rfc7518 import (
     OctKey,
@@ -59,7 +59,7 @@ class JsonWebKey(object):
 
         :return: KeySet instance
         """
-        if isinstance(raw, text_types) and \
+        if isinstance(raw, str) and \
                 raw.startswith('{') and raw.endswith('}'):
             raw = json_loads(raw)
             keys = raw.get('keys')
