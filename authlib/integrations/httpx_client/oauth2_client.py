@@ -81,7 +81,7 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
     def handle_error(error_type, error_description):
         raise OAuthError(error_type, error_description)
 
-    async def request(self, method, url, withhold_token=False, auth=None, **kwargs):
+    async def request(self, method, url, withhold_token=False, auth=UNSET, **kwargs):
         if not withhold_token and auth is UNSET:
             if not self.token:
                 raise MissingTokenError()
@@ -112,9 +112,9 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
             # Notify coroutines that token is refreshed
             self._token_refresh_event.set()
             return
-        await self._token_refresh_event.wait() # wait until the token is ready
+        await self._token_refresh_event.wait()  # wait until the token is ready
 
-    async def _fetch_token(self, url, body='', headers=None, auth=None,
+    async def _fetch_token(self, url, body='', headers=None, auth=UNSET,
                            method='POST', **kwargs):
         if method.upper() == 'POST':
             resp = await self.post(
@@ -133,7 +133,7 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
         return self.parse_response_token(resp.json())
 
     async def _refresh_token(self, url, refresh_token=None, body='',
-                             headers=None, auth=None, **kwargs):
+                             headers=None, auth=UNSET, **kwargs):
         resp = await self.post(
             url, data=dict(url_decode(body)), headers=headers,
             auth=auth, **kwargs)
@@ -150,7 +150,7 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
 
         return self.token
 
-    def _http_post(self, url, body=None, auth=None, headers=None, **kwargs):
+    def _http_post(self, url, body=None, auth=UNSET, headers=None, **kwargs):
         return self.post(
             url, data=dict(url_decode(body)),
             headers=headers, auth=auth, **kwargs)
@@ -187,7 +187,7 @@ class OAuth2Client(_OAuth2Client, Client):
     def handle_error(error_type, error_description):
         raise OAuthError(error_type, error_description)
 
-    def request(self, method, url, withhold_token=False, auth=None, **kwargs):
+    def request(self, method, url, withhold_token=False, auth=UNSET, **kwargs):
         if not withhold_token and auth is UNSET:
             if not self.token:
                 raise MissingTokenError()
