@@ -6,6 +6,13 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 0.15.2
+--------------
+
+**Released on Oct 18, 2020.**
+
+- Fixed HTTPX authentication bug, via :gh:`issue#283`.
+
 Version 0.15.1
 --------------
 
