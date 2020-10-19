@@ -1,4 +1,3 @@
-import os
 import base64
 import unittest
 from flask import Flask, request
@@ -12,8 +11,6 @@ from authlib.integrations.sqla_oauth2 import (
 from authlib.integrations.flask_oauth2 import AuthorizationServer
 from authlib.oauth2 import OAuth2Error
 from .models import db, User, Client, Token
-
-os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
 
 
 def token_generator(client, grant_type, user=None, scope=None):

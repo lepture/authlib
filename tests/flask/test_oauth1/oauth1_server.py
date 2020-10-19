@@ -1,4 +1,3 @@
-import os
 import unittest
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
@@ -24,7 +23,6 @@ from authlib.oauth1.errors import OAuth1Error
 from authlib.common.urls import url_encode
 from tests.util import read_file_path
 from ..cache import SimpleCache
-os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
 
 
 db = SQLAlchemy()

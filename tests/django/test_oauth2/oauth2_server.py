@@ -1,12 +1,8 @@
-import os
 import base64
 from authlib.common.encoding import to_bytes, to_unicode
 from authlib.integrations.django_oauth2 import AuthorizationServer
 from .models import Client, OAuth2Token
 from ..base import TestCase as _TestCase
-
-
-os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
 
 
 class TestCase(_TestCase):
