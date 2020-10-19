@@ -64,7 +64,8 @@ def create_authorization_server(app):
             refresh_token: str = Form(None),
             code_verifier: str = Form(None),
             client_id: str = Form(None),
-            client_secret: str = Form(None)):
+            client_secret: str = Form(None),
+            device_code: str = Form(None)):
         request.body = {
             'grant_type': grant_type,
             'scope': scope,
@@ -82,6 +83,9 @@ def create_authorization_server(app):
 
         if client_secret:
             request.body['client_secret'] = client_secret
+
+        if device_code:
+            request.body['device_code'] = device_code
 
         return server.create_token_response(request=request)
 

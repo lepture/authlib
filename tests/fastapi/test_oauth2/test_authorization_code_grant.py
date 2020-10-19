@@ -1,4 +1,3 @@
-import json
 from authlib.common.urls import urlparse, url_decode
 from authlib.oauth2.rfc6749.grants import (
     AuthorizationCodeGrant as _AuthorizationCodeGrant,
