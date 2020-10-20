@@ -13,8 +13,6 @@ from authlib.integrations.flask_oauth2 import AuthorizationServer
 from authlib.oauth2 import OAuth2Error
 from .models import db, User, Client, Token
 
-os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
-
 
 def token_generator(client, grant_type, user=None, scope=None):
     token = '{}-{}'.format(client.client_id[0], grant_type)
@@ -76,6 +74,7 @@ def create_flask_app():
 
 class TestCase(unittest.TestCase):
     def setUp(self):
+        os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
         app = create_flask_app()
 
         self._ctx = app.app_context()
@@ -90,6 +89,7 @@ class TestCase(unittest.TestCase):
     def tearDown(self):
         db.drop_all()
         self._ctx.pop()
+        os.environ.pop('AUTHLIB_INSECURE_TRANSPORT')
 
     def create_basic_header(self, username, password):
         text = '{}:{}'.format(username, password)

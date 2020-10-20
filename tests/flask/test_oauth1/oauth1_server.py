@@ -24,7 +24,6 @@ from authlib.oauth1.errors import OAuth1Error
 from authlib.common.urls import url_encode
 from tests.util import read_file_path
 from ..cache import SimpleCache
-os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
 
 
 db = SQLAlchemy()
@@ -157,6 +156,7 @@ def create_flask_app():
 
 class TestCase(unittest.TestCase):
     def setUp(self):
+        os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
         app = create_flask_app()
 
         self._ctx = app.app_context()
@@ -171,3 +171,4 @@ class TestCase(unittest.TestCase):
     def tearDown(self):
         db.drop_all()
         self._ctx.pop()
+        os.environ.pop('AUTHLIB_INSECURE_TRANSPORT')
