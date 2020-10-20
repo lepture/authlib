@@ -65,27 +65,39 @@ def create_authorization_server(app):
             code_verifier: str = Form(None),
             client_id: str = Form(None),
             client_secret: str = Form(None),
-            device_code: str = Form(None)):
+            device_code: str = Form(None),
+            client_assertion_type: str = Form(None),
+            client_assertion: str = Form(None),
+            assertion: str = Form(None)):
         request.body = {
             'grant_type': grant_type,
             'scope': scope,
         }
         if grant_type == 'authorization_code':
-            request.body['code'] = code
+            request.body.update({'code': code})
         elif grant_type == 'refresh_token':
-            request.body['refresh_token'] = refresh_token
+            request.body.update({'refresh_token': refresh_token})
 
         if code_verifier:
-            request.body['code_verifier'] = code_verifier
+            request.body.update({'code_verifier': code_verifier})
 
         if client_id:
-            request.body['client_id'] = client_id
+            request.body.update({'client_id': client_id})
 
         if client_secret:
-            request.body['client_secret'] = client_secret
+            request.body.update({'client_secret': client_secret})
 
         if device_code:
-            request.body['device_code'] = device_code
+            request.body.update({'device_code': device_code})
+
+        if client_assertion_type:
+            request.body.update({'client_assertion_type': client_assertion_type})
+
+        if client_assertion:
+            request.body.update({'client_assertion': client_assertion})
+
+        if assertion:
+            request.body.update({'assertion': assertion})
 
         return server.create_token_response(request=request)
 
