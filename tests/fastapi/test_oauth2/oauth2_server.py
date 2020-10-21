@@ -33,7 +33,7 @@ def create_authorization_server(app):
     server.init_app(app, query_client, save_token)
 
     @app.get('/oauth/authorize')
-    def authorize(request: Request):
+    def authorize_get(request: Request):
         user_id = request.query_params.get('user_id')
         request.body = {}
         if user_id:
@@ -47,12 +47,44 @@ def create_authorization_server(app):
             return url_encode(error.get_body())
 
     @app.post('/oauth/authorize')
-    def authorize(request: Request, user_id: str = Form('')):
-        request.body = {}
+    def authorize_post(request: Request,
+                  response_type: str = Form(None),
+                  client_id: str = Form(None),
+                  state: str = Form(None),
+                  scope: str = Form(None),
+                  nonce: str = Form(None),
+                  redirect_uri: str = Form(None),
+                  user_id: str = Form(None)):
+        if not user_id:
+            user_id = request.query_params.get('user_id')
+
+        request.body = {
+            'user_id': user_id
+        }
+
+        if response_type:
+            request.body.update({'response_type': response_type})
+
+        if client_id:
+            request.body.update({'client_id': client_id})
+
+        if state:
+            request.body.update({'state': state})
+
+        if nonce:
+            request.body.update({'nonce': nonce})
+
+        if scope:
+            request.body.update({'scope': scope})
+
+        if redirect_uri:
+            request.body.update({'redirect_uri': redirect_uri})
+
         if user_id:
             grant_user = db.query(User).filter(User.id == int(user_id)).first()
         else:
             grant_user = None
+
         return server.create_authorization_response(request=request, grant_user=grant_user)
 
     @app.post('/oauth/token')
@@ -68,7 +100,8 @@ def create_authorization_server(app):
             device_code: str = Form(None),
             client_assertion_type: str = Form(None),
             client_assertion: str = Form(None),
-            assertion: str = Form(None)):
+            assertion: str = Form(None),
+            redirect_uri: str = Form(None)):
         request.body = {
             'grant_type': grant_type,
             'scope': scope,
@@ -98,6 +131,9 @@ def create_authorization_server(app):
 
         if assertion:
             request.body.update({'assertion': assertion})
+
+        if redirect_uri:
+            request.body.update({'redirect_uri': redirect_uri})
 
         return server.create_token_response(request=request)
 
