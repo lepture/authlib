@@ -54,6 +54,7 @@ def create_authorization_server(app):
                   scope: str = Form(None),
                   nonce: str = Form(None),
                   redirect_uri: str = Form(None),
+                  response_mode: str = Form(None),
                   user_id: str = Form(None)):
         if not user_id:
             user_id = request.query_params.get('user_id')
@@ -79,6 +80,9 @@ def create_authorization_server(app):
 
         if redirect_uri:
             request.body.update({'redirect_uri': redirect_uri})
+
+        if response_mode:
+            request.body.update({'response_mode': response_mode})
 
         if user_id:
             grant_user = db.query(User).filter(User.id == int(user_id)).first()
