@@ -212,3 +212,47 @@ class OAuth2Client(_OAuth2Client, Client):
                 self.update_token(token, access_token=access_token)
         else:
             raise InvalidTokenError()
+
+    def _fetch_token(
+        self, url, body="", headers=None, auth=None, method="POST", **kwargs
+    ):
+        if method.upper() == "POST":
+            resp = self.post(
+                url, data=dict(url_decode(body)), headers=headers, auth=auth, **kwargs
+            )
+        else:
+            if "?" in url:
+                url = "&".join([url, body])
+            else:
+                url = "?".join([url, body])
+            resp = self.get(url, headers=headers, auth=auth, **kwargs)
+
+        for hook in self.compliance_hook["access_token_response"]:
+            resp = hook(resp)
+
+        return self.parse_response_token(resp.json())
+
+    def _refresh_token(
+        self, url, refresh_token=None, body="", headers=None, auth=None, **kwargs
+    ):
+        resp = self.post(
+            url, data=dict(url_decode(body)), headers=headers, auth=auth, **kwargs
+        )
+
+        for hook in self.compliance_hook["refresh_token_response"]:
+            resp = hook(resp)
+
+        token = self.parse_response_token(resp.json())
+        if "refresh_token" not in token:
+            self.token["refresh_token"] = refresh_token
+
+        if self.update_token:
+            self.update_token(self.token, refresh_token=refresh_token)
+
+        return self.token
+
+    def _http_post(self, url, body=None, auth=None, headers=None, **kwargs):
+        return self.post(
+            url, data=dict(url_decode(body)), headers=headers, auth=auth, **kwargs
+        )
+
