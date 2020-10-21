@@ -87,3 +87,14 @@ class AssertionClient(_AssertionClient, Client):
             auth = self.token_auth
         return super(AssertionClient, self).request(
             method, url, auth=auth, **kwargs)
+    
+    def _refresh_token(self, data):
+        resp = self.request("POST", self.token_endpoint, data=data, withhold_token=True)
+
+        token = resp.json()
+        if "error" in token:
+            raise OAuth2Error(
+                error=token["error"], description=token.get("error_description")
+            )
+        self.token = token
+        return self.token
