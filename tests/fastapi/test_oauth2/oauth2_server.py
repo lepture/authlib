@@ -91,10 +91,10 @@ def create_authorization_server(app):
 
         return server.create_authorization_response(request=request, grant_user=grant_user)
 
-    @app.post('/oauth/token')
+    @app.api_route('/oauth/token', methods=["GET", "POST"])
     def issue_token(
             request: Request,
-            grant_type: str = Form(...),
+            grant_type: str = Form(None),
             scope: str = Form(None),
             code: str = Form(None),
             refresh_token: str = Form(None),
@@ -105,11 +105,18 @@ def create_authorization_server(app):
             client_assertion_type: str = Form(None),
             client_assertion: str = Form(None),
             assertion: str = Form(None),
+            username: str = Form(None),
+            password: str = Form(None),
             redirect_uri: str = Form(None)):
         request.body = {
             'grant_type': grant_type,
             'scope': scope,
         }
+
+        if not grant_type:
+            grant_type = request.query_params.get('grant_type')
+            request.body.update({'grant_type': grant_type})
+
         if grant_type == 'authorization_code':
             request.body.update({'code': code})
         elif grant_type == 'refresh_token':
@@ -138,6 +145,12 @@ def create_authorization_server(app):
 
         if redirect_uri:
             request.body.update({'redirect_uri': redirect_uri})
+
+        if username:
+            request.body.update({'username': username})
+
+        if password:
+            request.body.update({'password': password})
 
         return server.create_token_response(request=request)
 
