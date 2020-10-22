@@ -1,3 +1,4 @@
+import os
 from authlib.integrations.django_oauth1 import (
     CacheAuthorizationServer,
 )
