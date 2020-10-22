@@ -12,8 +12,7 @@ from authlib.integrations.sqla_oauth2 import (
 )
 from authlib.integrations.fastapi_oauth2 import AuthorizationServer
 from authlib.oauth2 import OAuth2Error
-from .models import User, Client, Token
-from .database import Base, engine, db
+from .models import Base, engine, db, User, Client, Token
 
 os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
 

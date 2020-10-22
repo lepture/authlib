@@ -1,7 +1,6 @@
 from fastapi import Request, Form
 from authlib.integrations.sqla_oauth2 import create_revocation_endpoint
-from .database import db
-from .models import User, Client, Token
+from .models import db, User, Client, Token
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
 

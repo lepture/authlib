@@ -3,8 +3,7 @@ from fastapi import Request
 from authlib.jose import jwt
 from authlib.oauth2.rfc7591 import ClientRegistrationEndpoint as _ClientRegistrationEndpoint
 from tests.util import read_file_path
-from .database import db
-from .models import User, Client
+from .models import db, User, Client
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
 

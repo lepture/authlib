@@ -5,8 +5,7 @@ from authlib.oauth2.rfc7523 import (
     private_key_jwt_sign,
 )
 from tests.util import read_file_path
-from .database import db
-from .models import User, Client
+from .models import db, User, Client
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
 

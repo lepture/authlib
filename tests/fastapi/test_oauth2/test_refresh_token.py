@@ -1,8 +1,7 @@
 from authlib.oauth2.rfc6749.grants import (
     RefreshTokenGrant as _RefreshTokenGrant,
 )
-from .database import db
-from .models import User, Client, Token
+from .models import db, User, Client, Token
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
 

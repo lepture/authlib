@@ -5,8 +5,7 @@ from authlib.oauth2.rfc8628 import (
     DeviceCodeGrant as _DeviceCodeGrant,
     DeviceCredentialDict,
 )
-from .database import db
-from .models import User, Client
+from .models import db, User, Client
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
 

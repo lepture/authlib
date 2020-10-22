@@ -8,8 +8,7 @@ from authlib.oauth2.rfc6749.grants import (
     AuthorizationCodeGrant as _AuthorizationCodeGrant,
 )
 from tests.util import get_file_path
-from .database import db
-from .models import User, Client, exists_nonce
+from .models import db, User, Client, exists_nonce
 from .models import CodeGrantMixin, save_authorization_code
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server

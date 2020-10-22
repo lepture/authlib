@@ -1,13 +1,23 @@
 import time
-from sqlalchemy import Column, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
+from sqlalchemy import Column, ForeignKey, Integer, String, create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import relationship, sessionmaker
 from authlib.integrations.sqla_oauth2 import (
     OAuth2ClientMixin,
     OAuth2TokenMixin,
     OAuth2AuthorizationCodeMixin,
 )
 from authlib.oidc.core import UserInfo
-from .database import Base, db
+
+engine = create_engine(
+    'sqlite:///fastapi_auth2_sql.db', connect_args={'check_same_thread': False}
+)
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+Base = declarative_base()
+
+db = SessionLocal()
 
 
 class User(Base):

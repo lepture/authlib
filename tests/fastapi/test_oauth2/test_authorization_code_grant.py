@@ -2,8 +2,7 @@ from authlib.common.urls import urlparse, url_decode
 from authlib.oauth2.rfc6749.grants import (
     AuthorizationCodeGrant as _AuthorizationCodeGrant,
 )
-from .database import db
-from .models import User, Client, AuthorizationCode
+from .models import db, User, Client, AuthorizationCode
 from .models import CodeGrantMixin, save_authorization_code
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server

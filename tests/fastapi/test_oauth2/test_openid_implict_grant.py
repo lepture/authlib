@@ -4,8 +4,7 @@ from authlib.oidc.core.grants import (
     OpenIDImplicitGrant as _OpenIDImplicitGrant
 )
 from authlib.common.urls import urlparse, url_decode, add_params_to_uri
-from .database import db
-from .models import User, Client, exists_nonce
+from .models import db, User, Client, exists_nonce
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
 

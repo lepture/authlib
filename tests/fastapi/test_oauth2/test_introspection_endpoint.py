@@ -1,8 +1,7 @@
 from fastapi import Request, Form
 from authlib.integrations.sqla_oauth2 import create_query_token_func
 from authlib.oauth2.rfc7662 import IntrospectionEndpoint
-from .database import db
-from .models import User, Client, Token
+from .models import db, User, Client, Token
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
 

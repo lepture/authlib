@@ -5,8 +5,7 @@ from authlib.oauth2.rfc7636 import (
     CodeChallenge as _CodeChallenge,
     create_s256_code_challenge,
 )
-from .database import db
-from .models import User, Client
+from .models import db, User, Client
 from .models import CodeGrantMixin, save_authorization_code
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server

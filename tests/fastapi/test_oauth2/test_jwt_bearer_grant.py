@@ -1,6 +1,5 @@
 from authlib.oauth2.rfc7523 import JWTBearerGrant as _JWTBearerGrant
-from .database import db
-from .models import User, Client
+from .models import db, User, Client
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
 
