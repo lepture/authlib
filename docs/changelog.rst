@@ -6,6 +6,22 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 0.15.2
+--------------
+
+**Released on Oct 18, 2020.**
+
+- Fixed HTTPX authentication bug, via :gh:`issue#283`.
+
+
+Version 0.15.1
+--------------
+
+**Released on Oct 14, 2020.**
+
+- Backward compitable fix for using JWKs in JWT, via :gh:`issue#280`.
+
+
 Version 0.15
 ------------
 
@@ -144,42 +160,13 @@ Refactor and bug fixes in this release:
 
 **Deprecate Changes**: find how to solve the deprecate issues via https://git.io/fjPsV
 
-Version 0.11
-------------
-
-**Released on Apr 6, 2019.**
-
-**BIG NEWS**: Authlib has changed its open source license **from AGPL to BSD**.
-
-**Important Changes**: Authlib specs module has been split into jose, oauth1,
-oauth2, and oidc. Find how to solve the deprecate issues via https://git.io/fjvpt
-
-RFC implementations and updates in this release:
-
-- RFC7518: Added A128GCMKW, A192GCMKW, A256GCMKW algorithms for JWE.
-- RFC5849: Removed draft-eaton-oauth-bodyhash-00 spec for OAuth 1.0.
-
-Small changes and bug fixes in this release:
-
-- Fixed missing scope on password and client_credentials grant types
-  of ``OAuth2Session`` via :gh:`issue#96`.
-- Fixed Flask OAuth client cache detection via :gh:`issue#98`.
-- Enabled ssl certificates for ``OAuth2Session`` via :gh:`PR#100`, thanks
-  to pingz.
-- Fixed error response for invalid/expired refresh token via :gh:`issue#112`.
-- Fixed error handle for invalid redirect uri via :gh:`issue#113`.
-- Fixed error response redirect to fragment via :gh:`issue#114`.
-- Fixed non-compliant responses from RFC7009 via :gh:`issue#119`.
-
-**Experiment Features**: There is an experiment ``aiohttp`` client for OAuth1
-and OAuth2 in ``authlib.client.aiohttp``.
-
 
 Old Versions
 ------------
 
 Find old changelog at https://github.com/lepture/authlib/releases
 
+- Version 0.11.0: Released on Apr 6, 2019
 - Version 0.10.0: Released on Oct 12, 2018
 - Version 0.9.0: Released on Aug 12, 2018
 - Version 0.8.0: Released on Jun 17, 2018
