@@ -213,9 +213,6 @@ class OAuth2Client(object):
                 url = '?'.join([url, body])
             body = ''
 
-        if headers is None:
-            headers = DEFAULT_HEADERS
-
         resp = self.session.request(
             method, url, data=body, headers=headers, auth=auth, **kwargs)
 

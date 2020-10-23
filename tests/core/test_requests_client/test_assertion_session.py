@@ -25,7 +25,6 @@ class AssertionSessionTest(TestCase):
 
         sess = AssertionSession(
             'https://i.b/token',
-            grant_type=AssertionSession.JWT_BEARER_GRANT_TYPE,
             issuer='foo',
             subject='foo',
             audience='foo',
