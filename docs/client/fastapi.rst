@@ -33,13 +33,13 @@ expose that ``request`` to Authlib. According to the documentation on
 
     from starlette.requests import Request
 
-    @app.get("/login")
-    def login_via_google(request: Request):
-        redirect_uri = 'https://example.com/auth'
+    @app.get("/login/google")
+    async def login_via_google(request: Request):
+        redirect_uri = request.url_for('auth_via_google')
         return await oauth.google.authorize_redirect(request, redirect_uri)
 
-    @app.get("/auth")
-    def auth_via_google(request: Request):
+    @app.get("/auth/google")
+    async def auth_via_google(request: Request):
         token = await oauth.google.authorize_access_token(request)
         user = await oauth.google.parse_id_token(request, token)
         return dict(user)

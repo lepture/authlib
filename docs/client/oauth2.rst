@@ -106,9 +106,9 @@ another website. You need to create another session yourself::
     >>>
     >>> # using httpx
     >>> from authlib.integrations.httpx_client import AsyncOAuth2Client
-    >>> client = OAuth2Client(client_id, client_secret, state=state)
+    >>> client = AsyncOAuth2Client(client_id, client_secret, state=state)
     >>>
-    >>> client.fetch_token(token_endpoint, authorization_response=authorization_response)
+    >>> await client.fetch_token(token_endpoint, authorization_response=authorization_response)
 
 Authlib has a built-in Flask/Django integration. Learn from them.
 
@@ -286,6 +286,25 @@ call this our defined ``update_token`` to save the new token::
 
     # if the token is expired, this GET request will update token
     client.get('https://openidconnect.googleapis.com/v1/userinfo')
+
+Revoke and Introspect Token
+---------------------------
+
+If the provider support token revocation and introspection, you can revoke
+and introspect the token with::
+
+    token_endpoint = 'https://example.com/oauth/token'
+
+    token = get_your_previous_saved_token()
+    client.revoke_token(token_endpoint, token=token)
+    client.introspect_token(token_endpoint, token=token)
+
+You can find the available parameters in API docs:
+
+- :meth:`~requests_client.OAuth2Session.revoke_token`
+- :meth:`~requests_client.OAuth2Session.introspect_token`
+- :meth:`~httpx_client.AsyncOAuth2Session.revoke_token`
+- :meth:`~httpx_client.AsyncOAuth2Session.introspect_token`
 
 .. _compliance_fix_oauth2:
 
