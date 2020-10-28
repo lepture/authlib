@@ -16,6 +16,22 @@ JWS, JWK, JWA, JWT are included.
 
 Authlib is compatible with Python2.7+ and Python3.6+.
 
+## Sponsors
+
+<table>
+<tr>
+<td><img align="middle" width="48" src="https://user-images.githubusercontent.com/290496/39297078-89d00928-497d-11e8-8119-0c53afe14cd0.png"></td>
+<td>If you want to quickly add secure token-based authentication to Python projects, feel free to check Auth0's Python SDK and free plan at <a href="https://auth0.com/developers?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=authlib&utm_content=auth">auth0.com/developers</a>.</td>
+</tr>
+<tr>
+<td><img align="middle" width="48" src="https://typlog.com/assets/icon-black.svg"></td>
+<td>A blogging and podcast hosting platform with minimal design but powerful features. Host your blog and Podcast with <a href="https://typlog.com/">Typlog.com</a>.
+</td>
+</tr>
+</table>
+
+[**Become a supporter to access additional features**](https://github.com/users/lepture/sponsorship).
+
 ## Features
 
 Generic, spec-compliant implementation to build clients and providers:
@@ -72,26 +88,6 @@ Build your own OAuth 1.0, OAuth 2.0, and OpenID Connect providers:
   - [Django OAuth 1.0 Provider](https://docs.authlib.org/en/latest/django/1/)
   - [Django OAuth 2.0 Provider](https://docs.authlib.org/en/latest/django/2/)
   - [Django OpenID Connect 1.0 Provider](https://docs.authlib.org/en/latest/django/2/openid-connect.html)
-  
-## Sponsors
-
-<table>
-<tr>
-<td><img align="middle" width="48" src="https://user-images.githubusercontent.com/290496/39297078-89d00928-497d-11e8-8119-0c53afe14cd0.png"></td>
-<td>If you want to quickly add secure token-based authentication to Python projects, feel free to check Auth0's Python SDK and free plan at <a href="https://auth0.com/developers?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=authlib&utm_content=auth">auth0.com/developers</a>.</td>
-</tr>
-<tr>
-<td><img align="middle" width="48" src="https://user-images.githubusercontent.com/290496/67944168-33843980-fc1f-11e9-8f69-6a7515344b92.png"></td>
-<td>For quickly implementing token-based authentication, feel free to check <a href="https://learn.authing.cn/authing/sdk/sdk-for-python">Authing's Python SDK</a>.</td>
-</tr>
-<tr>
-<td><img align="middle" width="48" src="https://user-images.githubusercontent.com/2379650/45126032-50b69880-b13f-11e8-9c2c-abd16c433495.png"></td>
-<td>Get professionally-supported Authlib with the <a href="https://tidelift.com/subscription/pkg/pypi-authlib?utm_source=pypi-authlib&utm_medium=referral&utm_campaign=readme">Tidelift Subscription</a>.
-</td>
-</tr>
-</table>
-
-[**Support Me via GitHub Sponsors**](https://github.com/users/lepture/sponsorship).
 
 ## Useful Links
 
