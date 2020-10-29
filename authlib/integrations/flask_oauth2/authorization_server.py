@@ -42,10 +42,9 @@ class AuthorizationServer(_AuthorizationServer):
     metadata_class = AuthorizationServerMetadata
 
     def __init__(self, app=None, query_client=None, save_token=None):
-        super(AuthorizationServer, self).__init__(
-            query_client=query_client,
-            save_token=save_token,
-        )
+        super(AuthorizationServer, self).__init__()
+        self._query_client = query_client
+        self._save_token = save_token
         self.config = {}
         if app is not None:
             self.init_app(app)
@@ -53,9 +52,9 @@ class AuthorizationServer(_AuthorizationServer):
     def init_app(self, app, query_client=None, save_token=None):
         """Initialize later with Flask app instance."""
         if query_client is not None:
-            self.query_client = query_client
+            self._query_client = query_client
         if save_token is not None:
-            self.save_token = save_token
+            self._save_token = save_token
 
         self.generate_token = self.create_bearer_token_generator(app.config)
 
@@ -67,6 +66,12 @@ class AuthorizationServer(_AuthorizationServer):
                 self.metadata = metadata
 
         self.config.setdefault('error_uris', app.config.get('OAUTH2_ERROR_URIS'))
+
+    def query_client(self, client_id):
+        return self._query_client(client_id)
+
+    def save_token(self, token, request):
+        return self._save_token(token, request)
 
     def get_error_uris(self, request):
         error_uris = self.config.get('error_uris')

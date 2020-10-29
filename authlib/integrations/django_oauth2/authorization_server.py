@@ -44,13 +44,11 @@ class AuthorizationServer(_AuthorizationServer):
             metadata.validate()
 
         super(AuthorizationServer, self).__init__(
-            query_client=self.get_client_by_id,
-            save_token=self.save_oauth2_token,
             generate_token=generate_token,
             metadata=metadata,
         )
 
-    def get_client_by_id(self, client_id):
+    def query_client(self, client_id):
         """Default method for ``AuthorizationServer.query_client``. Developers MAY
         rewrite this function to meet their own needs.
         """
@@ -59,7 +57,7 @@ class AuthorizationServer(_AuthorizationServer):
         except self.client_model.DoesNotExist:
             return None
 
-    def save_oauth2_token(self, token, request):
+    def save_token(self, token, request):
         """Default method for ``AuthorizationServer.save_token``. Developers MAY
         rewrite this function to meet their own needs.
         """

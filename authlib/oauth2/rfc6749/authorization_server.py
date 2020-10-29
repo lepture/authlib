@@ -11,17 +11,10 @@ from .util import scope_to_list
 class AuthorizationServer(object):
     """Authorization server that handles Authorization Endpoint and Token
     Endpoint.
-
-    :param query_client: A function to get client by client_id. The client
-        model class MUST implement the methods described by
-        :class:`~authlib.oauth2.rfc6749.ClientMixin`.
-    :param save_token: A method to save tokens.
     :param generate_token: A method to generate tokens.
     :param metadata: A dict of Authorization Server Metadata
     """
-    def __init__(self, query_client, save_token, generate_token=None, metadata=None):
-        self.query_client = query_client
-        self.save_token = save_token
+    def __init__(self, generate_token=None, metadata=None):
         self.generate_token = generate_token
 
         self.metadata = metadata
@@ -29,6 +22,17 @@ class AuthorizationServer(object):
         self._authorization_grants = []
         self._token_grants = []
         self._endpoints = {}
+
+    def query_client(self, client_id):
+        """Query OAuth client by client_id. The client model class MUST
+        implement the methods described by
+        :class:`~authlib.oauth2.rfc6749.ClientMixin`.
+        """
+        raise NotImplementedError()
+
+    def save_token(self, token, request):
+        """Define function to save the generated token into database."""
+        raise NotImplementedError()
 
     def authenticate_client(self, request, methods):
         """Authenticate client via HTTP request information with the given
