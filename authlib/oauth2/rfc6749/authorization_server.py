@@ -81,7 +81,7 @@ class AuthorizationServer(object):
         """Framework integration can re-implement this method to support
         signal system.
         """
-        pass
+        raise NotImplementedError()
 
     def create_oauth2_request(self, request):
         """This method MUST be implemented in framework integrations. It is
@@ -153,8 +153,7 @@ class AuthorizationServer(object):
         for (grant_cls, extensions) in self._authorization_grants:
             if grant_cls.check_authorization_endpoint(request):
                 return _create_grant(grant_cls, extensions, request, self)
-        raise InvalidGrantError(
-            'Response type {!r} is not supported'.format(request.response_type))
+        raise InvalidGrantError(f'Response type "{request.response_type}" is not supported')
 
     def get_token_grant(self, request):
         """Find the token grant for current request.
@@ -166,8 +165,7 @@ class AuthorizationServer(object):
             if grant_cls.check_token_endpoint(request) and \
                     request.method in grant_cls.TOKEN_ENDPOINT_HTTP_METHODS:
                 return _create_grant(grant_cls, extensions, request, self)
-        raise UnsupportedGrantTypeError(
-            'Grant type {!r} is not supported'.format(request.grant_type))
+        raise UnsupportedGrantTypeError(f'Grant type {request.grant_type} is not supported')
 
     def create_endpoint_response(self, name, request=None):
         """Validate endpoint request and create endpoint response.
@@ -177,7 +175,7 @@ class AuthorizationServer(object):
         :return: Response
         """
         if name not in self._endpoints:
-            raise RuntimeError('There is no "{}" endpoint.'.format(name))
+            raise RuntimeError(f'There is no "{name}" endpoint.')
 
         endpoint = self._endpoints[name]
         request = endpoint.create_endpoint_request(request)

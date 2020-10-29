@@ -16,6 +16,8 @@ JWS, JWK, JWA, JWT are included.
 
 Authlib is compatible with Python2.7+ and Python3.6+.
 
+**Authlib v1.0 will only support Python 3.6+.**
+
 ## Sponsors
 
 <table>

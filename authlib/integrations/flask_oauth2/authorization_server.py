@@ -90,27 +90,37 @@ class AuthorizationServer(_AuthorizationServer):
         elif name == 'after_revoke_token':
             token_revoked.send(self, *args, **kwargs)
 
-    def create_token_expires_in_generator(self, config):
-        """Create a generator function for generating ``expires_in`` value.
-        Developers can re-implement this method with a subclass if other means
-        required. The default expires_in value is defined by ``grant_type``,
-        different ``grant_type`` has different value. It can be configured
-        with::
+    def create_bearer_token_generator(self, config):
+        """Create a generator function for generating ``token`` value. This
+        method will create a Bearer Token generator with
+        :class:`authlib.oauth2.rfc6750.BearerToken`.
+
+        Configurable settings:
+
+        1. OAUTH2_ACCESS_TOKEN_GENERATOR: Boolean or import string, default is True.
+        2. OAUTH2_REFRESH_TOKEN_GENERATOR: Boolean or import string, default is False.
+        3. OAUTH2_TOKEN_EXPIRES_IN: Dict or import string, default is None.
+
+        By default, it will not generate ``refresh_token``, which can be turn on by
+        configure ``OAUTH2_REFRESH_TOKEN_GENERATOR``.
+
+        Here are some examples of the token generator::
+
+            OAUTH2_ACCESS_TOKEN_GENERATOR = 'your_project.generators.gen_token'
+
+            # and in module `your_project.generators`, you can define:
+
+            def gen_token(client, grant_type, user, scope):
+                # generate token according to these parameters
+                token = create_random_token()
+                return f'{client.id}-{user.id}-{token}'
+
+        Here is an example of ``OAUTH2_TOKEN_EXPIRES_IN``::
 
             OAUTH2_TOKEN_EXPIRES_IN = {
                 'authorization_code': 864000,
                 'urn:ietf:params:oauth:grant-type:jwt-bearer': 3600,
             }
-        """
-        expires_conf = config.get('OAUTH2_TOKEN_EXPIRES_IN')
-        return create_token_expires_in_generator(expires_conf)
-
-    def create_bearer_token_generator(self, config):
-        """Create a generator function for generating ``token`` value. This
-        method will create a Bearer Token generator with
-        :class:`authlib.oauth2.rfc6750.BearerToken`. By default, it will not
-        generate ``refresh_token``, which can be turn on by configuration
-        ``OAUTH2_REFRESH_TOKEN_GENERATOR=True``.
         """
         conf = config.get('OAUTH2_ACCESS_TOKEN_GENERATOR', True)
         access_token_generator = create_token_generator(conf, 42)
@@ -118,7 +128,8 @@ class AuthorizationServer(_AuthorizationServer):
         conf = config.get('OAUTH2_REFRESH_TOKEN_GENERATOR', False)
         refresh_token_generator = create_token_generator(conf, 48)
 
-        expires_generator = self.create_token_expires_in_generator(config)
+        expires_conf = config.get('OAUTH2_TOKEN_EXPIRES_IN')
+        expires_generator = create_token_expires_in_generator(expires_conf)
         return BearerToken(
             access_token_generator,
             refresh_token_generator,
@@ -155,9 +166,12 @@ class AuthorizationServer(_AuthorizationServer):
 
 
 def create_token_expires_in_generator(expires_in_conf=None):
+    if isinstance(expires_in_conf, str):
+        return import_string(expires_in_conf)
+
     data = {}
     data.update(BearerToken.GRANT_TYPES_EXPIRES_IN)
-    if expires_in_conf:
+    if isinstance(expires_in_conf, dict):
         data.update(expires_in_conf)
 
     def expires_in(client, grant_type):

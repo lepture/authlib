@@ -10,7 +10,6 @@ Server.
     :members:
         register_grant,
         register_endpoint,
-        create_token_expires_in_generator,
         create_bearer_token_generator,
         validate_consent_request,
         create_authorization_response,
