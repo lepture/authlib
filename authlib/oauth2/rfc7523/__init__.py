@@ -20,7 +20,6 @@ from .assertion import (
 )
 from .auth import (
     ClientSecretJWT, PrivateKeyJWT,
-    register_session_client_auth_method,
 )
 
 __all__ = [
@@ -30,5 +29,4 @@ __all__ = [
     'private_key_jwt_sign',
     'ClientSecretJWT',
     'PrivateKeyJWT',
-    'register_session_client_auth_method',
 ]

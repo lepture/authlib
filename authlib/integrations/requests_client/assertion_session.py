@@ -1,5 +1,4 @@
 from requests import Session
-from authlib.deprecate import deprecate
 from authlib.oauth2.rfc7521 import AssertionClient
 from authlib.oauth2.rfc7523 import JWTBearerGrant
 from .oauth2_session import OAuth2Auth
@@ -27,12 +26,6 @@ class AssertionSession(AssertionClient, Session):
     def __init__(self, token_endpoint, issuer, subject, audience=None, grant_type=None,
                  claims=None, token_placement='header', scope=None, **kwargs):
         Session.__init__(self)
-
-        token_url = kwargs.pop('token_url', None)
-        if token_url:
-            deprecate('Use "token_endpoint" instead of "token_url"', '1.0')
-            token_endpoint = token_url
-
         AssertionClient.__init__(
             self, session=self,
             token_endpoint=token_endpoint, issuer=issuer, subject=subject,

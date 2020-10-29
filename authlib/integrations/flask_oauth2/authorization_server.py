@@ -1,6 +1,5 @@
 from werkzeug.utils import import_string
 from flask import Response, json
-from authlib.deprecate import deprecate
 from authlib.oauth2 import (
     OAuth2Request,
     HttpRequest,
@@ -9,7 +8,6 @@ from authlib.oauth2 import (
 from authlib.oauth2.rfc6750 import BearerToken
 from authlib.oauth2.rfc8414 import AuthorizationServerMetadata
 from authlib.common.security import generate_token
-from authlib.common.encoding import to_unicode
 from .signals import client_authenticated, token_revoked
 from ..flask_helpers import create_oauth_request
 
@@ -69,38 +67,6 @@ class AuthorizationServer(_AuthorizationServer):
                 self.metadata = metadata
 
         self.config.setdefault('error_uris', app.config.get('OAUTH2_ERROR_URIS'))
-        if app.config.get('OAUTH2_JWT_ENABLED'):
-            deprecate('Define "get_jwt_config" in OpenID Connect grants', '1.0')
-            self.init_jwt_config(app.config)
-
-    def init_jwt_config(self, config):
-        """Initialize JWT related configuration."""
-        jwt_iss = config.get('OAUTH2_JWT_ISS')
-        if not jwt_iss:
-            raise RuntimeError('Missing "OAUTH2_JWT_ISS" configuration.')
-
-        jwt_key_path = config.get('OAUTH2_JWT_KEY_PATH')
-        if jwt_key_path:
-            with open(jwt_key_path, 'r') as f:
-                if jwt_key_path.endswith('.json'):
-                    jwt_key = json.load(f)
-                else:
-                    jwt_key = to_unicode(f.read())
-        else:
-            jwt_key = config.get('OAUTH2_JWT_KEY')
-
-        if not jwt_key:
-            raise RuntimeError('Missing "OAUTH2_JWT_KEY" configuration.')
-
-        jwt_alg = config.get('OAUTH2_JWT_ALG')
-        if not jwt_alg:
-            raise RuntimeError('Missing "OAUTH2_JWT_ALG" configuration.')
-
-        jwt_exp = config.get('OAUTH2_JWT_EXP', 3600)
-        self.config.setdefault('jwt_iss', jwt_iss)
-        self.config.setdefault('jwt_key', jwt_key)
-        self.config.setdefault('jwt_alg', jwt_alg)
-        self.config.setdefault('jwt_exp', jwt_exp)
 
     def get_error_uris(self, request):
         error_uris = self.config.get('error_uris')

@@ -1,5 +1,4 @@
 import logging
-from authlib.deprecate import deprecate
 from authlib.common.urls import add_params_to_uri
 from authlib.common.security import generate_token
 from .base import BaseGrant, AuthorizationEndpointMixin, TokenEndpointMixin
@@ -150,13 +149,9 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
             raise AccessDeniedError(state=self.request.state, redirect_uri=redirect_uri)
 
         self.request.user = grant_user
-        if hasattr(self, 'create_authorization_code'):  # pragma: no cover
-            deprecate('Use "generate_authorization_code" instead', '1.0')
-            client = self.request.client
-            code = self.create_authorization_code(client, grant_user, self.request)
-        else:
-            code = self.generate_authorization_code()
-            self.save_authorization_code(code, self.request)
+
+        code = self.generate_authorization_code()
+        self.save_authorization_code(code, self.request)
 
         params = [('code', code)]
         if self.request.state:
@@ -324,9 +319,6 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         :param client: client related to this code.
         :return: authorization_code object
         """
-        if hasattr(self, 'parse_authorization_code'):
-            deprecate('Use "query_authorization_code" instead', '1.0')
-            return self.parse_authorization_code(code, client)
         raise NotImplementedError()
 
     def delete_authorization_code(self, authorization_code):
