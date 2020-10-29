@@ -301,10 +301,10 @@ and introspect the token with::
 
 You can find the available parameters in API docs:
 
-- :meth:`~requests_client.OAuth2Session.revoke_token`
-- :meth:`~requests_client.OAuth2Session.introspect_token`
-- :meth:`~httpx_client.AsyncOAuth2Session.revoke_token`
-- :meth:`~httpx_client.AsyncOAuth2Session.introspect_token`
+- :meth:`requests_client.OAuth2Session.revoke_token`
+- :meth:`requests_client.OAuth2Session.introspect_token`
+- :meth:`httpx_client.AsyncOAuth2Client.revoke_token`
+- :meth:`httpx_client.AsyncOAuth2Client.introspect_token`
 
 .. _compliance_fix_oauth2:
 

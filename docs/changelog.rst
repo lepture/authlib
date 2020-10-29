@@ -25,7 +25,7 @@ Version 0.15.1
 Version 0.15
 ------------
 
-**Released on Oct 10, 2020.***
+**Released on Oct 10, 2020.**
 
 This is the last release before v1.0. In this release, we added more RFCs
 implementations and did some refactors for JOSE:
