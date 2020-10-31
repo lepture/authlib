@@ -14,10 +14,8 @@ OAuth 1.0, OAuth 2.0, JWT and many more. It becomes a :ref:`monolithic`
 project that powers from low-level specification implementation to high-level
 framework integrations.
 
-I'm intended to make it profitable so that it can be :ref:`sustainable`.
-
-.. raw:: html
-   :file: ../_templates/sustainable.html
+I'm intended to make it profitable so that it can be :ref:`sustainable`, check
+out the :ref:`funding` section.
 
 .. _monolithic:
 

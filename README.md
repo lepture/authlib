@@ -32,7 +32,7 @@ Authlib is compatible with Python2.7+ and Python3.6+.
 </tr>
 </table>
 
-[**Become a supporter to access additional features**](https://github.com/users/lepture/sponsorship).
+[**Fund Authlib to access additional features**](https://docs.authlib.org/en/latest/community/funding.html)
 
 ## Features
 
@@ -44,6 +44,7 @@ Generic, spec-compliant implementation to build clients and providers:
   - [RFC6749: The OAuth 2.0 Authorization Framework](https://docs.authlib.org/en/latest/specs/rfc6749.html)
   - [RFC6750: The OAuth 2.0 Authorization Framework: Bearer Token Usage](https://docs.authlib.org/en/latest/specs/rfc6750.html)
   - [RFC7009: OAuth 2.0 Token Revocation](https://docs.authlib.org/en/latest/specs/rfc7009.html)
+  - [RFC7523: JWT Profile for OAuth 2.0 Client Authentication and Authorization Grants](https://docs.authlib.org/en/latest/specs/rfc7523.html)
   - [RFC7591: OAuth 2.0 Dynamic Client Registration Protocol](https://docs.authlib.org/en/latest/specs/rfc7591.html)
   - [ ] RFC7592: OAuth 2.0 Dynamic Client Registration Management Protocol
   - [RFC7636: Proof Key for Code Exchange by OAuth Public Clients](https://docs.authlib.org/en/latest/specs/rfc7636.html)

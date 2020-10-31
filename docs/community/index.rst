@@ -8,6 +8,7 @@ issues and finance.
 .. toctree::
     :maxdepth: 2
 
+    funding
     support
     security
     contribute

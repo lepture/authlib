@@ -61,7 +61,8 @@ Finance support is also welcome. A better finance can make Authlib
    listed in the Authlib GitHub repository, or have your company logo placed
    on this website.
 
-   `Become a backer or sponsor via Patreon <https://patreon.com/lepture>`_
+   * `Become a backer or sponsor via Patreon <https://patreon.com/lepture>`_
+   * `Become a backer or sponsor via GitHub <https://github.com/sponsors/lepture>`_
 
 2. **One Time Donation**
 
