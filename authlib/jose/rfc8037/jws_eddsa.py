@@ -1,5 +1,5 @@
 from cryptography.exceptions import InvalidSignature
-from authlib.jose.rfc7515 import JWSAlgorithm, JsonWebSignature
+from ..rfc7515 import JWSAlgorithm
 from .okp_key import OKPKey
 
 
@@ -23,5 +23,5 @@ class EdDSAAlgorithm(JWSAlgorithm):
             return False
 
 
-def register_jws_rfc8037():
-    JsonWebSignature.register_algorithm(EdDSAAlgorithm())
+def register_jws_rfc8037(cls):
+    cls.register_algorithm(EdDSAAlgorithm())

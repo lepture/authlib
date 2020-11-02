@@ -17,8 +17,29 @@ from authlib.common.encoding import (
     urlsafe_b64encode
 )
 from authlib.jose.rfc7516 import JWEAlgorithm
-from ._keys import RSAKey, ECKey
-from ..oct_key import OctKey
+from .rsa_key import RSAKey
+from .ec_key import ECKey
+from .oct_key import OctKey
+
+
+class DirectAlgorithm(JWEAlgorithm):
+    name = 'dir'
+    description = 'Direct use of a shared symmetric key'
+
+    def prepare_key(self, raw_data):
+        return OctKey.import_key(raw_data)
+
+    def wrap(self, enc_alg, headers, key):
+        cek = key.get_op_key('encrypt')
+        if len(cek) * 8 != enc_alg.CEK_SIZE:
+            raise ValueError('Invalid "cek" length')
+        return {'ek': b'', 'cek': cek}
+
+    def unwrap(self, enc_alg, ek, headers, key):
+        cek = key.get_op_key('decrypt')
+        if len(cek) * 8 != enc_alg.CEK_SIZE:
+            raise ValueError('Invalid "cek" length')
+        return cek
 
 
 class RSAAlgorithm(JWEAlgorithm):
@@ -243,6 +264,7 @@ def _u32be_len_input(s, base64=False):
 
 
 JWE_ALG_ALGORITHMS = [
+    DirectAlgorithm(),  # dir
     RSAAlgorithm('RSA1_5', 'RSAES-PKCS1-v1_5', padding.PKCS1v15()),
     RSAAlgorithm(
         'RSA-OAEP', 'RSAES OAEP using default parameters',
