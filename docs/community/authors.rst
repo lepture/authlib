@@ -41,6 +41,7 @@ Here is a full list of our backers:
 * `Evilham <https://github.com/evilham>`_
 * `Aveline <https://github.com/ym>`_
 * `Callam <https://github.com/cal97g>`_
+* `Krishna Kumar <https://github.com/krishnaku>`_
 
 .. _`GitHub Sponsors`: https://github.com/sponsors/lepture
 .. _Patreon: https://www.patreon.com/lepture
