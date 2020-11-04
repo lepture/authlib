@@ -88,22 +88,35 @@ class FlaskOAuthTest(TestCase):
     def test_register_oauth1_remote_app(self):
         app = Flask(__name__)
         oauth = OAuth(app)
-        oauth.register(
-            'dev',
+        client_kwargs = dict(
             client_id='dev',
             client_secret='dev',
             request_token_url='https://i.b/reqeust-token',
             api_base_url='https://i.b/api',
             access_token_url='https://i.b/token',
-            authorize_url='https://i.b/authorize'
+            authorize_url='https://i.b/authorize',
+            fetch_request_token=lambda: None,
+            save_request_token=lambda token: token,
         )
+        oauth.register('dev', **client_kwargs)
         self.assertEqual(oauth.dev.name, 'dev')
         self.assertEqual(oauth.dev.client_id, 'dev')
 
-    def test_oauth1_authorize(self):
+        oauth = OAuth(app, cache=SimpleCache())
+        oauth.register('dev', **client_kwargs)
+        self.assertEqual(oauth.dev.name, 'dev')
+        self.assertEqual(oauth.dev.client_id, 'dev')
+
+    def test_oauth1_authorize_cache(self):
+        self.run_oauth1_authorize(cache=SimpleCache())
+
+    def test_oauth1_authorize_session(self):
+        self.run_oauth1_authorize(cache=None)
+
+    def run_oauth1_authorize(self, cache):
         app = Flask(__name__)
         app.secret_key = '!'
-        oauth = OAuth(app, cache=SimpleCache())
+        oauth = OAuth(app, cache=cache)
         client = oauth.register(
             'dev',
             client_id='dev',
