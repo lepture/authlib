@@ -49,7 +49,7 @@ class StarletteRemoteApp(AsyncRemoteApp):
         :param kwargs: Extra parameters to include.
         :return: Starlette ``RedirectResponse`` instance.
         """
-        rv = await self.create_authorization_url(redirect_uri, **kwargs)
+        rv = await self.create_authorization_url(request, redirect_uri, **kwargs)
         self.save_authorize_data(request, redirect_uri=redirect_uri, **rv)
         return RedirectResponse(rv['url'], status_code=302)
 
@@ -68,5 +68,5 @@ class StarletteRemoteApp(AsyncRemoteApp):
         if 'id_token' not in token:
             return None
 
-        nonce = self.framework.get_session_data(request, 'nonce')
+        nonce = self.framework.pop_session_data(request, 'nonce')
         return await self._parse_id_token(token, nonce, claims_options)

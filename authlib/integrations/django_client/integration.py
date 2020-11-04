@@ -58,7 +58,7 @@ class DjangoRemoteApp(RemoteApp):
         :param kwargs: Extra parameters to include.
         :return: A HTTP redirect response.
         """
-        rv = self.create_authorization_url(redirect_uri, **kwargs)
+        rv = self.create_authorization_url(request, redirect_uri, **kwargs)
         self.save_authorize_data(request, redirect_uri=redirect_uri, **rv)
         return HttpResponseRedirect(rv['url'])
 

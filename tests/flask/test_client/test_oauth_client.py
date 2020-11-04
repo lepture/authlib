@@ -178,6 +178,9 @@ class FlaskOAuthTest(TestCase):
             self.assertIn('state=', url)
             state = session['_dev_authlib_state_']
             self.assertIsNotNone(state)
+            # duplicate request will create the same location
+            resp2 = client.authorize_redirect('https://b.com/bar')
+            self.assertEqual(resp2.headers['Location'], url)
 
         with app.test_request_context(path='/?code=a&state={}'.format(state)):
             # session is cleared in tests
@@ -241,7 +244,7 @@ class FlaskOAuthTest(TestCase):
             api_base_url='https://i.b/api',
             access_token_url='https://i.b/token',
         )
-        self.assertRaises(RuntimeError, client.create_authorization_url)
+        self.assertRaises(RuntimeError, lambda: client.create_authorization_url(None))
 
         client = oauth.register(
             'dev2',
@@ -283,6 +286,9 @@ class FlaskOAuthTest(TestCase):
             self.assertIsNotNone(state)
             verifier = session['_dev_authlib_code_verifier_']
             self.assertIsNotNone(verifier)
+
+            resp2 = client.authorize_redirect('https://b.com/bar')
+            self.assertEqual(resp2.headers['Location'], url)
 
         def fake_send(sess, req, **kwargs):
             self.assertIn('code_verifier={}'.format(verifier), req.body)
