@@ -1,4 +1,3 @@
-import time
 import logging
 from ..rfc6749.errors import (
     InvalidRequestError,
@@ -141,12 +140,10 @@ class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
                 raise AccessDeniedError()
             return user
 
-        exp = credential.get_expires_at()
-        now = time.time()
-        if exp < now:
+        if credential.is_expired():
             raise ExpiredTokenError()
 
-        if self.should_slow_down(credential, now):
+        if self.should_slow_down(credential):
             raise SlowDownError()
 
         raise AuthorizationPendingError()
@@ -190,7 +187,7 @@ class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
         """
         raise NotImplementedError()
 
-    def should_slow_down(self, credential, now):
+    def should_slow_down(self, credential):
         """The authorization request is still pending and polling should
         continue, but the interval MUST be increased by 5 seconds for this
         and all subsequent requests.

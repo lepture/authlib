@@ -87,8 +87,15 @@ class OAuth2Token(Model, TokenMixin):
     def get_expires_in(self):
         return self.expires_in
 
-    def get_expires_at(self):
-        return self.issued_at + self.expires_in
+    def is_revoked(self):
+        return self.revoked
+
+    def is_expired(self):
+        if not self.expires_in:
+            return False
+
+        expires_at = self.issued_at + self.expires_in
+        return expires_at < time.time()
 
     def is_refresh_token_active(self):
         if self.revoked:

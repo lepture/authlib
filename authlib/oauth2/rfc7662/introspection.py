@@ -68,8 +68,7 @@ class IntrospectionEndpoint(TokenEndpoint):
         # response with the "active" field set to "false"
         if not token:
             return {'active': False}
-        expires_at = token.get_expires_at()
-        if expires_at < time.time() or token.revoked:
+        if token.is_expired() or token.is_revoked():
             return {'active': False}
         payload = self.introspect_token(token)
         if 'active' not in payload:

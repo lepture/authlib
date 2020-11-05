@@ -30,10 +30,10 @@ class RevocationEndpoint(TokenEndpoint):
         if 'token' not in request.form:
             raise InvalidRequestError()
 
-        token_type = request.form.get('token_type_hint')
-        if token_type and token_type not in self.SUPPORTED_TOKEN_TYPES:
+        hint = request.form.get('token_type_hint')
+        if hint and hint not in self.SUPPORTED_TOKEN_TYPES:
             raise UnsupportedTokenTypeError()
-        return self.query_token(request.form['token'], token_type, client)
+        return self.query_token(request.form['token'], hint, client)
 
     def create_endpoint_response(self, request):
         """Validate revocation request and create the response for revocation.

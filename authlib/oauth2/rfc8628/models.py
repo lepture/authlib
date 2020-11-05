@@ -1,3 +1,5 @@
+import time
+
 
 class DeviceCredentialMixin(object):
     def get_client_id(self):
@@ -9,7 +11,7 @@ class DeviceCredentialMixin(object):
     def get_user_code(self):
         raise NotImplementedError()
 
-    def get_expires_at(self):
+    def is_expired(self):
         raise NotImplementedError()
 
 
@@ -23,5 +25,6 @@ class DeviceCredentialDict(dict, DeviceCredentialMixin):
     def get_user_code(self):
         return self['user_code']
 
-    def get_expires_at(self):
-        return self.get('expires_at')
+    def is_expired(self):
+        expires_at = self.get('expires_at')
+        return expires_at < time.time()

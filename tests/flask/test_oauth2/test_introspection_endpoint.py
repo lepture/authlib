@@ -23,7 +23,7 @@ class MyIntrospectionEndpoint(IntrospectionEndpoint):
             "sub": user.get_user_id(),
             "aud": token.client_id,
             "iss": "https://server.example.com/",
-            "exp": token.get_expires_at(),
+            "exp": token.issued_at + token.expires_in,
             "iat": token.issued_at,
         }
 

@@ -43,6 +43,7 @@ device_credentials = {
     }
 }
 
+
 class DeviceCodeGrant(_DeviceCodeGrant):
     def query_device_credential(self, device_code):
         data = device_credentials.get(device_code)
@@ -64,7 +65,7 @@ class DeviceCodeGrant(_DeviceCodeGrant):
             return User.query.get(1), False
         return None
 
-    def should_slow_down(self, credential, now):
+    def should_slow_down(self, credential):
         return False
 
 
