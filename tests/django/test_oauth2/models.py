@@ -78,8 +78,8 @@ class OAuth2Token(Model, TokenMixin):
     issued_at = IntegerField(null=False, default=now_timestamp)
     expires_in = IntegerField(null=False, default=0)
 
-    def get_client_id(self):
-        return self.client_id
+    def check_client(self, client):
+        return self.client_id == client.client_id
 
     def get_scope(self):
         return self.scope
