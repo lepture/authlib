@@ -49,7 +49,7 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
             raise InvalidRequestError('Missing "refresh_token" in request.')
 
         token = self.authenticate_refresh_token(refresh_token)
-        if not token or token.get_client_id() != client.get_client_id():
+        if not token or not token.check_client(client):
             raise InvalidGrantError()
         return token
 

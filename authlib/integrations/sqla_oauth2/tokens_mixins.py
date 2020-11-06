@@ -49,8 +49,8 @@ class OAuth2TokenMixin(TokenMixin):
     )
     expires_in = Column(Integer, nullable=False, default=0)
 
-    def get_client_id(self):
-        return self.client_id
+    def check_client(self, client):
+        return self.client_id == client.get_client_id()
 
     def get_scope(self):
         return self.scope

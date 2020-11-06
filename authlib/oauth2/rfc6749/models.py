@@ -167,14 +167,14 @@ class AuthorizationCodeMixin(object):
 
 
 class TokenMixin(object):
-    def get_client_id(self):
-        """A method to return client_id of the token. For instance, the value
-        in database is saved in a column called ``client_id``::
+    def check_client(self, client):
+        """A method to check if this token is issued to the given client.
+        For instance, ``client_id`` is saved on token table::
 
-            def get_client_id(self):
-                return self.client_id
+            def check_client(self, client):
+                return self.client_id == client.client_id
 
-        :return: string
+        :return: bool
         """
         raise NotImplementedError()
 

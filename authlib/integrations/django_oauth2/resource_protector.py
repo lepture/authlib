@@ -64,9 +64,6 @@ class BearerTokenValidator(_BearerTokenValidator):
     def request_invalid(self, request):
         return False
 
-    def token_revoked(self, token):
-        return token.revoked
-
 
 def return_error_response(error):
     body = dict(error.get_body())
