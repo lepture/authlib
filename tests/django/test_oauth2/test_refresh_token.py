@@ -1,4 +1,5 @@
 import json
+import time
 from authlib.oauth2.rfc6749.grants import (
     RefreshTokenGrant as _RefreshTokenGrant,
 )
@@ -19,7 +20,9 @@ class RefreshTokenGrant(_RefreshTokenGrant):
         return credential.user
 
     def revoke_old_credential(self, credential):
-        credential.revoked = True
+        now = int(time.time())
+        credential.access_token_revoked_at = now
+        credential.refresh_token_revoked_at = now
         credential.save()
         return credential
 

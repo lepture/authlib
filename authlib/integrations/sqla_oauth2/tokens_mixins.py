@@ -1,5 +1,5 @@
 import time
-from sqlalchemy import Column, String, Boolean, Text, Integer
+from sqlalchemy import Column, String, Text, Integer
 from authlib.oauth2.rfc6749 import (
     TokenMixin,
     AuthorizationCodeMixin,
@@ -43,10 +43,11 @@ class OAuth2TokenMixin(TokenMixin):
     access_token = Column(String(255), unique=True, nullable=False)
     refresh_token = Column(String(255), index=True)
     scope = Column(Text, default='')
-    revoked = Column(Boolean, default=False)
     issued_at = Column(
         Integer, nullable=False, default=lambda: int(time.time())
     )
+    access_token_revoked_at = Column(Integer, nullable=False, default=0)
+    refresh_token_revoked_at = Column(Integer, nullable=False, default=0)
     expires_in = Column(Integer, nullable=False, default=0)
 
     def check_client(self, client):
@@ -59,7 +60,7 @@ class OAuth2TokenMixin(TokenMixin):
         return self.expires_in
 
     def is_revoked(self):
-        return self.revoked
+        return self.access_token_revoked_at or self.refresh_token_revoked_at
 
     def is_expired(self):
         if not self.expires_in:

@@ -27,7 +27,7 @@ class TokenEndpoint(object):
         request.client = client
         return client
 
-    def authenticate_endpoint_credential(self, request, client):
+    def authenticate_token(self, request, client):
         raise NotImplementedError()
 
     def create_endpoint_response(self, request):

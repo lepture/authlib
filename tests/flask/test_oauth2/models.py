@@ -48,9 +48,8 @@ class Token(db.Model, OAuth2TokenMixin):
     )
     user = db.relationship('User')
 
-    def is_refresh_token_expired(self):
-        expired_at = self.issued_at + self.expires_in * 2
-        return expired_at < time.time()
+    def is_refresh_token_active(self):
+        return not self.refresh_token_revoked_at
 
 
 class CodeGrantMixin(object):
