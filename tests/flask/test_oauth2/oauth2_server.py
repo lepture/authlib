@@ -40,7 +40,7 @@ def create_authorization_server(app, lazy=False):
             else:
                 end_user = None
             try:
-                grant = server.validate_consent_request(end_user=end_user)
+                grant = server.get_consent_grant(end_user=end_user)
                 return grant.prompt or 'ok'
             except OAuth2Error as error:
                 return url_encode(error.get_body())

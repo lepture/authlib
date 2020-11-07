@@ -112,7 +112,7 @@ class IntrospectionEndpoint(TokenEndpoint):
 
             def introspect_token(self, token):
                 return {
-                    'active': active,
+                    'active': True,
                     'client_id': token.client_id,
                     'token_type': token.token_type,
                     'username': get_token_username(token),

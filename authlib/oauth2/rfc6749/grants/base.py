@@ -16,6 +16,7 @@ class BaseGrant(object):
     TOKEN_RESPONSE_HEADER = default_json_headers
 
     def __init__(self, request, server):
+        self.prompt = None
         self.request = request
         self.server = server
         self._hooks = {

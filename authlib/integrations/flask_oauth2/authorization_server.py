@@ -141,34 +141,6 @@ class AuthorizationServer(_AuthorizationServer):
             expires_generator
         )
 
-    def validate_consent_request(self, request=None, end_user=None):
-        """Validate current HTTP request for authorization page. This page
-        is designed for resource owner to grant or deny the authorization::
-
-            @app.route('/authorize', methods=['GET'])
-            def authorize():
-                try:
-                    grant = server.validate_consent_request(end_user=current_user)
-                    return render_template(
-                        'authorize.html',
-                        grant=grant,
-                        user=current_user
-                    )
-                except OAuth2Error as error:
-                    return render_template(
-                        'error.html',
-                        error=error
-                    )
-        """
-        req = self.create_oauth2_request(request)
-        req.user = end_user
-
-        grant = self.get_authorization_grant(req)
-        grant.validate_consent_request()
-        if not hasattr(grant, 'prompt'):
-            grant.prompt = None
-        return grant
-
 
 def create_token_expires_in_generator(expires_in_conf=None):
     if isinstance(expires_in_conf, str):

@@ -23,13 +23,13 @@ class ImplicitTest(TestCase):
         )
         client.save()
 
-    def test_validate_consent_request_client(self):
+    def test_get_consent_grant_client(self):
         server = self.create_server()
         url = '/authorize?response_type=token'
         request = self.factory.get(url)
         self.assertRaises(
             errors.InvalidClientError,
-            server.validate_consent_request,
+            server.get_consent_grant,
             request
         )
 
@@ -37,18 +37,18 @@ class ImplicitTest(TestCase):
         request = self.factory.get(url)
         self.assertRaises(
             errors.InvalidClientError,
-            server.validate_consent_request,
+            server.get_consent_grant,
             request
         )
 
         self.prepare_data(response_type='')
         self.assertRaises(
             errors.UnauthorizedClientError,
-            server.validate_consent_request,
+            server.get_consent_grant,
             request
         )
 
-    def test_validate_consent_request_scope(self):
+    def test_get_consent_grant_scope(self):
         server = self.create_server()
         server.metadata = {'scopes_supported': ['profile']}
 
@@ -58,7 +58,7 @@ class ImplicitTest(TestCase):
         request = self.factory.get(url)
         self.assertRaises(
             errors.InvalidScopeError,
-            server.validate_consent_request,
+            server.get_consent_grant,
             request
         )
 
@@ -67,7 +67,7 @@ class ImplicitTest(TestCase):
         self.prepare_data()
         data = {'response_type': 'token', 'client_id': 'client'}
         request = self.factory.post('/authorize', data=data)
-        server.validate_consent_request(request)
+        server.get_consent_grant(request)
 
         resp = server.create_authorization_response(request)
         self.assertEqual(resp.status_code, 302)

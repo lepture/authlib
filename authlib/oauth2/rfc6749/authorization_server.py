@@ -227,6 +227,17 @@ class AuthorizationServer(object):
         except OAuth2Error as error:
             return self.handle_error_response(request, error)
 
+    def get_consent_grant(self, request=None, end_user=None):
+        """Validate current HTTP request for authorization page. This page
+        is designed for resource owner to grant or deny the authorization.
+        """
+        request = self.create_oauth2_request(request)
+        request.user = end_user
+
+        grant = self.get_authorization_grant(request)
+        grant.validate_consent_request()
+        return grant
+
     def handle_error_response(self, request, error):
         return self.handle_response(*error(
             translations=self.get_translations(request),

@@ -113,18 +113,6 @@ class AuthorizationServer(_AuthorizationServer):
             expires_generator=expires_generator,
         )
 
-    def get_consent_grant(self, request):
-        grant = self.get_authorization_grant(request)
-        grant.validate_consent_request()
-        if not hasattr(grant, 'prompt'):
-            grant.prompt = None
-        return grant
-
-    def validate_consent_request(self, request, end_user=None):
-        req = self.create_oauth2_request(request)
-        req.user = end_user
-        return self.get_consent_grant(req)
-
 
 def create_token_generator(token_generator_conf, length=42):
     if callable(token_generator_conf):

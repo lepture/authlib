@@ -172,7 +172,7 @@ Now define an endpoint for authorization. This endpoint is used by
         # It can be done with a redirection to the login page, or a login
         # form on this authorization page.
         if request.method == 'GET':
-            grant = server.validate_consent_request(end_user=current_user)
+            grant = server.get_consent_grant(end_user=current_user)
             return render_template(
                 'authorize.html',
                 grant=grant,
