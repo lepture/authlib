@@ -346,22 +346,22 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
 
 
 def validate_code_authorization_request(grant):
-    client_id = grant.request.client_id
+    request = grant.request
+    client_id = request.client_id
     log.debug('Validate authorization request of %r', client_id)
 
     if client_id is None:
-        raise InvalidClientError(state=grant.request.state)
+        raise InvalidClientError(state=request.state)
 
     client = grant.server.query_client(client_id)
     if not client:
-        raise InvalidClientError(state=grant.request.state)
+        raise InvalidClientError(state=request.state)
 
-    redirect_uri = grant.validate_authorization_redirect_uri(grant.request, client)
-    response_type = grant.request.response_type
+    redirect_uri = grant.validate_authorization_redirect_uri(request, client)
+    response_type = request.response_type
     if not client.check_response_type(response_type):
         raise UnauthorizedClientError(
-            'The client is not authorized to use '
-            '"response_type={}"'.format(response_type),
+            f'The client is not authorized to use "response_type={response_type}"',
             state=grant.request.state,
             redirect_uri=redirect_uri,
         )

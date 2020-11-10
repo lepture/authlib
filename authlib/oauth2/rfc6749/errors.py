@@ -142,8 +142,7 @@ class InvalidScopeError(OAuth2Error):
     error = 'invalid_scope'
 
     def get_error_description(self):
-        return self.gettext(
-            'The requested scope is invalid, unknown, or malformed.')
+        return self.gettext('The requested scope is invalid, unknown, or malformed.')
 
 
 class AccessDeniedError(OAuth2Error):
@@ -157,8 +156,7 @@ class AccessDeniedError(OAuth2Error):
     error = 'access_denied'
 
     def get_error_description(self):
-        return self.gettext(
-            'The resource owner or authorization server denied the request')
+        return self.gettext('The resource owner or authorization server denied the request')
 
 
 # -- below are extended errors -- #
