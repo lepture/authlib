@@ -85,8 +85,7 @@ class OpenIDImplicitGrant(ImplicitGrant):
                 redirect_uri=self.request.redirect_uri,
                 redirect_fragment=True,
             )
-        redirect_uri = super(
-            OpenIDImplicitGrant, self).validate_authorization_request()
+        redirect_uri = super(OpenIDImplicitGrant, self).validate_authorization_request()
         try:
             validate_nonce(self.request, self.exists_nonce, required=True)
         except OAuth2Error as error:

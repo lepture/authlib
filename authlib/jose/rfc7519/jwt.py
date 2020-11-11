@@ -61,9 +61,6 @@ class JsonWebToken(object):
             self.check_sensitive_data(payload)
 
         key = prepare_raw_key(key, header)
-        if callable(key):
-            key = key(header, payload)
-
         text = to_bytes(json_dumps(payload))
         if 'enc' in header:
             return self._jwe.serialize_compact(header, text, key)
@@ -87,11 +84,11 @@ class JsonWebToken(object):
         if claims_cls is None:
             claims_cls = JWTClaims
 
-        def load_key(header, payload):
-            key_func = prepare_raw_key(key, header)
-            if callable(key_func):
-                return key_func(header, payload)
-            return key_func
+        if callable(key):
+            load_key = key
+        else:
+            def load_key(header, payload):
+                return prepare_raw_key(key, header)
 
         s = to_bytes(s)
         dot_count = s.count(b'.')
@@ -118,9 +115,9 @@ def decode_payload(bytes_payload):
     return payload
 
 
-def prepare_raw_key(raw, headers):
+def prepare_raw_key(raw, header):
     if isinstance(raw, KeySet):
-        return raw.find_by_kid(headers.get('kid'))
+        return raw.find_by_kid(header.get('kid'))
 
     if isinstance(raw, str) and \
             raw.startswith('{') and raw.endswith('}'):
@@ -130,7 +127,7 @@ def prepare_raw_key(raw, headers):
 
     if isinstance(raw, dict) and 'keys' in raw:
         keys = raw['keys']
-        kid = headers.get('kid')
+        kid = header.get('kid')
         for k in keys:
             if k.get('kid') == kid:
                 return k

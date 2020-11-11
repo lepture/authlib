@@ -2,7 +2,7 @@ import time
 import random
 from authlib.oauth2.rfc6749 import InvalidRequestError
 from authlib.oauth2.rfc6749.util import scope_to_list
-from authlib.jose import JWT
+from authlib.jose import JsonWebToken
 from authlib.common.encoding import to_native
 from authlib.common.urls import add_params_to_uri, quote_url
 from ..util import create_half_hash
@@ -59,7 +59,7 @@ def validate_nonce(request, exists_nonce, required=False):
 
 
 def generate_id_token(
-        token, user_info, key, alg, iss, aud, exp,
+        token, user_info, key, iss, aud, alg='RS256', exp=3600,
         nonce=None, auth_time=None, code=None):
 
     payload = _generate_id_token_payload(
@@ -142,7 +142,7 @@ def _generate_id_token_payload(
 
 
 def _jwt_encode(alg, payload, key):
-    jwt = JWT(algorithms=alg)
+    jwt = JsonWebToken(algorithms=[alg])
     header = {'alg': alg}
     if isinstance(key, dict):
         # JWK set format
