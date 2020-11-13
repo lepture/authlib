@@ -56,15 +56,7 @@ def int_to_base64(num):
     if num < 0:
         raise ValueError('Must be a positive integer')
 
-    if hasattr(int, 'to_bytes'):
-        s = num.to_bytes((num.bit_length() + 7) // 8, 'big', signed=False)
-    else:
-        buf = []
-        while num:
-            num, remainder = divmod(num, 256)
-            buf.append(remainder)
-        buf.reverse()
-        s = struct.pack('%sB' % len(buf), *buf)
+    s = num.to_bytes((num.bit_length() + 7) // 8, 'big', signed=False)
     return to_unicode(urlsafe_b64encode(s))
 
 

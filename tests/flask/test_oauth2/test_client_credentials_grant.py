@@ -57,7 +57,7 @@ class ClientCredentialsTest(TestCase):
 
     def test_invalid_scope(self):
         self.prepare_data()
-        self.server.metadata = {'scopes_supported': ['profile']}
+        self.server.scopes_supported = ['profile']
         headers = self.create_basic_header(
             'credential-client', 'credential-secret'
         )

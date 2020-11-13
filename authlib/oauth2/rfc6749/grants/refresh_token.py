@@ -46,12 +46,10 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
     def _validate_request_token(self, client):
         refresh_token = self.request.form.get('refresh_token')
         if refresh_token is None:
-            raise InvalidRequestError(
-                'Missing "refresh_token" in request.',
-            )
+            raise InvalidRequestError('Missing "refresh_token" in request.')
 
         token = self.authenticate_refresh_token(refresh_token)
-        if not token or token.get_client_id() != client.get_client_id():
+        if not token or not token.check_client(client):
             raise InvalidGrantError()
         return token
 
@@ -148,9 +146,9 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
         implement this method in subclass::
 
             def authenticate_refresh_token(self, refresh_token):
-                item = Token.get(refresh_token=refresh_token)
-                if item and item.is_refresh_token_active():
-                    return item
+                token = Token.get(refresh_token=refresh_token)
+                if token and not token.refresh_token_revoked:
+                    return token
 
         :param refresh_token: The refresh token issued to the client
         :return: token

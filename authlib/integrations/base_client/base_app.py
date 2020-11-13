@@ -121,13 +121,13 @@ class BaseApp(object):
 
     def _retrieve_oauth2_access_token_params(self, request, params):
         request_state = params.pop('state', None)
-        state = self.framework.get_session_data(request, 'state')
+        state = self.framework.pop_session_data(request, 'state')
         if state != request_state:
             raise MismatchingStateError()
         if state:
             params['state'] = state
 
-        code_verifier = self.framework.get_session_data(request, 'code_verifier')
+        code_verifier = self.framework.pop_session_data(request, 'code_verifier')
         if code_verifier:
             params['code_verifier'] = code_verifier
         return params
@@ -139,12 +139,12 @@ class BaseApp(object):
         params = self.framework.generate_access_token_params(self.request_token_url, request)
         if self.request_token_url:
             if request_token is None:
-                request_token = self.framework.get_session_data(request, 'request_token')
+                request_token = self.framework.pop_session_data(request, 'request_token')
             params['request_token'] = request_token
         else:
             params = self._retrieve_oauth2_access_token_params(request, params)
 
-        redirect_uri = self.framework.get_session_data(request, 'redirect_uri')
+        redirect_uri = self.framework.pop_session_data(request, 'redirect_uri')
         if redirect_uri:
             params['redirect_uri'] = redirect_uri
 
@@ -164,13 +164,14 @@ class BaseApp(object):
             if k in kwargs:
                 self.framework.set_session_data(request, k, kwargs[k])
 
-    @staticmethod
-    def _create_oauth2_authorization_url(client, authorization_endpoint, **kwargs):
+    def _create_oauth2_authorization_url(self, request, client, authorization_endpoint, **kwargs):
         rv = {}
         if client.code_challenge_method:
             code_verifier = kwargs.get('code_verifier')
             if not code_verifier:
-                code_verifier = generate_token(48)
+                code_verifier = self.framework.get_session_data(request, 'code_verifier')
+                if not code_verifier:
+                    code_verifier = generate_token(48)
                 kwargs['code_verifier'] = code_verifier
             rv['code_verifier'] = code_verifier
             log.debug('Using code_verifier: {!r}'.format(code_verifier))
@@ -180,9 +181,14 @@ class BaseApp(object):
             # this is an OpenID Connect service
             nonce = kwargs.get('nonce')
             if not nonce:
-                nonce = generate_token(20)
+                nonce = self.framework.get_session_data(request, 'nonce')
+                if not nonce:
+                    nonce = generate_token(20)
                 kwargs['nonce'] = nonce
             rv['nonce'] = nonce
+
+        if 'state' not in kwargs:
+            kwargs['state'] = self.framework.get_session_data(request, 'state')
 
         url, state = client.create_authorization_url(
             authorization_endpoint, **kwargs)

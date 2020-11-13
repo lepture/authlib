@@ -200,3 +200,4 @@ If using ``httpx``, pass this ``auth`` to access protected resources::
 
     url = 'https://api.twitter.com/1.1/account/verify_credentials.json'
     resp = await httpx.get(url, auth=auth)
+

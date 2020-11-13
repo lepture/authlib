@@ -98,14 +98,14 @@ Routes for Authorization
 Just like the examples in :ref:`frameworks_clients`, but Starlette is **async**,
 the routes for authorization should look like::
 
-    @app.route('/login')
-    async def login(request):
+    @app.route('/login/google')
+    async def login_via_google(request):
         google = oauth.create_client('google')
-        redirect_uri = request.url_for('authorize')
+        redirect_uri = request.url_for('authorize_google')
         return await google.authorize_redirect(request, redirect_uri)
 
-    @app.route('/auth')
-    async def authorize(request):
+    @app.route('/auth/google')
+    async def authorize_google(request):
         google = oauth.create_client('google')
         token = await google.authorize_access_token(request)
         user = await google.parse_id_token(request, token)

@@ -46,9 +46,10 @@ class RemoteApp(BaseApp):
         url = client.create_authorization_url(authorization_endpoint, **kwargs)
         return {'url': url, 'request_token': token}
 
-    def create_authorization_url(self, redirect_uri=None, **kwargs):
+    def create_authorization_url(self, request, redirect_uri=None, **kwargs):
         """Generate the authorization url and state for HTTP redirect.
 
+        :param request: Request instance of the framework.
         :param redirect_uri: Callback or redirect URI for authorization.
         :param kwargs: Extra parameters to include.
         :return: dict
@@ -72,7 +73,7 @@ class RemoteApp(BaseApp):
                     client, authorization_endpoint, **kwargs)
             else:
                 return self._create_oauth2_authorization_url(
-                    client, authorization_endpoint, **kwargs)
+                    request, client, authorization_endpoint, **kwargs)
 
     def fetch_access_token(self, redirect_uri=None, request_token=None, **params):
         """Fetch access token in one step.
@@ -171,7 +172,7 @@ class RemoteApp(BaseApp):
                 jwk_set = JsonWebKey.import_key_set(self.fetch_jwk_set(force=True))
                 return jwk_set.find_by_kid(header.get('kid'))
 
-        nonce = self.framework.get_session_data(request, 'nonce')
+        nonce = self.framework.pop_session_data(request, 'nonce')
         claims_params = dict(
             nonce=nonce,
             client_id=self.client_id,

@@ -204,26 +204,6 @@ class OAuth2Client(object):
             headers=headers, **session_kwargs
         )
 
-    def _fetch_token(self, url, body='', headers=None, auth=None,
-                     method='POST', **kwargs):
-        if method == 'GET':
-            if '?' in url:
-                url = '&'.join([url, body])
-            else:
-                url = '?'.join([url, body])
-            body = ''
-
-        if headers is None:
-            headers = DEFAULT_HEADERS
-
-        resp = self.session.request(
-            method, url, data=body, headers=headers, auth=auth, **kwargs)
-
-        for hook in self.compliance_hook['access_token_response']:
-            resp = hook(resp)
-
-        return self.parse_response_token(resp.json())
-
     def token_from_fragment(self, authorization_response, state=None):
         token = parse_implicit_response(authorization_response, state)
         return self.parse_response_token(token)
@@ -262,23 +242,20 @@ class OAuth2Client(object):
             url, refresh_token=refresh_token, body=body, headers=headers,
             auth=auth, **session_kwargs)
 
-    def _refresh_token(self, url, refresh_token=None, body='', headers=None,
-                       auth=None, **kwargs):
-        resp = self.session.post(
-            url, data=dict(url_decode(body)), headers=headers,
-            auth=auth, **kwargs)
-
-        for hook in self.compliance_hook['refresh_token_response']:
-            resp = hook(resp)
-
-        token = self.parse_response_token(resp.json())
-        if 'refresh_token' not in token:
-            self.token['refresh_token'] = refresh_token
-
-        if callable(self.update_token):
-            self.update_token(self.token, refresh_token=refresh_token)
-
-        return self.token
+    def ensure_active_token(self, token):
+        if not token.is_expired():
+            return True
+        refresh_token = token.get('refresh_token')
+        url = self.metadata.get('token_endpoint')
+        if refresh_token and url:
+            self.refresh_token(url, refresh_token=refresh_token)
+            return True
+        elif self.metadata.get('grant_type') == 'client_credentials':
+            access_token = token['access_token']
+            new_token = self.fetch_token(url, grant_type='client_credentials')
+            if self.update_token:
+                self.update_token(new_token, access_token=access_token)
+            return True
 
     def revoke_token(self, url, token=None, token_type_hint=None,
                      body=None, auth=None, headers=None, **kwargs):
@@ -322,32 +299,6 @@ class OAuth2Client(object):
             token=token, token_type_hint=token_type_hint,
             body=body, auth=auth, headers=headers, **kwargs)
 
-    def _handle_token_hint(self, hook, url, token=None, token_type_hint=None,
-                           body=None, auth=None, headers=None, **kwargs):
-        if token is None and self.token:
-            token = self.token.get('refresh_token') or self.token.get('access_token')
-
-        if body is None:
-            body = ''
-
-        body, headers = prepare_revoke_token_request(
-            token, token_type_hint, body, headers)
-
-        for hook in self.compliance_hook[hook]:
-            url, headers, body = hook(url, headers, body)
-
-        if auth is None:
-            auth = self.client_auth(self.revocation_endpoint_auth_method)
-
-        session_kwargs = self._extract_session_request_params(kwargs)
-        return self._http_post(
-            url, body, auth=auth, headers=headers, **session_kwargs)
-
-    def _http_post(self, url, body=None, auth=None, headers=None, **kwargs):
-        return self.session.post(
-            url, data=dict(url_decode(body)),
-            headers=headers, auth=auth, **kwargs)
-
     def register_compliance_hook(self, hook_type, hook):
         """Register a hook for request/response tweaking.
 
@@ -378,6 +329,64 @@ class OAuth2Client(object):
         description = token.get('error_description', error)
         self.handle_error(error, description)
 
+    @staticmethod
+    def handle_error(error_type, error_description):
+        raise ValueError('{}: {}'.format(error_type, error_description))
+
+    def _fetch_token(self, url, body='', headers=None, auth=None,
+                     method='POST', **kwargs):
+        if method == 'GET':
+            if '?' in url:
+                url = '&'.join([url, body])
+            else:
+                url = '?'.join([url, body])
+            body = ''
+
+        resp = self.session.request(
+            method, url, data=body, headers=headers, auth=auth, **kwargs)
+
+        for hook in self.compliance_hook['access_token_response']:
+            resp = hook(resp)
+
+        return self.parse_response_token(resp.json())
+
+    def _refresh_token(self, url, refresh_token=None, body='', headers=None,
+                       auth=None, **kwargs):
+        resp = self._http_post(url, body=body, auth=auth, headers=headers, **kwargs)
+
+        for hook in self.compliance_hook['refresh_token_response']:
+            resp = hook(resp)
+
+        token = self.parse_response_token(resp.json())
+        if 'refresh_token' not in token:
+            self.token['refresh_token'] = refresh_token
+
+        if callable(self.update_token):
+            self.update_token(self.token, refresh_token=refresh_token)
+
+        return self.token
+
+    def _handle_token_hint(self, hook, url, token=None, token_type_hint=None,
+                           body=None, auth=None, headers=None, **kwargs):
+        if token is None and self.token:
+            token = self.token.get('refresh_token') or self.token.get('access_token')
+
+        if body is None:
+            body = ''
+
+        body, headers = prepare_revoke_token_request(
+            token, token_type_hint, body, headers)
+
+        for hook in self.compliance_hook[hook]:
+            url, headers, body = hook(url, headers, body)
+
+        if auth is None:
+            auth = self.client_auth(self.revocation_endpoint_auth_method)
+
+        session_kwargs = self._extract_session_request_params(kwargs)
+        return self._http_post(
+            url, body, auth=auth, headers=headers, **session_kwargs)
+
     def _prepare_token_endpoint_body(self, body, grant_type, **kwargs):
         if grant_type is None:
             grant_type = _guess_grant_type(kwargs)
@@ -399,9 +408,10 @@ class OAuth2Client(object):
                 rv[k] = kwargs.pop(k)
         return rv
 
-    @staticmethod
-    def handle_error(error_type, error_description):
-        raise ValueError('{}: {}'.format(error_type, error_description))
+    def _http_post(self, url, body=None, auth=None, headers=None, **kwargs):
+        return self.session.post(
+            url, data=dict(url_decode(body)),
+            headers=headers, auth=auth, **kwargs)
 
 
 def _guess_grant_type(kwargs):

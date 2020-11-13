@@ -48,7 +48,7 @@ class PasswordTest(TestCase):
 
     def test_invalid_scope(self):
         server = self.create_server()
-        server.metadata = {'scopes_supported': ['profile']}
+        server.scopes_supported = ['profile']
         self.prepare_data()
         request = self.factory.post(
             '/oauth/token',

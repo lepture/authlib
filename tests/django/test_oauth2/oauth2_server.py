@@ -6,10 +6,15 @@ from .models import Client, OAuth2Token
 from ..base import TestCase as _TestCase
 
 
-os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
-
-
 class TestCase(_TestCase):
+    def setUp(self):
+        super().setUp()
+        os.environ['AUTHLIB_INSECURE_TRANSPORT'] = 'true'
+
+    def tearDown(self):
+        super().tearDown()
+        os.environ.pop('AUTHLIB_INSECURE_TRANSPORT')
+
     def create_server(self):
         return AuthorizationServer(Client, OAuth2Token)
 

@@ -41,9 +41,10 @@ class AsyncRemoteApp(BaseApp):
         url = client.create_authorization_url(authorization_endpoint, **kwargs)
         return {'url': url, 'request_token': token}
 
-    async def create_authorization_url(self, redirect_uri=None, **kwargs):
+    async def create_authorization_url(self, request, redirect_uri=None, **kwargs):
         """Generate the authorization url and state for HTTP redirect.
 
+        :param request: Request instance of the framework.
         :param redirect_uri: Callback or redirect URI for authorization.
         :param kwargs: Extra parameters to include.
         :return: dict
@@ -67,7 +68,7 @@ class AsyncRemoteApp(BaseApp):
                     client, authorization_endpoint, **kwargs)
             else:
                 return self._create_oauth2_authorization_url(
-                    client, authorization_endpoint, **kwargs)
+                    request, client, authorization_endpoint, **kwargs)
 
     async def fetch_access_token(self, redirect_uri=None, request_token=None, **params):
         """Fetch access token in one step.

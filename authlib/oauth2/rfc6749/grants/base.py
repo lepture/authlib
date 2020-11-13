@@ -16,6 +16,8 @@ class BaseGrant(object):
     TOKEN_RESPONSE_HEADER = default_json_headers
 
     def __init__(self, request, server):
+        self.prompt = None
+        self.redirect_uri = None
         self.request = request
         self.server = server
         self._hooks = {
@@ -143,6 +145,7 @@ class AuthorizationEndpointMixin(object):
     def validate_consent_request(self):
         redirect_uri = self.validate_authorization_request()
         self.execute_hook('after_validate_consent_request', redirect_uri)
+        self.redirect_uri = redirect_uri
 
     def validate_authorization_request(self):
         raise NotImplementedError()

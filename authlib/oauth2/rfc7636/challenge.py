@@ -64,8 +64,8 @@ class CodeChallenge(object):
 
     def validate_code_challenge(self, grant):
         request = grant.request
-        challenge = request.args.get('code_challenge')
-        method = request.args.get('code_challenge_method')
+        challenge = request.data.get('code_challenge')
+        method = request.data.get('code_challenge_method')
         if not challenge and not method:
             return
 

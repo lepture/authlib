@@ -43,13 +43,13 @@ class AuthorizationCodeTest(TestCase):
         )
         client.save()
 
-    def test_validate_consent_request_client(self):
+    def test_get_consent_grant_client(self):
         server = self.create_server()
         url = '/authorize?response_type=code'
         request = self.factory.get(url)
         self.assertRaises(
             errors.InvalidClientError,
-            server.validate_consent_request,
+            server.get_consent_grant,
             request
         )
 
@@ -57,18 +57,18 @@ class AuthorizationCodeTest(TestCase):
         request = self.factory.get(url)
         self.assertRaises(
             errors.InvalidClientError,
-            server.validate_consent_request,
+            server.get_consent_grant,
             request
         )
 
         self.prepare_data(response_type='')
         self.assertRaises(
             errors.UnauthorizedClientError,
-            server.validate_consent_request,
+            server.get_consent_grant,
             request
         )
 
-    def test_validate_consent_request_redirect_uri(self):
+    def test_get_consent_grant_redirect_uri(self):
         server = self.create_server()
         self.prepare_data()
 
@@ -77,18 +77,18 @@ class AuthorizationCodeTest(TestCase):
         request = self.factory.get(url)
         self.assertRaises(
             errors.InvalidRequestError,
-            server.validate_consent_request,
+            server.get_consent_grant,
             request
         )
 
         url = base_url + '&redirect_uri=https%3A%2F%2Fa.b'
         request = self.factory.get(url)
-        grant = server.validate_consent_request(request)
+        grant = server.get_consent_grant(request)
         self.assertIsInstance(grant, AuthorizationCodeGrant)
 
-    def test_validate_consent_request_scope(self):
+    def test_get_consent_grant_scope(self):
         server = self.create_server()
-        server.metadata = {'scopes_supported': ['profile']}
+        server.scopes_supported = ['profile']
 
         self.prepare_data()
         base_url = '/authorize?response_type=code&client_id=client'
@@ -96,7 +96,7 @@ class AuthorizationCodeTest(TestCase):
         request = self.factory.get(url)
         self.assertRaises(
             errors.InvalidScopeError,
-            server.validate_consent_request,
+            server.get_consent_grant,
             request
         )
 
@@ -105,7 +105,7 @@ class AuthorizationCodeTest(TestCase):
         self.prepare_data()
         data = {'response_type': 'code', 'client_id': 'client'}
         request = self.factory.post('/authorize', data=data)
-        server.validate_consent_request(request)
+        server.get_consent_grant(request)
 
         resp = server.create_authorization_response(request)
         self.assertEqual(resp.status_code, 302)

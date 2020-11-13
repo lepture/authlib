@@ -8,6 +8,8 @@
     .. _`Section 3`: https://tools.ietf.org/html/rfc7518#section-3
 """
 
+import hmac
+import hashlib
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric.utils import (
     decode_dss_signature, encode_dss_signature
@@ -15,9 +17,55 @@ from cryptography.hazmat.primitives.asymmetric.utils import (
 from cryptography.hazmat.primitives.asymmetric.ec import ECDSA
 from cryptography.hazmat.primitives.asymmetric import padding
 from cryptography.exceptions import InvalidSignature
-from authlib.jose.rfc7515 import JWSAlgorithm
-from ._keys import RSAKey, ECKey
-from ..util import encode_int, decode_int
+from ..rfc7515 import JWSAlgorithm
+from .oct_key import OctKey
+from .rsa_key import RSAKey
+from .ec_key import ECKey
+from .util import encode_int, decode_int
+
+
+class NoneAlgorithm(JWSAlgorithm):
+    name = 'none'
+    description = 'No digital signature or MAC performed'
+
+    def prepare_key(self, raw_data):
+        return None
+
+    def sign(self, msg, key):
+        return b''
+
+    def verify(self, msg, sig, key):
+        return False
+
+
+class HMACAlgorithm(JWSAlgorithm):
+    """HMAC using SHA algorithms for JWS. Available algorithms:
+
+    - HS256: HMAC using SHA-256
+    - HS384: HMAC using SHA-384
+    - HS512: HMAC using SHA-512
+    """
+    SHA256 = hashlib.sha256
+    SHA384 = hashlib.sha384
+    SHA512 = hashlib.sha512
+
+    def __init__(self, sha_type):
+        self.name = 'HS{}'.format(sha_type)
+        self.description = 'HMAC using SHA-{}'.format(sha_type)
+        self.hash_alg = getattr(self, 'SHA{}'.format(sha_type))
+
+    def prepare_key(self, raw_data):
+        return OctKey.import_key(raw_data)
+
+    def sign(self, msg, key):
+        # it is faster than the one in cryptography
+        op_key = key.get_op_key('sign')
+        return hmac.new(op_key, msg, self.hash_alg).digest()
+
+    def verify(self, msg, sig, key):
+        op_key = key.get_op_key('verify')
+        v_sig = hmac.new(op_key, msg, self.hash_alg).digest()
+        return hmac.compare_digest(sig, v_sig)
 
 
 class RSAAlgorithm(JWSAlgorithm):
@@ -151,6 +199,10 @@ class RSAPSSAlgorithm(JWSAlgorithm):
 
 
 JWS_ALGORITHMS = [
+    NoneAlgorithm(),  # none
+    HMACAlgorithm(256),  # HS256
+    HMACAlgorithm(384),  # HS384
+    HMACAlgorithm(512),  # HS512
     RSAAlgorithm(256),  # RS256
     RSAAlgorithm(384),  # RS384
     RSAAlgorithm(512),  # RS512

@@ -12,7 +12,6 @@ from authlib.oauth2.rfc6750 import (
     BearerTokenValidator as _BearerTokenValidator
 )
 from .signals import token_authenticated
-from ..django_helpers import parse_request_headers
 
 
 class ResourceProtector(_ResourceProtector):
@@ -24,9 +23,8 @@ class ResourceProtector(_ResourceProtector):
         :param operator: value of "AND" or "OR"
         :return: token object
         """
-        headers = parse_request_headers(request)
         url = request.get_raw_uri()
-        req = HttpRequest(request.method, url, request.body, headers)
+        req = HttpRequest(request.method, url, request.body, request.headers)
         if not callable(operator):
             operator = operator.upper()
         token = self.validate_request(scope, req, operator)
@@ -65,9 +63,6 @@ class BearerTokenValidator(_BearerTokenValidator):
 
     def request_invalid(self, request):
         return False
-
-    def token_revoked(self, token):
-        return token.revoked
 
 
 def return_error_response(error):

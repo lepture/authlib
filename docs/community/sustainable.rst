@@ -6,9 +6,6 @@ Sustainable
 A sustainable project is trustworthy to use in your production environment.
 To make this project sustainable, we need your help. Here are several options:
 
-.. raw:: html
-   :file: ../_templates/sustainable.html
-
 Community Contribute
 --------------------
 
@@ -28,6 +25,8 @@ You are welcome to become a backer or a sponsor.
 
 .. _`GitHub Sponsors`: https://github.com/sponsors/lepture
 .. _Patreon: https://www.patreon.com/lepture
+
+Find out the :ref:`benefits for sponsorship <funding>`.
 
 Commercial License
 ------------------

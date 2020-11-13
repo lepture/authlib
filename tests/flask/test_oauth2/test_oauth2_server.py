@@ -139,7 +139,7 @@ class ResourceTest(TestCase):
 
     def test_expired_token(self):
         self.prepare_data()
-        self.create_token(0)
+        self.create_token(-10)
         headers = self.create_bearer_header('a1')
 
         rv = self.client.get('/user', headers=headers)

@@ -24,11 +24,12 @@ jobs:
         - version: 3.6
         - version: 3.7
         - version: 3.8
+        - version: 3.9
 
     steps:
     - uses: actions/checkout@v2
     - name: Set up Python ${{ matrix.python.version }}
-      uses: actions/setup-python@v1.1.1
+      uses: actions/setup-python@v2.1.4
       with:
         python-version: ${{ matrix.python.version }}
 
@@ -50,7 +51,7 @@ jobs:
         coverage xml
 
     - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v1.0.5
+      uses: codecov/codecov-action@v1.0.14
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
         file: ./coverage.xml

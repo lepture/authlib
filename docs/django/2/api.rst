@@ -10,7 +10,7 @@ Server.
     :members:
         register_grant,
         register_endpoint,
-        validate_consent_request,
+        get_consent_grant,
         create_authorization_response,
         create_token_response,
         create_endpoint_response

@@ -22,7 +22,7 @@ class RevocationEndpoint(_RevocationEndpoint):
             )
     """
 
-    def query_token(self, token, token_type_hint, client):
+    def query_token(self, token, token_type_hint):
         """Query requested token from database."""
         token_model = self.server.token_model
         if token_type_hint == 'access_token':
@@ -34,12 +34,9 @@ class RevocationEndpoint(_RevocationEndpoint):
             if not rv:
                 rv = _query_refresh_token(token_model, token)
 
-        client_id = client.get_client_id()
-        if rv and rv.client_id == client_id:
-            return rv
-        return None
+        return rv
 
-    def revoke_token(self, token):
+    def revoke_token(self, token, request):
         """Mark the give token as revoked."""
         token.revoked = True
         token.save()

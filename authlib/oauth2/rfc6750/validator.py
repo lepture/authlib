@@ -5,7 +5,6 @@
     Validate Bearer Token for in request, scope and token.
 """
 
-import time
 from ..rfc6749.util import scope_to_list
 from .errors import (
     InvalidRequestError,
@@ -48,24 +47,6 @@ class BearerTokenValidator(object):
         """
         raise NotImplementedError()
 
-    def token_revoked(self, token):
-        """Check if this token is revoked. Developers MUST re-implement this
-        method. If there is a column called ``revoked`` on the token table::
-
-            def token_revoked(self, token):
-                return token.revoked
-
-        :param token: token instance
-        :return: Boolean
-        """
-        raise NotImplementedError()
-
-    def token_expired(self, token):
-        expires_at = token.get_expires_at()
-        if not expires_at:
-            return False
-        return expires_at < time.time()
-
     def scope_insufficient(self, token, scope, operator='AND'):
         if not scope:
             return False
@@ -90,9 +71,9 @@ class BearerTokenValidator(object):
         token = self.authenticate_token(token_string)
         if not token:
             raise InvalidTokenError(realm=self.realm)
-        if self.token_expired(token):
+        if token.is_expired():
             raise InvalidTokenError(realm=self.realm)
-        if self.token_revoked(token):
+        if token.is_revoked():
             raise InvalidTokenError(realm=self.realm)
         if self.scope_insufficient(token, scope, scope_operator):
             raise InsufficientScopeError()

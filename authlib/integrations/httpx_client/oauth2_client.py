@@ -81,40 +81,40 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
     def handle_error(error_type, error_description):
         raise OAuthError(error_type, error_description)
 
-    async def request(self, method, url, withhold_token=False, auth=None, **kwargs):
+    async def request(self, method, url, withhold_token=False, auth=UNSET, **kwargs):
         if not withhold_token and auth is UNSET:
             if not self.token:
                 raise MissingTokenError()
 
             if self.token.is_expired():
-                await self.ensure_active_token()
+                await self.ensure_active_token(self.token)
 
             auth = self.token_auth
 
         return await super(AsyncOAuth2Client, self).request(
             method, url, auth=auth, **kwargs)
 
-    async def ensure_active_token(self):
+    async def ensure_active_token(self, token):
         if self._token_refresh_event.is_set():
             # Unset the event so other coroutines don't try to update the token
             self._token_refresh_event.clear()
-            refresh_token = self.token.get('refresh_token')
+            refresh_token = token.get('refresh_token')
             url = self.metadata.get('token_endpoint')
             if refresh_token and url:
                 await self.refresh_token(url, refresh_token=refresh_token)
             elif self.metadata.get('grant_type') == 'client_credentials':
-                access_token = self.token['access_token']
-                token = await self.fetch_token(url, grant_type='client_credentials')
+                access_token = token['access_token']
+                new_token = await self.fetch_token(url, grant_type='client_credentials')
                 if self.update_token:
-                    await self.update_token(token, access_token=access_token)
+                    await self.update_token(new_token, access_token=access_token)
             else:
                 raise InvalidTokenError()
             # Notify coroutines that token is refreshed
             self._token_refresh_event.set()
             return
-        await self._token_refresh_event.wait() # wait until the token is ready
+        await self._token_refresh_event.wait()  # wait until the token is ready
 
-    async def _fetch_token(self, url, body='', headers=None, auth=None,
+    async def _fetch_token(self, url, body='', headers=None, auth=UNSET,
                            method='POST', **kwargs):
         if method.upper() == 'POST':
             resp = await self.post(
@@ -133,7 +133,7 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
         return self.parse_response_token(resp.json())
 
     async def _refresh_token(self, url, refresh_token=None, body='',
-                             headers=None, auth=None, **kwargs):
+                             headers=None, auth=UNSET, **kwargs):
         resp = await self.post(
             url, data=dict(url_decode(body)), headers=headers,
             auth=auth, **kwargs)
@@ -150,7 +150,7 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
 
         return self.token
 
-    def _http_post(self, url, body=None, auth=None, headers=None, **kwargs):
+    def _http_post(self, url, body=None, auth=UNSET, headers=None, **kwargs):
         return self.post(
             url, data=dict(url_decode(body)),
             headers=headers, auth=auth, **kwargs)
@@ -187,28 +187,15 @@ class OAuth2Client(_OAuth2Client, Client):
     def handle_error(error_type, error_description):
         raise OAuthError(error_type, error_description)
 
-    def request(self, method, url, withhold_token=False, auth=None, **kwargs):
+    def request(self, method, url, withhold_token=False, auth=UNSET, **kwargs):
         if not withhold_token and auth is UNSET:
             if not self.token:
                 raise MissingTokenError()
 
-            if self.token.is_expired():
-                self.ensure_active_token()
+            if not self.ensure_active_token(self.token):
+                raise InvalidTokenError()
 
             auth = self.token_auth
 
         return super(OAuth2Client, self).request(
             method, url, auth=auth, **kwargs)
-
-    def ensure_active_token(self):
-        refresh_token = self.token.get('refresh_token')
-        url = self.metadata.get('token_endpoint')
-        if refresh_token and url:
-            self.refresh_token(url, refresh_token=refresh_token)
-        elif self.metadata.get('grant_type') == 'client_credentials':
-            access_token = self.token['access_token']
-            token = self.fetch_token(url, grant_type='client_credentials')
-            if self.update_token:
-                self.update_token(token, access_token=access_token)
-        else:
-            raise InvalidTokenError()

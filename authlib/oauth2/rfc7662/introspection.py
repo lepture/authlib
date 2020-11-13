@@ -16,7 +16,7 @@ class IntrospectionEndpoint(TokenEndpoint):
     #: Endpoint name to be registered
     ENDPOINT_NAME = 'introspection'
 
-    def authenticate_endpoint_credential(self, request, client):
+    def authenticate_token(self, request, client):
         """The protected resource calls the introspection endpoint using an HTTP
         ``POST`` request with parameters sent as
         "application/x-www-form-urlencoded" data. The protected resource sends a
@@ -39,11 +39,13 @@ class IntrospectionEndpoint(TokenEndpoint):
         if 'token' not in params:
             raise InvalidRequestError()
 
-        token_type = params.get('token_type_hint')
-        if token_type and token_type not in self.SUPPORTED_TOKEN_TYPES:
+        hint = params.get('token_type_hint')
+        if hint and hint not in self.SUPPORTED_TOKEN_TYPES:
             raise UnsupportedTokenTypeError()
 
-        return self.query_token(params['token'], token_type, client)
+        token = self.query_token(params['token'], hint)
+        if token and self.check_permission(token, client, request):
+            return token
 
     def create_endpoint_response(self, request):
         """Validate introspection request and create the response.
@@ -55,10 +57,10 @@ class IntrospectionEndpoint(TokenEndpoint):
 
         # then verifies whether the token was issued to the client making
         # the revocation request
-        credential = self.authenticate_endpoint_credential(request, client)
+        token = self.authenticate_token(request, client)
 
         # the authorization server invalidates the token
-        body = self.create_introspection_payload(credential)
+        body = self.create_introspection_payload(token)
         return 200, body, default_json_headers
 
     def create_introspection_payload(self, token):
@@ -68,30 +70,39 @@ class IntrospectionEndpoint(TokenEndpoint):
         # response with the "active" field set to "false"
         if not token:
             return {'active': False}
-        expires_at = token.get_expires_at()
-        if expires_at < time.time() or token.revoked:
+        if token.is_expired() or token.is_revoked():
             return {'active': False}
         payload = self.introspect_token(token)
         if 'active' not in payload:
             payload['active'] = True
         return payload
 
-    def query_token(self, token, token_type_hint, client):
+    def check_permission(self, token, client, request):
+        """Check if the request has permission to introspect the token. Developers
+        MUST implement this method::
+
+            def check_permission(self, token, client, request):
+                # only allow a special client to introspect the token
+                return client.client_id == 'introspection_client'
+
+        :return: bool
+        """
+        raise NotImplementedError()
+
+    def query_token(self, token_string, token_type_hint):
         """Get the token from database/storage by the given token string.
         Developers should implement this method::
 
-            def query_token(self, token, token_type_hint, client):
+            def query_token(self, token_string, token_type_hint):
                 if token_type_hint == 'access_token':
-                    tok = Token.query_by_access_token(token)
+                    tok = Token.query_by_access_token(token_string)
                 elif token_type_hint == 'refresh_token':
-                    tok = Token.query_by_refresh_token(token)
+                    tok = Token.query_by_refresh_token(token_string)
                 else:
-                    tok = Token.query_by_access_token(token)
+                    tok = Token.query_by_access_token(token_string)
                     if not tok:
-                        tok = Token.query_by_refresh_token(token)
-
-                if check_client_permission(client, tok):
-                    return tok
+                        tok = Token.query_by_refresh_token(token_string)
+                return tok
         """
         raise NotImplementedError()
 
@@ -100,9 +111,8 @@ class IntrospectionEndpoint(TokenEndpoint):
         dictionary following `Section 2.2`_::
 
             def introspect_token(self, token):
-                active = is_token_active(token)
                 return {
-                    'active': active,
+                    'active': True,
                     'client_id': token.client_id,
                     'token_type': token.token_type,
                     'username': get_token_username(token),

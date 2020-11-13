@@ -22,7 +22,6 @@ def test_refresh_token():
 
     with AssertionClient(
         'https://i.b/token',
-        grant_type=AssertionClient.JWT_BEARER_GRANT_TYPE,
         issuer='foo',
         subject='foo',
         audience='foo',

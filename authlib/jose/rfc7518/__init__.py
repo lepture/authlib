@@ -1,19 +1,35 @@
-from .jws_algorithms import register_jws_rfc7518
-from .jwe_algorithms import register_jwe_rfc7518
 from .oct_key import OctKey
-from ._cryptography_backends import (
-    RSAKey, ECKey, ECDHAlgorithm,
-    import_key, load_pem_key, export_key,
-)
+from .rsa_key import RSAKey
+from .ec_key import ECKey
+from .key_util import import_key, export_key
+from .jws_algs import JWS_ALGORITHMS
+from .jwe_algs import JWE_ALG_ALGORITHMS, ECDHAlgorithm
+from .jwe_encs import JWE_ENC_ALGORITHMS
+from .jwe_zips import DeflateZipAlgorithm
+
+
+def register_jws_rfc7518(cls):
+    for algorithm in JWS_ALGORITHMS:
+        cls.register_algorithm(algorithm)
+
+
+def register_jwe_rfc7518(cls):
+    for algorithm in JWE_ALG_ALGORITHMS:
+        cls.register_algorithm(algorithm)
+
+    for algorithm in JWE_ENC_ALGORITHMS:
+        cls.register_algorithm(algorithm)
+
+    cls.register_algorithm(DeflateZipAlgorithm())
+
 
 __all__ = [
     'register_jws_rfc7518',
     'register_jwe_rfc7518',
-    'ECDHAlgorithm',
     'OctKey',
     'RSAKey',
     'ECKey',
+    'ECDHAlgorithm',
     'import_key',
-    'load_pem_key',
     'export_key',
 ]

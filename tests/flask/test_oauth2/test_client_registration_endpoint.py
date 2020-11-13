@@ -34,12 +34,14 @@ class ClientRegistrationTest(TestCase):
     def prepare_data(self, endpoint_cls=None, metadata=None):
         app = self.app
         server = create_authorization_server(app)
-        if metadata:
-            server.metadata = metadata
 
-        if endpoint_cls is None:
-            endpoint_cls = ClientRegistrationEndpoint
-        server.register_endpoint(endpoint_cls)
+        if endpoint_cls:
+            server.register_endpoint(endpoint_cls)
+        else:
+            class MyClientRegistration(ClientRegistrationEndpoint):
+                def get_server_metadata(self):
+                    return metadata
+            server.register_endpoint(MyClientRegistration)
 
         @app.route('/create_client', methods=['POST'])
         def create_client():
@@ -90,6 +92,9 @@ class ClientRegistrationTest(TestCase):
     def test_no_public_key(self):
 
         class ClientRegistrationEndpoint2(ClientRegistrationEndpoint):
+            def get_server_metadata(self):
+                return None
+
             def resolve_public_key(self, request):
                 return None
 

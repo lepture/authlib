@@ -152,7 +152,7 @@ The ``AuthorizationServer`` has provided built-in methods to handle these endpoi
 
     def authorize(request):
         if request.method == 'GET':
-            grant = server.validate_consent_request(request, end_user=request.user)
+            grant = server.get_consent_grant(request, end_user=request.user)
             context = dict(grant=grant, user=request.user)
             return render(request, 'authorize.html', context)
 

@@ -29,6 +29,10 @@ class InvalidTokenError(OAuth2Error):
     https://tools.ietf.org/html/rfc6750#section-3.1
     """
     error = 'invalid_token'
+    description = (
+        'The access token provided is expired, revoked, malformed, '
+        'or invalid for other reasons.'
+    )
     status_code = 401
 
     def __init__(self, description=None, uri=None, status_code=None,
@@ -36,12 +40,6 @@ class InvalidTokenError(OAuth2Error):
         super(InvalidTokenError, self).__init__(
             description, uri, status_code, state)
         self.realm = realm
-
-    def get_error_description(self):
-        return self.gettext(
-            'The access token provided is expired, revoked, malformed, '
-            'or invalid for other reasons.'
-        )
 
     def get_headers(self):
         """If the protected resource request does not include authentication
@@ -76,10 +74,5 @@ class InsufficientScopeError(OAuth2Error):
     https://tools.ietf.org/html/rfc6750#section-3.1
     """
     error = 'insufficient_scope'
+    description = 'The request requires higher privileges than provided by the access token.'
     status_code = 403
-
-    def get_error_description(self):
-        return self.gettext(
-            'The request requires higher privileges than '
-            'provided by the access token.'
-        )

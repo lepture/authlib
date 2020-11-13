@@ -4,7 +4,6 @@ from authlib.oauth1 import ResourceProtector as _ResourceProtector
 from django.http import JsonResponse
 from django.conf import settings
 from .nonce import exists_nonce_in_cache
-from ..django_helpers import parse_request_headers
 
 
 class ResourceProtector(_ResourceProtector):
@@ -43,9 +42,8 @@ class ResourceProtector(_ResourceProtector):
         else:
             body = None
 
-        headers = parse_request_headers(request)
         url = request.get_raw_uri()
-        req = self.validate_request(request.method, url, body, headers)
+        req = self.validate_request(request.method, url, body, request.headers)
         return req.credential
 
     def __call__(self, realm=None):

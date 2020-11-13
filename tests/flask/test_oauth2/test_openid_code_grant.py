@@ -1,12 +1,12 @@
-from flask import json
+from flask import json, current_app
 from authlib.common.urls import urlparse, url_decode, url_encode
-from authlib.jose import JsonWebToken, JsonWebKey
+from authlib.jose import JsonWebToken
 from authlib.oidc.core import CodeIDToken
 from authlib.oidc.core.grants import OpenIDCode as _OpenIDCode
 from authlib.oauth2.rfc6749.grants import (
     AuthorizationCodeGrant as _AuthorizationCodeGrant,
 )
-from tests.util import get_file_path
+from tests.util import read_file_path
 from .models import db, User, Client, exists_nonce
 from .models import CodeGrantMixin, save_authorization_code
 from .oauth2_server import TestCase
@@ -20,12 +20,10 @@ class AuthorizationCodeGrant(CodeGrantMixin, _AuthorizationCodeGrant):
 
 class OpenIDCode(_OpenIDCode):
     def get_jwt_config(self, grant):
-        config = grant.server.config
-        key = config['jwt_key']
-        alg = config['jwt_alg']
-        iss = config['jwt_iss']
-        exp = config['jwt_exp']
-        return dict(key=key, alg=alg, iss=iss, exp=exp)
+        key = current_app.config['OAUTH2_JWT_KEY']
+        alg = current_app.config['OAUTH2_JWT_ALG']
+        iss = current_app.config['OAUTH2_JWT_ISS']
+        return dict(key=key, alg=alg, iss=iss, exp=3600)
 
     def exists_nonce(self, nonce, request):
         return exists_nonce(nonce, request)
@@ -37,7 +35,6 @@ class OpenIDCode(_OpenIDCode):
 class BaseTestCase(TestCase):
     def config_app(self):
         self.app.config.update({
-            'OAUTH2_JWT_ENABLED': True,
             'OAUTH2_JWT_ISS': 'Authlib',
             'OAUTH2_JWT_KEY': 'secret',
             'OAUTH2_JWT_ALG': 'HS256',
@@ -171,15 +168,13 @@ class OpenIDCodeTest(BaseTestCase):
 class RSAOpenIDCodeTest(BaseTestCase):
     def config_app(self):
         self.app.config.update({
-            'OAUTH2_JWT_ENABLED': True,
             'OAUTH2_JWT_ISS': 'Authlib',
-            'OAUTH2_JWT_KEY_PATH': get_file_path('jwk_private.json'),
+            'OAUTH2_JWT_KEY': read_file_path('jwk_private.json'),
             'OAUTH2_JWT_ALG': 'RS256',
         })
 
     def get_validate_key(self):
-        with open(get_file_path('jwk_public.json'), 'r') as f:
-            return json.load(f)
+        return read_file_path('jwk_public.json')
 
     def test_authorize_token(self):
         # generate refresh token
@@ -221,40 +216,34 @@ class RSAOpenIDCodeTest(BaseTestCase):
 class JWKSOpenIDCodeTest(RSAOpenIDCodeTest):
     def config_app(self):
         self.app.config.update({
-            'OAUTH2_JWT_ENABLED': True,
             'OAUTH2_JWT_ISS': 'Authlib',
-            'OAUTH2_JWT_KEY_PATH': get_file_path('jwks_private.json'),
+            'OAUTH2_JWT_KEY': read_file_path('jwks_private.json'),
             'OAUTH2_JWT_ALG': 'PS256',
         })
 
     def get_validate_key(self):
-        with open(get_file_path('jwks_public.json'), 'r') as f:
-            return JsonWebKey.import_key_set(json.load(f))
+        return read_file_path('jwks_public.json')
 
 
 class ECOpenIDCodeTest(RSAOpenIDCodeTest):
     def config_app(self):
         self.app.config.update({
-            'OAUTH2_JWT_ENABLED': True,
             'OAUTH2_JWT_ISS': 'Authlib',
-            'OAUTH2_JWT_KEY_PATH': get_file_path('secp521r1-private.json'),
+            'OAUTH2_JWT_KEY': read_file_path('secp521r1-private.json'),
             'OAUTH2_JWT_ALG': 'ES512',
         })
 
     def get_validate_key(self):
-        with open(get_file_path('secp521r1-public.json'), 'r') as f:
-            return json.load(f)
+        return read_file_path('secp521r1-public.json')
 
 
 class PEMOpenIDCodeTest(RSAOpenIDCodeTest):
     def config_app(self):
         self.app.config.update({
-            'OAUTH2_JWT_ENABLED': True,
             'OAUTH2_JWT_ISS': 'Authlib',
-            'OAUTH2_JWT_KEY_PATH': get_file_path('rsa_private.pem'),
+            'OAUTH2_JWT_KEY': read_file_path('rsa_private.pem'),
             'OAUTH2_JWT_ALG': 'RS256',
         })
 
     def get_validate_key(self):
-        with open(get_file_path('rsa_public.pem'), 'r') as f:
-            return f.read()
+        return read_file_path('rsa_public.pem')

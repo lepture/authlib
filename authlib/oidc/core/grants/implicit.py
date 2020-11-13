@@ -44,7 +44,7 @@ class OpenIDImplicitGrant(ImplicitGrant):
             def get_jwt_config(self):
                 return {
                     'key': read_private_key_file(key_path),
-                    'alg': 'RS512',
+                    'alg': 'RS256',
                     'iss': 'issuer-identity',
                     'exp': 3600
                 }
@@ -85,8 +85,7 @@ class OpenIDImplicitGrant(ImplicitGrant):
                 redirect_uri=self.request.redirect_uri,
                 redirect_fragment=True,
             )
-        redirect_uri = super(
-            OpenIDImplicitGrant, self).validate_authorization_request()
+        redirect_uri = super(OpenIDImplicitGrant, self).validate_authorization_request()
         try:
             validate_nonce(self.request, self.exists_nonce, required=True)
         except OAuth2Error as error:

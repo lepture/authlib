@@ -1,5 +1,4 @@
 import logging
-from authlib.deprecate import deprecate
 from authlib.common.security import generate_token
 from authlib.oauth2.rfc6749 import InvalidScopeError
 from authlib.oauth2.rfc6749.grants.authorization_code import (
@@ -34,7 +33,7 @@ class OpenIDHybridGrant(OpenIDImplicitGrant):
 
             def save_authorization_code(self, code, request):
                 client = request.client
-                item = AuthorizationCode(
+                auth_code = AuthorizationCode(
                     code=code,
                     client_id=client.client_id,
                     redirect_uri=request.redirect_uri,
@@ -42,7 +41,7 @@ class OpenIDHybridGrant(OpenIDImplicitGrant):
                     nonce=request.data.get('nonce'),
                     user_id=request.user.id,
                 )
-                item.save()
+                auth_code.save()
         """
         raise NotImplementedError()
 
@@ -63,14 +62,8 @@ class OpenIDHybridGrant(OpenIDImplicitGrant):
     def create_granted_params(self, grant_user):
         self.request.user = grant_user
         client = self.request.client
-
-        if hasattr(self, 'create_authorization_code'):  # pragma: no cover
-            deprecate('Use "generate_authorization_code" instead', '1.0')
-            code = self.create_authorization_code(client, grant_user, self.request)
-        else:
-            code = self.generate_authorization_code()
-            self.save_authorization_code(code, self.request)
-
+        code = self.generate_authorization_code()
+        self.save_authorization_code(code, self.request)
         params = [('code', code)]
         token = self.generate_token(
             grant_type='implicit',

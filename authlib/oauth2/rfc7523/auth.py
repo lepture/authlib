@@ -1,5 +1,4 @@
 from authlib.common.urls import add_params_to_qs
-from authlib.deprecate import deprecate
 from .assertion import client_secret_jwt_sign, private_key_jwt_sign
 from .client import ASSERTION_TYPE
 
@@ -80,21 +79,3 @@ class PrivateKeyJWT(ClientSecretJWT):
             token_endpoint=token_endpoint,
             claims=self.claims,
         )
-
-
-def register_session_client_auth_method(session, token_url=None, **kwargs):  # pragma: no cover
-    """Register "client_secret_jwt" or "private_key_jwt" token endpoint auth
-    method to OAuth2Session.
-
-    :param session: OAuth2Session instance.
-    :param token_url: Optional token endpoint url.
-    """
-    deprecate('Use `ClientSecretJWT` and `PrivateKeyJWT` instead', '1.0', 'Jeclj', 'ca')
-    if session.token_endpoint_auth_method == 'client_secret_jwt':
-        cls = ClientSecretJWT
-    elif session.token_endpoint_auth_method == 'private_key_jwt':
-        cls = PrivateKeyJWT
-    else:
-        raise ValueError('Invalid token_endpoint_auth_method')
-
-    session.register_client_auth_method(cls(token_url))

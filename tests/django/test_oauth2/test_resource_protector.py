@@ -58,7 +58,7 @@ class ResourceProtectorTest(TestCase):
         self.assertEqual(data['error'], 'invalid_token')
 
     def test_expired_token(self):
-        self.prepare_data(0)
+        self.prepare_data(-10)
 
         @require_oauth('profile')
         def get_user_profile(request):

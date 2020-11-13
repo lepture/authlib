@@ -47,9 +47,7 @@ __all__ = [
 
 class InsecureTransportError(OAuth2Error):
     error = 'insecure_transport'
-
-    def get_error_description(self):
-        return self.gettext('OAuth 2 MUST utilize https.')
+    description = 'OAuth 2 MUST utilize https.'
 
     @classmethod
     def check(cls, uri):
@@ -140,10 +138,7 @@ class InvalidScopeError(OAuth2Error):
     https://tools.ietf.org/html/rfc6749#section-5.2
     """
     error = 'invalid_scope'
-
-    def get_error_description(self):
-        return self.gettext(
-            'The requested scope is invalid, unknown, or malformed.')
+    description = 'The requested scope is invalid, unknown, or malformed.'
 
 
 class AccessDeniedError(OAuth2Error):
@@ -155,10 +150,7 @@ class AccessDeniedError(OAuth2Error):
     .. _`Section 4.1.2.1`: https://tools.ietf.org/html/rfc6749#section-4.1.2.1
     """
     error = 'access_denied'
-
-    def get_error_description(self):
-        return self.gettext(
-            'The resource owner or authorization server denied the request')
+    description = 'The resource owner or authorization server denied the request'
 
 
 # -- below are extended errors -- #
@@ -166,10 +158,8 @@ class AccessDeniedError(OAuth2Error):
 
 class MissingAuthorizationError(OAuth2Error):
     error = 'missing_authorization'
+    description = 'Missing "Authorization" in headers.'
     status_code = 401
-
-    def get_error_description(self):
-        return self.gettext('Missing "Authorization" in headers.')
 
 
 class UnsupportedTokenTypeError(OAuth2Error):
