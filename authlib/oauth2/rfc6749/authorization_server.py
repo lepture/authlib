@@ -69,16 +69,8 @@ class AuthorizationServer(object):
 
         self._client_auth.register(method, func)
 
-    def get_translations(self, request):
-        """Return a translations instance used for i18n error messages.
-        Framework SHOULD implement this function.
-        """
-        return None
-
-    def get_error_uris(self, request):
-        """Return a dict of error uris mapping. Framework SHOULD implement
-        this function.
-        """
+    def get_error_uri(self, request, error):
+        """Return a URI for the given error, framework may implement this method."""
         return None
 
     def send_signal(self, name, *args, **kwargs):
@@ -239,10 +231,7 @@ class AuthorizationServer(object):
         return grant
 
     def handle_error_response(self, request, error):
-        return self.handle_response(*error(
-            translations=self.get_translations(request),
-            error_uris=self.get_error_uris(request)
-        ))
+        return self.handle_response(*error(self.get_error_uri(request, error)))
 
 
 def _create_grant(grant_cls, extensions, request, server):

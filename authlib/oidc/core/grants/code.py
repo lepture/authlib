@@ -49,7 +49,7 @@ class OpenIDCode(object):
             def get_jwt_config(self, grant):
                 return {
                     'key': read_private_key_file(key_path),
-                    'alg': 'RS512',
+                    'alg': 'RS256',
                     'iss': 'issuer-identity',
                     'exp': 3600
                 }

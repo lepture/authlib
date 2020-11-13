@@ -73,10 +73,11 @@ class AuthorizationServer(_AuthorizationServer):
     def save_token(self, token, request):
         return self._save_token(token, request)
 
-    def get_error_uris(self, request):
+    def get_error_uri(self, request, error):
         error_uris = self.config.get('error_uris')
         if error_uris:
-            return dict(error_uris)
+            uris = dict(error_uris)
+            return uris.get(error.error)
 
     def create_oauth2_request(self, request):
         return create_oauth_request(request, OAuth2Request)

@@ -33,7 +33,7 @@ class OpenIDHybridGrant(OpenIDImplicitGrant):
 
             def save_authorization_code(self, code, request):
                 client = request.client
-                item = AuthorizationCode(
+                auth_code = AuthorizationCode(
                     code=code,
                     client_id=client.client_id,
                     redirect_uri=request.redirect_uri,
@@ -41,7 +41,7 @@ class OpenIDHybridGrant(OpenIDImplicitGrant):
                     nonce=request.data.get('nonce'),
                     user_id=request.user.id,
                 )
-                item.save()
+                auth_code.save()
         """
         raise NotImplementedError()
 

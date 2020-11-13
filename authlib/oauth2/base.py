@@ -18,10 +18,9 @@ class OAuth2Error(AuthlibHTTPError):
             error.append(('state', self.state))
         return error
 
-    def __call__(self, translations=None, error_uris=None):
+    def __call__(self, uri=None):
         if self.redirect_uri:
             params = self.get_body()
-            loc = add_params_to_uri(
-                self.redirect_uri, params, self.redirect_fragment)
+            loc = add_params_to_uri(self.redirect_uri, params, self.redirect_fragment)
             return 302, '', [('Location', loc)]
-        return super(OAuth2Error, self).__call__(translations, error_uris)
+        return super(OAuth2Error, self).__call__(uri=uri)

@@ -26,9 +26,7 @@ class OAuth1Error(AuthlibHTTPError):
 
 class InsecureTransportError(OAuth1Error):
     error = 'insecure_transport'
-
-    def get_error_description(self):
-        return self.gettext('OAuth 2 MUST utilize https.')
+    description = 'OAuth 2 MUST utilize https.'
 
     @classmethod
     def check(cls, uri):
@@ -52,12 +50,8 @@ class MissingRequiredParameterError(OAuth1Error):
     error = 'missing_required_parameter'
 
     def __init__(self, key):
-        super(MissingRequiredParameterError, self).__init__()
-        self._key = key
-
-    def get_error_description(self):
-        return self.gettext(
-            'missing "%(key)s" in parameters') % dict(key=self._key)
+        description = f'missing "{key}" in parameters'
+        super(MissingRequiredParameterError, self).__init__(description=description)
 
 
 class DuplicatedOAuthProtocolParameterError(OAuth1Error):
@@ -71,10 +65,8 @@ class InvalidClientError(OAuth1Error):
 
 class InvalidTokenError(OAuth1Error):
     error = 'invalid_token'
+    description = 'Invalid or expired "oauth_token" in parameters'
     status_code = 401
-
-    def get_error_description(self):
-        return self.gettext('Invalid or expired "oauth_token" in parameters')
 
 
 class InvalidSignatureError(OAuth1Error):
@@ -89,10 +81,7 @@ class InvalidNonceError(OAuth1Error):
 
 class AccessDeniedError(OAuth1Error):
     error = 'access_denied'
-
-    def get_error_description(self):
-        return self.gettext(
-            'The resource owner or authorization server denied the request')
+    description = 'The resource owner or authorization server denied the request'
 
 
 class MethodNotAllowedError(OAuth1Error):
