@@ -62,7 +62,7 @@ class ClientRegistrationEndpoint(object):
             json_data.update(data)
 
         options = self.get_claims_options()
-        claims = self.claims_class(json_data, {}, options, self.server.metadata)
+        claims = self.claims_class(json_data, {}, options, self.get_server_metadata())
         try:
             claims.validate()
         except JoseError as error:
@@ -84,7 +84,7 @@ class ClientRegistrationEndpoint(object):
 
     def get_claims_options(self):
         """Generate claims options validation from Authorization Server metadata."""
-        metadata = self.server.metadata
+        metadata = self.get_server_metadata()
         if not metadata:
             return {}
 
@@ -158,6 +158,12 @@ class ClientRegistrationEndpoint(object):
         to use their own way to generate ``client_secret``.
         """
         return binascii.hexlify(os.urandom(24)).decode('ascii')
+
+    def get_server_metadata(self):
+        """Return server metadata which includes supported grant types,
+        response types and etc.
+        """
+        raise NotImplementedError()
 
     def authenticate_token(self, request):
         """Authenticate current credential who is requesting to register a client.

@@ -77,7 +77,7 @@ class AuthorizationCodeTest(TestCase):
         rv = self.client.post(self.authorize_url)
         self.assertIn('error=access_denied', rv.location)
 
-        self.server.metadata = {'scopes_supported': ['profile']}
+        self.server.scopes_supported = ['profile']
         rv = self.client.post(self.authorize_url + '&scope=invalid&state=foo')
         self.assertIn('error=invalid_scope', rv.location)
         self.assertIn('state=foo', rv.location)

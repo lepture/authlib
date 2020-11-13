@@ -11,13 +11,12 @@ from .util import scope_to_list
 class AuthorizationServer(object):
     """Authorization server that handles Authorization Endpoint and Token
     Endpoint.
-    :param generate_token: A method to generate tokens.
-    :param metadata: A dict of Authorization Server Metadata
-    """
-    def __init__(self, generate_token=None, metadata=None):
-        self.generate_token = generate_token
 
-        self.metadata = metadata
+    :param generate_token: A method to generate tokens.
+    """
+    def __init__(self, generate_token=None, scopes_supported=None):
+        self.generate_token = generate_token
+        self.scopes_supported = scopes_supported
         self._client_auth = None
         self._authorization_grants = []
         self._token_grants = []
@@ -105,10 +104,9 @@ class AuthorizationServer(object):
         """Validate if requested scope is supported by Authorization Server.
         Developers CAN re-write this method to meet your needs.
         """
-        if scope and self.metadata:
-            scopes_supported = self.metadata.get('scopes_supported')
+        if scope and self.scopes_supported:
             scopes = set(scope_to_list(scope))
-            if scopes_supported and not set(scopes_supported).issuperset(scopes):
+            if not set(self.scopes_supported).issuperset(scopes):
                 raise InvalidScopeError(state=state)
 
     def register_grant(self, grant_cls, extensions=None):

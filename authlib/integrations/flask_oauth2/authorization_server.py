@@ -6,7 +6,6 @@ from authlib.oauth2 import (
     AuthorizationServer as _AuthorizationServer,
 )
 from authlib.oauth2.rfc6750 import BearerToken
-from authlib.oauth2.rfc8414 import AuthorizationServerMetadata
 from authlib.common.security import generate_token
 from .signals import client_authenticated, token_revoked
 from ..flask_helpers import create_oauth_request
@@ -39,13 +38,12 @@ class AuthorizationServer(_AuthorizationServer):
         server = AuthorizationServer()
         server.init_app(app, query_client, save_token)
     """
-    metadata_class = AuthorizationServerMetadata
 
     def __init__(self, app=None, query_client=None, save_token=None):
         super(AuthorizationServer, self).__init__()
         self._query_client = query_client
         self._save_token = save_token
-        self.config = {}
+        self._error_uris = None
         if app is not None:
             self.init_app(app)
 
@@ -57,15 +55,8 @@ class AuthorizationServer(_AuthorizationServer):
             self._save_token = save_token
 
         self.generate_token = self.create_bearer_token_generator(app.config)
-
-        metadata_file = app.config.get('OAUTH2_METADATA_FILE')
-        if metadata_file:
-            with open(metadata_file) as f:
-                metadata = self.metadata_class(json.load(f))
-                metadata.validate()
-                self.metadata = metadata
-
-        self.config.setdefault('error_uris', app.config.get('OAUTH2_ERROR_URIS'))
+        self.scopes_supported = app.config.get('OAUTH2_SCOPES_SUPPORTED')
+        self._error_uris = app.config.get('OAUTH2_ERROR_URIS')
 
     def query_client(self, client_id):
         return self._query_client(client_id)
@@ -74,9 +65,8 @@ class AuthorizationServer(_AuthorizationServer):
         return self._save_token(token, request)
 
     def get_error_uri(self, request, error):
-        error_uris = self.config.get('error_uris')
-        if error_uris:
-            uris = dict(error_uris)
+        if self._error_uris:
+            uris = dict(self._error_uris)
             return uris.get(error.error)
 
     def create_oauth2_request(self, request):

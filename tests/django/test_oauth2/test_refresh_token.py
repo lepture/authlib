@@ -108,7 +108,7 @@ class RefreshTokenTest(TestCase):
 
     def test_invalid_scope(self):
         server = self.create_server()
-        server.metadata = {'scopes_supported': ['profile']}
+        server.scopes_supported = ['profile']
         self.prepare_client()
         self.prepare_token()
         request = self.factory.post(

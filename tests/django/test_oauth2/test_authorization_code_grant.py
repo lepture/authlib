@@ -88,7 +88,7 @@ class AuthorizationCodeTest(TestCase):
 
     def test_get_consent_grant_scope(self):
         server = self.create_server()
-        server.metadata = {'scopes_supported': ['profile']}
+        server.scopes_supported = ['profile']
 
         self.prepare_data()
         base_url = '/authorize?response_type=code&client_id=client'

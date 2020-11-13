@@ -5,24 +5,6 @@ RFC8414: OAuth 2.0 Authorization Server Metadata
 
 .. module:: authlib.oauth2.rfc8414
 
-:class:`AuthorizationServerMetadata` is enabled by default in
-framework integrations:
-
-1. :ref:`flask_oauth2_server`
-2. :ref:`django_oauth2_server`
-
-Configuration
--------------
-
-In :ref:`flask_oauth2_server`, config with::
-
-    OAUTH2_METADATA_FILE = '/www/.well-known/oauth-authorization-server'
-
-In :ref:`django_oauth2_server`, add into settings::
-
-    AUTHLIB_OAUTH2_PROVIDER = {
-        'metadata_file': '/www/.well-known/oauth-authorization-server'
-    }
 
 API Reference
 -------------
