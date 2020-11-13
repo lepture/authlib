@@ -11,7 +11,7 @@ with open('README.rst') as f:
 
 
 client_requires = ['requests']
-crypto_requires = ['cryptography']
+crypto_requires = ['cryptography>=3.2,<4']
 
 
 setup(
