@@ -1,4 +1,4 @@
-from authlib.jose import JWT
+from authlib.jose import JsonWebToken
 from authlib.oidc.core import ImplicitIDToken
 from authlib.oidc.core.grants import (
     OpenIDImplicitGrant as _OpenIDImplicitGrant
@@ -47,7 +47,7 @@ class ImplicitTest(TestCase):
         db.session.commit()
 
     def validate_claims(self, id_token, params):
-        jwt = JWT(['HS256'])
+        jwt = JsonWebToken(['HS256'])
         claims = jwt.decode(
             id_token, 'secret',
             claims_cls=ImplicitIDToken,
