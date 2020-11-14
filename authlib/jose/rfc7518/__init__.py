@@ -1,7 +1,6 @@
 from .oct_key import OctKey
 from .rsa_key import RSAKey
 from .ec_key import ECKey
-from .key_util import import_key, export_key
 from .jws_algs import JWS_ALGORITHMS
 from .jwe_algs import JWE_ALG_ALGORITHMS, ECDHAlgorithm
 from .jwe_encs import JWE_ENC_ALGORITHMS
@@ -30,6 +29,4 @@ __all__ = [
     'RSAKey',
     'ECKey',
     'ECDHAlgorithm',
-    'import_key',
-    'export_key',
 ]

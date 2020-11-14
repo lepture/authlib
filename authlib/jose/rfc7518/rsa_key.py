@@ -6,29 +6,23 @@ from cryptography.hazmat.primitives.asymmetric.rsa import (
 )
 from cryptography.hazmat.backends import default_backend
 from authlib.common.encoding import base64_to_int, int_to_base64
-from .key_util import export_key, import_key
-from ..rfc7517 import Key
+from ..rfc7517 import AsymmetricKey
 
 
-class RSAKey(Key):
+class RSAKey(AsymmetricKey):
     """Key class of the ``RSA`` key type."""
 
     kty = 'RSA'
-    RAW_KEY_CLS = (RSAPublicKey, RSAPrivateKeyWithSerialization)
+    PUBLIC_KEY_CLS = RSAPublicKey
+    PRIVATE_KEY_CLS = RSAPrivateKeyWithSerialization
+
+    PUBLIC_KEY_FIELDS = ['e', 'n']
+    PRIVATE_KEY_FIELDS = ['d', 'dp', 'dq', 'e', 'n', 'p', 'q', 'qi']
     REQUIRED_JSON_FIELDS = ['e', 'n']
+    SSH_PUBLIC_PREFIX = b'ssh-rsa'
 
-    def as_pem(self, is_private=False, password=None):
-        """Export key into PEM format bytes.
-
-        :param is_private: export private key or public key
-        :param password: encrypt private key with password
-        :return: bytes
-        """
-        return export_key(self, is_private=is_private, password=password)
-
-    @staticmethod
-    def dumps_private_key(raw_key):
-        numbers = raw_key.private_numbers()
+    def dumps_private_key(self):
+        numbers = self.private_key.private_numbers()
         return {
             'n': int_to_base64(numbers.public_numbers.n),
             'e': int_to_base64(numbers.public_numbers.e),
@@ -40,33 +34,24 @@ class RSAKey(Key):
             'qi': int_to_base64(numbers.iqmp)
         }
 
-    @staticmethod
-    def dumps_public_key(raw_key):
-        numbers = raw_key.public_numbers()
+    def dumps_public_key(self):
+        numbers = self.public_key.public_numbers()
         return {
             'n': int_to_base64(numbers.n),
             'e': int_to_base64(numbers.e)
         }
 
-    @staticmethod
-    def loads_private_key(obj):
+    def load_private_key(self):
+        obj = self._dict_data
+
         if 'oth' in obj:  # pragma: no cover
             # https://tools.ietf.org/html/rfc7518#section-6.3.2.7
             raise ValueError('"oth" is not supported yet')
 
-        props = ['p', 'q', 'dp', 'dq', 'qi']
-        props_found = [prop in obj for prop in props]
-        any_props_found = any(props_found)
-
-        if any_props_found and not all(props_found):
-            raise ValueError(
-                'RSA key must include all parameters '
-                'if any are present besides d')
-
         public_numbers = RSAPublicNumbers(
             base64_to_int(obj['e']), base64_to_int(obj['n']))
 
-        if any_props_found:
+        if has_all_prime_factors(obj):
             numbers = RSAPrivateNumbers(
                 d=base64_to_int(obj['d']),
                 p=base64_to_int(obj['p']),
@@ -90,25 +75,15 @@ class RSAKey(Key):
 
         return numbers.private_key(default_backend())
 
-    @staticmethod
-    def loads_public_key(obj):
+    def load_public_key(self):
         numbers = RSAPublicNumbers(
-            base64_to_int(obj['e']),
-            base64_to_int(obj['n'])
+            base64_to_int(self._dict_data['e']),
+            base64_to_int(self._dict_data['n'])
         )
         return numbers.public_key(default_backend())
 
     @classmethod
-    def import_key(cls, raw, options=None):
-        """Import a key from PEM or dict data."""
-        return import_key(
-            cls, raw,
-            RSAPublicKey, RSAPrivateKeyWithSerialization,
-            b'ssh-rsa', options
-        )
-
-    @classmethod
-    def generate_key(cls, key_size=2048, options=None, is_private=False):
+    def generate_key(cls, key_size=2048, options=None, is_private=False) -> 'RSAKey':
         if key_size < 512:
             raise ValueError('key_size must not be less than 512')
         if key_size % 8 != 0:
@@ -121,3 +96,28 @@ class RSAKey(Key):
         if not is_private:
             raw_key = raw_key.public_key()
         return cls.import_key(raw_key, options=options)
+
+    @classmethod
+    def import_dict_key(cls, raw, options=None):
+        cls.check_required_fields(raw)
+        key = cls(options=options)
+        key._dict_data = raw
+        if 'd' in raw and not has_all_prime_factors(raw):
+            # reload dict key
+            key.load_raw_key()
+            key.load_dict_key()
+        return key
+
+
+def has_all_prime_factors(obj):
+    props = ['p', 'q', 'dp', 'dq', 'qi']
+    props_found = [prop in obj for prop in props]
+    if all(props_found):
+        return True
+
+    if any(props_found):
+        raise ValueError(
+            'RSA key must include all parameters '
+            'if any are present besides d')
+
+    return False

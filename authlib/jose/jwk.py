@@ -15,5 +15,4 @@ def dumps(key, kty=None, **params):
         params['kty'] = kty
 
     key = JsonWebKey.import_key(key, params)
-    data = key.as_dict()
-    return data
+    return dict(key)
