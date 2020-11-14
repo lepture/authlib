@@ -28,6 +28,21 @@ class OctKeyTest(BaseTest):
     def test_invalid_oct_key(self):
         self.assertRaises(ValueError, OctKey.import_key, {})
 
+    def test_generate_oct_key(self):
+        self.assertRaises(ValueError, OctKey.generate_key, 251)
+
+        with self.assertRaises(ValueError) as cm:
+            OctKey.generate_key(is_private=False)
+
+        self.assertEqual(str(cm.exception), 'oct key can not be generated as public')
+
+        key = OctKey.generate_key()
+        self.assertIn('kid', key.as_dict())
+        self.assertNotIn('use', key.as_dict())
+
+        key2 = OctKey.import_key(key, {'use': 'sig'})
+        self.assertIn('use', key2.as_dict())
+
 
 class RSAKeyTest(BaseTest):
     def test_import_ssh_pem(self):
@@ -131,6 +146,8 @@ class ECKeyTest(BaseTest):
         self.assertRaises(ValueError, ECKey.import_key, {'kty': 'EC'})
 
     def test_ec_key_generate(self):
+        self.assertRaises(ValueError, ECKey.generate_key, 'Invalid')
+
         key1 = ECKey.generate_key('P-384', is_private=True)
         self.assertIn(b'PRIVATE', key1.as_pem(is_private=True))
         self.assertIn(b'PUBLIC', key1.as_pem(is_private=False))
@@ -166,7 +183,7 @@ class OKPKeyTest(BaseTest):
         self.assertEqual(obj['crv'], 'Ed25519')
         self.assertIn('d', obj)
 
-    def test_loads_okp_private_key(self):
+    def test_import_okp_private_dict(self):
         obj = {
             'x': '11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo',
             'd': 'nWGxne_9WmC6hEr0kuwsxERJxWl7MmkZcDusAxyuf2A',
@@ -190,8 +207,30 @@ class OKPKeyTest(BaseTest):
 
 
 class JWKTest(BaseTest):
+    def test_generate_keys(self):
+        key = JsonWebKey.generate_key(kty='oct', crv_or_size=256, is_private=True)
+        self.assertEqual(key['kty'], 'oct')
+
+        key = JsonWebKey.generate_key(kty='EC', crv_or_size='P-256')
+        self.assertEqual(key['kty'], 'EC')
+
+        key = JsonWebKey.generate_key(kty='RSA', crv_or_size=2048)
+        self.assertEqual(key['kty'], 'RSA')
+
+        key = JsonWebKey.generate_key(kty='OKP', crv_or_size='Ed25519')
+        self.assertEqual(key['kty'], 'OKP')
+
     def test_import_keys(self):
-        pass
+        rsa_pub_pem = read_file_path('rsa_public.pem')
+        self.assertRaises(ValueError, JsonWebKey.import_key, rsa_pub_pem, {'kty': 'EC'})
+
+        key = JsonWebKey.import_key(raw=rsa_pub_pem, options={'kty': 'RSA'})
+        self.assertIn('e', dict(key))
+        self.assertIn('n', dict(key))
+
+        key = JsonWebKey.import_key(raw=rsa_pub_pem)
+        self.assertIn('e', dict(key))
+        self.assertIn('n', dict(key))
 
     def test_thumbprint(self):
         # https://tools.ietf.org/html/rfc7638#section-3.1

@@ -188,5 +188,9 @@ class AsymmetricKey(Key):
         return key
 
     @classmethod
+    def validate_raw_key(cls, key):
+        return isinstance(key, cls.PUBLIC_KEY_CLS) or isinstance(key, cls.PRIVATE_KEY_CLS)
+
+    @classmethod
     def generate_key(cls, crv_or_size, options=None, is_private=False):
         raise NotImplementedError()

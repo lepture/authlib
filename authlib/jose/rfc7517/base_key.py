@@ -108,3 +108,7 @@ class Key(object):
         for k in cls.REQUIRED_JSON_FIELDS:
             if k not in data:
                 raise ValueError('Missing required field: "{}"'.format(k))
+
+    @classmethod
+    def validate_raw_key(cls, key):
+        raise NotImplementedError()

@@ -46,6 +46,10 @@ class OctKey(Key):
         return tokens
 
     @classmethod
+    def validate_raw_key(cls, key):
+        return isinstance(key, bytes)
+
+    @classmethod
     def import_key(cls, raw, options=None):
         """Import a key from bytes, string, or dict data."""
         if isinstance(raw, cls):
@@ -63,7 +67,7 @@ class OctKey(Key):
         return key
 
     @classmethod
-    def generate_key(cls, key_size=256, options=None, is_private=False):
+    def generate_key(cls, key_size=256, options=None, is_private=True):
         """Generate a ``OctKey`` with the given bit size."""
         if not is_private:
             raise ValueError('oct key can not be generated as public')

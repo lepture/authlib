@@ -36,7 +36,7 @@ class JsonWebKey(object):
             raw_key = load_pem_key(raw)
             for _kty in cls.JWK_KEY_CLS:
                 key_cls = cls.JWK_KEY_CLS[_kty]
-                if isinstance(raw_key, key_cls.RAW_KEY_CLS):
+                if key_cls.validate_raw_key(raw_key):
                     return key_cls.import_key(raw_key, options)
 
         key_cls = cls.JWK_KEY_CLS[kty]
