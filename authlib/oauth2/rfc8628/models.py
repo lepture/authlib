@@ -27,4 +27,6 @@ class DeviceCredentialDict(dict, DeviceCredentialMixin):
 
     def is_expired(self):
         expires_at = self.get('expires_at')
-        return expires_at < time.time()
+        if expires_at:
+            return expires_at < time.time()
+        return False

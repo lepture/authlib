@@ -19,28 +19,7 @@ from .util import (
 log = logging.getLogger(__name__)
 
 
-class OpenIDCode(object):
-    """An extension from OpenID Connect for "grant_type=code" request.
-    """
-    def __init__(self, require_nonce=False):
-        self.require_nonce = require_nonce
-
-    def exists_nonce(self, nonce, request):
-        """Check if the given nonce is existing in your database. Developers
-        MUST implement this method in subclass, e.g.::
-
-            def exists_nonce(self, nonce, request):
-                exists = AuthorizationCode.query.filter_by(
-                    client_id=request.client_id, nonce=nonce
-                ).first()
-                return bool(exists)
-
-        :param nonce: A string of "nonce" parameter in request
-        :param request: OAuth2Request instance
-        :return: Boolean
-        """
-        raise NotImplementedError()
-
+class OpenIDToken(object):
     def get_jwt_config(self, grant):  # pragma: no cover
         """Get the JWT configuration for OpenIDCode extension. The JWT
         configuration will be used to generate ``id_token``. Developers
@@ -59,7 +38,7 @@ class OpenIDCode(object):
         """
         raise NotImplementedError()
 
-    def generate_user_info(self, user, scope):  # pragma: no cover
+    def generate_user_info(self, user, scope):
         """Provide user information for the given scope. Developers
         MUST implement this method in subclass, e.g.::
 
@@ -102,6 +81,47 @@ class OpenIDCode(object):
         id_token = generate_id_token(token, user_info, **config)
         token['id_token'] = id_token
         return token
+
+    def __call__(self, grant):
+        grant.register_hook('process_token', self.process_token)
+
+
+class OpenIDCode(OpenIDToken):
+    """An extension from OpenID Connect for "grant_type=code" request. Developers
+    MUST implement the missing methods::
+
+        class MyOpenIDCode(OpenIDCode):
+            def get_jwt_config(self):
+                return {...}
+
+            def exists_nonce(self, nonce, request):
+                return check_if_nonce_in_cache(request.client_id, nonce)
+
+            def generate_user_info(self, user, scope):
+                return {...}
+
+    The register this extension with AuthorizationCodeGrant::
+
+        authorization_server.register_grant(AuthorizationCodeGrant, extensions=[MyOpenIDCode()])
+    """
+    def __init__(self, require_nonce=False):
+        self.require_nonce = require_nonce
+
+    def exists_nonce(self, nonce, request):
+        """Check if the given nonce is existing in your database. Developers
+        MUST implement this method in subclass, e.g.::
+
+            def exists_nonce(self, nonce, request):
+                exists = AuthorizationCode.query.filter_by(
+                    client_id=request.client_id, nonce=nonce
+                ).first()
+                return bool(exists)
+
+        :param nonce: A string of "nonce" parameter in request
+        :param request: OAuth2Request instance
+        :return: Boolean
+        """
+        raise NotImplementedError()
 
     def validate_openid_authorization_request(self, grant):
         validate_nonce(grant.request, self.exists_nonce, self.require_nonce)
