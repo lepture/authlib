@@ -39,10 +39,12 @@ class OctKey(Key):
         k = to_unicode(urlsafe_b64encode(self.raw_key))
         self._dict_data = {'kty': self.kty, 'k': k}
 
-    def as_dict(self, is_private=False):
+    def as_dict(self, is_private=False, **params):
         tokens = self.tokens
         if 'kid' not in tokens:
             tokens['kid'] = self.thumbprint()
+
+        tokens.update(params)
         return tokens
 
     @classmethod

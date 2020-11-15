@@ -81,12 +81,12 @@ class Key(object):
                 if use != 'enc':
                     raise InvalidUseError()
 
-    def as_dict(self, is_private=False):
+    def as_dict(self, is_private=False, **params):
         raise NotImplementedError()
 
-    def as_json(self, is_private=False):
+    def as_json(self, is_private=False, **params):
         """Represent this key as a JSON string."""
-        obj = self.as_dict(is_private)
+        obj = self.as_dict(is_private, **params)
         return json_dumps(obj)
 
     def thumbprint(self):

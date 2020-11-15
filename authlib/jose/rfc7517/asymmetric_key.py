@@ -85,7 +85,7 @@ class AsymmetricKey(Key):
     def load_public_key(self):
         raise NotImplementedError()
 
-    def as_dict(self, is_private=False):
+    def as_dict(self, is_private=False, **params):
         """Represent this key as a dict of the JSON Web Key."""
         tokens = self.tokens
         if is_private and 'd' not in tokens:
@@ -95,11 +95,14 @@ class AsymmetricKey(Key):
         if 'd' in tokens and not is_private:
             # filter out private fields
             tokens = {k: tokens[k] for k in tokens if k in self.PUBLIC_KEY_FIELDS}
+            tokens['kty'] = self.kty
             if kid:
                 tokens['kid'] = kid
 
         if not kid:
             tokens['kid'] = self.thumbprint()
+
+        tokens.update(params)
         return tokens
 
     def as_key(self, is_private=False):
@@ -107,11 +110,6 @@ class AsymmetricKey(Key):
         if is_private:
             return self.get_private_key()
         return self.get_public_key()
-
-    def as_json(self, is_private=False):
-        """Represent this key as a JSON string."""
-        obj = self.as_dict(is_private)
-        return json_dumps(obj)
 
     def as_bytes(self, encoding=None, is_private=False, password=None):
         """Export key into PEM/DER format bytes.
