@@ -89,6 +89,7 @@ class DeviceCodeGrantTest(TestCase):
             'redirect_uris': ['http://localhost/authorized'],
             'scope': 'profile',
             'grant_types': [grant_type],
+            'token_endpoint_auth_method': 'none',
         })
         db.session.add(client)
         db.session.commit()
@@ -98,13 +99,7 @@ class DeviceCodeGrantTest(TestCase):
         self.prepare_data()
         rv = self.client.post('/oauth/token', data={
             'grant_type': DeviceCodeGrant.GRANT_TYPE,
-        })
-        resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_request')
-
-        rv = self.client.post('/oauth/token', data={
-            'grant_type': DeviceCodeGrant.GRANT_TYPE,
-            'device_code': 'valid-device',
+            'client_id': 'test',
         })
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'invalid_request')
@@ -125,7 +120,7 @@ class DeviceCodeGrantTest(TestCase):
             'client_id': 'invalid',
         })
         resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'unauthorized_client')
+        self.assertEqual(resp['error'], 'invalid_client')
 
         self.prepare_data(grant_type='password')
         rv = self.client.post('/oauth/token', data={
