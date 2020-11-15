@@ -52,6 +52,7 @@ class JsonWebKey(object):
         if isinstance(raw, dict) and 'keys' in raw:
             keys = raw.get('keys')
             return KeySet([cls.import_key(k) for k in keys])
+        raise ValueError('Invalid key set format')
 
 
 def _transform_raw_key(raw):

@@ -1,7 +1,7 @@
 import unittest
 from authlib.jose import JsonWebKey, KeySet
 from authlib.jose import OctKey, RSAKey, ECKey, OKPKey
-from authlib.common.encoding import base64_to_int
+from authlib.common.encoding import base64_to_int, json_dumps
 from tests.util import read_file_path
 
 
@@ -231,6 +231,22 @@ class JWKTest(BaseTest):
         key = JsonWebKey.import_key(raw=rsa_pub_pem)
         self.assertIn('e', dict(key))
         self.assertIn('n', dict(key))
+
+    def test_import_key_set(self):
+        jwks_public = read_file_path('jwks_public.json')
+        key_set1 = JsonWebKey.import_key_set(jwks_public)
+        key1 = key_set1.find_by_kid('abc')
+        self.assertEqual(key1['e'], 'AQAB')
+
+        key_set2 = JsonWebKey.import_key_set(jwks_public['keys'])
+        key2 = key_set2.find_by_kid('abc')
+        self.assertEqual(key2['e'], 'AQAB')
+
+        key_set3 = JsonWebKey.import_key_set(json_dumps(jwks_public))
+        key3 = key_set3.find_by_kid('abc')
+        self.assertEqual(key3['e'], 'AQAB')
+
+        self.assertRaises(ValueError, JsonWebKey.import_key_set, 'invalid')
 
     def test_thumbprint(self):
         # https://tools.ietf.org/html/rfc7638#section-3.1
