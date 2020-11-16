@@ -110,7 +110,7 @@ it is also possible to use signal to listen for token updating::
     from authlib.integrations.django_client import token_update
 
     @receiver(token_update)
-    def on_token_update(sender, token, refresh_token=None, access_token=None):
+    def on_token_update(sender, name, token, refresh_token=None, access_token=None, **kwargs):
         if refresh_token:
             item = OAuth2Token.find(name=name, refresh_token=refresh_token)
         elif access_token:
