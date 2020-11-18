@@ -3,6 +3,11 @@
 JSON Web Key (JWK)
 ==================
 
+.. versionchanged:: v0.15
+
+    This documentation is updated for v0.15. Please check "v0.14" documentation for
+    Authlib v0.14.
+
 .. module:: authlib.jose
     :noindex:
 
@@ -17,33 +22,26 @@ that represents a cryptographic key. An example would help a lot::
       "kid": "iss-a"
     }
 
-This is an Elliptic Curve Public Key represented by JSON data structure. How
-do we ``dumps`` a key into JWK, and ``loads`` JWK back into key? The interface
-of :class:`JsonWebKey` contains these two methods.
+This is an Elliptic Curve Public Key represented by JSON data structure.
+:meth:`JsonWebKey.import_key` will convert PEM, JSON, bytes into these keys:
+
+1. :class:`OctKey`
+2. :class:`RSAKey`
+3. :class:`ECKey`
+4. :class:`OKPKey`
 
 Algorithms for ``kty`` (Key Type) is defined by :ref:`specs/rfc7518`.
-Available ``kty`` values are: **EC**, **RSA** and **oct**. Initialize a JWK
-instance with JWA::
+Import a key with::
 
     from authlib.jose import JsonWebKey
-    from authlib.jose import JWK_ALGORITHMS
 
-    jwk = JsonWebKey(algorithms=JWK_ALGORITHMS)
-    key = read_file('public.pem')
-    obj = jwk.dumps(key, kty='RSA')
-    # obj is a dict, you may turn it into JSON
-    key = jwk.loads(obj)
+    key_data = read_file('public.pem')
+    key = JsonWebKey.import_key(key_data, {'kty': 'RSA'})
 
-There is an ``jwk`` instance in ``authlib.jose``, so that you don't need to
-initialize JWK yourself, try::
+    key.as_dict()
+    key.as_json()
 
-    from authlib.jose import jwk
-    key = read_file('public.pem')
-    obj = jwk.dumps(key, kty='RSA')
-    # obj is a dict, you may turn it into JSON
-    key = jwk.loads(obj)
-
-You may pass extra parameters into ``dumps`` method, available parameters can
+You may pass extra parameters into ``import_key`` method, available parameters can
 be found on RFC7517 `Section 4`_.
 
 .. _`Section 4`: https://tools.ietf.org/html/rfc7517#section-4

@@ -80,9 +80,8 @@ Generate a JWS compact serialization would be easy with
 :meth:`JsonWebSignature.serialize_compact`, build a JWS instance with JWA::
 
     from authlib.jose import JsonWebSignature
-    from authlib.jose import JWS_ALGORITHMS
 
-    jws = JsonWebSignature(algorithms=JWS_ALGORITHMS)
+    jws = JsonWebSignature()
     # alg is a required parameter name
     protected = {'alg': 'HS256'}
     payload = b'example'
@@ -188,6 +187,6 @@ In this case, if there are header parameter names out of the registered header
 parameter names scope, you can pass the names::
 
     private_headers = ['h1', 'h2']
-    jws = JsonWebSignature(algorithms=JWS_ALGORITHMS, private_headers=private_headers)
+    jws = JsonWebSignature(private_headers=private_headers)
 
 .. _`Section 4.1`: https://tools.ietf.org/html/rfc7515#section-4.1

@@ -88,22 +88,35 @@ class FlaskOAuthTest(TestCase):
     def test_register_oauth1_remote_app(self):
         app = Flask(__name__)
         oauth = OAuth(app)
-        oauth.register(
-            'dev',
+        client_kwargs = dict(
             client_id='dev',
             client_secret='dev',
             request_token_url='https://i.b/reqeust-token',
             api_base_url='https://i.b/api',
             access_token_url='https://i.b/token',
-            authorize_url='https://i.b/authorize'
+            authorize_url='https://i.b/authorize',
+            fetch_request_token=lambda: None,
+            save_request_token=lambda token: token,
         )
+        oauth.register('dev', **client_kwargs)
         self.assertEqual(oauth.dev.name, 'dev')
         self.assertEqual(oauth.dev.client_id, 'dev')
 
-    def test_oauth1_authorize(self):
+        oauth = OAuth(app, cache=SimpleCache())
+        oauth.register('dev', **client_kwargs)
+        self.assertEqual(oauth.dev.name, 'dev')
+        self.assertEqual(oauth.dev.client_id, 'dev')
+
+    def test_oauth1_authorize_cache(self):
+        self.run_oauth1_authorize(cache=SimpleCache())
+
+    def test_oauth1_authorize_session(self):
+        self.run_oauth1_authorize(cache=None)
+
+    def run_oauth1_authorize(self, cache):
         app = Flask(__name__)
         app.secret_key = '!'
-        oauth = OAuth(app, cache=SimpleCache())
+        oauth = OAuth(app, cache=cache)
         client = oauth.register(
             'dev',
             client_id='dev',
@@ -165,6 +178,9 @@ class FlaskOAuthTest(TestCase):
             self.assertIn('state=', url)
             state = session['_dev_authlib_state_']
             self.assertIsNotNone(state)
+            # duplicate request will create the same location
+            resp2 = client.authorize_redirect('https://b.com/bar')
+            self.assertEqual(resp2.headers['Location'], url)
 
         with app.test_request_context(path='/?code=a&state={}'.format(state)):
             # session is cleared in tests
@@ -177,6 +193,24 @@ class FlaskOAuthTest(TestCase):
 
         with app.test_request_context():
             self.assertEqual(client.token, None)
+
+    def test_oauth2_authorize_access_denied(self):
+        app = Flask(__name__)
+        app.secret_key = '!'
+        oauth = OAuth(app)
+        client = oauth.register(
+            'dev',
+            client_id='dev',
+            client_secret='dev',
+            api_base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+            authorize_url='https://i.b/authorize'
+        )
+
+        with app.test_request_context(path='/?error=access_denied&error_description=Not+Allowed'):
+            # session is cleared in tests
+            with mock.patch('requests.sessions.Session.send'):
+                self.assertRaises(OAuthError, client.authorize_access_token)
 
     def test_oauth2_authorize_via_custom_client(self):
         class CustomRemoteApp(FlaskRemoteApp):
@@ -210,7 +244,7 @@ class FlaskOAuthTest(TestCase):
             api_base_url='https://i.b/api',
             access_token_url='https://i.b/token',
         )
-        self.assertRaises(RuntimeError, client.create_authorization_url)
+        self.assertRaises(RuntimeError, lambda: client.create_authorization_url(None))
 
         client = oauth.register(
             'dev2',
@@ -252,6 +286,9 @@ class FlaskOAuthTest(TestCase):
             self.assertIsNotNone(state)
             verifier = session['_dev_authlib_code_verifier_']
             self.assertIsNotNone(verifier)
+
+            resp2 = client.authorize_redirect('https://b.com/bar')
+            self.assertEqual(resp2.headers['Location'], url)
 
         def fake_send(sess, req, **kwargs):
             self.assertIn('code_verifier={}'.format(verifier), req.body)

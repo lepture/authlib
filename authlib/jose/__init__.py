@@ -5,51 +5,58 @@
     JOSE implementation in Authlib. Tracking the status of JOSE specs at
     https://tools.ietf.org/wg/jose/
 """
-
 from .rfc7515 import (
     JsonWebSignature, JWSAlgorithm, JWSHeader, JWSObject,
 )
 from .rfc7516 import (
     JsonWebEncryption, JWEAlgorithm, JWEEncAlgorithm, JWEZipAlgorithm,
 )
-from .rfc7517 import JsonWebKey, JWKAlgorithm
+from .rfc7517 import Key, KeySet, JsonWebKey
 from .rfc7518 import (
-    JWS_ALGORITHMS,
-    JWE_ALGORITHMS,
-    JWE_ALG_ALGORITHMS,
-    JWE_ENC_ALGORITHMS,
-    JWE_ZIP_ALGORITHMS,
-    JWK_ALGORITHMS,
+    register_jws_rfc7518,
+    register_jwe_rfc7518,
+    ECDHAlgorithm,
+    OctKey,
+    RSAKey,
+    ECKey,
 )
-from .rfc7519 import JWT, JsonWebToken, BaseClaims, JWTClaims
-from .jwk import jwk
+from .rfc7519 import JsonWebToken, BaseClaims, JWTClaims
+from .rfc8037 import OKPKey, register_jws_rfc8037
+from .drafts import register_jwe_draft
+
+from .errors import JoseError
+
+# register algorithms
+register_jws_rfc7518(JsonWebSignature)
+register_jws_rfc8037(JsonWebSignature)
+
+register_jwe_rfc7518(JsonWebEncryption)
+register_jwe_draft(JsonWebEncryption)
+
+# attach algorithms
+ECDHAlgorithm.ALLOWED_KEY_CLS = (ECKey, OKPKey)
+
+# register supported keys
+JsonWebKey.JWK_KEY_CLS = {
+    OctKey.kty: OctKey,
+    RSAKey.kty: RSAKey,
+    ECKey.kty: ECKey,
+    OKPKey.kty: OKPKey,
+}
 
 jwt = JsonWebToken()
 
-# attach algorithms
-JsonWebSignature.JWS_AVAILABLE_ALGORITHMS = {alg.name: alg for alg in JWS_ALGORITHMS}
-JsonWebEncryption.JWE_AVAILABLE_ALGORITHMS = {alg.name: alg for alg in JWE_ALGORITHMS}
-JsonWebKey.JWK_AVAILABLE_ALGORITHMS = {alg.name: alg for alg in JWK_ALGORITHMS}
-
-# compatible imports
-JWS = JsonWebSignature
-JWE = JsonWebEncryption
-JWK = JsonWebKey
-
 
 __all__ = [
+    'JoseError',
+
     'JWS', 'JsonWebSignature', 'JWSAlgorithm', 'JWSHeader', 'JWSObject',
     'JWE', 'JsonWebEncryption', 'JWEAlgorithm', 'JWEEncAlgorithm', 'JWEZipAlgorithm',
 
-    'JWK', 'JsonWebKey', 'JWKAlgorithm',
+    'JWK', 'JsonWebKey', 'Key', 'KeySet',
 
-    'JWS_ALGORITHMS',
-    'JWE_ALGORITHMS',
-    'JWE_ALG_ALGORITHMS',
-    'JWE_ENC_ALGORITHMS',
-    'JWE_ZIP_ALGORITHMS',
-    'JWK_ALGORITHMS',
+    'OctKey', 'RSAKey', 'ECKey', 'OKPKey',
 
     'JWT', 'JsonWebToken', 'BaseClaims', 'JWTClaims',
-    'jwk', 'jwt',
+    'jwt',
 ]

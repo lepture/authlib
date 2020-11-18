@@ -38,14 +38,14 @@ class OpenIDProviderMetadataTest(unittest.TestCase):
         metadata = OpenIDProviderMetadata()
         with self.assertRaises(ValueError) as cm:
             metadata.validate_jwks_uri()
-            self.assertEqual('"jwks_uri" is required', str(cm.exception))
+        self.assertEqual('"jwks_uri" is required', str(cm.exception))
 
         metadata = OpenIDProviderMetadata({
             'jwks_uri': 'http://authlib.org/jwks.json'
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_jwks_uri()
-            self.assertIn('https', str(cm.exception))
+        self.assertIn('https', str(cm.exception))
 
         metadata = OpenIDProviderMetadata({
             'jwks_uri': 'https://authlib.org/jwks.json'
@@ -79,7 +79,7 @@ class OpenIDProviderMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_id_token_signing_alg_values_supported()
-            self.assertIn('RS256', str(cm.exception))
+        self.assertIn('RS256', str(cm.exception))
 
     def test_validate_id_token_encryption_alg_values_supported(self):
         self._call_validate_array(
@@ -121,7 +121,7 @@ class OpenIDProviderMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_request_object_signing_alg_values_supported()
-            self.assertIn('SHOULD support none and RS256', str(cm.exception))
+        self.assertIn('SHOULD support none and RS256', str(cm.exception))
 
     def test_validate_request_object_encryption_alg_values_supported(self):
         self._call_validate_array(
@@ -192,7 +192,7 @@ class OpenIDProviderMetadataTest(unittest.TestCase):
         metadata = OpenIDProviderMetadata({key: 'str'})
         with self.assertRaises(ValueError) as cm:
             _validate(metadata)
-            self.assertIn('MUST be boolean', str(cm.exception))
+        self.assertIn('MUST be boolean', str(cm.exception))
         metadata = OpenIDProviderMetadata({key: True})
         _validate(metadata)
 
@@ -204,7 +204,7 @@ class OpenIDProviderMetadataTest(unittest.TestCase):
         if required:
             with self.assertRaises(ValueError) as cm:
                 _validate(metadata)
-                self.assertEqual('"{}" is required'.format(key), str(cm.exception))
+            self.assertEqual('"{}" is required'.format(key), str(cm.exception))
         else:
             _validate(metadata)
 
@@ -212,7 +212,7 @@ class OpenIDProviderMetadataTest(unittest.TestCase):
         metadata = OpenIDProviderMetadata({key: 'foo'})
         with self.assertRaises(ValueError) as cm:
             _validate(metadata)
-            self.assertIn('JSON array', str(cm.exception))
+        self.assertIn('JSON array', str(cm.exception))
 
         # valid
         metadata = OpenIDProviderMetadata({key: valid_value})
@@ -222,9 +222,7 @@ class OpenIDProviderMetadataTest(unittest.TestCase):
         metadata = OpenIDProviderMetadata({key: invalid_value})
         with self.assertRaises(ValueError) as cm:
             getattr(metadata, 'validate_' + key)()
-            self.assertEqual(
-                '"{}" contains invalid values'.format(key),
-                str(cm.exception)
-            )
-
-
+        self.assertEqual(
+            '"{}" contains invalid values'.format(key),
+            str(cm.exception)
+        )

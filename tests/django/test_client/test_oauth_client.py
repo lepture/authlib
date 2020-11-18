@@ -114,6 +114,22 @@ class DjangoOAuthTest(TestCase):
             token = client.authorize_access_token(request)
             self.assertEqual(token['access_token'], 'a')
 
+    def test_oauth2_authorize_access_denied(self):
+        oauth = OAuth()
+        client = oauth.register(
+            'dev',
+            client_id='dev',
+            client_secret='dev',
+            api_base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+            authorize_url='https://i.b/authorize',
+        )
+
+        with mock.patch('requests.sessions.Session.send'):
+            request = self.factory.get('/?error=access_denied&error_description=Not+Allowed')
+            request.session = self.factory.session
+            self.assertRaises(OAuthError, client.authorize_access_token, request)
+
     def test_oauth2_authorize_code_challenge(self):
         request = self.factory.get('/login')
         request.session = self.factory.session
@@ -144,6 +160,41 @@ class DjangoOAuthTest(TestCase):
             request.session = self.factory.session
             request.session['_dev_authlib_state_'] = state
             request.session['_dev_authlib_code_verifier_'] = verifier
+
+            token = client.authorize_access_token(request)
+            self.assertEqual(token['access_token'], 'a')
+
+    def test_oauth2_authorize_code_verifier(self):
+        request = self.factory.get('/login')
+        request.session = self.factory.session
+
+        oauth = OAuth()
+        client = oauth.register(
+            'dev',
+            client_id='dev',
+            api_base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+            authorize_url='https://i.b/authorize',
+            client_kwargs={'code_challenge_method': 'S256'},
+        )
+        state = 'foo'
+        code_verifier = 'bar'
+        rv = client.authorize_redirect(
+            request, 'https://a.b/c',
+            state=state, code_verifier=code_verifier
+        )
+        self.assertEqual(rv.status_code, 302)
+        url = rv.get('Location')
+        self.assertIn('state=', url)
+        self.assertIn('code_challenge=', url)
+
+        with mock.patch('requests.sessions.Session.send') as send:
+            send.return_value = mock_send_value(get_bearer_token())
+
+            request = self.factory.get('/authorize?state={}'.format(state))
+            request.session = self.factory.session
+            request.session['_dev_authlib_state_'] = state
+            request.session['_dev_authlib_code_verifier_'] = code_verifier
 
             token = client.authorize_access_token(request)
             self.assertEqual(token['access_token'], 'a')

@@ -10,7 +10,7 @@
     https://tools.ietf.org/html/rfc7523
 """
 
-from .grant import JWTBearerGrant
+from .jwt_bearer import JWTBearerGrant
 from .client import (
     JWTBearerClientAssertion,
 )
@@ -20,5 +20,13 @@ from .assertion import (
 )
 from .auth import (
     ClientSecretJWT, PrivateKeyJWT,
-    register_session_client_auth_method,
 )
+
+__all__ = [
+    'JWTBearerGrant',
+    'JWTBearerClientAssertion',
+    'client_secret_jwt_sign',
+    'private_key_jwt_sign',
+    'ClientSecretJWT',
+    'PrivateKeyJWT',
+]

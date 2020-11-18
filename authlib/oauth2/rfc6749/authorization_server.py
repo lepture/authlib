@@ -1,5 +1,10 @@
 from .authenticate_client import ClientAuthentication
-from .errors import InvalidGrantError, InvalidScopeError, OAuth2Error
+from .errors import (
+    OAuth2Error,
+    InvalidGrantError,
+    InvalidScopeError,
+    UnsupportedGrantTypeError,
+)
 from .util import scope_to_list
 
 
@@ -7,23 +12,26 @@ class AuthorizationServer(object):
     """Authorization server that handles Authorization Endpoint and Token
     Endpoint.
 
-    :param query_client: A function to get client by client_id. The client
-        model class MUST implement the methods described by
-        :class:`~authlib.oauth2.rfc6749.ClientMixin`.
-    :param save_token: A method to save tokens.
     :param generate_token: A method to generate tokens.
-    :param metadata: A dict of Authorization Server Metadata
     """
-    def __init__(self, query_client, save_token, generate_token=None, metadata=None):
-        self.query_client = query_client
-        self.save_token = save_token
+    def __init__(self, generate_token=None, scopes_supported=None):
         self.generate_token = generate_token
-
-        self.metadata = metadata
+        self.scopes_supported = scopes_supported
         self._client_auth = None
         self._authorization_grants = []
         self._token_grants = []
         self._endpoints = {}
+
+    def query_client(self, client_id):
+        """Query OAuth client by client_id. The client model class MUST
+        implement the methods described by
+        :class:`~authlib.oauth2.rfc6749.ClientMixin`.
+        """
+        raise NotImplementedError()
+
+    def save_token(self, token, request):
+        """Define function to save the generated token into database."""
+        raise NotImplementedError()
 
     def authenticate_client(self, request, methods):
         """Authenticate client via HTTP request information with the given
@@ -60,23 +68,15 @@ class AuthorizationServer(object):
 
         self._client_auth.register(method, func)
 
-    def get_translations(self, request):
-        """Return a translations instance used for i18n error messages.
-        Framework SHOULD implement this function.
-        """
-        return None
-
-    def get_error_uris(self, request):
-        """Return a dict of error uris mapping. Framework SHOULD implement
-        this function.
-        """
+    def get_error_uri(self, request, error):
+        """Return a URI for the given error, framework may implement this method."""
         return None
 
     def send_signal(self, name, *args, **kwargs):
         """Framework integration can re-implement this method to support
         signal system.
         """
-        pass
+        raise NotImplementedError()
 
     def create_oauth2_request(self, request):
         """This method MUST be implemented in framework integrations. It is
@@ -104,10 +104,9 @@ class AuthorizationServer(object):
         """Validate if requested scope is supported by Authorization Server.
         Developers CAN re-write this method to meet your needs.
         """
-        if scope and self.metadata:
-            scopes_supported = self.metadata.get('scopes_supported')
+        if scope and self.scopes_supported:
             scopes = set(scope_to_list(scope))
-            if scopes_supported and not set(scopes_supported).issuperset(scopes):
+            if not set(self.scopes_supported).issuperset(scopes):
                 raise InvalidScopeError(state=state)
 
     def register_grant(self, grant_cls, extensions=None):
@@ -148,7 +147,7 @@ class AuthorizationServer(object):
         for (grant_cls, extensions) in self._authorization_grants:
             if grant_cls.check_authorization_endpoint(request):
                 return _create_grant(grant_cls, extensions, request, self)
-        raise InvalidGrantError()
+        raise InvalidGrantError(f'Response type "{request.response_type}" is not supported')
 
     def get_token_grant(self, request):
         """Find the token grant for current request.
@@ -160,7 +159,7 @@ class AuthorizationServer(object):
             if grant_cls.check_token_endpoint(request) and \
                     request.method in grant_cls.TOKEN_ENDPOINT_HTTP_METHODS:
                 return _create_grant(grant_cls, extensions, request, self)
-        raise InvalidGrantError()
+        raise UnsupportedGrantTypeError(f'Grant type {request.grant_type} is not supported')
 
     def create_endpoint_response(self, name, request=None):
         """Validate endpoint request and create endpoint response.
@@ -170,7 +169,7 @@ class AuthorizationServer(object):
         :return: Response
         """
         if name not in self._endpoints:
-            raise RuntimeError('There is no "{}" endpoint.'.format(name))
+            raise RuntimeError(f'There is no "{name}" endpoint.')
 
         endpoint = self._endpoints[name]
         request = endpoint.create_endpoint_request(request)
@@ -208,7 +207,7 @@ class AuthorizationServer(object):
         request = self.create_oauth2_request(request)
         try:
             grant = self.get_token_grant(request)
-        except InvalidGrantError as error:
+        except UnsupportedGrantTypeError as error:
             return self.handle_error_response(request, error)
 
         try:
@@ -218,11 +217,19 @@ class AuthorizationServer(object):
         except OAuth2Error as error:
             return self.handle_error_response(request, error)
 
+    def get_consent_grant(self, request=None, end_user=None):
+        """Validate current HTTP request for authorization page. This page
+        is designed for resource owner to grant or deny the authorization.
+        """
+        request = self.create_oauth2_request(request)
+        request.user = end_user
+
+        grant = self.get_authorization_grant(request)
+        grant.validate_consent_request()
+        return grant
+
     def handle_error_response(self, request, error):
-        return self.handle_response(*error(
-            translations=self.get_translations(request),
-            error_uris=self.get_error_uris(request)
-        ))
+        return self.handle_response(*error(self.get_error_uri(request, error)))
 
 
 def _create_grant(grant_cls, extensions, request, server):

@@ -1,27 +1,13 @@
 import unittest
 import json
-from authlib.jose import JsonWebSignature, JWS_ALGORITHMS, JWE_ALGORITHMS
+from authlib.jose import JsonWebSignature
 from authlib.jose import errors
 from tests.util import read_file_path
 
 
 class JWSTest(unittest.TestCase):
-    def test_register_invalid_algorithms(self):
-        self.assertRaises(
-            ValueError,
-            JsonWebSignature,
-            ['INVALID']
-        )
-
-        jws = JsonWebSignature(algorithms=[])
-        self.assertRaises(
-            ValueError,
-            jws.register_algorithm,
-            JWE_ALGORITHMS[0]
-        )
-
     def test_invalid_input(self):
-        jws = JsonWebSignature(algorithms=JWS_ALGORITHMS)
+        jws = JsonWebSignature()
         self.assertRaises(errors.DecodeError, jws.deserialize, 'a', 'k')
         self.assertRaises(errors.DecodeError, jws.deserialize, 'a.b.c', 'k')
         self.assertRaises(
@@ -36,7 +22,7 @@ class JWSTest(unittest.TestCase):
             errors.DecodeError, jws.deserialize, 'eyJhbGciOiJzIn0.YQ.a', 'k')
 
     def test_invalid_alg(self):
-        jws = JsonWebSignature(algorithms=JWS_ALGORITHMS)
+        jws = JsonWebSignature()
         self.assertRaises(
             errors.UnsupportedAlgorithmError,
             jws.deserialize, 'eyJhbGciOiJzIn0.YQ.YQ', 'k')
@@ -50,7 +36,7 @@ class JWSTest(unittest.TestCase):
         )
 
     def test_bad_signature(self):
-        jws = JsonWebSignature(algorithms=JWS_ALGORITHMS)
+        jws = JsonWebSignature()
         s = 'eyJhbGciOiJIUzI1NiJ9.YQ.YQ'
         self.assertRaises(errors.BadSignatureError, jws.deserialize, s, 'k')
 
@@ -80,7 +66,7 @@ class JWSTest(unittest.TestCase):
         self.assertNotIn('signature', data)
 
     def test_compact_rsa(self):
-        jws = JsonWebSignature(algorithms=JWS_ALGORITHMS)
+        jws = JsonWebSignature()
         private_key = read_file_path('rsa_private.pem')
         public_key = read_file_path('rsa_public.pem')
         s = jws.serialize({'alg': 'RS256'}, 'hello', private_key)
@@ -89,11 +75,15 @@ class JWSTest(unittest.TestCase):
         self.assertEqual(payload, b'hello')
         self.assertEqual(header['alg'], 'RS256')
 
+        # can deserialize with private key
+        data2 = jws.deserialize(s, private_key)
+        self.assertEqual(data, data2)
+
         ssh_pub_key = read_file_path('ssh_public.pem')
         self.assertRaises(errors.BadSignatureError, jws.deserialize, s, ssh_pub_key)
 
     def test_compact_rsa_pss(self):
-        jws = JsonWebSignature(algorithms=JWS_ALGORITHMS)
+        jws = JsonWebSignature()
         private_key = read_file_path('rsa_private.pem')
         public_key = read_file_path('rsa_public.pem')
         s = jws.serialize({'alg': 'PS256'}, 'hello', private_key)
@@ -105,12 +95,12 @@ class JWSTest(unittest.TestCase):
         self.assertRaises(errors.BadSignatureError, jws.deserialize, s, ssh_pub_key)
 
     def test_compact_none(self):
-        jws = JsonWebSignature(algorithms=JWS_ALGORITHMS)
+        jws = JsonWebSignature()
         s = jws.serialize({'alg': 'none'}, 'hello', '')
         self.assertRaises(errors.BadSignatureError, jws.deserialize, s, '')
 
     def test_flattened_json_jws(self):
-        jws = JsonWebSignature(algorithms=JWS_ALGORITHMS)
+        jws = JsonWebSignature()
         protected = {'alg': 'HS256'}
         header = {'protected': protected, 'header': {'kid': 'a'}}
         s = jws.serialize(header, 'hello', 'secret')
@@ -123,7 +113,7 @@ class JWSTest(unittest.TestCase):
         self.assertNotIn('protected', data)
 
     def test_nested_json_jws(self):
-        jws = JsonWebSignature(algorithms=JWS_ALGORITHMS)
+        jws = JsonWebSignature()
         protected = {'alg': 'HS256'}
         header = {'protected': protected, 'header': {'kid': 'a'}}
         s = jws.serialize([header], 'hello', 'secret')
@@ -153,7 +143,7 @@ class JWSTest(unittest.TestCase):
                 return 'secret-a'
             return 'secret-b'
 
-        jws = JsonWebSignature(algorithms=JWS_ALGORITHMS)
+        jws = JsonWebSignature()
         s = jws.serialize(header, b'hello', load_key)
         self.assertIsInstance(s, dict)
         self.assertIn('signatures', s)
@@ -165,7 +155,7 @@ class JWSTest(unittest.TestCase):
         self.assertNotIn('signature', data)
 
     def test_fail_deserialize_json(self):
-        jws = JsonWebSignature(algorithms=JWS_ALGORITHMS)
+        jws = JsonWebSignature()
         self.assertRaises(errors.DecodeError, jws.deserialize_json, None, '')
         self.assertRaises(errors.DecodeError, jws.deserialize_json, '[]', '')
         self.assertRaises(errors.DecodeError, jws.deserialize_json, '{}', '')
@@ -179,13 +169,48 @@ class JWSTest(unittest.TestCase):
         self.assertRaises(errors.DecodeError, jws.deserialize_json, s, '')
 
     def test_validate_header(self):
-        jws = JsonWebSignature(algorithms=JWS_ALGORITHMS)
+        jws = JsonWebSignature(private_headers=[])
         protected = {'alg': 'HS256', 'invalid': 'k'}
         header = {'protected': protected, 'header': {'kid': 'a'}}
         self.assertRaises(
             errors.InvalidHeaderParameterName,
             jws.serialize, header, b'hello', 'secret'
         )
-        jws = JsonWebSignature(algorithms=JWS_ALGORITHMS, private_headers=['invalid'])
+        jws = JsonWebSignature(private_headers=['invalid'])
         s = jws.serialize(header, b'hello', 'secret')
         self.assertIsInstance(s, dict)
+
+        jws = JsonWebSignature()
+        s = jws.serialize(header, b'hello', 'secret')
+        self.assertIsInstance(s, dict)
+
+    def test_ES512_alg(self):
+        jws = JsonWebSignature()
+        private_key = read_file_path('secp521r1-private.json')
+        public_key = read_file_path('secp521r1-public.json')
+        self.assertRaises(ValueError, jws.serialize, {'alg': 'ES256'}, 'hello', private_key)
+        s = jws.serialize({'alg': 'ES512'}, 'hello', private_key)
+        data = jws.deserialize(s, public_key)
+        header, payload = data['header'], data['payload']
+        self.assertEqual(payload, b'hello')
+        self.assertEqual(header['alg'], 'ES512')
+
+    def test_EdDSA_alg(self):
+        jws = JsonWebSignature(algorithms=['EdDSA'])
+        private_key = read_file_path('ed25519-pkcs8.pem')
+        public_key = read_file_path('ed25519-pub.pem')
+        s = jws.serialize({'alg': 'EdDSA'}, 'hello', private_key)
+        data = jws.deserialize(s, public_key)
+        header, payload = data['header'], data['payload']
+        self.assertEqual(payload, b'hello')
+        self.assertEqual(header['alg'], 'EdDSA')
+
+    def test_ES256K_alg(self):
+        jws = JsonWebSignature(algorithms=['ES256K'])
+        private_key = read_file_path('secp256k1-private.pem')
+        public_key = read_file_path('secp256k1-pub.pem')
+        s = jws.serialize({'alg': 'ES256K'}, 'hello', private_key)
+        data = jws.deserialize(s, public_key)
+        header, payload = data['header'], data['payload']
+        self.assertEqual(payload, b'hello')
+        self.assertEqual(header['alg'], 'ES256K')

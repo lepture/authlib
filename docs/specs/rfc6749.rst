@@ -8,9 +8,9 @@ RFC6749: The OAuth 2.0 Authorization Framework
         Learn how to create an OAuth 2.0 provider in Python.
 
 This section contains the generic implementation of RFC6749_. You should
-:ref:`understand_oauth2` at first. Here are some tips:
+read :ref:`intro_oauth2` at first. Here are some tips:
 
-1. Have a better :ref:`understand_oauth2`
+1. Have a better understanding of :ref:`OAuth 2.0 <intro_oauth2>`
 2. How to use :ref:`oauth_2_session` for Requests
 3. How to implement :ref:`flask_client`
 4. How to implement :ref:`flask_oauth2_server`

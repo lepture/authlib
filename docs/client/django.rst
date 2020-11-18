@@ -64,7 +64,7 @@ They can be configured from your Django settings::
     }
 
 We suggest that you keep ONLY ``client_id`` and ``client_secret`` in
-your application settings, other parameters are better in `.register()`.
+your application settings, other parameters are better in ``.register()``.
 
 Saving Temporary Credential
 ---------------------------
@@ -110,7 +110,7 @@ it is also possible to use signal to listen for token updating::
     from authlib.integrations.django_client import token_update
 
     @receiver(token_update)
-    def on_token_update(sender, token, refresh_token=None, access_token=None):
+    def on_token_update(sender, name, token, refresh_token=None, access_token=None, **kwargs):
         if refresh_token:
             item = OAuth2Token.find(name=name, refresh_token=refresh_token)
         elif access_token:
@@ -146,3 +146,5 @@ When we get the returned token::
 We can get the user information from the ``id_token`` in the returned token::
 
     userinfo = oauth.google.parse_id_token(request, token)
+
+Find Django Google login example at https://github.com/authlib/demo-oauth-client/tree/master/django-google-login

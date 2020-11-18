@@ -123,24 +123,23 @@ First, we need to implement the missing methods for ``OpenIDCode``::
 
 Second, since there is one more ``nonce`` value in ``AuthorizationCode`` data,
 we need to save this value into database. In this case, we have to update our
-:ref:`flask_oauth2_code_grant` ``create_authorization_code`` method::
+:ref:`flask_oauth2_code_grant` ``save_authorization_code`` method::
 
     class AuthorizationCodeGrant(_AuthorizationCodeGrant):
-        def create_authorization_code(self, client, grant_user, request):
-            code = generate_token(48)
+        def save_authorization_code(self, code, request):
             # openid request MAY have "nonce" parameter
             nonce = request.data.get('nonce')
-            item = AuthorizationCode(
+            auth_code = AuthorizationCode(
                 code=code,
-                client_id=client.client_id,
+                client_id=request.client.client_id,
                 redirect_uri=request.redirect_uri,
                 scope=request.scope,
-                user_id=grant_user.id,
+                user_id=request.user.id,
                 nonce=nonce,
             )
-            db.session.add(item)
+            db.session.add(auth_code)
             db.session.commit()
-            return code
+            return auth_code
 
         # ...
 
@@ -215,21 +214,20 @@ by Authorization Code Flow.
 
 OpenIDHybridGrant is a subclass of OpenIDImplicitGrant, so the missing methods
 are the same, except that OpenIDHybridGrant has one more missing method, that
-is ``create_authorization_code``. You can implement it like this::
+is ``save_authorization_code``. You can implement it like this::
 
     from authlib.oidc.core import grants
     from authlib.common.security import generate_token
 
     class OpenIDHybridGrant(grants.OpenIDHybridGrant):
-        def create_authorization_code(self, client, grant_user, request):
-            code = generate_token(48)
+        def save_authorization_code(self, code, request):
             nonce = request.data.get('nonce')
             item = AuthorizationCode(
                 code=code,
-                client_id=client.client_id,
+                client_id=request.client.client_id,
                 redirect_uri=request.redirect_uri,
                 scope=request.scope,
-                user_id=grant_user.id,
+                user_id=request.user.id,
                 nonce=nonce,
             )
             db.session.add(item)

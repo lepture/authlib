@@ -205,14 +205,12 @@ class ImplicitGrant(BaseGrant, AuthorizationEndpointMixin):
         state = self.request.state
         if grant_user:
             self.request.user = grant_user
-            client = self.request.client
             token = self.generate_token(
-                client, self.GRANT_TYPE,
                 user=grant_user,
-                scope=client.get_allowed_scope(self.request.scope),
-                include_refresh_token=False
+                scope=self.request.scope,
+                include_refresh_token=False,
             )
-            log.debug('Grant token %r to %r', token, client)
+            log.debug('Grant token %r to %r', token, self.request.client)
 
             self.save_token(token)
             self.execute_hook('process_token', token=token)

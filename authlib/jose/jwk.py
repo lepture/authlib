@@ -1,28 +1,18 @@
-from authlib.common.encoding import text_types, json_loads
 from .rfc7517 import JsonWebKey
-from .rfc7518 import JWK_ALGORITHMS
-
-jwk = JsonWebKey(algorithms=JWK_ALGORITHMS)
 
 
-def _load_jwk(key, header):
-    if not key and 'jwk' in header:
-        key = header['jwk']
-    if isinstance(key, (tuple, list, dict)):
-        return jwk.loads(key, header.get('kid'))
-    if isinstance(key, text_types) and \
-            key.startswith('{') and key.endswith('}'):
-        return jwk.loads(json_loads(key), header.get('kid'))
-    return key
+def loads(obj, kid=None):
+    # TODO: deprecate
+    key_set = JsonWebKey.import_key_set(obj)
+    if key_set:
+        return key_set.find_by_kid(kid)
+    return JsonWebKey.import_key(obj)
 
 
-def load_key(key, header, payload):
-    if callable(key):
-        key = key(header, payload)
-    return _load_jwk(key, header)
+def dumps(key, kty=None, **params):
+    # TODO: deprecate
+    if kty:
+        params['kty'] = kty
 
-
-def create_key_func(key):
-    def key_func(header, payload):
-        return load_key(key, header, payload)
-    return key_func
+    key = JsonWebKey.import_key(key, params)
+    return dict(key)

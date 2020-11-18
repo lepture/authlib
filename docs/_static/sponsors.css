@@ -1,10 +1,21 @@
-.fund{ display:inline-block }
-.fund a { border:0 }
 .ethical-fixedfooter { display:none }
+.fund{
+  z-index: 1;
+  position: relative;
+  bottom: 0;
+  right: 0;
+  float: right;
+  padding: 0 0 20px 30px;
+  width: 150px;
+}
+.fund a { border:0 }
 #carbonads {
-  display: flex;
-  max-width: 330px;
-  background-color: hsl(0, 0%, 98%);
+  background: #EDF2F4;
+  padding: 5px 10px;
+  border-radius: 3px;
+}
+#carbonads span {
+  display: block;
 }
 
 #carbonads a {
@@ -22,36 +33,45 @@
   overflow: hidden;
 }
 
-#carbonads .carbon-wrap {
-  display: flex;
-}
-
-.carbon-img {
-  display: block;
-  margin: 0;
-  line-height: 1;
-}
-
 .carbon-img img {
   display: block;
+  width: 130px;
 }
 
-.carbon-text {
+#carbonads .carbon-text {
+  display: block;
+  margin-top: 4px;
   font-size: 13px;
-  padding: 10px;
-  line-height: 1.5;
   text-align: left;
 }
 
-.carbon-poweredby {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  display: block;
-  padding: 8px 10px;
+#carbonads .carbon-poweredby {
+  color: #aaa;
+  font-size: 10px;
+  letter-spacing: 0.8px;
   text-transform: uppercase;
-  letter-spacing: .5px;
-  font-weight: 600;
-  font-size: 9px;
-  line-height: 1;
+  font-weight: normal;
+}
+
+#bsa .native-box {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  margin: 16px 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 4px;
+  background-color: #f8fafc;
+  text-decoration: none;
+  color: rgba(0, 0, 0, 0.68);
+}
+
+#bsa .native-sponsor {
+  background-color: #447FD7;
+  color: #fff;
+  border-radius: 3px;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  margin-right: 10px;
+  font-weight: 500;
+  font-size: 12px;
 }

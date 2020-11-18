@@ -20,7 +20,7 @@ on GitHub:
 3. `On Demand Demo for your business <https://authlib.org/support#on-demand-demo>`_
 
 At the very beginning, we need to have some basic understanding of
-:ref:`the OAuth 2.0 <understand_oauth2>`.
+:ref:`the OAuth 2.0 <intro_oauth2>`.
 
 .. important::
 

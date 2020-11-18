@@ -26,21 +26,28 @@ POST request. The metadata may contain a :ref:`JWT <jwt_guide>` ``software_state
 value. Endpoint can choose if it support ``software_statement``, it is not enabled
 by default.
 
+.. versionchanged:: v0.15
+
+    ClientRegistrationEndpoint has a breaking change in v0.15. Method of
+    ``authenticate_user`` is replaced by ``authenticate_token``, and parameters in
+    ``save_client`` is also changed.
+
 Before register the endpoint, developers MUST implement the missing methods::
 
     from authlib.oauth2.rfc7591 import ClientRegistrationEndpoint
 
     class MyClientRegistrationEndpoint(ClientRegistrationEndpoint):
-        def authenticate_user(self, request):
+        def authenticate_token(self, request):
             # this method is used to find who is going to create the client
             auth_header = request.headers.get('Authorization')
             # bearer a-token-string
             bearer_token = auth_header.split()[1]
-            return get_user_by_token(bearer_token)
+            token = Token.query.get(bearer_token)
+            return token
 
-        def save_client(self, client_info, client_metadata, user):
+        def save_client(self, client_info, client_metadata, request):
             client = OAuthClient(
-                user_id=user.id,
+                user_id=request.credential.user_id,
                 client_id=client_info['client_id'],
                 client_secret=client_info['client_secret'],
                 **client_metadata,

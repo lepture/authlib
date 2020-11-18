@@ -167,14 +167,14 @@ class AuthorizationCodeMixin(object):
 
 
 class TokenMixin(object):
-    def get_client_id(self):
-        """A method to return client_id of the token. For instance, the value
-        in database is saved in a column called ``client_id``::
+    def check_client(self, client):
+        """A method to check if this token is issued to the given client.
+        For instance, ``client_id`` is saved on token table::
 
-            def get_client_id(self):
-                return self.client_id
+            def check_client(self, client):
+                return self.client_id == client.client_id
 
-        :return: string
+        :return: bool
         """
         raise NotImplementedError()
 
@@ -200,13 +200,24 @@ class TokenMixin(object):
         """
         raise NotImplementedError()
 
-    def get_expires_at(self):
-        """A method to get the value when this token will be expired. e.g.
-        it would be::
+    def is_expired(self):
+        """A method to define if this token is expired. For instance,
+        there is a column ``expired_at`` in the table::
 
-            def get_expires_at(self):
-                return self.created_at + self.expires_in
+            def is_expired(self):
+                return self.expired_at < now
 
-        :return: timestamp int
+        :return: boolean
         """
         raise NotImplementedError()
+
+    def is_revoked(self):
+        """A method to define if this token is revoked. For instance,
+        there is a boolean column ``revoked`` in the table::
+
+            def is_revoked(self):
+                return self.revoked
+
+        :return: boolean
+        """
+        return NotImplementedError()

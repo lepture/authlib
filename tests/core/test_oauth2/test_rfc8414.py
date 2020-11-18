@@ -52,7 +52,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         metadata = AuthorizationServerMetadata({})
         with self.assertRaises(ValueError) as cm:
             metadata.validate()
-            self.assertEqual('"issuer" is required', str(cm.exception))
+        self.assertEqual('"issuer" is required', str(cm.exception))
 
         #: https
         metadata = AuthorizationServerMetadata({
@@ -60,7 +60,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_issuer()
-            self.assertIn('https', str(cm.exception))
+        self.assertIn('https', str(cm.exception))
 
         #: query
         metadata = AuthorizationServerMetadata({
@@ -68,7 +68,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_issuer()
-            self.assertIn('query', str(cm.exception))
+        self.assertIn('query', str(cm.exception))
 
         #: fragment
         metadata = AuthorizationServerMetadata({
@@ -76,7 +76,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_issuer()
-            self.assertIn('fragment', str(cm.exception))
+        self.assertIn('fragment', str(cm.exception))
 
         metadata = AuthorizationServerMetadata({
             'issuer': 'https://authlib.org/'
@@ -90,7 +90,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_authorization_endpoint()
-            self.assertIn('https', str(cm.exception))
+        self.assertIn('https', str(cm.exception))
 
         # valid https
         metadata = AuthorizationServerMetadata({
@@ -102,7 +102,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         metadata = AuthorizationServerMetadata()
         with self.assertRaises(ValueError) as cm:
             metadata.validate_authorization_endpoint()
-            self.assertIn('required', str(cm.exception))
+        self.assertIn('required', str(cm.exception))
 
         # valid missing
         metadata = AuthorizationServerMetadata({
@@ -121,7 +121,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         metadata = AuthorizationServerMetadata()
         with self.assertRaises(ValueError) as cm:
             metadata.validate_token_endpoint()
-            self.assertIn('required', str(cm.exception))
+        self.assertIn('required', str(cm.exception))
 
         # https
         metadata = AuthorizationServerMetadata({
@@ -129,7 +129,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_token_endpoint()
-            self.assertIn('https', str(cm.exception))
+        self.assertIn('https', str(cm.exception))
 
         # valid
         metadata = AuthorizationServerMetadata({
@@ -147,7 +147,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_jwks_uri()
-            self.assertIn('https', str(cm.exception))
+        self.assertIn('https', str(cm.exception))
 
         metadata = AuthorizationServerMetadata({
             'jwks_uri': 'https://authlib.org/jwks.json'
@@ -163,7 +163,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_registration_endpoint()
-            self.assertIn('https', str(cm.exception))
+        self.assertIn('https', str(cm.exception))
 
         metadata = AuthorizationServerMetadata({
             'registration_endpoint': 'https://authlib.org/'
@@ -180,7 +180,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_scopes_supported()
-            self.assertIn('JSON array', str(cm.exception))
+        self.assertIn('JSON array', str(cm.exception))
 
         # valid
         metadata = AuthorizationServerMetadata({
@@ -193,7 +193,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         metadata = AuthorizationServerMetadata()
         with self.assertRaises(ValueError) as cm:
             metadata.validate_response_types_supported()
-            self.assertIn('required', str(cm.exception))
+        self.assertIn('required', str(cm.exception))
 
         # not array
         metadata = AuthorizationServerMetadata({
@@ -201,7 +201,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_response_types_supported()
-            self.assertIn('JSON array', str(cm.exception))
+        self.assertIn('JSON array', str(cm.exception))
 
         # valid
         metadata = AuthorizationServerMetadata({
@@ -219,7 +219,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_response_modes_supported()
-            self.assertIn('JSON array', str(cm.exception))
+        self.assertIn('JSON array', str(cm.exception))
 
         # valid
         metadata = AuthorizationServerMetadata({
@@ -237,7 +237,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_grant_types_supported()
-            self.assertIn('JSON array', str(cm.exception))
+        self.assertIn('JSON array', str(cm.exception))
 
         # valid
         metadata = AuthorizationServerMetadata({
@@ -255,7 +255,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_token_endpoint_auth_methods_supported()
-            self.assertIn('JSON array', str(cm.exception))
+        self.assertIn('JSON array', str(cm.exception))
 
         # valid
         metadata = AuthorizationServerMetadata({
@@ -272,14 +272,14 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_token_endpoint_auth_signing_alg_values_supported()
-            self.assertIn('required', str(cm.exception))
+        self.assertIn('required', str(cm.exception))
 
         metadata = AuthorizationServerMetadata({
             'token_endpoint_auth_signing_alg_values_supported': 'RS256'
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_token_endpoint_auth_signing_alg_values_supported()
-            self.assertIn('JSON array', str(cm.exception))
+        self.assertIn('JSON array', str(cm.exception))
 
         metadata = AuthorizationServerMetadata({
             'token_endpoint_auth_methods_supported': ['client_secret_jwt'],
@@ -287,7 +287,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_token_endpoint_auth_signing_alg_values_supported()
-            self.assertIn('none', str(cm.exception))
+        self.assertIn('none', str(cm.exception))
 
     def test_validate_service_documentation(self):
         metadata = AuthorizationServerMetadata()
@@ -298,7 +298,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_service_documentation()
-            self.assertIn('MUST be a URL', str(cm.exception))
+        self.assertIn('MUST be a URL', str(cm.exception))
 
         metadata = AuthorizationServerMetadata({
             'service_documentation': 'https://authlib.org/'
@@ -315,7 +315,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_ui_locales_supported()
-            self.assertIn('JSON array', str(cm.exception))
+        self.assertIn('JSON array', str(cm.exception))
 
         # valid
         metadata = AuthorizationServerMetadata({
@@ -332,7 +332,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_op_policy_uri()
-            self.assertIn('MUST be a URL', str(cm.exception))
+        self.assertIn('MUST be a URL', str(cm.exception))
 
         metadata = AuthorizationServerMetadata({
             'op_policy_uri': 'https://authlib.org/'
@@ -348,7 +348,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_op_tos_uri()
-            self.assertIn('MUST be a URL', str(cm.exception))
+        self.assertIn('MUST be a URL', str(cm.exception))
 
         metadata = AuthorizationServerMetadata({
             'op_tos_uri': 'https://authlib.org/'
@@ -365,7 +365,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_revocation_endpoint()
-            self.assertIn('https', str(cm.exception))
+        self.assertIn('https', str(cm.exception))
 
         # valid
         metadata = AuthorizationServerMetadata({
@@ -383,7 +383,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_revocation_endpoint_auth_methods_supported()
-            self.assertIn('JSON array', str(cm.exception))
+        self.assertIn('JSON array', str(cm.exception))
 
         # valid
         metadata = AuthorizationServerMetadata({
@@ -400,14 +400,14 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_revocation_endpoint_auth_signing_alg_values_supported()
-            self.assertIn('required', str(cm.exception))
+        self.assertIn('required', str(cm.exception))
 
         metadata = AuthorizationServerMetadata({
             'revocation_endpoint_auth_signing_alg_values_supported': 'RS256'
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_revocation_endpoint_auth_signing_alg_values_supported()
-            self.assertIn('JSON array', str(cm.exception))
+        self.assertIn('JSON array', str(cm.exception))
 
         metadata = AuthorizationServerMetadata({
             'revocation_endpoint_auth_methods_supported': ['client_secret_jwt'],
@@ -415,7 +415,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_revocation_endpoint_auth_signing_alg_values_supported()
-            self.assertIn('none', str(cm.exception))
+        self.assertIn('none', str(cm.exception))
 
     def test_validate_introspection_endpoint(self):
         metadata = AuthorizationServerMetadata()
@@ -427,7 +427,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_introspection_endpoint()
-            self.assertIn('https', str(cm.exception))
+        self.assertIn('https', str(cm.exception))
 
         # valid
         metadata = AuthorizationServerMetadata({
@@ -445,7 +445,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_introspection_endpoint_auth_methods_supported()
-            self.assertIn('JSON array', str(cm.exception))
+        self.assertIn('JSON array', str(cm.exception))
 
         # valid
         metadata = AuthorizationServerMetadata({
@@ -462,14 +462,14 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_introspection_endpoint_auth_signing_alg_values_supported()
-            self.assertIn('required', str(cm.exception))
+        self.assertIn('required', str(cm.exception))
 
         metadata = AuthorizationServerMetadata({
             'introspection_endpoint_auth_signing_alg_values_supported': 'RS256'
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_introspection_endpoint_auth_signing_alg_values_supported()
-            self.assertIn('JSON array', str(cm.exception))
+        self.assertIn('JSON array', str(cm.exception))
 
         metadata = AuthorizationServerMetadata({
             'introspection_endpoint_auth_methods_supported': ['client_secret_jwt'],
@@ -477,7 +477,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_introspection_endpoint_auth_signing_alg_values_supported()
-            self.assertIn('none', str(cm.exception))
+        self.assertIn('none', str(cm.exception))
 
     def test_validate_code_challenge_methods_supported(self):
         metadata = AuthorizationServerMetadata()
@@ -489,7 +489,7 @@ class AuthorizationServerMetadataTest(unittest.TestCase):
         })
         with self.assertRaises(ValueError) as cm:
             metadata.validate_code_challenge_methods_supported()
-            self.assertIn('JSON array', str(cm.exception))
+        self.assertIn('JSON array', str(cm.exception))
 
         # valid
         metadata = AuthorizationServerMetadata({

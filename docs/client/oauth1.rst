@@ -25,7 +25,7 @@ There are also frameworks integrations of :ref:`flask_client`, :ref:`django_clie
 and :ref:`starlette_client`. If you are using these frameworks, you may have interests
 in their own documentation.
 
-If you are not familiar with OAuth 1.0, it is better to :ref:`understand_oauth1` now.
+If you are not familiar with OAuth 1.0, it is better to read :ref:`intro_oauth1` now.
 
 Initialize OAuth 1.0 Client
 ---------------------------
@@ -199,4 +199,5 @@ If using ``httpx``, pass this ``auth`` to access protected resources::
     import httpx
 
     url = 'https://api.twitter.com/1.1/account/verify_credentials.json'
-    resp = httpx.get(url, auth=auth)
+    resp = await httpx.get(url, auth=auth)
+

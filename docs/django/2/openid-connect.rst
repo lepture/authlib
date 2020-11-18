@@ -112,7 +112,7 @@ First, we need to implement the missing methods for ``OpenIDCode``::
         def exists_nonce(self, nonce, request):
             try:
                 AuthorizationCode.objects.get(
-                    client_id=request.client_id, nonce=nonce)
+                    client_id=request.client_id, nonce=nonce
                 )
                 return True
             except AuthorizationCode.DoesNotExist:
@@ -134,29 +134,29 @@ First, we need to implement the missing methods for ``OpenIDCode``::
 
 Second, since there is one more ``nonce`` value in ``AuthorizationCode`` data,
 we need to save this value into database. In this case, we have to update our
-``AuthorizationCodeGrant.create_authorization_code`` method::
+``AuthorizationCodeGrant.save_authorization_code`` method::
 
     class AuthorizationCodeGrant(_AuthorizationCodeGrant):
-        def create_authorization_code(self, client, grant_user, request):
-            code = generate_token(48)
+        def save_authorization_code(self, code, request):
             # openid request MAY have "nonce" parameter
             nonce = request.data.get('nonce')
-            item = AuthorizationCode(
+            client = request.client
+            auth_code = AuthorizationCode(
                 code=code,
                 client_id=client.client_id,
                 redirect_uri=request.redirect_uri,
                 scope=request.scope,
-                user=grant_user,
+                user=request.user,
                 nonce=nonce,
             )
-            item.save()
-            return code
+            auth_code.save()
+            return auth_code
 
 Finally, you can register ``AuthorizationCodeGrant`` with ``OpenIDCode``
 extension::
 
     # register it to grant endpoint
-    server.register_grant(OpenIDCodeGrant, [OpenIDCode(require_nonce=True)])
+    server.register_grant(AuthorizationCodeGrant, [OpenIDCode(require_nonce=True)])
 
 The difference between OpenID Code flow and the standard code flow is that
 OpenID Connect request has a scope of "openid":
@@ -224,26 +224,25 @@ by Authorization Code Flow.
 
 OpenIDHybridGrant is a subclass of OpenIDImplicitGrant, so the missing methods
 are the same, except that OpenIDHybridGrant has one more missing method, that
-is ``create_authorization_code``. You can implement it like this::
+is ``save_authorization_code``. You can implement it like this::
 
     from authlib.oidc.core import grants
-    from authlib.common.security import generate_token
 
     class OpenIDHybridGrant(grants.OpenIDHybridGrant):
-        def create_authorization_code(self, client, grant_user, request):
-            code = generate_token(48)
+        def save_authorization_code(self, code, request):
             # openid request MAY have "nonce" parameter
             nonce = request.data.get('nonce')
-            item = AuthorizationCode(
+            client = request.client
+            auth_code = AuthorizationCode(
                 code=code,
                 client_id=client.client_id,
                 redirect_uri=request.redirect_uri,
                 scope=request.scope,
-                user=grant_user,
+                user=request.user,
                 nonce=nonce,
             )
-            item.save()
-            return code
+            auth_code.save()
+            return auth_code
 
         def exists_nonce(self, nonce, request):
             try:

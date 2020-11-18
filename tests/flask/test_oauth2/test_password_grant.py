@@ -60,7 +60,7 @@ class PasswordTest(TestCase):
 
     def test_invalid_scope(self):
         self.prepare_data()
-        self.server.metadata = {'scopes_supported': ['profile']}
+        self.server.scopes_supported = ['profile']
         headers = self.create_basic_header(
             'password-client', 'password-secret'
         )
@@ -83,7 +83,7 @@ class PasswordTest(TestCase):
             'grant_type': 'password',
         }), headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_grant')
+        self.assertEqual(resp['error'], 'unsupported_grant_type')
 
         rv = self.client.post('/oauth/token', data={
             'grant_type': 'password',

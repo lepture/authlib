@@ -2,24 +2,14 @@ import re
 import datetime
 import calendar
 from authlib.common.encoding import (
-    text_types, to_bytes, to_unicode,
+    to_bytes, to_unicode,
     json_loads, json_dumps,
 )
-from authlib.jose.jwk import load_key, create_key_func
-from authlib.jose.errors import DecodeError, InsecureClaimError
 from .claims import JWTClaims
+from ..errors import DecodeError, InsecureClaimError
 from ..rfc7515 import JsonWebSignature
 from ..rfc7516 import JsonWebEncryption
-from ..rfc7518 import JWS_ALGORITHMS, JWE_ALGORITHMS
-
-
-_AVAILABLE_ALGORITHMS = {}
-_AVAILABLE_ALGORITHMS.update(
-    {alg.name: alg for alg in JWS_ALGORITHMS}
-)
-_AVAILABLE_ALGORITHMS.update(
-    {alg.name: alg for alg in JWE_ALGORITHMS}
-)
+from ..rfc7517 import KeySet
 
 
 class JsonWebToken(object):
@@ -35,27 +25,8 @@ class JsonWebToken(object):
     ]), re.DOTALL)
 
     def __init__(self, algorithms=None, private_headers=None):
-        if algorithms is None:
-            self._jws = JsonWebSignature(JWS_ALGORITHMS, private_headers)
-            self._jwe = JsonWebEncryption(JWE_ALGORITHMS, private_headers)
-        else:
-            self._jws = JsonWebSignature(None, private_headers)
-            self._jwe = JsonWebEncryption(None, private_headers)
-
-            if isinstance(algorithms, (tuple, list)):
-                for algorithm in algorithms:
-                    self.register_algorithm(algorithm)
-            elif isinstance(algorithms, text_types):
-                self.register_algorithm(algorithms)
-
-    def register_algorithm(self, algorithm):
-        if isinstance(algorithm, text_types):
-            algorithm = _AVAILABLE_ALGORITHMS.get(algorithm)
-
-        if algorithm.algorithm_type == 'JWS':
-            self._jws.register_algorithm(algorithm)
-        elif algorithm.algorithm_type == 'JWE':
-            self._jwe.register_algorithm(algorithm)
+        self._jws = JsonWebSignature(algorithms, private_headers=private_headers)
+        self._jwe = JsonWebEncryption(algorithms, private_headers=private_headers)
 
     def check_sensitive_data(self, payload):
         """Check if payload contains sensitive information."""
@@ -66,7 +37,7 @@ class JsonWebToken(object):
 
             # check claims values
             v = payload[k]
-            if isinstance(v, text_types) and self.SENSITIVE_VALUES.search(v):
+            if isinstance(v, str) and self.SENSITIVE_VALUES.search(v):
                 raise InsecureClaimError(k)
 
     def encode(self, header, payload, key, check=True):
@@ -89,7 +60,7 @@ class JsonWebToken(object):
         if check:
             self.check_sensitive_data(payload)
 
-        key = load_key(key, header, payload)
+        key = prepare_raw_key(key, header)
         text = to_bytes(json_dumps(payload))
         if 'enc' in header:
             return self._jwe.serialize_compact(header, text, key)
@@ -113,14 +84,18 @@ class JsonWebToken(object):
         if claims_cls is None:
             claims_cls = JWTClaims
 
-        key_func = create_key_func(key)
+        if callable(key):
+            load_key = key
+        else:
+            def load_key(header, payload):
+                return prepare_raw_key(key, header)
 
         s = to_bytes(s)
         dot_count = s.count(b'.')
         if dot_count == 2:
-            data = self._jws.deserialize_compact(s, key_func, decode_payload)
+            data = self._jws.deserialize_compact(s, load_key, decode_payload)
         elif dot_count == 4:
-            data = self._jwe.deserialize_compact(s, key_func, decode_payload)
+            data = self._jwe.deserialize_compact(s, load_key, decode_payload)
         else:
             raise DecodeError('Invalid input segments length')
         return claims_cls(
@@ -138,3 +113,23 @@ def decode_payload(bytes_payload):
     if not isinstance(payload, dict):
         raise DecodeError('Invalid payload type')
     return payload
+
+
+def prepare_raw_key(raw, header):
+    if isinstance(raw, KeySet):
+        return raw.find_by_kid(header.get('kid'))
+
+    if isinstance(raw, str) and \
+            raw.startswith('{') and raw.endswith('}'):
+        raw = json_loads(raw)
+    elif isinstance(raw, (tuple, list)):
+        raw = {'keys': raw}
+
+    if isinstance(raw, dict) and 'keys' in raw:
+        keys = raw['keys']
+        kid = header.get('kid')
+        for k in keys:
+            if k.get('kid') == kid:
+                return k
+        raise ValueError('Invalid JSON Web Key Set')
+    return raw

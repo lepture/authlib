@@ -12,6 +12,10 @@ class FrameworkIntegration(object):
 
     def get_session_data(self, request, key):
         sess_key = '_{}_authlib_{}_'.format(self.name, key)
+        return request.session.get(sess_key)
+
+    def pop_session_data(self, request, key):
+        sess_key = '_{}_authlib_{}_'.format(self.name, key)
         return request.session.pop(sess_key, None)
 
     def update_token(self, token, refresh_token=None, access_token=None):

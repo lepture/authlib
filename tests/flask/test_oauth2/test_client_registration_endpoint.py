@@ -10,17 +10,18 @@ from .oauth2_server import create_authorization_server
 class ClientRegistrationEndpoint(_ClientRegistrationEndpoint):
     software_statement_alg_values_supported = ['RS256']
 
-    def authenticate_user(self, request):
+    def authenticate_token(self, request):
         auth_header = request.headers.get('Authorization')
         if auth_header:
-            return User.query.get(1)
+            request.user_id = 1
+            return auth_header
 
     def resolve_public_key(self, request):
         return read_file_path('rsa_public.pem')
 
-    def save_client(self, client_info, client_metadata, user):
+    def save_client(self, client_info, client_metadata, request):
         client = Client(
-            user_id=user.id,
+            user_id=request.user_id,
             **client_info
         )
         client.set_client_metadata(client_metadata)
@@ -33,12 +34,14 @@ class ClientRegistrationTest(TestCase):
     def prepare_data(self, endpoint_cls=None, metadata=None):
         app = self.app
         server = create_authorization_server(app)
-        if metadata:
-            server.metadata = metadata
 
-        if endpoint_cls is None:
-            endpoint_cls = ClientRegistrationEndpoint
-        server.register_endpoint(endpoint_cls)
+        if endpoint_cls:
+            server.register_endpoint(endpoint_cls)
+        else:
+            class MyClientRegistration(ClientRegistrationEndpoint):
+                def get_server_metadata(self):
+                    return metadata
+            server.register_endpoint(MyClientRegistration)
 
         @app.route('/create_client', methods=['POST'])
         def create_client():
@@ -89,6 +92,9 @@ class ClientRegistrationTest(TestCase):
     def test_no_public_key(self):
 
         class ClientRegistrationEndpoint2(ClientRegistrationEndpoint):
+            def get_server_metadata(self):
+                return None
+
             def resolve_public_key(self, request):
                 return None
 

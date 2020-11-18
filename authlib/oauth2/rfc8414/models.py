@@ -1,4 +1,5 @@
 from authlib.common.urls import urlparse, is_valid_url
+from authlib.common.security import is_secure_transport
 
 
 class AuthorizationServerMetadata(dict):
@@ -37,7 +38,7 @@ class AuthorizationServerMetadata(dict):
         parsed = urlparse.urlparse(issuer)
 
         #: 2. uses the "https" scheme
-        if parsed.scheme != 'https':
+        if not is_secure_transport(issuer):
             raise ValueError('"issuer" MUST use "https" scheme')
 
         #: 3. has no query or fragment
@@ -51,7 +52,7 @@ class AuthorizationServerMetadata(dict):
         """
         url = self.get('authorization_endpoint')
         if url:
-            if not url.startswith('https://'):
+            if not is_secure_transport(url):
                 raise ValueError(
                     '"authorization_endpoint" MUST use "https" scheme')
             return
@@ -74,7 +75,7 @@ class AuthorizationServerMetadata(dict):
         if not url:
             raise ValueError('"token_endpoint" is required')
 
-        if not url.startswith('https://'):
+        if not is_secure_transport(url):
             raise ValueError('"token_endpoint" MUST use "https" scheme')
 
     def validate_jwks_uri(self):
@@ -89,7 +90,7 @@ class AuthorizationServerMetadata(dict):
         to indicate each key's intended usage.
         """
         url = self.get('jwks_uri')
-        if url and not url.startswith('https://'):
+        if url and not is_secure_transport(url):
             raise ValueError('"jwks_uri" MUST use "https" scheme')
 
     def validate_registration_endpoint(self):
@@ -97,7 +98,7 @@ class AuthorizationServerMetadata(dict):
         Client Registration endpoint [RFC7591].
         """
         url = self.get('registration_endpoint')
-        if url and not url.startswith('https://'):
+        if url and not is_secure_transport(url):
             raise ValueError(
                 '"registration_endpoint" MUST use "https" scheme')
 
@@ -222,7 +223,7 @@ class AuthorizationServerMetadata(dict):
         """OPTIONAL. URL of the authorization server's OAuth 2.0 revocation
         endpoint [RFC7009]."""
         url = self.get('revocation_endpoint')
-        if url and not url.startswith('https://'):
+        if url and not is_secure_transport(url):
             raise ValueError('"revocation_endpoint" MUST use "https" scheme')
 
     def validate_revocation_endpoint_auth_methods_supported(self):
@@ -258,7 +259,7 @@ class AuthorizationServerMetadata(dict):
         introspection endpoint [RFC7662].
         """
         url = self.get('introspection_endpoint')
-        if url and not url.startswith('https://'):
+        if url and not is_secure_transport(url):
             raise ValueError(
                 '"introspection_endpoint" MUST use "https" scheme')
 

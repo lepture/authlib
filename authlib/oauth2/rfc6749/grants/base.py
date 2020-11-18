@@ -16,6 +16,8 @@ class BaseGrant(object):
     TOKEN_RESPONSE_HEADER = default_json_headers
 
     def __init__(self, request, server):
+        self.prompt = None
+        self.redirect_uri = None
         self.request = request
         self.server = server
         self._hooks = {
@@ -29,10 +31,19 @@ class BaseGrant(object):
     def client(self):
         return self.request.client
 
-    def generate_token(self, client, grant_type, user=None, scope=None,
+    def generate_token(self, user=None, scope=None, grant_type=None,
                        expires_in=None, include_refresh_token=True):
+
+        if grant_type is None:
+            grant_type = self.GRANT_TYPE
+
+        client = self.request.client
+        if scope is not None:
+            scope = client.get_allowed_scope(scope)
+
         return self.server.generate_token(
-            client, grant_type,
+            client=client,
+            grant_type=grant_type,
             user=user,
             scope=scope,
             expires_in=expires_in,
@@ -119,7 +130,7 @@ class AuthorizationEndpointMixin(object):
         if request.redirect_uri:
             if not client.check_redirect_uri(request.redirect_uri):
                 raise InvalidRequestError(
-                    'Invalid "redirect_uri" in request.',
+                    'Redirect URI {!r} is not supported by client.'.format(request.redirect_uri),
                     state=request.state,
                 )
             return request.redirect_uri
@@ -134,6 +145,7 @@ class AuthorizationEndpointMixin(object):
     def validate_consent_request(self):
         redirect_uri = self.validate_authorization_request()
         self.execute_hook('after_validate_consent_request', redirect_uri)
+        self.redirect_uri = redirect_uri
 
     def validate_authorization_request(self):
         raise NotImplementedError()

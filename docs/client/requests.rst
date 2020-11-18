@@ -70,17 +70,16 @@ Using ``client_secret_jwt`` in Requests
 
 There are **three default client authentication methods** defined for
 ``OAuth2Session``. But what if you want to use ``client_secret_jwt`` instead?
-Here is how you could ``.register_client_auth_method`` it for Requests::
+``client_secret_jwt`` is defined in RFC7523, use it for Requests::
 
     from authlib.integrations.requests_client import OAuth2Session
     from authlib.oauth2.rfc7523 import ClientSecretJWT
 
+    token_endpoint = 'https://example.com/oauth/token'
     session = OAuth2Session(
         'your-client-id', 'your-client-secret',
-        token_endpoint_auth_method='client_secret_jwt'
+        token_endpoint_auth_method=ClientSecretJWT(token_endpoint),
     )
-    token_endpoint = 'https://example.com/oauth/token'
-    session.register_client_auth_method(ClientSecretJWT(token_endpoint))
     session.fetch_token(token_endpoint)
 
 The ``ClientSecretJWT`` is provided by :ref:`specs/rfc7523`.
@@ -89,7 +88,7 @@ Using ``private_key_jwt`` in Requests
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 What if you want to use ``private_key_jwt`` client authentication method,
-here is the way with  ``.register_client_auth_method`` for Requests::
+here is the way with  ``PrivateKeyJWT`` for Requests::
 
     from authlib.integrations.requests_client import OAuth2Session
     from authlib.oauth2.rfc7523 import PrivateKeyJWT
@@ -97,12 +96,11 @@ here is the way with  ``.register_client_auth_method`` for Requests::
     with open('your-private-key.pem', 'rb') as f:
         private_key = f.read()
 
+    token_endpoint = 'https://example.com/oauth/token'
     session = OAuth2Session(
         'your-client-id', private_key,
-        token_endpoint_auth_method='private_key_jwt',
+        token_endpoint_auth_method=PrivateKeyJWT(token_endpoint),
     )
-    token_endpoint = 'https://example.com/oauth/token'
-    session.register_client_auth_method(PrivateKeyJWT(token_endpoint))
     session.fetch_token(token_endpoint)
 
 The ``PrivateKeyJWT`` is provided by :ref:`specs/rfc7523`.
@@ -153,3 +151,32 @@ close the session::
 
     with OAuth2Session(client_id, client_secret) as session:
         session.get(url)
+
+
+Self-Signed Certificate
+-----------------------
+
+Self-signed certificate mutual-TLS method internet standard is defined in
+`RFC8705 Section 2.2`_ .
+
+For specifics development purposes only, you may need to
+**disable SSL verification**.
+
+You can force all requests to disable SSL verification by setting
+your environment variable ``CURL_CA_BUNDLE=""``.
+
+This solutions works because Python requests (and most of the packages)
+overwrites the default value for ssl verifications from environment
+variables ``CURL_CA_BUNDLE`` and ``REQUESTS_CA_BUNDLE``.
+
+This hack will **only work** with ``CURL_CA_BUNDLE``, as you can see
+in `requests/sessions.py`_ ::
+
+    verify = (os.environ.get('REQUESTS_CA_BUNDLE')
+    or os.environ.get('CURL_CA_BUNDLE'))
+
+Please remember to set the env variable only in you development environment.
+
+
+.. _RFC8705 Section 2.2: https://tools.ietf.org/html/rfc8705#section-2.2
+.. _requests/sessions.py: https://github.com/requests/requests/blob/master/requests/sessions.py#L706

@@ -80,7 +80,7 @@ class AuthorizationTest(TestCase):
             'code': 'x',
         })
         data = json.loads(rv.data)
-        self.assertEqual(data['error'], 'invalid_grant')
+        self.assertEqual(data['error'], 'unsupported_grant_type')
 
 
 class ResourceTest(TestCase):
@@ -139,7 +139,7 @@ class ResourceTest(TestCase):
 
     def test_expired_token(self):
         self.prepare_data()
-        self.create_token(0)
+        self.create_token(-10)
         headers = self.create_bearer_header('a1')
 
         rv = self.client.get('/user', headers=headers)

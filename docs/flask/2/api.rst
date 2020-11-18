@@ -10,9 +10,8 @@ Server.
     :members:
         register_grant,
         register_endpoint,
-        create_token_expires_in_generator,
         create_bearer_token_generator,
-        validate_consent_request,
+        get_consent_grant,
         create_authorization_response,
         create_token_response,
         create_endpoint_response
@@ -49,6 +48,8 @@ Server.
 
 SQLAlchemy Helper Functions
 ---------------------------
+
+.. warning:: We will drop ``sqla_oauth2`` module in version 1.0.
 
 .. module:: authlib.integrations.sqla_oauth2
 

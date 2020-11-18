@@ -170,12 +170,6 @@ is the fantasy of Flask.
 Auto Update Token via Signal
 ----------------------------
 
-.. versionchanged:: v0.13
-
-    The parameters of ``update_token`` method is changed. Read the documentation
-    in :ref:`frameworks_clients`
-
-
 .. versionadded:: v0.13
 
     The signal is added since v0.13
@@ -228,3 +222,11 @@ When we get the returned token::
 We can get the user information from the ``id_token`` in the returned token::
 
     userinfo = oauth.google.parse_id_token(token)
+
+Examples
+---------
+
+Here are some example code for you learn Flask OAuth client integrations:
+
+1. OAuth 1.0: `Flask Twitter login <https://github.com/authlib/demo-oauth-client/tree/master/flask-twitter-tool>`_
+2. OAuth 2.0 & OpenID Connect: `Flask Google login <https://github.com/authlib/demo-oauth-client/tree/master/flask-google-login>`_

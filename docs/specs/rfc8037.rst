@@ -1,0 +1,87 @@
+RFC8037: CFRG Elliptic Curve Diffie-Hellman (ECDH) and Signatures in JSON Object Signing and Encryption (JOSE)
+==============================================================================================================
+
+.. meta::
+    :description: API references on "X25519", "X448", "Ed25519", and "Ed448" algorithms for JWK. And "EdDSA"
+                  signing data using "JSON Web Signature (JWS)".
+
+.. versionadded:: v0.15
+
+Algorithms for JWS
+------------------
+
+In RFC8037, algorithm "EdDSA" is defined for JWS. Use Edwards-curve Digital
+Signature Algorithm (EdDSA) for signing data using "JSON Web Signature (JWS)"::
+
+    from authlib.jose import JsonWebSignature
+
+    # only allow "EdDSA" alg value
+    jws = JsonWebSignature(algorithms=['EdDSA'])
+
+    protected = {'alg': 'EdDSA'}
+    payload = b'example'
+
+    with open('ed25519-pkcs8.pem', 'rb') as f:
+        secret = f.read()
+    jws.serialize_compact(protected, payload, secret)
+
+Learn how to use other JWS functions at :ref:`jws_guide`.
+
+It can also be used in JSON Web Token (JWT)::
+
+    from authlib.jose import JsonWebToken
+
+    jwt = JsonWebToken(algorithms=['EdDSA'])
+
+    with open('ed25519-pkcs8.pem', 'rb') as f:
+        key = f.read()
+
+    header = {'alg': 'EdDSA'}
+    payload = {'iss': 'Authlib', 'sub': '123', ...}
+    s = jwt.encode(header, payload, key)
+
+
+Algorithms for JWK
+------------------
+
+In RFC8037, algorithms "Ed25519", "Ed448", "X25519", "X448" are defined for JWK.
+Loads and dumps Json Web Keys with::
+
+    from authlib.jose import JsonWebKey
+
+    with open('ed25519-pkcs8.pem', 'rb') as f:
+        key = f.read()
+
+    # MUST use "OKP" as "kty" value
+    JsonWebKey.import_key(key, {'kty': 'OKP'})
+
+Learn how to use other JWK functions at :ref:`jwk_guide`.
+
+Algorithms for JWE
+------------------
+
+"X25519", "X448" keys are used in "epk" for ECDH-ES algorithms.
+Just use the ``X25519`` and ``X448`` key for ``ECDH-ES`` in JWE::
+
+    from authlib.jose import OKPKey
+    from authlib.jose import JsonWebEncryption
+
+    jwe = JsonWebEncryption()
+
+    with open('X25519.pem', 'rb') as f:
+        key = OKPKey.import_key(f.read())
+
+    protected = {
+        "alg": "ECDH-ES",
+        "enc": "A128GCM",
+        "apu": "QWxpY2U",
+        "apv": "Qm9i",
+    }
+    jwe.serialize_compact(protected, b'hello', key)
+
+API Reference
+-------------
+
+.. autoclass:: authlib.jose.OKPKey
+   :member-order: bysource
+   :members:

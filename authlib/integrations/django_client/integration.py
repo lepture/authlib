@@ -1,11 +1,11 @@
 from django.conf import settings
 from django.dispatch import Signal
 from django.http import HttpResponseRedirect
-from ..base_client import FrameworkIntegration, RemoteApp
+from ..base_client import FrameworkIntegration, RemoteApp, OAuthError
 from ..requests_client import OAuth1Session, OAuth2Session
 
 
-token_update = Signal(providing_args=['name', 'token', 'refresh_token', 'access_token'])
+token_update = Signal()
 
 
 class DjangoIntegration(FrameworkIntegration):
@@ -26,6 +26,11 @@ class DjangoIntegration(FrameworkIntegration):
             return request.GET.dict()
 
         if request.method == 'GET':
+            error = request.GET.get('error')
+            if error:
+                description = request.GET.get('error_description')
+                raise OAuthError(error=error, description=description)
+
             params = {
                 'code': request.GET.get('code'),
                 'state': request.GET.get('state'),
@@ -53,7 +58,7 @@ class DjangoRemoteApp(RemoteApp):
         :param kwargs: Extra parameters to include.
         :return: A HTTP redirect response.
         """
-        rv = self.create_authorization_url(redirect_uri, **kwargs)
+        rv = self.create_authorization_url(request, redirect_uri, **kwargs)
         self.save_authorize_data(request, redirect_uri=redirect_uri, **rv)
         return HttpResponseRedirect(rv['url'])
 
@@ -67,5 +72,5 @@ class DjangoRemoteApp(RemoteApp):
         params.update(kwargs)
         return self.fetch_access_token(**params)
 
-    def parse_id_token(self, request, token, claims_options=None):
-        return self._parse_id_token(request, token, claims_options)
+    def parse_id_token(self, request, token, claims_options=None, leeway=120):
+        return self._parse_id_token(request, token, claims_options, leeway)

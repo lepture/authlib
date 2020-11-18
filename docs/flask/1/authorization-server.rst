@@ -106,9 +106,9 @@ built-in validation with cache.
 
 If cache is not available, there is also a SQLAlchemy mixin::
 
-    from authlib.integrations.sqla_oauth1 import OAuth1TokenCredentialMixin
+    from authlib.integrations.sqla_oauth1 import OAuth1TimestampNonceMixin
 
-    class TimestampNonce(db.Model, OAuth1TokenCredentialMixin)
+    class TimestampNonce(db.Model, OAuth1TimestampNonceMixin)
         id = db.Column(db.Integer, primary_key=True)
 
 
@@ -204,7 +204,7 @@ to fetch a temporary credential::
 
     @app.route('/initiate', methods=['POST'])
     def initiate_temporary_credential():
-        return server.create_temporary_credential_response()
+        return server.create_temporary_credentials_response()
 
 The endpoint for resource owner authorization. OAuth 1 Client will redirect
 user to this authorization page, so that resource owner can grant or deny this
@@ -227,7 +227,7 @@ request::
             grant_user = None
 
         try:
-            return server.create_authorization_response(grant_user)
+            return server.create_authorization_response(grant_user=grant_user)
         except OAuth1Error as error:
             return render_template('error.html', error=error)
 

@@ -2,15 +2,24 @@ import json
 from authlib.oauth2.rfc6749 import grants, errors
 from authlib.common.urls import urlparse, url_decode
 from django.test import override_settings
-from .models import User, Client
-from .models import CodeGrantMixin, generate_authorization_code
+from .models import User, Client, OAuth2Code
+from .models import CodeGrantMixin
 from .oauth2_server import TestCase
 
 
 class AuthorizationCodeGrant(CodeGrantMixin, grants.AuthorizationCodeGrant):
-    def create_authorization_code(self, client, grant_user, request):
-        return generate_authorization_code(client, grant_user, request)
+    TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic', 'client_secret_post', 'none']
 
+    def save_authorization_code(self, code, request):
+        auth_code = OAuth2Code(
+            code=code,
+            client_id=request.client.client_id,
+            redirect_uri=request.redirect_uri,
+            response_type=request.response_type,
+            scope=request.scope,
+            user=request.user,
+        )
+        auth_code.save()
 
 
 class AuthorizationCodeTest(TestCase):
@@ -34,13 +43,13 @@ class AuthorizationCodeTest(TestCase):
         )
         client.save()
 
-    def test_validate_consent_request_client(self):
+    def test_get_consent_grant_client(self):
         server = self.create_server()
         url = '/authorize?response_type=code'
         request = self.factory.get(url)
         self.assertRaises(
             errors.InvalidClientError,
-            server.validate_consent_request,
+            server.get_consent_grant,
             request
         )
 
@@ -48,18 +57,18 @@ class AuthorizationCodeTest(TestCase):
         request = self.factory.get(url)
         self.assertRaises(
             errors.InvalidClientError,
-            server.validate_consent_request,
+            server.get_consent_grant,
             request
         )
 
         self.prepare_data(response_type='')
         self.assertRaises(
             errors.UnauthorizedClientError,
-            server.validate_consent_request,
+            server.get_consent_grant,
             request
         )
 
-    def test_validate_consent_request_redirect_uri(self):
+    def test_get_consent_grant_redirect_uri(self):
         server = self.create_server()
         self.prepare_data()
 
@@ -68,18 +77,18 @@ class AuthorizationCodeTest(TestCase):
         request = self.factory.get(url)
         self.assertRaises(
             errors.InvalidRequestError,
-            server.validate_consent_request,
+            server.get_consent_grant,
             request
         )
 
         url = base_url + '&redirect_uri=https%3A%2F%2Fa.b'
         request = self.factory.get(url)
-        grant = server.validate_consent_request(request)
+        grant = server.get_consent_grant(request)
         self.assertIsInstance(grant, AuthorizationCodeGrant)
 
-    def test_validate_consent_request_scope(self):
+    def test_get_consent_grant_scope(self):
         server = self.create_server()
-        server.metadata = {'scopes_supported': ['profile']}
+        server.scopes_supported = ['profile']
 
         self.prepare_data()
         base_url = '/authorize?response_type=code&client_id=client'
@@ -87,7 +96,7 @@ class AuthorizationCodeTest(TestCase):
         request = self.factory.get(url)
         self.assertRaises(
             errors.InvalidScopeError,
-            server.validate_consent_request,
+            server.get_consent_grant,
             request
         )
 
@@ -96,7 +105,7 @@ class AuthorizationCodeTest(TestCase):
         self.prepare_data()
         data = {'response_type': 'code', 'client_id': 'client'}
         request = self.factory.post('/authorize', data=data)
-        server.validate_consent_request(request)
+        server.get_consent_grant(request)
 
         resp = server.create_authorization_response(request)
         self.assertEqual(resp.status_code, 302)

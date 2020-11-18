@@ -61,20 +61,20 @@ grant type. Here is how::
     from authlib.common.security import generate_token
 
     class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
-        def create_authorization_code(self, client, grant_user, request):
-            code = generate_token(48)
-            item = AuthorizationCode(
+        def save_authorization_code(self, code, request):
+            client = request.client
+            auth_code = AuthorizationCode(
                 code=code,
                 client_id=client.client_id,
                 redirect_uri=request.redirect_uri,
                 response_type=request.response_type,
                 scope=request.scope,
-                user=grant_user,
+                user=request.user,
             )
-            item.save()
-            return code
+            auth_code.save()
+            return auth_code
 
-        def parse_authorization_code(self, code, client):
+        def query_authorization_code(self, code, client):
             try:
                 item = OAuth2Code.objects.get(code=code, client_id=client.client_id)
             except OAuth2Code.DoesNotExist:

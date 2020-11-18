@@ -34,5 +34,17 @@ Evilham
 </a><br>
 Aveline
 </td>
+<td>
+<a href="https://github.com/cal97g">
+<img src="https://avatars0.githubusercontent.com/u/1664656?s=460&u=f3204417178f2103e2cf4be985e0cb6198506bd7&v=4" alt="Callam" width="48" height="48">
+</a><br>
+Callam
+</td>
+<td>
+<a href="https://github.com/krishnaku">
+<img src="https://avatars3.githubusercontent.com/u/752987?s=400&u=5df9b162ab56185b031ea1df7412d15abda1494d&v=4" alt="Krishna Kumar" width="48" height="48">
+</a><br>
+Krishna Kumar
+</td>
 </tr>
 </table>

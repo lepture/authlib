@@ -48,9 +48,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         +---------+       (w/ Optional Refresh Token)
     """
     #: Allowed client auth methods for token endpoint
-    TOKEN_ENDPOINT_AUTH_METHODS = [
-        'client_secret_basic', 'client_secret_post', 'none'
-    ]
+    TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic', 'client_secret_post']
 
     #: Generated "code" length
     AUTHORIZATION_CODE_LENGTH = 48
@@ -147,27 +145,20 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
             resource owner, otherwise pass None.
         :returns: (status_code, body, headers)
         """
-        state = self.request.state
-        if grant_user:
-            self.request.user = grant_user
+        if not grant_user:
+            raise AccessDeniedError(state=self.request.state, redirect_uri=redirect_uri)
 
-            if hasattr(self, 'create_authorization_code'):
-                # TODO: deprecate
-                code = self.create_authorization_code(
-                    self.request.client, grant_user, self.request)
-            else:
-                code = self.generate_authorization_code()
-                self.save_authorization_code(code, self.request)
+        self.request.user = grant_user
 
-            params = [('code', code)]
-            if state:
-                params.append(('state', state))
-            uri = add_params_to_uri(redirect_uri, params)
-            headers = [('Location', uri)]
-            return 302, '', headers
+        code = self.generate_authorization_code()
+        self.save_authorization_code(code, self.request)
 
-        else:
-            raise AccessDeniedError(state=state, redirect_uri=redirect_uri)
+        params = [('code', code)]
+        if self.request.state:
+            params.append(('state', self.request.state))
+        uri = add_params_to_uri(redirect_uri, params)
+        headers = [('Location', uri)]
+        return 302, '', headers
 
     def validate_token_request(self):
         """The client makes a request to the token endpoint by sending the
@@ -279,10 +270,8 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
 
         scope = authorization_code.get_scope()
         token = self.generate_token(
-            client,
-            self.GRANT_TYPE,
             user=user,
-            scope=client.get_allowed_scope(scope),
+            scope=scope,
             include_refresh_token=client.check_grant_type('refresh_token'),
         )
         log.debug('Issue token %r to %r', token, client)
@@ -319,7 +308,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         """
         raise NotImplementedError()
 
-    def query_authorization_code(self, code, client):
+    def query_authorization_code(self, code, client):  # pragma: no cover
         """Get authorization_code from previously savings. Developers MUST
         implement it in subclass::
 
@@ -330,9 +319,6 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         :param client: client related to this code.
         :return: authorization_code object
         """
-        if hasattr(self, 'parse_authorization_code'):
-            # TODO: deprecate
-            return self.parse_authorization_code(code, client)
         raise NotImplementedError()
 
     def delete_authorization_code(self, authorization_code):
@@ -360,22 +346,22 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
 
 
 def validate_code_authorization_request(grant):
-    client_id = grant.request.client_id
+    request = grant.request
+    client_id = request.client_id
     log.debug('Validate authorization request of %r', client_id)
 
     if client_id is None:
-        raise InvalidClientError(state=grant.request.state)
+        raise InvalidClientError(state=request.state)
 
     client = grant.server.query_client(client_id)
     if not client:
-        raise InvalidClientError(state=grant.request.state)
+        raise InvalidClientError(state=request.state)
 
-    redirect_uri = grant.validate_authorization_redirect_uri(grant.request, client)
-    response_type = grant.request.response_type
+    redirect_uri = grant.validate_authorization_redirect_uri(request, client)
+    response_type = request.response_type
     if not client.check_response_type(response_type):
         raise UnauthorizedClientError(
-            'The client is not authorized to use '
-            '"response_type={}"'.format(response_type),
+            f'The client is not authorized to use "response_type={response_type}"',
             state=grant.request.state,
             redirect_uri=redirect_uri,
         )

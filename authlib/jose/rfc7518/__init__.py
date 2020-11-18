@@ -1,18 +1,32 @@
-from .jws_algorithms import JWS_ALGORITHMS
-from .jwe_algorithms import (
-    JWE_ALGORITHMS,
-    JWE_ALG_ALGORITHMS,
-    JWE_ENC_ALGORITHMS,
-    JWE_ZIP_ALGORITHMS,
-)
-from .jwk_algorithms import JWK_ALGORITHMS
+from .oct_key import OctKey
+from .rsa_key import RSAKey
+from .ec_key import ECKey
+from .jws_algs import JWS_ALGORITHMS
+from .jwe_algs import JWE_ALG_ALGORITHMS, ECDHAlgorithm
+from .jwe_encs import JWE_ENC_ALGORITHMS
+from .jwe_zips import DeflateZipAlgorithm
+
+
+def register_jws_rfc7518(cls):
+    for algorithm in JWS_ALGORITHMS:
+        cls.register_algorithm(algorithm)
+
+
+def register_jwe_rfc7518(cls):
+    for algorithm in JWE_ALG_ALGORITHMS:
+        cls.register_algorithm(algorithm)
+
+    for algorithm in JWE_ENC_ALGORITHMS:
+        cls.register_algorithm(algorithm)
+
+    cls.register_algorithm(DeflateZipAlgorithm())
 
 
 __all__ = [
-    'JWS_ALGORITHMS',
-    'JWE_ALGORITHMS',
-    'JWE_ALG_ALGORITHMS',
-    'JWE_ENC_ALGORITHMS',
-    'JWE_ZIP_ALGORITHMS',
-    'JWK_ALGORITHMS'
+    'register_jws_rfc7518',
+    'register_jwe_rfc7518',
+    'OctKey',
+    'RSAKey',
+    'ECKey',
+    'ECDHAlgorithm',
 ]

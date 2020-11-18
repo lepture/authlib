@@ -1,7 +1,7 @@
 .. _install:
 
-Installation of Authlib
-=======================
+Installation
+============
 
 .. meta::
     :description: How to install Authlib with pip, source code, etc.

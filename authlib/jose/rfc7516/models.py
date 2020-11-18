@@ -12,16 +12,13 @@ class JWEAlgorithm(object):
     algorithm_type = 'JWE'
     algorithm_location = 'alg'
 
-    def prepare_private_key(self, key):
+    def prepare_key(self, raw_data):
         raise NotImplementedError
 
-    def prepare_public_key(self, key):
+    def wrap(self, enc_alg, headers, key):
         raise NotImplementedError
 
-    def wrap(self, cek, headers, key):
-        raise NotImplementedError
-
-    def unwrap(self, ek, headers, key):
+    def unwrap(self, enc_alg, ek, headers, key):
         raise NotImplementedError
 
 

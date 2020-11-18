@@ -1,7 +1,7 @@
 import time
 import logging
 from authlib.common.urls import urlparse
-from authlib.jose import JsonWebToken
+from authlib.jose import JsonWebToken, JsonWebKey
 from authlib.oidc.core import UserInfo, CodeIDToken, ImplicitIDToken
 from .base_app import BaseApp
 from .errors import (
@@ -41,9 +41,10 @@ class AsyncRemoteApp(BaseApp):
         url = client.create_authorization_url(authorization_endpoint, **kwargs)
         return {'url': url, 'request_token': token}
 
-    async def create_authorization_url(self, redirect_uri=None, **kwargs):
+    async def create_authorization_url(self, request, redirect_uri=None, **kwargs):
         """Generate the authorization url and state for HTTP redirect.
 
+        :param request: Request instance of the framework.
         :param redirect_uri: Callback or redirect URI for authorization.
         :param kwargs: Extra parameters to include.
         :return: dict
@@ -67,7 +68,7 @@ class AsyncRemoteApp(BaseApp):
                     client, authorization_endpoint, **kwargs)
             else:
                 return self._create_oauth2_authorization_url(
-                    client, authorization_endpoint, **kwargs)
+                    request, client, authorization_endpoint, **kwargs)
 
     async def fetch_access_token(self, redirect_uri=None, request_token=None, **params):
         """Fetch access token in one step.
@@ -109,10 +110,16 @@ class AsyncRemoteApp(BaseApp):
         if self.api_base_url and not url.startswith(('https://', 'http://')):
             url = urlparse.urljoin(self.api_base_url, url)
 
-        async with self._get_oauth_client() as client:
+        withhold_token = kwargs.get('withhold_token')
+        if not withhold_token:
+            metadata = await self.load_server_metadata()
+        else:
+            metadata = {}
+
+        async with self._get_oauth_client(**metadata) as client:
             request = kwargs.pop('request', None)
 
-            if kwargs.get('withhold_token'):
+            if withhold_token:
                 return await client.request(method, url, **kwargs)
 
             if token is None and request:
@@ -160,7 +167,8 @@ class AsyncRemoteApp(BaseApp):
         jwk_set = await self._fetch_jwk_set()
         try:
             claims = jwt.decode(
-                token['id_token'], key=jwk_set,
+                token['id_token'],
+                key=JsonWebKey.import_key_set(jwk_set),
                 claims_cls=claims_cls,
                 claims_options=claims_options,
                 claims_params=claims_params,
@@ -168,7 +176,8 @@ class AsyncRemoteApp(BaseApp):
         except ValueError:
             jwk_set = await self._fetch_jwk_set(force=True)
             claims = jwt.decode(
-                token['id_token'], key=jwk_set,
+                token['id_token'],
+                key=JsonWebKey.import_key_set(jwk_set),
                 claims_cls=claims_cls,
                 claims_options=claims_options,
                 claims_params=claims_params,
@@ -192,5 +201,6 @@ class AsyncRemoteApp(BaseApp):
         return jwk_set
 
     async def _fetch_server_metadata(self, url):
-        resp = await self.request('GET', url, withhold_token=True)
-        return resp.json()
+        async with self._get_oauth_client() as client:
+            resp = await client.request('GET', url, withhold_token=True)
+            return resp.json()

@@ -1,116 +1,64 @@
-from ._backends import EC_TYPES, RSA_TYPES
-
-
-class JWKAlgorithm(object):
-    name = None
-    description = None
-    algorithm_type = 'JWK'
-    algorithm_location = 'kty'
-
-    """Interface for JWK algorithm. JWA specification (RFC7518) SHOULD
-    implement the algorithms for JWK with this base implementation.
-    """
-    def prepare_key(self, key):
-        """Prepare key before dumping it into JWK."""
-        raise NotImplementedError
-
-    def loads(self, obj):
-        """Load JWK dict object into a public/private key."""
-        raise NotImplementedError
-
-    def dumps(self, key):
-        """Dump a public/private key into JWK dict object."""
-        raise NotImplementedError
+from authlib.common.encoding import json_loads
+from .key_set import KeySet
+from ._cryptography_key import load_pem_key
 
 
 class JsonWebKey(object):
-    #: Defined available JWK algorithms
-    JWK_AVAILABLE_ALGORITHMS = None
+    JWK_KEY_CLS = {}
 
-    def __init__(self, algorithms):
-        self._algorithms = {}
+    @classmethod
+    def generate_key(cls, kty, crv_or_size, options=None, is_private=False):
+        """Generate a Key with the given key type, curve name or bit size.
 
-        if isinstance(algorithms, list):
-            for algorithm in algorithms:
-                self.register_algorithm(algorithm)
-
-    def register_algorithm(self, algorithm):
-        if isinstance(algorithm, str) and self.JWK_AVAILABLE_ALGORITHMS:
-            algorithm = self.JWK_AVAILABLE_ALGORITHMS.get(algorithm)
-
-        if not algorithm or algorithm.algorithm_type != 'JWK':
-            raise ValueError(
-                'Invalid algorithm for JWK, {!r}'.format(algorithm))
-
-        self._algorithms[algorithm.name] = algorithm
-
-    def _load_obj(self, obj):
-        kty = obj['kty']
-        alg = self._algorithms[kty]
-        return alg.loads(obj)
-
-    def _load_jwk_set(self, obj, kid):
-        if isinstance(obj, (tuple, list)):
-            keys = obj
-        elif 'keys' in obj:
-            keys = obj['keys']
-        else:
-            raise ValueError('Invalid JWK set format')
-
-        for key in keys:
-            if key['kid'] == kid:
-                return self._load_obj(key)
-        raise ValueError('Invalid JWK kid')
-
-    def loads(self, obj, kid=None):
-        """Loads JSON Web Key object into a public/private key.
-
-        :param obj: A JWK (or JWK set) format dict
-        :param kid: kid of a JWK set
-        :return: key
+        :param kty: string of ``oct``, ``RSA``, ``EC``, ``OKP``
+        :param crv_or_size: curve name or bit size
+        :param options: a dict of other options for Key
+        :param is_private: create a private key or public key
+        :return: Key instance
         """
-        if 'kty' in obj:
-            if kid and 'kid' in obj and kid != obj['kid']:
-                raise ValueError('Invalid JSON Web Key')
-            return self._load_obj(obj)
+        key_cls = cls.JWK_KEY_CLS[kty]
+        return key_cls.generate_key(crv_or_size, options, is_private)
 
-        if not kid:
-            raise ValueError('Invalid JSON Web Key')
+    @classmethod
+    def import_key(cls, raw, options=None):
+        """Import a Key from bytes, string, PEM or dict.
 
-        return self._load_jwk_set(obj, kid)
-
-    def dumps(self, key, kty=None, **params):
-        """Generate JWK format for the given public/private key.
-
-        :param key: A public/private key
-        :param kty: key type of the key
-        :param params: Other parameters
-        :return: JWK dict
+        :return: Key instance
         """
+        kty = None
+        if options is not None:
+            kty = options.get('kty')
+
+        if kty is None and isinstance(raw, dict):
+            kty = raw.get('kty')
+
         if kty is None:
-            if isinstance(key, EC_TYPES):
-                kty = 'EC'
-            elif isinstance(key, RSA_TYPES):
-                kty = 'RSA'
-            else:
-                kty = 'oct'
+            raw_key = load_pem_key(raw)
+            for _kty in cls.JWK_KEY_CLS:
+                key_cls = cls.JWK_KEY_CLS[_kty]
+                if key_cls.validate_raw_key(raw_key):
+                    return key_cls.import_key(raw_key, options)
 
-        alg = self._algorithms[kty]
-        obj = alg.dumps(alg.prepare_key(key))
+        key_cls = cls.JWK_KEY_CLS[kty]
+        return key_cls.import_key(raw, options)
 
-        if params:
-            _add_other_params(obj, params)
+    @classmethod
+    def import_key_set(cls, raw):
+        """Import KeySet from string, dict or a list of keys.
 
-        return obj
+        :return: KeySet instance
+        """
+        raw = _transform_raw_key(raw)
+        if isinstance(raw, dict) and 'keys' in raw:
+            keys = raw.get('keys')
+            return KeySet([cls.import_key(k) for k in keys])
+        raise ValueError('Invalid key set format')
 
 
-def _add_other_params(obj, params):
-    # https://tools.ietf.org/html/rfc7517#section-4
-    others = [
-        'use', 'key_ops', 'alg', 'kid',
-        'x5u', 'x5c', 'x5t', 'x5t#S256'
-    ]
-    for k in others:
-        value = params.get(k)
-        if value:
-            obj[k] = value
+def _transform_raw_key(raw):
+    if isinstance(raw, str) and \
+            raw.startswith('{') and raw.endswith('}'):
+        return json_loads(raw)
+    elif isinstance(raw, (tuple, list)):
+        return {'keys': raw}
+    return raw

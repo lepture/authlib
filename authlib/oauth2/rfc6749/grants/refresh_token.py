@@ -14,6 +14,7 @@ from ..util import scope_to_list
 from ..errors import (
     InvalidRequestError,
     InvalidScopeError,
+    InvalidGrantError,
     UnauthorizedClientError,
 )
 log = logging.getLogger(__name__)
@@ -45,15 +46,11 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
     def _validate_request_token(self, client):
         refresh_token = self.request.form.get('refresh_token')
         if refresh_token is None:
-            raise InvalidRequestError(
-                'Missing "refresh_token" in request.',
-            )
+            raise InvalidRequestError('Missing "refresh_token" in request.')
 
         token = self.authenticate_refresh_token(refresh_token)
-        if not token or token.get_client_id() != client.get_client_id():
-            raise InvalidRequestError(
-                'Invalid "refresh_token" in request.',
-            )
+        if not token or not token.check_client(client):
+            raise InvalidGrantError()
         return token
 
     def _validate_token_scope(self, token):
@@ -121,7 +118,7 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
             raise InvalidRequestError('There is no "user" for this token.')
 
         client = self.request.client
-        token = self.issue_token(client, user, credential)
+        token = self.issue_token(user, credential)
         log.debug('Issue token %r to %r', token, client)
 
         self.request.user = user
@@ -130,14 +127,13 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
         self.revoke_old_credential(credential)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
-    def issue_token(self, client, user, credential):
+    def issue_token(self, user, credential):
         expires_in = credential.get_expires_in()
         scope = self.request.scope
         if not scope:
             scope = credential.get_scope()
 
         token = self.generate_token(
-            client, self.GRANT_TYPE,
             user=user,
             expires_in=expires_in,
             scope=scope,
@@ -150,9 +146,9 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
         implement this method in subclass::
 
             def authenticate_refresh_token(self, refresh_token):
-                item = Token.get(refresh_token=refresh_token)
-                if item and item.is_refresh_token_active():
-                    return item
+                token = Token.get(refresh_token=refresh_token)
+                if token and not token.refresh_token_revoked:
+                    return token
 
         :param refresh_token: The refresh token issued to the client
         :return: token

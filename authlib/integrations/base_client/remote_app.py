@@ -1,7 +1,7 @@
 import time
 import logging
 from authlib.common.urls import urlparse
-from authlib.jose import JsonWebToken, jwk
+from authlib.jose import JsonWebToken, JsonWebKey
 from authlib.oidc.core import UserInfo, CodeIDToken, ImplicitIDToken
 from .base_app import BaseApp
 from .errors import (
@@ -46,9 +46,10 @@ class RemoteApp(BaseApp):
         url = client.create_authorization_url(authorization_endpoint, **kwargs)
         return {'url': url, 'request_token': token}
 
-    def create_authorization_url(self, redirect_uri=None, **kwargs):
+    def create_authorization_url(self, request, redirect_uri=None, **kwargs):
         """Generate the authorization url and state for HTTP redirect.
 
+        :param request: Request instance of the framework.
         :param redirect_uri: Callback or redirect URI for authorization.
         :param kwargs: Extra parameters to include.
         :return: dict
@@ -72,7 +73,7 @@ class RemoteApp(BaseApp):
                     client, authorization_endpoint, **kwargs)
             else:
                 return self._create_oauth2_authorization_url(
-                    client, authorization_endpoint, **kwargs)
+                    request, client, authorization_endpoint, **kwargs)
 
     def fetch_access_token(self, redirect_uri=None, request_token=None, **params):
         """Fetch access token in one step.
@@ -114,9 +115,15 @@ class RemoteApp(BaseApp):
         if self.api_base_url and not url.startswith(('https://', 'http://')):
             url = urlparse.urljoin(self.api_base_url, url)
 
-        with self._get_oauth_client() as session:
+        withhold_token = kwargs.get('withhold_token')
+        if not withhold_token:
+            metadata = self.load_server_metadata()
+        else:
+            metadata = {}
+
+        with self._get_oauth_client(**metadata) as session:
             request = kwargs.pop('request', None)
-            if kwargs.get('withhold_token'):
+            if withhold_token:
                 return session.request(method, url, **kwargs)
 
             if token is None and self._fetch_token and request:
@@ -151,21 +158,21 @@ class RemoteApp(BaseApp):
             data = compliance_fix(self, data)
         return UserInfo(data)
 
-    def _parse_id_token(self, request, token, claims_options=None):
+    def _parse_id_token(self, request, token, claims_options=None, leeway=120):
         """Return an instance of UserInfo from token's ``id_token``."""
         if 'id_token' not in token:
             return None
 
         def load_key(header, payload):
-            jwk_set = self.fetch_jwk_set()
+            jwk_set = JsonWebKey.import_key_set(self.fetch_jwk_set())
             try:
-                return jwk.loads(jwk_set, header.get('kid'))
+                return jwk_set.find_by_kid(header.get('kid'))
             except ValueError:
                 # re-try with new jwk set
-                jwk_set = self.fetch_jwk_set(force=True)
-                return jwk.loads(jwk_set, header.get('kid'))
+                jwk_set = JsonWebKey.import_key_set(self.fetch_jwk_set(force=True))
+                return jwk_set.find_by_kid(header.get('kid'))
 
-        nonce = self.framework.get_session_data(request, 'nonce')
+        nonce = self.framework.pop_session_data(request, 'nonce')
         claims_params = dict(
             nonce=nonce,
             client_id=self.client_id,
@@ -191,5 +198,8 @@ class RemoteApp(BaseApp):
             claims_options=claims_options,
             claims_params=claims_params,
         )
-        claims.validate(leeway=120)
+        # https://github.com/lepture/authlib/issues/259
+        if claims.get('nonce_supported') is False:
+            claims.params['nonce'] = None
+        claims.validate(leeway=leeway)
         return UserInfo(claims)

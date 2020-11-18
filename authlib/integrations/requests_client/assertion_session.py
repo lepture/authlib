@@ -26,12 +26,6 @@ class AssertionSession(AssertionClient, Session):
     def __init__(self, token_endpoint, issuer, subject, audience=None, grant_type=None,
                  claims=None, token_placement='header', scope=None, **kwargs):
         Session.__init__(self)
-
-        token_url = kwargs.pop('token_url', None)
-        if token_url:
-            # TODO: deprecate
-            token_endpoint = token_url
-
         AssertionClient.__init__(
             self, session=self,
             token_endpoint=token_endpoint, issuer=issuer, subject=subject,

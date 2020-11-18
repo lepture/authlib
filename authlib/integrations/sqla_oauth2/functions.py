@@ -1,3 +1,6 @@
+import time
+
+
 def create_query_client_func(session, client_model):
     """Create an ``query_client`` function that can be used in authorization
     server.
@@ -41,9 +44,8 @@ def create_query_token_func(session, token_model):
     :param session: SQLAlchemy session
     :param token_model: Token model class
     """
-    def query_token(token, token_type_hint, client):
+    def query_token(token, token_type_hint):
         q = session.query(token_model)
-        q = q.filter_by(client_id=client.client_id, revoked=False)
         if token_type_hint == 'access_token':
             return q.filter_by(access_token=token).first()
         elif token_type_hint == 'refresh_token':
@@ -67,11 +69,15 @@ def create_revocation_endpoint(session, token_model):
     query_token = create_query_token_func(session, token_model)
 
     class _RevocationEndpoint(RevocationEndpoint):
-        def query_token(self, token, token_type_hint, client):
-            return query_token(token, token_type_hint, client)
+        def query_token(self, token, token_type_hint):
+            return query_token(token, token_type_hint)
 
-        def revoke_token(self, token):
-            token.revoked = True
+        def revoke_token(self, token, request):
+            now = int(time.time())
+            hint = request.form.get('token_type_hint')
+            token.access_token_revoked_at = now
+            if hint != 'access_token':
+                token.refresh_token_revoked_at = now
             session.add(token)
             session.commit()
 

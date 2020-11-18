@@ -1,4 +1,3 @@
-import json
 from django.http import HttpResponse
 from django.utils.module_loading import import_string
 from django.conf import settings
@@ -8,7 +7,6 @@ from authlib.oauth2 import (
     AuthorizationServer as _AuthorizationServer,
 )
 from authlib.oauth2.rfc6750 import BearerToken
-from authlib.oauth2.rfc8414 import AuthorizationServerMetadata
 from authlib.common.security import generate_token as _generate_token
 from authlib.common.encoding import json_dumps
 from .signals import client_authenticated, token_revoked
@@ -24,33 +22,18 @@ class AuthorizationServer(_AuthorizationServer):
 
         server = AuthorizationServer(OAuth2Client, OAuth2Token)
     """
-    metadata_class = AuthorizationServerMetadata
 
-    def __init__(self, client_model, token_model, generate_token=None, metadata=None):
+    def __init__(self, client_model, token_model, generate_token=None):
         self.config = getattr(settings, 'AUTHLIB_OAUTH2_PROVIDER', {})
         self.client_model = client_model
         self.token_model = token_model
         if generate_token is None:
             generate_token = self.create_bearer_token_generator()
 
-        if metadata is None:
-            metadata_file = self.config.get('metadata_file')
-            if metadata_file:
-                with open(metadata_file) as f:
-                    metadata = json.load(f)
+        super(AuthorizationServer, self).__init__(generate_token=generate_token)
+        self.scopes_supported = self.config.get('scopes_supported')
 
-        if metadata:
-            metadata = self.metadata_class(metadata)
-            metadata.validate()
-
-        super(AuthorizationServer, self).__init__(
-            query_client=self.get_client_by_id,
-            save_token=self.save_oauth2_token,
-            generate_token=generate_token,
-            metadata=metadata,
-        )
-
-    def get_client_by_id(self, client_id):
+    def query_client(self, client_id):
         """Default method for ``AuthorizationServer.query_client``. Developers MAY
         rewrite this function to meet their own needs.
         """
@@ -59,7 +42,7 @@ class AuthorizationServer(_AuthorizationServer):
         except self.client_model.DoesNotExist:
             return None
 
-    def save_oauth2_token(self, token, request):
+    def save_token(self, token, request):
         """Default method for ``AuthorizationServer.save_token``. Developers MAY
         rewrite this function to meet their own needs.
         """
@@ -114,18 +97,6 @@ class AuthorizationServer(_AuthorizationServer):
             refresh_token_generator=refresh_token_generator,
             expires_generator=expires_generator,
         )
-
-    def get_consent_grant(self, request):
-        grant = self.get_authorization_grant(request)
-        grant.validate_consent_request()
-        if not hasattr(grant, 'prompt'):
-            grant.prompt = None
-        return grant
-
-    def validate_consent_request(self, request, end_user=None):
-        req = self.create_oauth2_request(request)
-        req.user = end_user
-        return self.get_consent_grant(req)
 
 
 def create_token_generator(token_generator_conf, length=42):

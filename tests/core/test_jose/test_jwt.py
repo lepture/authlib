@@ -177,11 +177,21 @@ class JWTTest(unittest.TestCase):
         claims = jwt.decode(data, private_key)
         self.assertEqual(claims['name'], 'hi')
 
+    def test_use_jwks(self):
+        header = {'alg': 'RS256', 'kid': 'abc'}
+        payload = {'name': 'hi'}
+        private_key = read_file_path('jwks_private.json')
+        pub_key = read_file_path('jwks_public.json')
+        data = jwt.encode(header, payload, private_key)
+        self.assertEqual(data.count(b'.'), 2)
+        claims = jwt.decode(data, pub_key)
+        self.assertEqual(claims['name'], 'hi')
+
     def test_with_ec(self):
         payload = {'name': 'hi'}
-        private_key = read_file_path('ec_private.json')
-        pub_key = read_file_path('ec_public.json')
-        data = jwt.encode({'alg': 'ES256'}, payload, private_key)
+        private_key = read_file_path('secp521r1-private.json')
+        pub_key = read_file_path('secp521r1-public.json')
+        data = jwt.encode({'alg': 'ES512'}, payload, private_key)
         self.assertEqual(data.count(b'.'), 2)
 
         claims = jwt.decode(data, pub_key)

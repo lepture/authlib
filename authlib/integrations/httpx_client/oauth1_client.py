@@ -1,6 +1,5 @@
 import typing
-from httpx import AsyncClient, Auth
-from httpx import Request, Response
+from httpx import AsyncClient, Auth, Client, Request, Response
 from authlib.oauth1 import (
     SIGNATURE_HMAC_SHA1,
     SIGNATURE_TYPE_HEADER,
@@ -8,7 +7,7 @@ from authlib.oauth1 import (
 from authlib.common.encoding import to_unicode
 from authlib.oauth1 import ClientAuth
 from authlib.oauth1.client import OAuth1Client as _OAuth1Client
-from .utils import extract_client_kwargs, rebuild_request
+from .utils import extract_client_kwargs
 from ..base_client import OAuthError
 
 
@@ -19,7 +18,8 @@ class OAuth1Auth(Auth, ClientAuth):
     def auth_flow(self, request: Request) -> typing.Generator[Request, Response, None]:
         url, headers, body = self.prepare(
             request.method, str(request.url), request.headers, request.content)
-        yield rebuild_request(request, url, headers, body)
+        headers['Content-Length'] = str(len(body))
+        yield Request(method=request.method, url=url, headers=headers, data=body)
 
 
 class AsyncOAuth1Client(_OAuth1Client, AsyncClient):
@@ -69,6 +69,32 @@ class AsyncOAuth1Client(_OAuth1Client, AsyncClient):
         token = self.parse_response_token(resp.status_code, to_unicode(text))
         self.token = token
         return token
+
+    @staticmethod
+    def handle_error(error_type, error_description):
+        raise OAuthError(error_type, error_description)
+
+
+class OAuth1Client(_OAuth1Client, Client):
+    auth_class = OAuth1Auth
+
+    def __init__(self, client_id, client_secret=None,
+                 token=None, token_secret=None,
+                 redirect_uri=None, rsa_key=None, verifier=None,
+                 signature_method=SIGNATURE_HMAC_SHA1,
+                 signature_type=SIGNATURE_TYPE_HEADER,
+                 force_include_body=False, **kwargs):
+
+        _client_kwargs = extract_client_kwargs(kwargs)
+        Client.__init__(self, **_client_kwargs)
+
+        _OAuth1Client.__init__(
+            self, self,
+            client_id=client_id, client_secret=client_secret,
+            token=token, token_secret=token_secret,
+            redirect_uri=redirect_uri, rsa_key=rsa_key, verifier=verifier,
+            signature_method=signature_method, signature_type=signature_type,
+            force_include_body=force_include_body, **kwargs)
 
     @staticmethod
     def handle_error(error_type, error_description):

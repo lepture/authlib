@@ -1,7 +1,8 @@
 from authlib.common.errors import AuthlibBaseError
 
 
-OAuthError = AuthlibBaseError
+class OAuthError(AuthlibBaseError):
+    error = 'oauth_error'
 
 
 class MissingRequestTokenError(OAuthError):

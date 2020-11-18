@@ -4,7 +4,7 @@ from authlib.common.encoding import to_bytes, to_unicode, urlsafe_b64encode
 from ..rfc6749.errors import InvalidRequestError, InvalidGrantError
 
 
-CODE_VERIFIER_PATTERN = re.compile(r'^[a-zA-Z0-9\-\.\_\~]{43,128}$')
+CODE_VERIFIER_PATTERN = re.compile(r'^[a-zA-Z0-9\-._~]{43,128}$')
 
 
 def create_s256_code_challenge(code_verifier):
@@ -30,9 +30,9 @@ class CodeChallenge(object):
     sending extra "code_challenge" and "code_verifier" to the authorization
     server.
 
-    The AuthorizationCodeGrant SHOULD save the code_challenge and
-    code_challenge_method into database when create_authorization_code. Then
-    register this extension via::
+    The AuthorizationCodeGrant SHOULD save the ``code_challenge`` and
+    ``code_challenge_method`` into database when ``save_authorization_code``.
+    Then register this extension via::
 
         server.register_grant(
             AuthorizationCodeGrant,
@@ -64,8 +64,8 @@ class CodeChallenge(object):
 
     def validate_code_challenge(self, grant):
         request = grant.request
-        challenge = request.args.get('code_challenge')
-        method = request.args.get('code_challenge_method')
+        challenge = request.data.get('code_challenge')
+        method = request.data.get('code_challenge_method')
         if not challenge and not method:
             return
 
@@ -87,7 +87,7 @@ class CodeChallenge(object):
         challenge = self.get_authorization_code_challenge(authorization_code)
 
         # ignore, it is the normal RFC6749 authorization_code request
-        if not challenge:
+        if not challenge and not verifier:
             return
 
         # challenge exists, code_verifier is required

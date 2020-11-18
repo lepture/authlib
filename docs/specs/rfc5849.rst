@@ -1,5 +1,3 @@
-.. _specs/rfc5849:
-
 RFC5849: The OAuth 1.0 Protocol
 ===============================
 
@@ -11,7 +9,7 @@ This section contains the generic implementation of RFC5849_. Learn how to
 create an OAuth 1.0 provider in these frameworks:
 
 1. Flask: :ref:`flask_oauth1_server`.
-2. Django: not ready yet.
+2. Django: :ref:`django_oauth1_server`.
 
 .. _RFC5849: https://tools.ietf.org/html/rfc5849
 

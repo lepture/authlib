@@ -10,20 +10,23 @@ query_token = create_query_token_func(db.session, Token)
 
 
 class MyIntrospectionEndpoint(IntrospectionEndpoint):
-    def query_token(self, token, token_type_hint, client):
-        return query_token(token, token_type_hint, client)
+    def check_permission(self, token, client, request):
+        return True
+
+    def query_token(self, token, token_type_hint):
+        return query_token(token, token_type_hint)
 
     def introspect_token(self, token):
         user = User.query.get(token.user_id)
         return {
-            "active": not token.revoked,
+            "active": True,
             "client_id": token.client_id,
             "username": user.username,
             "scope": token.scope,
             "sub": user.get_user_id(),
             "aud": token.client_id,
             "iss": "https://server.example.com/",
-            "exp": token.get_expires_at(),
+            "exp": token.issued_at + token.expires_in,
             "iat": token.issued_at,
         }
 

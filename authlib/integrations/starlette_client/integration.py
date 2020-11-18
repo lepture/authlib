@@ -1,6 +1,6 @@
 from starlette.responses import RedirectResponse
 from ..httpx_client import AsyncOAuth1Client, AsyncOAuth2Client
-from ..base_client import FrameworkIntegration
+from ..base_client import FrameworkIntegration, OAuthError
 from ..base_client.async_app import AsyncRemoteApp
 
 
@@ -13,7 +13,13 @@ class StartletteIntegration(FrameworkIntegration):
 
     def generate_access_token_params(self, request_token_url, request):
         if request_token_url:
-            return request.scope
+            return dict(request.query_params)
+
+        error = request.query_params.get('error')
+        if error:
+            description = request.query_params.get('error_description')
+            raise OAuthError(error=error, description=description)
+
         return {
             'code': request.query_params.get('code'),
             'state': request.query_params.get('state'),
@@ -43,7 +49,7 @@ class StarletteRemoteApp(AsyncRemoteApp):
         :param kwargs: Extra parameters to include.
         :return: Starlette ``RedirectResponse`` instance.
         """
-        rv = await self.create_authorization_url(redirect_uri, **kwargs)
+        rv = await self.create_authorization_url(request, redirect_uri, **kwargs)
         self.save_authorize_data(request, redirect_uri=redirect_uri, **rv)
         return RedirectResponse(rv['url'], status_code=302)
 
@@ -62,5 +68,5 @@ class StarletteRemoteApp(AsyncRemoteApp):
         if 'id_token' not in token:
             return None
 
-        nonce = self.framework.get_session_data(request, 'nonce')
+        nonce = self.framework.pop_session_data(request, 'nonce')
         return await self._parse_id_token(token, nonce, claims_options)

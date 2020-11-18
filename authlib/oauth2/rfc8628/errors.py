@@ -7,7 +7,7 @@ class AuthorizationPendingError(OAuth2Error):
     """The authorization request is still pending as the end user hasn't
     yet completed the user-interaction steps (Section 3.3).
     """
-    error =  'authorization_pending'
+    error = 'authorization_pending'
 
 
 class SlowDownError(OAuth2Error):

@@ -194,16 +194,14 @@ rest steps are much simpler. The only required parts are routes:
 
 Here is the example for GitHub login::
 
-
     def login(request):
         github = oauth.create_client('github')
         redirect_uri = 'https://example.com/authorize'
         return github.authorize_redirect(request, redirect_uri)
 
     def authorize(request):
-        github = oauth.create_client('github')
         token = oauth.github.authorize_access_token(request)
-        resp = oauth.github.get('user')
+        resp = oauth.github.get('user', token=token)
         profile = resp.json()
         # do something with the token and profile
         return '...'
@@ -230,23 +228,33 @@ Client Authentication Methods
 When fetching access token, the authorization server will require a client
 authentication, Authlib provides **three default methods** defined by RFC7591:
 
-- client_secret_basic
-- client_secret_post
-- none
+- ``client_secret_basic``
+- ``client_secret_post``
+- ``none``
 
 But if the remote provider does not support these three methods, we need to
-register our own authentication methods::
+register our own authentication methods, like :ref:`oauth2_client_auth`::
+
+    from authlib.oauth2.rfc7523 import ClientSecretJWT
 
     oauth.register(
         'name',
         ...
         client_auth_methods=[
-            ClientSecretJWT(token_endpoint),
-            ('client_secret_uri', auth_client_secret_uri),
+            ClientSecretJWT(token_endpoint),  # client_secret_jwt
         ]
     )
 
-Read more in OAuth 2.0 :ref:`oauth2_client_auth`.
+.. versionadded:: v0.15
+
+    Starting from v0.15, developers can add custom authentication methods
+    directly to token endpoint::
+
+        oauth.register(
+            'name',
+            ...
+            token_endpoint_auth_method=ClientSecretJWT(token_endpoint),
+        )
 
 Accessing OAuth Resources
 -------------------------

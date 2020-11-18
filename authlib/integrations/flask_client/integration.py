@@ -1,6 +1,6 @@
 from flask import current_app, session
 from flask.signals import Namespace
-from ..base_client import FrameworkIntegration
+from ..base_client import FrameworkIntegration, OAuthError
 from ..requests_client import OAuth1Session, OAuth2Session
 
 _signal = Namespace()
@@ -18,6 +18,10 @@ class FlaskIntegration(FrameworkIntegration):
 
     def get_session_data(self, request, key):
         sess_key = '_{}_authlib_{}_'.format(self.name, key)
+        return session.get(sess_key)
+
+    def pop_session_data(self, request, key):
+        sess_key = '_{}_authlib_{}_'.format(self.name, key)
         return session.pop(sess_key, None)
 
     def update_token(self, token, refresh_token=None, access_token=None):
@@ -34,6 +38,11 @@ class FlaskIntegration(FrameworkIntegration):
             return request.args.to_dict(flat=True)
 
         if request.method == 'GET':
+            error = request.args.get('error')
+            if error:
+                description = request.args.get('error_description')
+                raise OAuthError(error=error, description=description)
+
             params = {
                 'code': request.args['code'],
                 'state': request.args.get('state'),

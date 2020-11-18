@@ -55,7 +55,7 @@ class FlaskRemoteApp(RemoteApp):
         :param kwargs: Extra parameters to include.
         :return: A HTTP redirect response.
         """
-        rv = self.create_authorization_url(redirect_uri, **kwargs)
+        rv = self.create_authorization_url(flask_req, redirect_uri, **kwargs)
 
         if self.request_token_url:
             request_token = rv.pop('request_token', None)
@@ -77,5 +77,5 @@ class FlaskRemoteApp(RemoteApp):
         self.token = token
         return token
 
-    def parse_id_token(self, token, claims_options=None):
-        return self._parse_id_token(flask_req, token, claims_options)
+    def parse_id_token(self, token, claims_options=None, leeway=120):
+        return self._parse_id_token(flask_req, token, claims_options, leeway)

@@ -14,7 +14,7 @@ OAuth Clients Demo
 ~~~~~~~~~~~~~~~~~~
 
 An official example on how to use OAuth clients with Authlib in Flask,
-Django and Starlette.
+Django, Starlette, and FastAPI.
 
 - Source Code: https://github.com/authlib/demo-oauth-client
 
@@ -72,3 +72,6 @@ Articles
   An example on how to use :class:`~authlib.integrations.requests_client.AssertionSession`.
 - `Using Authlib with gspread <https://blog.authlib.org/2018/authlib-for-gspread>`_.
 - `Multipart Upload to Google Cloud Storage <https://blog.authlib.org/2018/multipart-upload-to-google-cloud-storage>`_.
+- `Create Twitter login for FastAPI <https://blog.authlib.org/2020/fastapi-twitter-login>`_.
+- `Google login for FastAPI <https://blog.authlib.org/2020/fastapi-google-login>`_.
+- `FastAPI with Google OAuth <https://slatebit.com/fastapi/google/oauth/2020/08/16/fastapi_google_oauth_part1.html>`_.

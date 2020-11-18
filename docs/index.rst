@@ -1,7 +1,8 @@
-.. Authlib documentation master file, created by
-   sphinx-quickstart on Wed Nov  1 11:04:52 2017.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+.. meta::
+    :description: The ultimate Python library in building OAuth 1.0, OAuth 2.0, OpenID Connect providers and clients,
+         with built-in JSON Web Signature (JWS), JSON Web Encryption (JWE), JSON Web Key (JWK),
+         and JSON Web Token (JWT) support.
+    :image: https://repository-images.githubusercontent.com/108510280/cab09300-d0ad-11e9-8113-ed9e6ba76927
 
 Authlib: Python Authentication
 ==============================
@@ -13,40 +14,15 @@ It is designed from low level specifications implementations to high level
 frameworks integrations, to meet the needs of everyone.
 
 Authlib is compatible with Python2.7+ and Python3.6+.
+(We will drop Python 2 support when Authlib 1.0 is released)
 
-Overview
---------
-
-A simple :ref:`flask_client` which connects to the GitHub OAuth2 API::
-
-    from flask import Flask
-    from authlib.flask.client import OAuth
-    # use loginpass to make OAuth connection simpler
-    from loginpass import create_flask_blueprint, GitHub
-
-    app = Flask(__name__)
-    oauth = OAuth(app)
-
-    def handle_authorize(remote, token, user_info):
-        if token:
-            save_token(remote.name, token)
-        if user_info:
-            save_user(user_info)
-            return user_page
-        raise some_error
-
-    github_bp = create_flask_blueprint(GitHub, oauth, handle_authorize)
-    app.register_blueprint(github_bp, url_prefix='/github')
-
-OAuth server (provider) on the other hand is a little complex, find a real
-:ref:`flask_oauth2_server` via
-`Example of OAuth 2.0 server <https://github.com/authlib/example-oauth2-server>`_.
-
-User Guide
-----------
+User's Guide
+------------
 
 This part of the documentation begins with some background information
-about Authlib, and installation of Authlib.
+about Authlib, and installation of Authlib. Then it will explain OAuth 1.0,
+OAuth 2.0, and JOSE. At last, it shows the implementation in frameworks, and
+libraries such as Flask, Django, Requests, HTTPX, Starlette, FastAPI, and etc.
 
 .. toctree::
     :maxdepth: 2
@@ -54,6 +30,7 @@ about Authlib, and installation of Authlib.
     basic/index
     client/index
     jose/index
+    oauth/index
     flask/index
     django/index
     specs/index

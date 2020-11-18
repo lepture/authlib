@@ -90,6 +90,9 @@ class OAuth1Client(object):
         kwargs['oauth_token'] = request_token or self.auth.token
         if self.auth.redirect_uri:
             kwargs['oauth_callback'] = self.auth.redirect_uri
+
+        self.auth.redirect_uri = None
+        self.auth.realm = None
         return add_params_to_uri(url, kwargs.items())
 
     def fetch_request_token(self, url, realm=None, **kwargs):
@@ -118,10 +121,7 @@ class OAuth1Client(object):
         else:
             self.auth.realm = None
 
-        token = self._fetch_token(url, **kwargs)
-        self.auth.redirect_uri = None
-        self.auth.realm = None
-        return token
+        return self._fetch_token(url, **kwargs)
 
     def fetch_access_token(self, url, verifier=None, **kwargs):
         """Method for fetching an access token from the token endpoint.
@@ -162,7 +162,10 @@ class OAuth1Client(object):
 
     def parse_response_token(self, status_code, text):
         if status_code >= 400:
-            message = "Token request failed with code {}, response was '{}'.".format(status_code, text)
+            message = (
+                "Token request failed with code {}, "
+                "response was '{}'."
+            ).format(status_code, text)
             self.handle_error('fetch_token_denied', message)
 
         try:
@@ -172,10 +175,12 @@ class OAuth1Client(object):
             else:
                 token = dict(url_decode(text))
         except (TypeError, ValueError) as e:
-            error = ("Unable to decode token from token response. "
-                     "This is commonly caused by an unsuccessful request where"
-                     " a non urlencoded error message is returned. "
-                     "The decoding error was %s""" % e)
+            error = (
+                "Unable to decode token from token response. "
+                "This is commonly caused by an unsuccessful request where"
+                " a non urlencoded error message is returned. "
+                "The decoding error was {}"
+            ).format(e)
             raise ValueError(error)
         return token
 

@@ -1,3 +1,4 @@
+import time
 from flask import json
 from authlib.oauth2.rfc6749.grants import (
     RefreshTokenGrant as _RefreshTokenGrant,
@@ -10,14 +11,16 @@ from .oauth2_server import create_authorization_server
 class RefreshTokenGrant(_RefreshTokenGrant):
     def authenticate_refresh_token(self, refresh_token):
         item = Token.query.filter_by(refresh_token=refresh_token).first()
-        if item and not item.revoked and not item.is_refresh_token_expired():
+        if item and item.is_refresh_token_active():
             return item
 
     def authenticate_user(self, credential):
         return User.query.get(credential.user_id)
 
     def revoke_old_credential(self, credential):
-        credential.revoked = True
+        now = int(time.time())
+        credential.access_token_revoked_at = now
+        credential.refresh_token_revoked_at = now
         db.session.add(credential)
         db.session.commit()
 
@@ -102,8 +105,7 @@ class RefreshTokenTest(TestCase):
             'refresh_token': 'foo',
         }, headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_request')
-        self.assertIn('Invalid', resp['error_description'])
+        self.assertEqual(resp['error'], 'invalid_grant')
 
     def test_invalid_scope(self):
         self.prepare_data()
@@ -209,7 +211,7 @@ class RefreshTokenTest(TestCase):
         }, headers=headers)
         self.assertEqual(rv.status_code, 400)
         resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_request')
+        self.assertEqual(resp['error'], 'invalid_grant')
 
     def test_token_generator(self):
         m = 'tests.flask.test_oauth2.oauth2_server:token_generator'

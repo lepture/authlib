@@ -30,7 +30,7 @@ There are also frameworks integrations of :ref:`flask_client`, :ref:`django_clie
 and :ref:`starlette_client`. If you are using these frameworks, you may have interests
 in their own documentation.
 
-If you are not familiar with OAuth 2.0, it is better to :ref:`understand_oauth2` now.
+If you are not familiar with OAuth 2.0, it is better to read :ref:`intro_oauth2` now.
 
 
 OAuth2Session for Authorization Code
@@ -106,9 +106,9 @@ another website. You need to create another session yourself::
     >>>
     >>> # using httpx
     >>> from authlib.integrations.httpx_client import AsyncOAuth2Client
-    >>> client = OAuth2Client(client_id, client_secret, state=state)
+    >>> client = AsyncOAuth2Client(client_id, client_secret, state=state)
     >>>
-    >>> client.fetch_token(token_endpoint, authorization_response=authorization_response)
+    >>> await client.fetch_token(token_endpoint, authorization_response=authorization_response)
 
 Authlib has a built-in Flask/Django integration. Learn from them.
 
@@ -287,6 +287,25 @@ call this our defined ``update_token`` to save the new token::
     # if the token is expired, this GET request will update token
     client.get('https://openidconnect.googleapis.com/v1/userinfo')
 
+Revoke and Introspect Token
+---------------------------
+
+If the provider support token revocation and introspection, you can revoke
+and introspect the token with::
+
+    token_endpoint = 'https://example.com/oauth/token'
+
+    token = get_your_previous_saved_token()
+    client.revoke_token(token_endpoint, token=token)
+    client.introspect_token(token_endpoint, token=token)
+
+You can find the available parameters in API docs:
+
+- :meth:`requests_client.OAuth2Session.revoke_token`
+- :meth:`requests_client.OAuth2Session.introspect_token`
+- :meth:`httpx_client.AsyncOAuth2Client.revoke_token`
+- :meth:`httpx_client.AsyncOAuth2Client.introspect_token`
+
 .. _compliance_fix_oauth2:
 
 Compliance Fix for non Standard
@@ -300,23 +319,31 @@ hooks are provided to solve those problems:
 * ``refresh_token_response``: invoked before refresh token parsing.
 * ``protected_request``: invoked before making a request.
 
-For instance, linkedin is using a ``oauth2_access_token`` parameter in query
-string to protect users' resources, let's fix it::
+For instance, Stackoverflow MUST add a `site` parameter in query
+string to protect users' resources. And stackoverflow's response is
+not in JSON. Let's fix it::
 
-    from authlib.common.urls import add_params_to_uri
+    from authlib.common.urls import add_params_to_uri, url_decode
 
     def _non_compliant_param_name(url, headers, data):
-        access_token = session.token.get('access_token')
-        token = [('oauth2_access_token', access_token)]
-        url = add_params_to_uri(url, token)
-        return url, headers, data
+        params = {'site': 'stackoverflow'}
+        url = add_params_to_uri(url, params)
+        return url, headers, body
+
+    def _fix_token_response(resp):
+        data = dict(url_decode(resp.text))
+        data['token_type'] = 'Bearer'
+        data['expires_in'] = int(data['expires'])
+        resp.json = lambda: data
+        return resp
 
     session.register_compliance_hook(
         'protected_request', _non_compliant_param_name)
+    session.register_compliance_hook(
+        'access_token_response', _fix_token_response)
 
 If you find a non standard OAuth 2 services, and you can't fix it. Please
 report it in GitHub issues.
-
 
 .. _oidc_session:
 
