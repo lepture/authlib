@@ -36,10 +36,11 @@ class InvalidTokenError(OAuth2Error):
     status_code = 401
 
     def __init__(self, description=None, uri=None, status_code=None,
-                 state=None, realm=None):
+                 state=None, realm=None, extra_attributes=None):
         super(InvalidTokenError, self).__init__(
             description, uri, status_code, state)
         self.realm = realm
+        self.extra_attributes = extra_attributes
 
     def get_headers(self):
         """If the protected resource request does not include authentication
@@ -55,6 +56,8 @@ class InvalidTokenError(OAuth2Error):
         extras = []
         if self.realm:
             extras.append('realm="{}"'.format(self.realm))
+        if self.extra_attributes:
+            extras.extend(['{}="{}"'.format(k, v) for k, v in self.extra_attributes.items()])
         extras.append('error="{}"'.format(self.error))
         error_description = self.get_error_description()
         extras.append('error_description="{}"'.format(error_description))
