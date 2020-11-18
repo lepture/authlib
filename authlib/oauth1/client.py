@@ -154,7 +154,7 @@ class OAuth1Client(object):
         return token
 
     def _fetch_token(self, url, **kwargs):
-        resp = self.session.request('POST', url, auth=self.auth, **kwargs)
+        resp = self.session.post(url, auth=self.auth, **kwargs)
         token = self.parse_response_token(resp.status_code, resp.text)
         self.token = token
         self.auth.verifier = None
