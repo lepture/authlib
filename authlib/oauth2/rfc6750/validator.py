@@ -6,6 +6,7 @@
 """
 
 from ..rfc6749.util import scope_to_list
+from ..rfc6749 import TokenValidator
 from .errors import (
     InvalidRequestError,
     InvalidTokenError,
@@ -13,12 +14,8 @@ from .errors import (
 )
 
 
-class BearerTokenValidator(object):
+class BearerTokenValidator(TokenValidator):
     TOKEN_TYPE = 'bearer'
-
-    def __init__(self, realm=None, extra_attributes=None):
-        self.realm = realm
-        self.extra_attributes = extra_attributes
 
     def authenticate_token(self, token_string):
         """A method to query token from database with the given token string.
@@ -68,7 +65,7 @@ class BearerTokenValidator(object):
 
     def __call__(self, token_string, scope, request, scope_operator='AND'):
         if self.request_invalid(request):
-            raise InvalidRequestError(realm=self.realm, extra_attributes=self.extra_attributes)
+            raise InvalidRequestError()
         token = self.authenticate_token(token_string)
         if not token:
             raise InvalidTokenError(realm=self.realm, extra_attributes=self.extra_attributes)

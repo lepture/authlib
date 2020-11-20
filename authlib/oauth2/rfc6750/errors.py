@@ -36,7 +36,7 @@ class InvalidTokenError(OAuth2Error):
     status_code = 401
 
     def __init__(self, description=None, uri=None, status_code=None,
-                 state=None, realm=None, extra_attributes=None):
+                 state=None, realm=None, **extra_attributes):
         super(InvalidTokenError, self).__init__(
             description, uri, status_code, state)
         self.realm = realm
@@ -55,12 +55,12 @@ class InvalidTokenError(OAuth2Error):
 
         extras = []
         if self.realm:
-            extras.append('realm="{}"'.format(self.realm))
+            extras.append(f'realm="{self.realm}"')
         if self.extra_attributes:
-            extras.extend(['{}="{}"'.format(k, v) for k, v in self.extra_attributes.items()])
-        extras.append('error="{}"'.format(self.error))
+            extras.extend([f'{k}="{self.extra_attributes[k]}"' for k in self.extra_attributes])
+        extras.append(f'error="{self.error}"')
         error_description = self.get_error_description()
-        extras.append('error_description="{}"'.format(error_description))
+        extras.append(f'error_description="{error_description}"')
         headers.append(
             ('WWW-Authenticate', 'Bearer ' + ', '.join(extras))
         )

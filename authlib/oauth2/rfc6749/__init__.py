@@ -31,7 +31,7 @@ from .errors import (
 from .models import ClientMixin, AuthorizationCodeMixin, TokenMixin
 from .authenticate_client import ClientAuthentication
 from .authorization_server import AuthorizationServer
-from .resource_protector import ResourceProtector
+from .resource_protector import ResourceProtector, TokenValidator
 from .token_endpoint import TokenEndpoint
 from .grants import (
     BaseGrant,
@@ -65,6 +65,7 @@ __all__ = [
     'ClientAuthentication',
     'AuthorizationServer',
     'ResourceProtector',
+    'TokenValidator',
     'TokenEndpoint',
     'BaseGrant',
     'AuthorizationEndpointMixin',

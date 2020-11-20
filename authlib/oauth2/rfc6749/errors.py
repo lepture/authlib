@@ -156,15 +156,38 @@ class AccessDeniedError(OAuth2Error):
 # -- below are extended errors -- #
 
 
-class MissingAuthorizationError(OAuth2Error):
+class ForbiddenError(OAuth2Error):
+    status_code = 401
+
+    def __init__(self, auth_type=None, realm=None):
+        super(ForbiddenError, self).__init__()
+        self.auth_type = auth_type
+        self.realm = realm
+
+    def get_headers(self):
+        headers = super(ForbiddenError, self).get_headers()
+        if not self.auth_type:
+            return headers
+
+        extras = []
+        if self.realm:
+            extras.append('realm="{}"'.format(self.realm))
+        extras.append('error="{}"'.format(self.error))
+        error_description = self.description
+        extras.append('error_description="{}"'.format(error_description))
+        headers.append(
+            ('WWW-Authenticate', f'{self.auth_type} ' + ', '.join(extras))
+        )
+        return headers
+
+
+class MissingAuthorizationError(ForbiddenError):
     error = 'missing_authorization'
     description = 'Missing "Authorization" in headers.'
-    status_code = 401
 
 
-class UnsupportedTokenTypeError(OAuth2Error):
+class UnsupportedTokenTypeError(ForbiddenError):
     error = 'unsupported_token_type'
-    status_code = 401
 
 
 # -- exceptions for clients -- #
