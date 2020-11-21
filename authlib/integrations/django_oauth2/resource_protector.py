@@ -51,9 +51,9 @@ class ResourceProtector(_ResourceProtector):
 
 
 class BearerTokenValidator(_BearerTokenValidator):
-    def __init__(self, token_model, realm=None):
+    def __init__(self, token_model, realm=None, extra_attributes=None):
         self.token_model = token_model
-        super(BearerTokenValidator, self).__init__(realm)
+        super(BearerTokenValidator, self).__init__(realm, extra_attributes)
 
     def authenticate_token(self, token_string):
         try:

@@ -16,8 +16,9 @@ from .errors import (
 class BearerTokenValidator(object):
     TOKEN_TYPE = 'bearer'
 
-    def __init__(self, realm=None):
+    def __init__(self, realm=None, extra_attributes=None):
         self.realm = realm
+        self.extra_attributes = extra_attributes
 
     def authenticate_token(self, token_string):
         """A method to query token from database with the given token string.
@@ -67,14 +68,14 @@ class BearerTokenValidator(object):
 
     def __call__(self, token_string, scope, request, scope_operator='AND'):
         if self.request_invalid(request):
-            raise InvalidRequestError()
+            raise InvalidRequestError(realm=self.realm, extra_attributes=self.extra_attributes)
         token = self.authenticate_token(token_string)
         if not token:
-            raise InvalidTokenError(realm=self.realm)
+            raise InvalidTokenError(realm=self.realm, extra_attributes=self.extra_attributes)
         if token.is_expired():
-            raise InvalidTokenError(realm=self.realm)
+            raise InvalidTokenError(realm=self.realm, extra_attributes=self.extra_attributes)
         if token.is_revoked():
-            raise InvalidTokenError(realm=self.realm)
+            raise InvalidTokenError(realm=self.realm, extra_attributes=self.extra_attributes)
         if self.scope_insufficient(token, scope, scope_operator):
             raise InsufficientScopeError()
         return token
