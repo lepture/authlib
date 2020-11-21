@@ -45,8 +45,8 @@ class BearerTokenValidator(TokenValidator):
         """
         raise NotImplementedError()
 
-    def scope_insufficient(self, token, scope, operator='AND'):
-        if not scope:
+    def scope_insufficient(self, token, scopes):
+        if not scopes:
             return False
 
         token_scopes = scope_to_list(token.get_scope())
@@ -54,16 +54,14 @@ class BearerTokenValidator(TokenValidator):
             return True
 
         token_scopes = set(token_scopes)
-        resource_scopes = set(scope_to_list(scope))
-        if operator == 'AND':
-            return not token_scopes.issuperset(resource_scopes)
-        if operator == 'OR':
-            return not token_scopes & resource_scopes
-        if callable(operator):
-            return not operator(token_scopes, resource_scopes)
-        raise ValueError('Invalid operator value')
+        for scope in scopes:
+            resource_scopes = set(scope_to_list(scope))
+            if token_scopes.issuperset(resource_scopes):
+                return False
 
-    def __call__(self, token_string, scope, request, scope_operator='AND'):
+        return True
+
+    def __call__(self, token_string, scopes, request):
         if self.request_invalid(request):
             raise InvalidRequestError()
         token = self.authenticate_token(token_string)
@@ -73,6 +71,6 @@ class BearerTokenValidator(TokenValidator):
             raise InvalidTokenError(realm=self.realm, extra_attributes=self.extra_attributes)
         if token.is_revoked():
             raise InvalidTokenError(realm=self.realm, extra_attributes=self.extra_attributes)
-        if self.scope_insufficient(token, scope, scope_operator):
+        if self.scope_insufficient(token, scopes):
             raise InsufficientScopeError()
         return token

@@ -20,7 +20,7 @@ class TokenValidator(object):
         self.realm = realm
         self.extra_attributes = extra_attributes
 
-    def __call__(self, token_string, scope, request, scope_operator='AND'):
+    def __call__(self, token_string, scopes, request):
         raise NotImplementedError()
 
 
@@ -38,7 +38,7 @@ class ResourceProtector(object):
         if validator.TOKEN_TYPE not in self._token_validators:
             self._token_validators[validator.TOKEN_TYPE] = validator
 
-    def validate_request(self, scope, request, scope_operator='AND'):
+    def validate_request(self, scopes, request):
         auth = request.headers.get('Authorization')
         if not auth:
             raise MissingAuthorizationError(self._default_auth_type, self._default_realm)
@@ -54,4 +54,4 @@ class ResourceProtector(object):
         if not validator:
             raise UnsupportedTokenTypeError(self._default_auth_type, self._default_realm)
 
-        return validator(token_string, scope, request, scope_operator)
+        return validator(token_string, scopes, request)
