@@ -20,6 +20,7 @@ from .errors import (
     InvalidScopeError,
     InsecureTransportError,
     UnauthorizedClientError,
+    UnsupportedResponseTypeError,
     UnsupportedGrantTypeError,
     UnsupportedTokenTypeError,
     # exceptions for clients
@@ -55,6 +56,7 @@ __all__ = [
     'InvalidScopeError',
     'InsecureTransportError',
     'UnauthorizedClientError',
+    'UnsupportedResponseTypeError',
     'UnsupportedGrantTypeError',
     'UnsupportedTokenTypeError',
     'MissingCodeException',

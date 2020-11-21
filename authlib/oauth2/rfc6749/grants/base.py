@@ -130,16 +130,15 @@ class AuthorizationEndpointMixin(object):
         if request.redirect_uri:
             if not client.check_redirect_uri(request.redirect_uri):
                 raise InvalidRequestError(
-                    'Redirect URI {!r} is not supported by client.'.format(request.redirect_uri),
-                    state=request.state,
-                )
+                    f'Redirect URI {request.redirect_uri} is not supported by client.',
+                    state=request.state)
             return request.redirect_uri
         else:
             redirect_uri = client.get_default_redirect_uri()
             if not redirect_uri:
                 raise InvalidRequestError(
-                    'Missing "redirect_uri" in request.'
-                )
+                    'Missing "redirect_uri" in request.',
+                    state=request.state)
             return redirect_uri
 
     def validate_consent_request(self):

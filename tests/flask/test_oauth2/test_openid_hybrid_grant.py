@@ -130,7 +130,7 @@ class OpenIDCodeTest(TestCase):
             'user_id': '1',
         })
         resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_grant')
+        self.assertEqual(resp['error'], 'unsupported_response_type')
 
     def test_invalid_scope(self):
         self.prepare_data()

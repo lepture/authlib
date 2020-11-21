@@ -36,8 +36,8 @@ from authlib.common.security import is_secure_transport
 __all__ = [
     'OAuth2Error',
     'InsecureTransportError', 'InvalidRequestError',
-    'InvalidClientError', 'InvalidGrantError',
-    'UnauthorizedClientError', 'UnsupportedGrantTypeError',
+    'InvalidClientError', 'UnauthorizedClientError', 'InvalidGrantError',
+    'UnsupportedResponseTypeError', 'UnsupportedGrantTypeError',
     'InvalidScopeError', 'AccessDeniedError',
     'MissingAuthorizationError', 'UnsupportedTokenTypeError',
     'MissingCodeException', 'MissingTokenException',
@@ -122,6 +122,19 @@ class UnauthorizedClientError(OAuth2Error):
     error = 'unauthorized_client'
 
 
+class UnsupportedResponseTypeError(OAuth2Error):
+    """The authorization server does not support obtaining
+    an access token using this method."""
+    error = 'unsupported_response_type'
+
+    def __init__(self, response_type):
+        super(UnsupportedResponseTypeError, self).__init__()
+        self.response_type = response_type
+
+    def get_error_description(self):
+        return f'response_type={self.response_type} is not supported'
+
+
 class UnsupportedGrantTypeError(OAuth2Error):
     """The authorization grant type is not supported by the
     authorization server.
@@ -129,6 +142,13 @@ class UnsupportedGrantTypeError(OAuth2Error):
     https://tools.ietf.org/html/rfc6749#section-5.2
     """
     error = 'unsupported_grant_type'
+
+    def __init__(self, grant_type):
+        super(UnsupportedGrantTypeError, self).__init__()
+        self.grant_type = grant_type
+
+    def get_error_description(self):
+        return f'grant_type={self.grant_type} is not supported'
 
 
 class InvalidScopeError(OAuth2Error):

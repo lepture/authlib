@@ -3,6 +3,7 @@ from .errors import (
     OAuth2Error,
     InvalidGrantError,
     InvalidScopeError,
+    UnsupportedResponseTypeError,
     UnsupportedGrantTypeError,
 )
 from .util import scope_to_list
@@ -147,7 +148,7 @@ class AuthorizationServer(object):
         for (grant_cls, extensions) in self._authorization_grants:
             if grant_cls.check_authorization_endpoint(request):
                 return _create_grant(grant_cls, extensions, request, self)
-        raise InvalidGrantError(f'Response type "{request.response_type}" is not supported')
+        raise UnsupportedResponseTypeError(request.response_type)
 
     def get_token_grant(self, request):
         """Find the token grant for current request.
@@ -159,7 +160,7 @@ class AuthorizationServer(object):
             if grant_cls.check_token_endpoint(request) and \
                     request.method in grant_cls.TOKEN_ENDPOINT_HTTP_METHODS:
                 return _create_grant(grant_cls, extensions, request, self)
-        raise UnsupportedGrantTypeError(f'Grant type {request.grant_type} is not supported')
+        raise UnsupportedGrantTypeError(request.grant_type)
 
     def create_endpoint_response(self, name, request=None):
         """Validate endpoint request and create endpoint response.
@@ -189,7 +190,7 @@ class AuthorizationServer(object):
         request = self.create_oauth2_request(request)
         try:
             grant = self.get_authorization_grant(request)
-        except InvalidGrantError as error:
+        except UnsupportedResponseTypeError as error:
             return self.handle_error_response(request, error)
 
         try:
