@@ -20,7 +20,47 @@ class TokenValidator(object):
         self.realm = realm
         self.extra_attributes = extra_attributes
 
-    def __call__(self, token_string, scopes, request):
+    def authenticate_token(self, token_string):
+        """A method to query token from database with the given token string.
+        Developers MUST re-implement this method. For instance::
+
+            def authenticate_token(self, token_string):
+                return get_token_from_database(token_string)
+
+        :param token_string: A string to represent the access_token.
+        :return: token
+        """
+        raise NotImplementedError()
+
+    def validate_request(self, request):
+        """A method to validate if the HTTP request is valid or not. Developers MUST
+        re-implement this method.  For instance, your server requires a
+        "X-Device-Version" in the header::
+
+            def validate_request(self, request):
+                if 'X-Device-Version' not in request.headers:
+                    raise InvalidRequestError()
+
+        Usually, you don't have to detect if the request is valid or not. If you have
+        to, you MUST re-implement this method.
+
+        :param request: instance of HttpRequest
+        :raise: InvalidRequestError
+        """
+
+    def validate_token(self, token, scopes):
+        """A method to validate if the authorized token is valid, if it has the
+        permission on the given scopes. Developers MUST re-implement this method.
+        e.g, check if token is expired, revoked::
+
+            def validate_token(self, token, scopes):
+                if not token:
+                    raise InvalidTokenError()
+                if token.is_expired() or token.is_revoked():
+                    raise InvalidTokenError()
+                if not match_token_scopes(token, scopes):
+                    raise InsufficientScopeError()
+        """
         raise NotImplementedError()
 
 
@@ -31,6 +71,9 @@ class ResourceProtector(object):
         self._default_auth_type = None
 
     def register_token_validator(self, validator: TokenValidator):
+        """Register a token validator for a given Authorization type.
+        Authlib has a built-in BearerTokenValidator per rfc6750.
+        """
         if not self._default_auth_type:
             self._default_realm = validator.realm
             self._default_auth_type = validator.TOKEN_TYPE
@@ -38,7 +81,19 @@ class ResourceProtector(object):
         if validator.TOKEN_TYPE not in self._token_validators:
             self._token_validators[validator.TOKEN_TYPE] = validator
 
-    def validate_request(self, scopes, request):
+    def parse_request_authorization(self, request):
+        """Parse the token and token validator from request Authorization header.
+        Here is an example of Authorization header::
+
+            Authorization: Bearer a-token-string
+
+        This method will parse this header, if it can find the validator for
+        ``Bearer``, it will return the validator and ``a-token-string``.
+
+        :return: validator, token_string
+        :raise: MissingAuthorizationError
+        :raise: UnsupportedTokenTypeError
+        """
         auth = request.headers.get('Authorization')
         if not auth:
             raise MissingAuthorizationError(self._default_auth_type, self._default_realm)
@@ -54,4 +109,12 @@ class ResourceProtector(object):
         if not validator:
             raise UnsupportedTokenTypeError(self._default_auth_type, self._default_realm)
 
-        return validator(token_string, scopes, request)
+        return validator, token_string
+
+    def validate_request(self, scopes, request):
+        """Validate the request and return a token."""
+        validator, token_string = self.parse_request_authorization(request)
+        validator.validate_request(request)
+        token = validator.authenticate_token(token_string)
+        validator.validate_token(token, scopes)
+        return token

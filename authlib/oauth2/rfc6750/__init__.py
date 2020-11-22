@@ -9,14 +9,14 @@
     https://tools.ietf.org/html/rfc6750
 """
 
-from .errors import InvalidRequestError, InvalidTokenError, InsufficientScopeError
+from .errors import InvalidTokenError, InsufficientScopeError
 from .parameters import add_bearer_token
 from .wrappers import BearerToken
 from .validator import BearerTokenValidator
 
 
 __all__ = [
-    'InvalidRequestError', 'InvalidTokenError', 'InsufficientScopeError',
+    'InvalidTokenError', 'InsufficientScopeError',
     'add_bearer_token',
     'BearerToken',
     'BearerTokenValidator',

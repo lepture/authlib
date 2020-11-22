@@ -12,10 +12,9 @@
     :copyright: (c) 2017 by Hsiaoming Yang.
 """
 from ..base import OAuth2Error
-from ..rfc6749.errors import InvalidRequestError
 
 __all__ = [
-    'InvalidRequestError', 'InvalidTokenError', 'InsufficientScopeError'
+    'InvalidTokenError', 'InsufficientScopeError'
 ]
 
 
