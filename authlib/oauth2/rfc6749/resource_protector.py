@@ -81,6 +81,13 @@ class ResourceProtector(object):
         if validator.TOKEN_TYPE not in self._token_validators:
             self._token_validators[validator.TOKEN_TYPE] = validator
 
+    def get_token_validator(self, token_type):
+        """Get token validator from registry for the given token type."""
+        validator = self._token_validators.get(token_type.lower())
+        if not validator:
+            raise UnsupportedTokenTypeError(self._default_auth_type, self._default_realm)
+        return validator
+
     def parse_request_authorization(self, request):
         """Parse the token and token validator from request Authorization header.
         Here is an example of Authorization header::
@@ -104,11 +111,7 @@ class ResourceProtector(object):
             raise UnsupportedTokenTypeError(self._default_auth_type, self._default_realm)
 
         token_type, token_string = token_parts
-
-        validator = self._token_validators.get(token_type.lower())
-        if not validator:
-            raise UnsupportedTokenTypeError(self._default_auth_type, self._default_realm)
-
+        validator = self.get_token_validator(token_type)
         return validator, token_string
 
     def validate_request(self, scopes, request):
