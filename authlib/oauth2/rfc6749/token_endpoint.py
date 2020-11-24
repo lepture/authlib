@@ -20,10 +20,7 @@ class TokenEndpoint(object):
     def authenticate_endpoint_client(self, request):
         """Authentication client for endpoint with ``CLIENT_AUTH_METHODS``.
         """
-        client = self.server.authenticate_client(
-            request=request,
-            methods=self.CLIENT_AUTH_METHODS,
-        )
+        client = self.server.authenticate_client(request, self.CLIENT_AUTH_METHODS)
         request.client = client
         return client
 
