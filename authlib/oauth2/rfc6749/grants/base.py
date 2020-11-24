@@ -33,16 +33,10 @@ class BaseGrant(object):
 
     def generate_token(self, user=None, scope=None, grant_type=None,
                        expires_in=None, include_refresh_token=True):
-
         if grant_type is None:
             grant_type = self.GRANT_TYPE
-
-        client = self.request.client
-        if scope is not None:
-            scope = client.get_allowed_scope(scope)
-
         return self.server.generate_token(
-            client=client,
+            client=self.request.client,
             grant_type=grant_type,
             user=user,
             scope=scope,
@@ -85,9 +79,8 @@ class BaseGrant(object):
     def validate_requested_scope(self):
         """Validate if requested scope is supported by Authorization Server."""
         scope = self.request.scope
-        client = self.request.client
         state = self.request.state
-        return self.server.validate_requested_scope(scope, client, state)
+        return self.server.validate_requested_scope(scope, state)
 
     def register_hook(self, hook_type, hook):
         if hook_type not in self._hooks:

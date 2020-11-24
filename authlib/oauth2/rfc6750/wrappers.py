@@ -78,8 +78,15 @@ class BearerToken(object):
             expires_in = self.DEFAULT_EXPIRES_IN
         return expires_in
 
+    @staticmethod
+    def get_allowed_scope(client, scope):
+        if scope:
+            scope = client.get_allowed_scope(scope)
+        return scope
+
     def __call__(self, client, grant_type, user=None, scope=None,
                  expires_in=None, include_refresh_token=True):
+        scope = self.get_allowed_scope(client, scope)
         access_token = self.access_token_generator(client, grant_type, user, scope)
         if expires_in is None:
             expires_in = self._get_expires_in(client, grant_type)

@@ -93,8 +93,8 @@ class DeviceAuthorizationEndpoint(object):
     def create_endpoint_response(self, request):
         # https://tools.ietf.org/html/rfc8628#section-3.1
 
-        client = self.authenticate_client(request)
-        self.server.validate_requested_scope(request.scope, client)
+        self.authenticate_client(request)
+        self.server.validate_requested_scope(request.scope)
 
         device_code = self.generate_device_code()
         user_code = self.generate_user_code()

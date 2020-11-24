@@ -1,7 +1,6 @@
 from .authenticate_client import ClientAuthentication
 from .errors import (
     OAuth2Error,
-    InvalidGrantError,
     InvalidScopeError,
     UnsupportedResponseTypeError,
     UnsupportedGrantTypeError,
@@ -101,7 +100,7 @@ class AuthorizationServer(object):
         """Return HTTP response. Framework MUST implement this function."""
         raise NotImplementedError()
 
-    def validate_requested_scope(self, scope, client, state=None):
+    def validate_requested_scope(self, scope, state=None):
         """Validate if requested scope is supported by Authorization Server.
         Developers CAN re-write this method to meet your needs.
         """
