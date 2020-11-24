@@ -86,7 +86,8 @@ class DeviceAuthorizationEndpoint(object):
                 # only support ``client_secret_basic`` auth method
                 CLIENT_AUTH_METHODS = ['client_secret_basic']
         """
-        client = self.server.authenticate_client(request, self.CLIENT_AUTH_METHODS)
+        client = self.server.authenticate_client(
+            request, self.CLIENT_AUTH_METHODS, self.ENDPOINT_NAME)
         request.client = client
         return client
 

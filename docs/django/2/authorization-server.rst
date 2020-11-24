@@ -24,6 +24,11 @@ an example.
 Client
 ------
 
+.. versionchanged:: v1.0
+
+    ``check_token_endpoint_auth_method`` is deprecated, developers should
+    implement ``check_endpoint_auth_method`` instead.
+
 A client is an application making protected resource requests on behalf of the
 resource owner and with its authorization. It contains at least three
 information:
@@ -73,8 +78,11 @@ the missing methods of :class:`~authlib.oauth2.rfc6749.ClientMixin`::
         def check_client_secret(self, client_secret):
             return self.client_secret == client_secret
 
-        def check_token_endpoint_auth_method(self, method):
-            return self.token_endpoint_auth_method == method
+        def check_endpoint_auth_method(self, method, endpoint):
+            if endpoint == 'token':
+              return self.token_endpoint_auth_method == method
+            # TODO: developers can update this check method
+            return True
 
         def check_response_type(self, response_type):
             allowed = self.response_type.split()

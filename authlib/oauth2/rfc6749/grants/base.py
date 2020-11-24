@@ -65,8 +65,7 @@ class BaseGrant(object):
         :return: client
         """
         client = self.server.authenticate_client(
-            self.request,
-            self.TOKEN_ENDPOINT_AUTH_METHODS)
+            self.request, self.TOKEN_ENDPOINT_AUTH_METHODS)
         self.server.send_signal(
             'after_authenticate_client',
             client=client, grant=self)

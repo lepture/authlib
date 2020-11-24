@@ -1,7 +1,6 @@
 import logging
 from ..rfc6749.errors import (
     InvalidRequestError,
-    InvalidClientError,
     UnauthorizedClientError,
     AccessDeniedError,
 )

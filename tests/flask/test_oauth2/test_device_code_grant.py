@@ -213,12 +213,19 @@ class DeviceAuthorizationEndpointTest(TestCase):
         rv = self.client.post('/device_authorize', data={
             'scope': 'profile'
         })
-        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(rv.status_code, 401)
         resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_request')
+        self.assertEqual(resp['error'], 'invalid_client')
 
     def test_create_authorization_response(self):
         self.create_server()
+        client = Client(
+            user_id=1,
+            client_id='client',
+            client_secret='secret',
+        )
+        db.session.add(client)
+        db.session.commit()
         rv = self.client.post('/device_authorize', data={
             'client_id': 'client',
         })

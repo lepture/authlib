@@ -33,13 +33,13 @@ class AuthorizationServer(object):
         """Define function to save the generated token into database."""
         raise NotImplementedError()
 
-    def authenticate_client(self, request, methods):
+    def authenticate_client(self, request, methods, endpoint='token'):
         """Authenticate client via HTTP request information with the given
         methods, such as ``client_secret_basic``, ``client_secret_post``.
         """
         if self._client_auth is None and self.query_client:
             self._client_auth = ClientAuthentication(self.query_client)
-        return self._client_auth(request, methods)
+        return self._client_auth(request, methods, endpoint)
 
     def register_client_auth_method(self, method, func):
         """Add more client auth method. The default methods are:

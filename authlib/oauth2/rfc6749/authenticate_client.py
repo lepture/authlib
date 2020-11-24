@@ -36,11 +36,11 @@ class ClientAuthentication(object):
     def register(self, method, func):
         self._methods[method] = func
 
-    def authenticate(self, request, methods):
+    def authenticate(self, request, methods, endpoint):
         for method in methods:
             func = self._methods[method]
             client = func(self.query_client, request)
-            if client:
+            if client and client.check_endpoint_auth_method(method, endpoint):
                 request.auth_method = method
                 return client
 
@@ -48,8 +48,8 @@ class ClientAuthentication(object):
             raise InvalidClientError(state=request.state, status_code=401)
         raise InvalidClientError(state=request.state)
 
-    def __call__(self, request, methods):
-        return self.authenticate(request, methods)
+    def __call__(self, request, methods, endpoint='token'):
+        return self.authenticate(request, methods, endpoint)
 
 
 def authenticate_client_secret_basic(query_client, request):
@@ -59,17 +59,10 @@ def authenticate_client_secret_basic(query_client, request):
     client_id, client_secret = extract_basic_authorization(request.headers)
     if client_id and client_secret:
         client = _validate_client(query_client, client_id, request.state, 401)
-        if client.check_token_endpoint_auth_method('client_secret_basic') \
-                and client.check_client_secret(client_secret):
-            log.debug(
-                'Authenticate %s via "client_secret_basic" '
-                'success', client_id
-            )
+        if client.check_client_secret(client_secret):
+            log.debug(f'Authenticate {client_id} via "client_secret_basic" success')
             return client
-    log.debug(
-        'Authenticate %s via "client_secret_basic" '
-        'failed', client_id
-    )
+    log.debug(f'Authenticate {client_id} via "client_secret_basic" failed')
 
 
 def authenticate_client_secret_post(query_client, request):
@@ -81,17 +74,10 @@ def authenticate_client_secret_post(query_client, request):
     client_secret = data.get('client_secret')
     if client_id and client_secret:
         client = _validate_client(query_client, client_id, request.state)
-        if client.check_token_endpoint_auth_method('client_secret_post') \
-                and client.check_client_secret(client_secret):
-            log.debug(
-                'Authenticate %s via "client_secret_post" '
-                'success', client_id
-            )
+        if client.check_client_secret(client_secret):
+            log.debug(f'Authenticate {client_id} via "client_secret_post" success')
             return client
-    log.debug(
-        'Authenticate %s via "client_secret_post" '
-        'failed', client_id
-    )
+    log.debug(f'Authenticate {client_id} via "client_secret_post" failed')
 
 
 def authenticate_none(query_client, request):
@@ -101,16 +87,9 @@ def authenticate_none(query_client, request):
     client_id = request.client_id
     if client_id and 'client_secret' not in request.data:
         client = _validate_client(query_client, client_id, request.state)
-        if client.check_token_endpoint_auth_method('none'):
-            log.debug(
-                'Authenticate %s via "none" '
-                'success', client_id
-            )
-            return client
-    log.debug(
-        'Authenticate {} via "none" '
-        'failed'.format(client_id)
-    )
+        log.debug(f'Authenticate {client_id} via "none" success')
+        return client
+    log.debug(f'Authenticate {client_id} via "none" failed')
 
 
 def _validate_client(query_client, client_id, state=None, status_code=400):
