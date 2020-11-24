@@ -50,13 +50,13 @@ jwt = JsonWebToken()
 __all__ = [
     'JoseError',
 
-    'JWS', 'JsonWebSignature', 'JWSAlgorithm', 'JWSHeader', 'JWSObject',
-    'JWE', 'JsonWebEncryption', 'JWEAlgorithm', 'JWEEncAlgorithm', 'JWEZipAlgorithm',
+    'JsonWebSignature', 'JWSAlgorithm', 'JWSHeader', 'JWSObject',
+    'JsonWebEncryption', 'JWEAlgorithm', 'JWEEncAlgorithm', 'JWEZipAlgorithm',
 
-    'JWK', 'JsonWebKey', 'Key', 'KeySet',
+    'JsonWebKey', 'Key', 'KeySet',
 
     'OctKey', 'RSAKey', 'ECKey', 'OKPKey',
 
-    'JWT', 'JsonWebToken', 'BaseClaims', 'JWTClaims',
+    'JsonWebToken', 'BaseClaims', 'JWTClaims',
     'jwt',
 ]
