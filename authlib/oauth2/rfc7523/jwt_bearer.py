@@ -107,6 +107,7 @@ class JWTBearerGrant(BaseGrant, TokenEndpointMixin):
         """
         token = self.generate_token(
             scope=self.request.scope,
+            user=self.request.user,
             include_refresh_token=False,
         )
         log.debug('Issue token %r to %r', token, self.request.client)

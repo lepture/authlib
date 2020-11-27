@@ -11,7 +11,7 @@
 
 from .errors import InvalidTokenError, InsufficientScopeError
 from .parameters import add_bearer_token
-from .wrappers import BearerToken
+from .token import BearerToken, BearerTokenGenerator
 from .validator import BearerTokenValidator
 
 
@@ -19,5 +19,6 @@ __all__ = [
     'InvalidTokenError', 'InsufficientScopeError',
     'add_bearer_token',
     'BearerToken',
+    'BearerTokenGenerator',
     'BearerTokenValidator',
 ]

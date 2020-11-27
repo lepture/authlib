@@ -268,6 +268,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         user = self.authenticate_user(authorization_code)
         if not user:
             raise InvalidRequestError('There is no "user" for this code.')
+        self.request.user = user
 
         scope = authorization_code.get_scope()
         token = self.generate_token(
@@ -277,7 +278,6 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         )
         log.debug('Issue token %r to %r', token, client)
 
-        self.request.user = user
         self.save_token(token)
         self.execute_hook('process_token', token=token)
         self.delete_authorization_code(authorization_code)
