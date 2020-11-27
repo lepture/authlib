@@ -12,11 +12,11 @@ class AuthorizationServer(object):
     """Authorization server that handles Authorization Endpoint and Token
     Endpoint.
 
-    :param generate_token: A method to generate tokens.
+    :param scopes_supported: A list of supported scopes by this authorization server.
     """
-    def __init__(self, generate_token=None, scopes_supported=None):
-        self.generate_token = generate_token
+    def __init__(self, scopes_supported=None):
         self.scopes_supported = scopes_supported
+        self._token_generators = {}
         self._client_auth = None
         self._authorization_grants = []
         self._token_grants = []
@@ -32,6 +32,55 @@ class AuthorizationServer(object):
     def save_token(self, token, request):
         """Define function to save the generated token into database."""
         raise NotImplementedError()
+
+    def generate_token(self, grant_type, client, user=None, scope=None,
+                       expires_in=None, include_refresh_token=True):
+        """Generate the token dict.
+
+        :param grant_type: current requested grant_type.
+        :param client: the client that making the request.
+        :param user: current authorized user.
+        :param expires_in: if provided, use this value as expires_in.
+        :param scope: current requested scope.
+        :param include_refresh_token: should refresh_token be included.
+        :return: Token dict
+        """
+        # generator for a specified grant type
+        func = self._token_generators.get(grant_type)
+        if not func:
+            # default generator for all grant types
+            func = self._token_generators.get('none')
+        if not func:
+            raise RuntimeError('No configured token generator')
+
+        return func(
+            grant_type=grant_type, client=client, user=user, scope=scope,
+            expires_in=expires_in, include_refresh_token=include_refresh_token)
+
+    def register_token_generator(self, grant_type, func):
+        """Register a function as token generator for the given ``grant_type``.
+        Developers MUST register a default token generator with a special
+        ``grant_type=none``::
+
+            def generate_bearer_token(grant_type, client, user=None, scope=None,
+                                      expires_in=None, include_refresh_token=True):
+                token = {'token_type': 'Bearer', 'access_token': ...}
+                if include_refresh_token:
+                    token['refresh_token'] = ...
+                ...
+                return token
+
+            authorization_server.register_token_generator('none', generate_bearer_token)
+
+        If you register a generator for a certain grant type, that generator will only works
+        for the given grant type::
+
+            authorization_server.register_token_generator('client_credentials', generate_bearer_token)
+
+        :param grant_type: string name of the grant type
+        :param func: a function to generate token
+        """
+        self._token_generators[grant_type] = func
 
     def authenticate_client(self, request, methods, endpoint='token'):
         """Authenticate client via HTTP request information with the given

@@ -23,15 +23,14 @@ class AuthorizationServer(_AuthorizationServer):
         server = AuthorizationServer(OAuth2Client, OAuth2Token)
     """
 
-    def __init__(self, client_model, token_model, generate_token=None):
+    def __init__(self, client_model, token_model):
         self.config = getattr(settings, 'AUTHLIB_OAUTH2_PROVIDER', {})
         self.client_model = client_model
         self.token_model = token_model
-        if generate_token is None:
-            generate_token = self.create_bearer_token_generator()
-
-        super(AuthorizationServer, self).__init__(generate_token=generate_token)
-        self.scopes_supported = self.config.get('scopes_supported')
+        scopes_supported = self.config.get('scopes_supported')
+        super(AuthorizationServer, self).__init__(scopes_supported=scopes_supported)
+        # add default token generator
+        self.register_token_generator('none', self.create_bearer_token_generator())
 
     def query_client(self, client_id):
         """Default method for ``AuthorizationServer.query_client``. Developers MAY
