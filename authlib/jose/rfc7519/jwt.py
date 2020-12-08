@@ -10,7 +10,7 @@ from .claims import JWTClaims
 from ..errors import DecodeError, InsecureClaimError
 from ..rfc7515 import JsonWebSignature
 from ..rfc7516 import JsonWebEncryption
-from ..rfc7517 import KeySet
+from ..rfc7517 import KeySet, Key
 
 
 class JsonWebToken(object):
@@ -150,6 +150,12 @@ def find_encode_key(key, header):
             header['kid'] = rv['kid']
             return rv
         raise ValueError('Invalid JSON Web Key Set')
+
+    # append kid into header
+    if isinstance(key, dict) and 'kid' in key:
+        header['kid'] = key['kid']
+    elif isinstance(key, Key) and key.kid:
+        header['kid'] = key.kid
     return key
 
 
