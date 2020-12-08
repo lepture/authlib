@@ -43,6 +43,13 @@ class Key(object):
                 rv[k] = self.options[k]
         return rv
 
+    @property
+    def kid(self):
+        rv = self.tokens.get('kid')
+        if not rv:
+            rv = self.thumbprint()
+        return rv
+
     def keys(self):
         return self.tokens.keys()
 

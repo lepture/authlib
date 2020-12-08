@@ -1,4 +1,5 @@
 import re
+import random
 import datetime
 import calendar
 from authlib.common.encoding import (
@@ -60,7 +61,7 @@ class JsonWebToken(object):
         if check:
             self.check_sensitive_data(payload)
 
-        key = prepare_raw_key(key, header)
+        key = find_encode_key(key, header)
         text = to_bytes(json_dumps(payload))
         if 'enc' in header:
             return self._jwe.serialize_compact(header, text, key)
@@ -87,8 +88,7 @@ class JsonWebToken(object):
         if callable(key):
             load_key = key
         else:
-            def load_key(header, payload):
-                return prepare_raw_key(key, header)
+            load_key = create_load_key(prepare_raw_key(key))
 
         s = to_bytes(s)
         dot_count = s.count(b'.')
@@ -115,21 +115,56 @@ def decode_payload(bytes_payload):
     return payload
 
 
-def prepare_raw_key(raw, header):
+def prepare_raw_key(raw):
     if isinstance(raw, KeySet):
-        return raw.find_by_kid(header.get('kid'))
+        return raw
 
     if isinstance(raw, str) and \
             raw.startswith('{') and raw.endswith('}'):
         raw = json_loads(raw)
     elif isinstance(raw, (tuple, list)):
         raw = {'keys': raw}
+    return raw
 
-    if isinstance(raw, dict) and 'keys' in raw:
-        keys = raw['keys']
+
+def find_encode_key(key, header):
+    if isinstance(key, KeySet):
+        kid = header.get('kid')
+        if kid:
+            return key.find_by_kid(kid)
+
+        rv = random.choice(key.keys)
+        # use side effect to add kid value into header
+        header['kid'] = rv.kid
+        return rv
+
+    if isinstance(key, dict) and 'keys' in key:
+        keys = key['keys']
         kid = header.get('kid')
         for k in keys:
             if k.get('kid') == kid:
                 return k
+
+        if not kid:
+            rv = random.choice(keys)
+            header['kid'] = rv['kid']
+            return rv
         raise ValueError('Invalid JSON Web Key Set')
-    return raw
+    return key
+
+
+def create_load_key(key):
+    def load_key(header, payload):
+        if isinstance(key, KeySet):
+            return key.find_by_kid(header.get('kid'))
+
+        if isinstance(key, dict) and 'keys' in key:
+            keys = key['keys']
+            kid = header.get('kid')
+            for k in keys:
+                if k.get('kid') == kid:
+                    return k
+            raise ValueError('Invalid JSON Web Key Set')
+        return key
+
+    return load_key

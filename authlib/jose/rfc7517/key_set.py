@@ -24,6 +24,6 @@ class KeySet(object):
         :raise: ValueError
         """
         for k in self.keys:
-            if k.tokens.get('kid') == kid:
+            if k.kid == kid:
                 return k
         raise ValueError('Invalid JSON Web Key Set')

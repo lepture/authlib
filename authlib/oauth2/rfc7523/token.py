@@ -1,5 +1,5 @@
 import time
-from authlib.common.encoding import to_unicode
+from authlib.common.encoding import to_native
 from authlib.jose import jwt
 
 
@@ -70,10 +70,10 @@ class JWTBearerTokenGenerator(object):
         :return: Token dict
         """
         token_data = self.get_token_data(grant_type, client, user, scope, expires_in)
-        access_token = jwt.encode({'alg': self.alg}, token_data, check=False)
+        access_token = jwt.encode({'alg': self.alg}, token_data, key=self.secret_key, check=False)
         token = {
             'token_type': 'Bearer',
-            'access_token': to_unicode(access_token),
+            'access_token': to_native(access_token),
             'expires_in': expires_in
         }
         if scope:
