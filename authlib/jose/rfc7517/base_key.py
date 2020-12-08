@@ -45,10 +45,7 @@ class Key(object):
 
     @property
     def kid(self):
-        rv = self.tokens.get('kid')
-        if not rv:
-            rv = self.thumbprint()
-        return rv
+        return self.tokens.get('kid')
 
     def keys(self):
         return self.tokens.keys()

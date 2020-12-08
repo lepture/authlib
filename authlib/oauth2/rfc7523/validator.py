@@ -1,13 +1,10 @@
 import time
-from authlib.jose import jwt, JoseError
+from authlib.jose import jwt, JoseError, JWTClaims
 from ..rfc6749 import TokenMixin
 from ..rfc6750 import BearerTokenValidator
 
 
-class JWTBearerToken(TokenMixin, dict):
-    def __init__(self, data):
-        super(JWTBearerToken, self).__init__(data)
-
+class JWTBearerToken(TokenMixin, JWTClaims):
     def check_client(self, client):
         return self['client_id'] == client.get_client_id()
 
@@ -46,8 +43,9 @@ class JWTBearerTokenValidator(BearerTokenValidator):
             claims = jwt.decode(
                 token_string, self.public_key,
                 claims_options=self.claims_options,
+                claims_cls=self.token_cls,
             )
             claims.validate()
-            return self.token_cls(dict(claims))
+            return claims
         except JoseError:
             return None
