@@ -11,13 +11,17 @@
 
 from .errors import InvalidTokenError, InsufficientScopeError
 from .parameters import add_bearer_token
-from .token import BearerToken
+from .token import BearerTokenGenerator
 from .validator import BearerTokenValidator
+
+# TODO: add deprecation
+BearerToken = BearerTokenGenerator
 
 
 __all__ = [
     'InvalidTokenError', 'InsufficientScopeError',
     'add_bearer_token',
     'BearerToken',
+    'BearerTokenGenerator',
     'BearerTokenValidator',
 ]

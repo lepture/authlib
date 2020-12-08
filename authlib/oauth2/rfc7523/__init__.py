@@ -21,6 +21,8 @@ from .assertion import (
 from .auth import (
     ClientSecretJWT, PrivateKeyJWT,
 )
+from .token import JWTBearerTokenGenerator
+from .validator import JWTBearerToken, JWTBearerTokenValidator
 
 __all__ = [
     'JWTBearerGrant',
@@ -29,4 +31,8 @@ __all__ = [
     'private_key_jwt_sign',
     'ClientSecretJWT',
     'PrivateKeyJWT',
+
+    'JWTBearerToken',
+    'JWTBearerTokenGenerator',
+    'JWTBearerTokenValidator',
 ]
