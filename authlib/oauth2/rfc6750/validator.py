@@ -5,7 +5,7 @@
     Validate Bearer Token for in request, scope and token.
 """
 
-from ..rfc6749.util import scope_to_list
+from ..rfc6749 import scope_to_list
 from ..rfc6749 import TokenValidator
 from .errors import (
     InvalidTokenError,

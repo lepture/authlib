@@ -5,7 +5,7 @@ from authlib.consts import default_json_headers
 from authlib.common.security import generate_token
 from authlib.jose import JsonWebToken, JoseError
 from ..rfc6749 import AccessDeniedError, InvalidRequestError
-from ..rfc6749.util import scope_to_list
+from ..rfc6749 import scope_to_list
 from .claims import ClientMetadataClaims
 from .errors import (
     InvalidClientMetadataError,

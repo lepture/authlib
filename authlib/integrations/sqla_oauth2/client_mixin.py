@@ -1,7 +1,7 @@
 from sqlalchemy import Column, String, Text, Integer
 from authlib.common.encoding import json_loads, json_dumps
 from authlib.oauth2.rfc6749 import ClientMixin
-from authlib.oauth2.rfc6749.util import scope_to_list, list_to_scope
+from authlib.oauth2.rfc6749 import scope_to_list, list_to_scope
 
 
 class OAuth2ClientMixin(ClientMixin):

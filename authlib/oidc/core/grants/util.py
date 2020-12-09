@@ -1,6 +1,6 @@
 import time
 from authlib.oauth2.rfc6749 import InvalidRequestError
-from authlib.oauth2.rfc6749.util import scope_to_list
+from authlib.oauth2.rfc6749 import scope_to_list
 from authlib.jose import jwt
 from authlib.common.encoding import to_native
 from authlib.common.urls import add_params_to_uri, quote_url

@@ -44,6 +44,7 @@ from .grants import (
     ClientCredentialsGrant,
     RefreshTokenGrant,
 )
+from .util import scope_to_list, list_to_scope
 
 __all__ = [
     'OAuth2Request', 'OAuth2Token', 'HttpRequest',
@@ -77,4 +78,5 @@ __all__ = [
     'ResourceOwnerPasswordCredentialsGrant',
     'ClientCredentialsGrant',
     'RefreshTokenGrant',
+    'scope_to_list', 'list_to_scope',
 ]
