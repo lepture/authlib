@@ -41,6 +41,25 @@ async def test_add_token_to_header():
 
 
 @pytest.mark.asyncio
+async def test_add_token_to_streaming_header():
+    async def assert_func(request):
+        token = 'Bearer ' + default_token['access_token']
+        auth_header = request.headers.get('authorization')
+        assert auth_header == token
+
+    mock_response = AsyncMockDispatch({'a': 'a'}, assert_func=assert_func)
+    async with AsyncOAuth2Client(
+            'foo',
+            token=default_token,
+            app=mock_response
+    ) as client:
+        async with await client.stream("GET", 'https://i.b') as stream:
+            stream.read()
+            data = stream.json()
+    assert data['a'] == 'a'
+
+
+@pytest.mark.asyncio
 async def test_add_token_to_body():
     async def assert_func(request):
         content = await request.body()

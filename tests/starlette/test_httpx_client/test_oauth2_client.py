@@ -38,6 +38,24 @@ def test_add_token_to_header():
     assert data['a'] == 'a'
 
 
+def test_add_token_to_streaming_header():
+    def assert_func(request):
+        token = 'Bearer ' + default_token['access_token']
+        auth_header = request.headers.get('authorization')
+        assert auth_header == token
+
+    mock_response = MockDispatch({'a': 'a'}, assert_func=assert_func)
+    with OAuth2Client(
+            'foo',
+            token=default_token,
+            app=mock_response
+    ) as client:
+        with client.stream("GET", 'https://i.b') as stream:
+            stream.read()
+            data = stream.json()
+    assert data['a'] == 'a'
+
+
 def test_add_token_to_body():
     def assert_func(request):
         content = request.data
