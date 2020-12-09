@@ -74,8 +74,12 @@ class OpenIDToken(object):
 
         config = self.get_jwt_config(grant)
         config['aud'] = self.get_audiences(request)
-        config['nonce'] = credential.get_nonce()
-        config['auth_time'] = credential.get_auth_time()
+
+        if credential:
+            config['nonce'] = credential.get_nonce()
+            config['auth_time'] = credential.get_auth_time()
+        else:
+            config['nonce'] = request.data.get('nonce')
 
         user_info = self.generate_user_info(request.user, token['scope'])
         id_token = generate_id_token(token, user_info, **config)
