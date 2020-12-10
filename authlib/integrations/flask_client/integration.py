@@ -1,4 +1,4 @@
-from flask import current_app, session
+from flask import current_app
 from flask.signals import Namespace
 from ..base_client import FrameworkIntegration, OAuthError
 from ..requests_client import OAuth1Session, OAuth2Session
@@ -11,18 +11,6 @@ token_update = _signal.signal('token_update')
 class FlaskIntegration(FrameworkIntegration):
     oauth1_client_cls = OAuth1Session
     oauth2_client_cls = OAuth2Session
-
-    def set_session_data(self, request, key, value):
-        sess_key = '_{}_authlib_{}_'.format(self.name, key)
-        session[sess_key] = value
-
-    def get_session_data(self, request, key):
-        sess_key = '_{}_authlib_{}_'.format(self.name, key)
-        return session.get(sess_key)
-
-    def pop_session_data(self, request, key):
-        sess_key = '_{}_authlib_{}_'.format(self.name, key)
-        return session.pop(sess_key, None)
 
     def update_token(self, token, refresh_token=None, access_token=None):
         token_update.send(

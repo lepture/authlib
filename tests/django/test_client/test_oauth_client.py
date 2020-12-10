@@ -1,8 +1,7 @@
-from __future__ import unicode_literals, print_function
-
-import mock
+from unittest import mock
 from django.test import override_settings
 from authlib.integrations.django_client import OAuth, OAuthError
+from authlib.common.urls import urlparse, url_decode
 from tests.django.base import TestCase
 from tests.client_base import (
     mock_send_value,
@@ -81,9 +80,11 @@ class DjangoOAuthTest(TestCase):
             url = resp.get('Location')
             self.assertIn('oauth_token=foo', url)
 
+        request2 = self.factory.get(url)
+        request2.session = request.session
         with mock.patch('requests.sessions.Session.send') as send:
             send.return_value = mock_send_value('oauth_token=a&oauth_token_secret=b')
-            token = client.authorize_access_token(request)
+            token = client.authorize_access_token(request2)
             self.assertEqual(token['oauth_token'], 'a')
 
     def test_oauth2_authorize(self):
@@ -103,15 +104,14 @@ class DjangoOAuthTest(TestCase):
         self.assertEqual(rv.status_code, 302)
         url = rv.get('Location')
         self.assertIn('state=', url)
-        state = request.session['_dev_authlib_state_']
+        state = dict(url_decode(urlparse.urlparse(url).query))['state']
 
         with mock.patch('requests.sessions.Session.send') as send:
             send.return_value = mock_send_value(get_bearer_token())
-            request = self.factory.get('/authorize?state={}'.format(state))
-            request.session = self.factory.session
-            request.session['_dev_authlib_state_'] = state
+            request2 = self.factory.get('/authorize?state={}'.format(state))
+            request2.session = request.session
 
-            token = client.authorize_access_token(request)
+            token = client.authorize_access_token(request2)
             self.assertEqual(token['access_token'], 'a')
 
     def test_oauth2_authorize_access_denied(self):
@@ -148,20 +148,19 @@ class DjangoOAuthTest(TestCase):
         url = rv.get('Location')
         self.assertIn('state=', url)
         self.assertIn('code_challenge=', url)
-        state = request.session['_dev_authlib_state_']
-        verifier = request.session['_dev_authlib_code_verifier_']
+
+        state = dict(url_decode(urlparse.urlparse(url).query))['state']
+        state_data = request.session[f'_state_dev_{state}']['data']
+        verifier = state_data['code_verifier']
 
         def fake_send(sess, req, **kwargs):
             self.assertIn('code_verifier={}'.format(verifier), req.body)
             return mock_send_value(get_bearer_token())
 
         with mock.patch('requests.sessions.Session.send', fake_send):
-            request = self.factory.get('/authorize?state={}'.format(state))
-            request.session = self.factory.session
-            request.session['_dev_authlib_state_'] = state
-            request.session['_dev_authlib_code_verifier_'] = verifier
-
-            token = client.authorize_access_token(request)
+            request2 = self.factory.get('/authorize?state={}'.format(state))
+            request2.session = request.session
+            token = client.authorize_access_token(request2)
             self.assertEqual(token['access_token'], 'a')
 
     def test_oauth2_authorize_code_verifier(self):
@@ -191,12 +190,10 @@ class DjangoOAuthTest(TestCase):
         with mock.patch('requests.sessions.Session.send') as send:
             send.return_value = mock_send_value(get_bearer_token())
 
-            request = self.factory.get('/authorize?state={}'.format(state))
-            request.session = self.factory.session
-            request.session['_dev_authlib_state_'] = state
-            request.session['_dev_authlib_code_verifier_'] = code_verifier
+            request2 = self.factory.get('/authorize?state={}'.format(state))
+            request2.session = request.session
 
-            token = client.authorize_access_token(request)
+            token = client.authorize_access_token(request2)
             self.assertEqual(token['access_token'], 'a')
 
     def test_openid_authorize(self):
@@ -215,10 +212,8 @@ class DjangoOAuthTest(TestCase):
 
         resp = client.authorize_redirect(request, 'https://b.com/bar')
         self.assertEqual(resp.status_code, 302)
-        nonce = request.session['_dev_authlib_nonce_']
-        self.assertIsNotNone(nonce)
         url = resp.get('Location')
-        self.assertIn('nonce={}'.format(nonce), url)
+        self.assertIn('nonce=', url)
 
     def test_oauth2_access_token_with_post(self):
         oauth = OAuth()
@@ -236,7 +231,7 @@ class DjangoOAuthTest(TestCase):
             send.return_value = mock_send_value(get_bearer_token())
             request = self.factory.post('/token', data=payload)
             request.session = self.factory.session
-            request.session['_dev_authlib_state_'] = 'b'
+            request.session['_state_dev_b'] = {'data': {}}
             token = client.authorize_access_token(request)
             self.assertEqual(token['access_token'], 'a')
 
@@ -244,7 +239,7 @@ class DjangoOAuthTest(TestCase):
         def fetch_token(name, request):
             return {'access_token': name, 'token_type': 'bearer'}
 
-        oauth = OAuth(fetch_token)
+        oauth = OAuth(fetch_token=fetch_token)
         client = oauth.register(
             'dev',
             client_id='dev',

@@ -1,27 +1,62 @@
+import json
+import time
+
 
 class FrameworkIntegration(object):
-    oauth1_client_cls = None
-    oauth2_client_cls = None
+    expires_in = 3600
 
-    def __init__(self, name):
+    def __init__(self, name, cache=None):
         self.name = name
+        self.cache = cache
 
-    def set_session_data(self, request, key, value):
-        sess_key = '_{}_authlib_{}_'.format(self.name, key)
-        request.session[sess_key] = value
+    def _get_cache_data(self, key):
+        value = self.cache.get(key)
+        if not value:
+            return None
+        try:
+            return json.loads(value)
+        except (TypeError, ValueError):
+            return None
 
-    def get_session_data(self, request, key):
-        sess_key = '_{}_authlib_{}_'.format(self.name, key)
-        return request.session.get(sess_key)
+    def _clear_session_state(self, request):
+        now = time.time()
+        for key in dict(request.session):
+            if '_authlib_' in key:
+                # TODO: remove in future
+                request.session.pop(key)
+            elif key.startswith('_state_'):
+                value = request.session[key]
+                exp = value.get('exp')
+                if not exp or exp < now:
+                    request.session.pop(key)
 
-    def pop_session_data(self, request, key):
-        sess_key = '_{}_authlib_{}_'.format(self.name, key)
-        return request.session.pop(sess_key, None)
+    def get_state_data(self, request, state):
+        key = f'_state_{self.name}_{state}'
+        if self.cache:
+            value = self._get_cache_data(key)
+        else:
+            value = request.session.get(key)
+        if value:
+            return value.get('data')
+        return None
+
+    def set_state_data(self, request, state, data):
+        key = f'_state_{self.name}_{state}'
+        if self.cache:
+            self.cache.set(key, {'data': data}, self.expires_in)
+        else:
+            now = time.time()
+            request.session[key] = {'data': data, 'exp': now + self.expires_in}
+
+    def clear_state_data(self, request, state):
+        key = f'_state_{self.name}_{state}'
+        if self.cache:
+            self.cache.delete(key)
+        else:
+            request.session.pop(key, None)
+            self._clear_session_state(request)
 
     def update_token(self, token, refresh_token=None, access_token=None):
-        raise NotImplementedError()
-
-    def generate_access_token_params(self, request_token_url, request):
         raise NotImplementedError()
 
     @staticmethod

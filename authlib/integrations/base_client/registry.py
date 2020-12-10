@@ -22,12 +22,14 @@ class BaseOAuth(object):
 
         oauth = OAuth()
     """
-    framework_client_cls = None
+    oauth1_client_cls = None
+    oauth2_client_cls = None
     framework_integration_cls = FrameworkIntegration
 
-    def __init__(self, fetch_token=None, update_token=None):
+    def __init__(self, cache=None, fetch_token=None, update_token=None):
         self._registry = {}
         self._clients = {}
+        self.cache = cache
         self.fetch_token = fetch_token
         self.update_token = update_token
 
@@ -48,14 +50,23 @@ class BaseOAuth(object):
             return None
 
         overwrite, config = self._registry[name]
-        client_cls = config.pop('client_cls', self.framework_client_cls)
-        if client_cls.OAUTH_APP_CONFIG:
+        client_cls = config.pop('client_cls', None)
+
+        if client_cls and client_cls.OAUTH_APP_CONFIG:
             kwargs = client_cls.OAUTH_APP_CONFIG
             kwargs.update(config)
         else:
             kwargs = config
+
         kwargs = self.generate_client_kwargs(name, overwrite, **kwargs)
-        client = client_cls(self.framework_integration_cls(name), name, **kwargs)
+        framework = self.framework_integration_cls(name, self.cache)
+        if client_cls:
+            client = client_cls(framework, name, **kwargs)
+        elif kwargs.get('request_token_url'):
+            client = self.oauth1_client_cls(framework, name, **kwargs)
+        else:
+            client = self.oauth2_client_cls(framework, name, **kwargs)
+
         self._clients[name] = client
         return client
 

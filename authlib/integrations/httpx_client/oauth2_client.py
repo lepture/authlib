@@ -18,7 +18,7 @@ from ..base_client import (
 
 __all__ = [
     'OAuth2Auth', 'OAuth2ClientAuth',
-    'AsyncOAuth2Client',
+    'AsyncOAuth2Client', 'OAuth2Client',
 ]
 
 
