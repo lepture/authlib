@@ -5,7 +5,7 @@ from authlib.oauth2 import (
     HttpRequest,
     AuthorizationServer as _AuthorizationServer,
 )
-from authlib.oauth2.rfc6750 import BearerToken
+from authlib.oauth2.rfc6750 import BearerTokenGenerator
 from authlib.common.security import generate_token
 from .signals import client_authenticated, token_revoked
 from ..flask_helpers import create_oauth_request
@@ -54,7 +54,7 @@ class AuthorizationServer(_AuthorizationServer):
         if save_token is not None:
             self._save_token = save_token
 
-        self.generate_token = self.create_bearer_token_generator(app.config)
+        self.register_token_generator('none', self.create_bearer_token_generator(app.config))
         self.scopes_supported = app.config.get('OAUTH2_SCOPES_SUPPORTED')
         self._error_uris = app.config.get('OAUTH2_ERROR_URIS')
 
@@ -126,7 +126,7 @@ class AuthorizationServer(_AuthorizationServer):
 
         expires_conf = config.get('OAUTH2_TOKEN_EXPIRES_IN')
         expires_generator = create_token_expires_in_generator(expires_conf)
-        return BearerToken(
+        return BearerTokenGenerator(
             access_token_generator,
             refresh_token_generator,
             expires_generator
@@ -138,12 +138,12 @@ def create_token_expires_in_generator(expires_in_conf=None):
         return import_string(expires_in_conf)
 
     data = {}
-    data.update(BearerToken.GRANT_TYPES_EXPIRES_IN)
+    data.update(BearerTokenGenerator.GRANT_TYPES_EXPIRES_IN)
     if isinstance(expires_in_conf, dict):
         data.update(expires_in_conf)
 
     def expires_in(client, grant_type):
-        return data.get(grant_type, BearerToken.DEFAULT_EXPIRES_IN)
+        return data.get(grant_type, BearerTokenGenerator.DEFAULT_EXPIRES_IN)
 
     return expires_in
 

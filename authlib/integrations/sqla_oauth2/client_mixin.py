@@ -124,8 +124,11 @@ class OAuth2ClientMixin(ClientMixin):
     def check_client_secret(self, client_secret):
         return self.client_secret == client_secret
 
-    def check_token_endpoint_auth_method(self, method):
-        return self.token_endpoint_auth_method == method
+    def check_endpoint_auth_method(self, method, endpoint):
+        if endpoint == 'token':
+            return self.token_endpoint_auth_method == method
+        # TODO
+        return True
 
     def check_response_type(self, response_type):
         return response_type in self.response_types

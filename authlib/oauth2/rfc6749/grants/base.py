@@ -33,16 +33,10 @@ class BaseGrant(object):
 
     def generate_token(self, user=None, scope=None, grant_type=None,
                        expires_in=None, include_refresh_token=True):
-
         if grant_type is None:
             grant_type = self.GRANT_TYPE
-
-        client = self.request.client
-        if scope is not None:
-            scope = client.get_allowed_scope(scope)
-
         return self.server.generate_token(
-            client=client,
+            client=self.request.client,
             grant_type=grant_type,
             user=user,
             scope=scope,
@@ -71,8 +65,7 @@ class BaseGrant(object):
         :return: client
         """
         client = self.server.authenticate_client(
-            self.request,
-            self.TOKEN_ENDPOINT_AUTH_METHODS)
+            self.request, self.TOKEN_ENDPOINT_AUTH_METHODS)
         self.server.send_signal(
             'after_authenticate_client',
             client=client, grant=self)
@@ -130,16 +123,15 @@ class AuthorizationEndpointMixin(object):
         if request.redirect_uri:
             if not client.check_redirect_uri(request.redirect_uri):
                 raise InvalidRequestError(
-                    'Redirect URI {!r} is not supported by client.'.format(request.redirect_uri),
-                    state=request.state,
-                )
+                    f'Redirect URI {request.redirect_uri} is not supported by client.',
+                    state=request.state)
             return request.redirect_uri
         else:
             redirect_uri = client.get_default_redirect_uri()
             if not redirect_uri:
                 raise InvalidRequestError(
-                    'Missing "redirect_uri" in request.'
-                )
+                    'Missing "redirect_uri" in request.',
+                    state=request.state)
             return redirect_uri
 
     def validate_consent_request(self):

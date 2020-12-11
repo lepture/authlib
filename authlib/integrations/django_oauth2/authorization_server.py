@@ -6,7 +6,7 @@ from authlib.oauth2 import (
     HttpRequest,
     AuthorizationServer as _AuthorizationServer,
 )
-from authlib.oauth2.rfc6750 import BearerToken
+from authlib.oauth2.rfc6750 import BearerTokenGenerator
 from authlib.common.security import generate_token as _generate_token
 from authlib.common.encoding import json_dumps
 from .signals import client_authenticated, token_revoked
@@ -23,15 +23,14 @@ class AuthorizationServer(_AuthorizationServer):
         server = AuthorizationServer(OAuth2Client, OAuth2Token)
     """
 
-    def __init__(self, client_model, token_model, generate_token=None):
+    def __init__(self, client_model, token_model):
         self.config = getattr(settings, 'AUTHLIB_OAUTH2_PROVIDER', {})
         self.client_model = client_model
         self.token_model = token_model
-        if generate_token is None:
-            generate_token = self.create_bearer_token_generator()
-
-        super(AuthorizationServer, self).__init__(generate_token=generate_token)
-        self.scopes_supported = self.config.get('scopes_supported')
+        scopes_supported = self.config.get('scopes_supported')
+        super(AuthorizationServer, self).__init__(scopes_supported=scopes_supported)
+        # add default token generator
+        self.register_token_generator('none', self.create_bearer_token_generator())
 
     def query_client(self, client_id):
         """Default method for ``AuthorizationServer.query_client``. Developers MAY
@@ -92,7 +91,7 @@ class AuthorizationServer(_AuthorizationServer):
         conf = self.config.get('token_expires_in')
         expires_generator = create_token_expires_in_generator(conf)
 
-        return BearerToken(
+        return BearerTokenGenerator(
             access_token_generator=access_token_generator,
             refresh_token_generator=refresh_token_generator,
             expires_generator=expires_generator,
@@ -113,11 +112,11 @@ def create_token_generator(token_generator_conf, length=42):
 
 def create_token_expires_in_generator(expires_in_conf=None):
     data = {}
-    data.update(BearerToken.GRANT_TYPES_EXPIRES_IN)
+    data.update(BearerTokenGenerator.GRANT_TYPES_EXPIRES_IN)
     if expires_in_conf:
         data.update(expires_in_conf)
 
     def expires_in(client, grant_type):
-        return data.get(grant_type, BearerToken.DEFAULT_EXPIRES_IN)
+        return data.get(grant_type, BearerTokenGenerator.DEFAULT_EXPIRES_IN)
 
     return expires_in

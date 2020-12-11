@@ -29,21 +29,13 @@ def create_resource_server(app):
         return jsonify(status='ok')
 
     @app.route('/operator-and')
-    @require_oauth('profile email', 'AND')
+    @require_oauth(['profile email'])
     def operator_and():
         return jsonify(status='ok')
 
     @app.route('/operator-or')
-    @require_oauth('profile email', 'OR')
+    @require_oauth(['profile', 'email'])
     def operator_or():
-        return jsonify(status='ok')
-
-    def scope_operator(token_scopes, resource_scopes):
-        return 'profile' in token_scopes and 'email' not in token_scopes
-
-    @app.route('/operator-func')
-    @require_oauth(operator=scope_operator)
-    def operator_func():
         return jsonify(status='ok')
 
     @app.route('/acquire')
@@ -70,7 +62,7 @@ class AuthorizationTest(TestCase):
             '&client_id=implicit-client'
         )
         rv = self.client.get(authorize_url)
-        self.assertIn(b'invalid_grant', rv.data)
+        self.assertIn(b'unsupported_response_type', rv.data)
 
         rv = self.client.post(authorize_url, data={'user_id': '1'})
         self.assertNotEqual(rv.status, 200)
@@ -186,9 +178,6 @@ class ResourceTest(TestCase):
         self.assertEqual(resp['error'], 'insufficient_scope')
 
         rv = self.client.get('/operator-or', headers=headers)
-        self.assertEqual(rv.status_code, 200)
-
-        rv = self.client.get('/operator-func', headers=headers)
         self.assertEqual(rv.status_code, 200)
 
     def test_optional_token(self):

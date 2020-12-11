@@ -6,18 +6,15 @@
 """
 
 from ..rfc6749.util import scope_to_list
+from ..rfc6749 import TokenValidator
 from .errors import (
-    InvalidRequestError,
     InvalidTokenError,
     InsufficientScopeError
 )
 
 
-class BearerTokenValidator(object):
+class BearerTokenValidator(TokenValidator):
     TOKEN_TYPE = 'bearer'
-
-    def __init__(self, realm=None):
-        self.realm = realm
 
     def authenticate_token(self, token_string):
         """A method to query token from database with the given token string.
@@ -31,24 +28,19 @@ class BearerTokenValidator(object):
         """
         raise NotImplementedError()
 
-    def request_invalid(self, request):
-        """Check if the HTTP request is valid or not.  Developers MUST
-        re-implement this method.  For instance, your server requires a
-        "X-Device-Version" in the header::
+    def validate_token(self, token, scopes):
+        """Check if token is active and matches the requested scopes."""
+        if not token:
+            raise InvalidTokenError(realm=self.realm, extra_attributes=self.extra_attributes)
+        if token.is_expired():
+            raise InvalidTokenError(realm=self.realm, extra_attributes=self.extra_attributes)
+        if token.is_revoked():
+            raise InvalidTokenError(realm=self.realm, extra_attributes=self.extra_attributes)
+        if self.scope_insufficient(token, scopes):
+            raise InsufficientScopeError()
 
-            def request_invalid(self, request):
-                return 'X-Device-Version' in request.headers
-
-        Usually, you don't have to detect if the request is valid or not,
-        you can just return a ``False``.
-
-        :param request: instance of HttpRequest
-        :return: Boolean
-        """
-        raise NotImplementedError()
-
-    def scope_insufficient(self, token, scope, operator='AND'):
-        if not scope:
+    def scope_insufficient(self, token, scopes):
+        if not scopes:
             return False
 
         token_scopes = scope_to_list(token.get_scope())
@@ -56,25 +48,8 @@ class BearerTokenValidator(object):
             return True
 
         token_scopes = set(token_scopes)
-        resource_scopes = set(scope_to_list(scope))
-        if operator == 'AND':
-            return not token_scopes.issuperset(resource_scopes)
-        if operator == 'OR':
-            return not token_scopes & resource_scopes
-        if callable(operator):
-            return not operator(token_scopes, resource_scopes)
-        raise ValueError('Invalid operator value')
-
-    def __call__(self, token_string, scope, request, scope_operator='AND'):
-        if self.request_invalid(request):
-            raise InvalidRequestError()
-        token = self.authenticate_token(token_string)
-        if not token:
-            raise InvalidTokenError(realm=self.realm)
-        if token.is_expired():
-            raise InvalidTokenError(realm=self.realm)
-        if token.is_revoked():
-            raise InvalidTokenError(realm=self.realm)
-        if self.scope_insufficient(token, scope, scope_operator):
-            raise InsufficientScopeError()
-        return token
+        for scope in scopes:
+            resource_scopes = set(scope_to_list(scope))
+            if token_scopes.issuperset(resource_scopes):
+                return False
+        return True

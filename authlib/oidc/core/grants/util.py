@@ -1,8 +1,7 @@
 import time
-import random
 from authlib.oauth2.rfc6749 import InvalidRequestError
 from authlib.oauth2.rfc6749.util import scope_to_list
-from authlib.jose import JsonWebToken
+from authlib.jose import jwt
 from authlib.common.encoding import to_native
 from authlib.common.urls import add_params_to_uri, quote_url
 from ..util import create_half_hash
@@ -62,13 +61,29 @@ def generate_id_token(
         token, user_info, key, iss, aud, alg='RS256', exp=3600,
         nonce=None, auth_time=None, code=None):
 
-    payload = _generate_id_token_payload(
-        alg=alg, iss=iss, aud=aud, exp=exp, nonce=nonce,
-        auth_time=auth_time, code=code,
-        access_token=token.get('access_token'),
-    )
+    now = int(time.time())
+    if auth_time is None:
+        auth_time = now
+
+    payload = {
+        'iss': iss,
+        'aud': aud,
+        'iat': now,
+        'exp': now + exp,
+        'auth_time': auth_time,
+    }
+    if nonce:
+        payload['nonce'] = nonce
+
+    if code:
+        payload['c_hash'] = to_native(create_half_hash(code, alg))
+
+    access_token = token.get('access_token')
+    if access_token:
+        payload['at_hash'] = to_native(create_half_hash(access_token, alg))
+
     payload.update(user_info)
-    return _jwt_encode(alg, payload, key)
+    return to_native(jwt.encode({'alg': alg}, payload, key))
 
 
 def create_response_mode_response(redirect_uri, params, response_mode):
@@ -114,42 +129,3 @@ def _guess_prompt_value(end_user, prompts, redirect_uri, redirect_fragment):
                 redirect_uri=redirect_uri,
                 redirect_fragment=redirect_fragment)
         return 'select_account'
-
-
-def _generate_id_token_payload(
-        alg, iss, aud, exp, nonce=None, auth_time=None,
-        code=None, access_token=None):
-    now = int(time.time())
-    if auth_time is None:
-        auth_time = now
-
-    payload = {
-        'iss': iss,
-        'aud': aud,
-        'iat': now,
-        'exp': now + exp,
-        'auth_time': auth_time,
-    }
-    if nonce:
-        payload['nonce'] = nonce
-
-    if code:
-        payload['c_hash'] = to_native(create_half_hash(code, alg))
-
-    if access_token:
-        payload['at_hash'] = to_native(create_half_hash(access_token, alg))
-    return payload
-
-
-def _jwt_encode(alg, payload, key):
-    jwt = JsonWebToken(algorithms=[alg])
-    header = {'alg': alg}
-    if isinstance(key, dict):
-        # JWK set format
-        if 'keys' in key:
-            key = random.choice(key['keys'])
-            header['kid'] = key['kid']
-        elif 'kid' in key:
-            header['kid'] = key['kid']
-
-    return to_native(jwt.encode(header, payload, key))

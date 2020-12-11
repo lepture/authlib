@@ -1,6 +1,6 @@
 from authlib.common.encoding import json_loads
+from .key_set import KeySet
 from ._cryptography_key import load_pem_key
-from .models import KeySet
 
 
 class JsonWebKey(object):
@@ -36,7 +36,7 @@ class JsonWebKey(object):
             raw_key = load_pem_key(raw)
             for _kty in cls.JWK_KEY_CLS:
                 key_cls = cls.JWK_KEY_CLS[_kty]
-                if isinstance(raw_key, key_cls.RAW_KEY_CLS):
+                if key_cls.validate_raw_key(raw_key):
                     return key_cls.import_key(raw_key, options)
 
         key_cls = cls.JWK_KEY_CLS[kty]
@@ -52,6 +52,7 @@ class JsonWebKey(object):
         if isinstance(raw, dict) and 'keys' in raw:
             keys = raw.get('keys')
             return KeySet([cls.import_key(k) for k in keys])
+        raise ValueError('Invalid key set format')
 
 
 def _transform_raw_key(raw):

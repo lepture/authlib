@@ -44,32 +44,19 @@ JsonWebKey.JWK_KEY_CLS = {
     OKPKey.kty: OKPKey,
 }
 
-# compatible constants
-JWS_ALGORITHMS = list(JsonWebSignature.ALGORITHMS_REGISTRY.keys())
-JWE_ALG_ALGORITHMS = list(JsonWebEncryption.ALG_REGISTRY.keys())
-JWE_ENC_ALGORITHMS = list(JsonWebEncryption.ENC_REGISTRY.keys())
-JWE_ZIP_ALGORITHMS = list(JsonWebEncryption.ZIP_REGISTRY.keys())
-JWE_ALGORITHMS = JWE_ALG_ALGORITHMS + JWE_ENC_ALGORITHMS + JWE_ZIP_ALGORITHMS
-
-# compatible imports
-JWS = JsonWebSignature
-JWE = JsonWebEncryption
-JWK = JsonWebKey
-JWT = JsonWebToken
-
 jwt = JsonWebToken()
 
 
 __all__ = [
     'JoseError',
 
-    'JWS', 'JsonWebSignature', 'JWSAlgorithm', 'JWSHeader', 'JWSObject',
-    'JWE', 'JsonWebEncryption', 'JWEAlgorithm', 'JWEEncAlgorithm', 'JWEZipAlgorithm',
+    'JsonWebSignature', 'JWSAlgorithm', 'JWSHeader', 'JWSObject',
+    'JsonWebEncryption', 'JWEAlgorithm', 'JWEEncAlgorithm', 'JWEZipAlgorithm',
 
-    'JWK', 'JsonWebKey', 'Key', 'KeySet',
+    'JsonWebKey', 'Key', 'KeySet',
 
     'OctKey', 'RSAKey', 'ECKey', 'OKPKey',
 
-    'JWT', 'JsonWebToken', 'BaseClaims', 'JWTClaims',
+    'JsonWebToken', 'BaseClaims', 'JWTClaims',
     'jwt',
 ]

@@ -110,12 +110,12 @@ class ResourceProtectorTest(TestCase):
     def test_scope_operator(self):
         self.prepare_data()
 
-        @require_oauth('profile email', 'AND')
+        @require_oauth(['profile email'])
         def operator_and(request):
             user = request.oauth_token.user
             return JsonResponse(dict(sub=user.pk, username=user.username))
 
-        @require_oauth('profile email', 'OR')
+        @require_oauth(['profile', 'email'])
         def operator_or(request):
             user = request.oauth_token.user
             return JsonResponse(dict(sub=user.pk, username=user.username))
@@ -127,19 +127,6 @@ class ResourceProtectorTest(TestCase):
         self.assertEqual(data['error'], 'insufficient_scope')
 
         resp = operator_or(request)
-        self.assertEqual(resp.status_code, 200)
-        data = json.loads(resp.content)
-        self.assertEqual(data['username'], 'foo')
-
-        def scope_operator(token_scopes, resource_scopes):
-            return 'profile' in token_scopes and 'email' not in token_scopes
-
-        @require_oauth(operator=scope_operator)
-        def operator_func(request):
-            user = request.oauth_token.user
-            return JsonResponse(dict(sub=user.pk, username=user.username))
-
-        resp = operator_func(request)
         self.assertEqual(resp.status_code, 200)
         data = json.loads(resp.content)
         self.assertEqual(data['username'], 'foo')

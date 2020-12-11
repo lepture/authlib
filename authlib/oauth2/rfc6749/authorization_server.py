@@ -1,8 +1,8 @@
 from .authenticate_client import ClientAuthentication
 from .errors import (
     OAuth2Error,
-    InvalidGrantError,
     InvalidScopeError,
+    UnsupportedResponseTypeError,
     UnsupportedGrantTypeError,
 )
 from .util import scope_to_list
@@ -12,11 +12,11 @@ class AuthorizationServer(object):
     """Authorization server that handles Authorization Endpoint and Token
     Endpoint.
 
-    :param generate_token: A method to generate tokens.
+    :param scopes_supported: A list of supported scopes by this authorization server.
     """
-    def __init__(self, generate_token=None, scopes_supported=None):
-        self.generate_token = generate_token
+    def __init__(self, scopes_supported=None):
         self.scopes_supported = scopes_supported
+        self._token_generators = {}
         self._client_auth = None
         self._authorization_grants = []
         self._token_grants = []
@@ -33,13 +33,62 @@ class AuthorizationServer(object):
         """Define function to save the generated token into database."""
         raise NotImplementedError()
 
-    def authenticate_client(self, request, methods):
+    def generate_token(self, grant_type, client, user=None, scope=None,
+                       expires_in=None, include_refresh_token=True):
+        """Generate the token dict.
+
+        :param grant_type: current requested grant_type.
+        :param client: the client that making the request.
+        :param user: current authorized user.
+        :param expires_in: if provided, use this value as expires_in.
+        :param scope: current requested scope.
+        :param include_refresh_token: should refresh_token be included.
+        :return: Token dict
+        """
+        # generator for a specified grant type
+        func = self._token_generators.get(grant_type)
+        if not func:
+            # default generator for all grant types
+            func = self._token_generators.get('none')
+        if not func:
+            raise RuntimeError('No configured token generator')
+
+        return func(
+            grant_type=grant_type, client=client, user=user, scope=scope,
+            expires_in=expires_in, include_refresh_token=include_refresh_token)
+
+    def register_token_generator(self, grant_type, func):
+        """Register a function as token generator for the given ``grant_type``.
+        Developers MUST register a default token generator with a special
+        ``grant_type=none``::
+
+            def generate_bearer_token(grant_type, client, user=None, scope=None,
+                                      expires_in=None, include_refresh_token=True):
+                token = {'token_type': 'Bearer', 'access_token': ...}
+                if include_refresh_token:
+                    token['refresh_token'] = ...
+                ...
+                return token
+
+            authorization_server.register_token_generator('none', generate_bearer_token)
+
+        If you register a generator for a certain grant type, that generator will only works
+        for the given grant type::
+
+            authorization_server.register_token_generator('client_credentials', generate_bearer_token)
+
+        :param grant_type: string name of the grant type
+        :param func: a function to generate token
+        """
+        self._token_generators[grant_type] = func
+
+    def authenticate_client(self, request, methods, endpoint='token'):
         """Authenticate client via HTTP request information with the given
         methods, such as ``client_secret_basic``, ``client_secret_post``.
         """
         if self._client_auth is None and self.query_client:
             self._client_auth = ClientAuthentication(self.query_client)
-        return self._client_auth(request, methods)
+        return self._client_auth(request, methods, endpoint)
 
     def register_client_auth_method(self, method, func):
         """Add more client auth method. The default methods are:
@@ -147,7 +196,18 @@ class AuthorizationServer(object):
         for (grant_cls, extensions) in self._authorization_grants:
             if grant_cls.check_authorization_endpoint(request):
                 return _create_grant(grant_cls, extensions, request, self)
-        raise InvalidGrantError(f'Response type "{request.response_type}" is not supported')
+        raise UnsupportedResponseTypeError(request.response_type)
+
+    def get_consent_grant(self, request=None, end_user=None):
+        """Validate current HTTP request for authorization page. This page
+        is designed for resource owner to grant or deny the authorization.
+        """
+        request = self.create_oauth2_request(request)
+        request.user = end_user
+
+        grant = self.get_authorization_grant(request)
+        grant.validate_consent_request()
+        return grant
 
     def get_token_grant(self, request):
         """Find the token grant for current request.
@@ -159,7 +219,7 @@ class AuthorizationServer(object):
             if grant_cls.check_token_endpoint(request) and \
                     request.method in grant_cls.TOKEN_ENDPOINT_HTTP_METHODS:
                 return _create_grant(grant_cls, extensions, request, self)
-        raise UnsupportedGrantTypeError(f'Grant type {request.grant_type} is not supported')
+        raise UnsupportedGrantTypeError(request.grant_type)
 
     def create_endpoint_response(self, name, request=None):
         """Validate endpoint request and create endpoint response.
@@ -189,7 +249,7 @@ class AuthorizationServer(object):
         request = self.create_oauth2_request(request)
         try:
             grant = self.get_authorization_grant(request)
-        except InvalidGrantError as error:
+        except UnsupportedResponseTypeError as error:
             return self.handle_error_response(request, error)
 
         try:
@@ -216,17 +276,6 @@ class AuthorizationServer(object):
             return self.handle_response(*args)
         except OAuth2Error as error:
             return self.handle_error_response(request, error)
-
-    def get_consent_grant(self, request=None, end_user=None):
-        """Validate current HTTP request for authorization page. This page
-        is designed for resource owner to grant or deny the authorization.
-        """
-        request = self.create_oauth2_request(request)
-        request.user = end_user
-
-        grant = self.get_authorization_grant(request)
-        grant.validate_consent_request()
-        return grant
 
     def handle_error_response(self, request, error):
         return self.handle_response(*error(self.get_error_uri(request, error)))

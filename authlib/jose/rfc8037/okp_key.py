@@ -17,8 +17,7 @@ from authlib.common.encoding import (
     to_unicode, to_bytes,
     urlsafe_b64decode, urlsafe_b64encode,
 )
-from authlib.jose.rfc7517 import Key
-from ..rfc7518 import import_key, export_key
+from ..rfc7517 import AsymmetricKey
 
 
 PUBLIC_KEYS_MAP = {
@@ -33,40 +32,24 @@ PRIVATE_KEYS_MAP = {
     'X25519': X25519PrivateKey,
     'X448': X448PrivateKey,
 }
-PUBLIC_KEY_TUPLE = tuple(PUBLIC_KEYS_MAP.values())
-PRIVATE_KEY_TUPLE = tuple(PRIVATE_KEYS_MAP.values())
 
 
-class OKPKey(Key):
+class OKPKey(AsymmetricKey):
     """Key class of the ``OKP`` key type."""
 
     kty = 'OKP'
     REQUIRED_JSON_FIELDS = ['crv', 'x']
-    RAW_KEY_CLS = (
-        Ed25519PublicKey, Ed25519PrivateKey,
-        Ed448PublicKey, Ed448PrivateKey,
-        X25519PublicKey, X25519PrivateKey,
-        X448PublicKey, X448PrivateKey,
-    )
-
-    def as_pem(self, is_private=False, password=None):
-        """Export key into PEM format bytes.
-
-        :param is_private: export private key or public key
-        :param password: encrypt private key with password
-        :return: bytes
-        """
-        return export_key(self, is_private=is_private, password=password)
+    PUBLIC_KEY_FIELDS = REQUIRED_JSON_FIELDS
+    PRIVATE_KEY_FIELDS = ['crv', 'd']
+    PUBLIC_KEY_CLS = tuple(PUBLIC_KEYS_MAP.values())
+    PRIVATE_KEY_CLS = tuple(PRIVATE_KEYS_MAP.values())
+    SSH_PUBLIC_PREFIX = b'ssh-ed25519'
 
     def exchange_shared_key(self, pubkey):
         # used in ECDHAlgorithm
-        if isinstance(self.raw_key, (X25519PrivateKey, X448PrivateKey)):
-            return self.raw_key.exchange(pubkey)
+        if self.private_key and isinstance(self.private_key, (X25519PrivateKey, X448PrivateKey)):
+            return self.private_key.exchange(pubkey)
         raise ValueError('Invalid key for exchanging shared key')
-
-    @property
-    def curve_key_size(self):
-        raise NotImplementedError()
 
     @staticmethod
     def get_key_curve(key):
@@ -79,22 +62,19 @@ class OKPKey(Key):
         elif isinstance(key, (X448PublicKey, X448PrivateKey)):
             return 'X448'
 
-    @staticmethod
-    def loads_private_key(obj):
-        crv_key = PRIVATE_KEYS_MAP[obj['crv']]
-        d_bytes = urlsafe_b64decode(to_bytes(obj['d']))
+    def load_private_key(self):
+        crv_key = PRIVATE_KEYS_MAP[self._dict_data['crv']]
+        d_bytes = urlsafe_b64decode(to_bytes(self._dict_data['d']))
         return crv_key.from_private_bytes(d_bytes)
 
-    @staticmethod
-    def loads_public_key(obj):
-        crv_key = PUBLIC_KEYS_MAP[obj['crv']]
-        x_bytes = urlsafe_b64decode(to_bytes(obj['x']))
+    def load_public_key(self):
+        crv_key = PUBLIC_KEYS_MAP[self._dict_data['crv']]
+        x_bytes = urlsafe_b64decode(to_bytes(self._dict_data['x']))
         return crv_key.from_public_bytes(x_bytes)
 
-    @staticmethod
-    def dumps_private_key(raw_key):
-        obj = OKPKey.dumps_public_key(raw_key.public_key())
-        d_bytes = raw_key.private_bytes(
+    def dumps_private_key(self):
+        obj = self.dumps_public_key(self.private_key.public_key())
+        d_bytes = self.private_key.private_bytes(
             Encoding.Raw,
             PrivateFormat.Raw,
             NoEncryption()
@@ -102,25 +82,17 @@ class OKPKey(Key):
         obj['d'] = to_unicode(urlsafe_b64encode(d_bytes))
         return obj
 
-    @staticmethod
-    def dumps_public_key(raw_key):
-        x_bytes = raw_key.public_bytes(Encoding.Raw, PublicFormat.Raw)
+    def dumps_public_key(self, public_key=None):
+        if public_key is None:
+            public_key = self.public_key
+        x_bytes = public_key.public_bytes(Encoding.Raw, PublicFormat.Raw)
         return {
-            'crv': OKPKey.get_key_curve(raw_key),
+            'crv': self.get_key_curve(public_key),
             'x': to_unicode(urlsafe_b64encode(x_bytes)),
         }
 
     @classmethod
-    def import_key(cls, raw, options=None):
-        """Import a key from PEM or dict data."""
-        return import_key(
-            cls, raw,
-            PUBLIC_KEY_TUPLE, PRIVATE_KEY_TUPLE,
-            b'ssh-ed25519', options
-        )
-
-    @classmethod
-    def generate_key(cls, crv='Ed25519', options=None, is_private=False):
+    def generate_key(cls, crv='Ed25519', options=None, is_private=False) -> 'OKPKey':
         if crv not in PRIVATE_KEYS_MAP:
             raise ValueError('Invalid crv value: "{}"'.format(crv))
         private_key_cls = PRIVATE_KEYS_MAP[crv]

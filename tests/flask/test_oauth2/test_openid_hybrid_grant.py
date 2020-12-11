@@ -1,6 +1,6 @@
 from flask import json
 from authlib.common.urls import urlparse, url_decode
-from authlib.jose import JWT
+from authlib.jose import JsonWebToken
 from authlib.oidc.core import HybridIDToken
 from authlib.oidc.core.grants import (
     OpenIDCode as _OpenIDCode,
@@ -72,7 +72,7 @@ class OpenIDCodeTest(TestCase):
         db.session.commit()
 
     def validate_claims(self, id_token, params):
-        jwt = JWT()
+        jwt = JsonWebToken()
         claims = jwt.decode(
             id_token, 'secret',
             claims_cls=HybridIDToken,
@@ -130,7 +130,7 @@ class OpenIDCodeTest(TestCase):
             'user_id': '1',
         })
         resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_grant')
+        self.assertEqual(resp['error'], 'unsupported_response_type')
 
     def test_invalid_scope(self):
         self.prepare_data()

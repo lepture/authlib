@@ -6,9 +6,7 @@ from authlib.jose.errors import InvalidClaimError
 from authlib.integrations.flask_client import OAuth
 from authlib.oidc.core.grants.util import generate_id_token
 from tests.util import read_file_path
-from tests.client_base import (
-    get_bearer_token,
-)
+from tests.client_base import get_bearer_token
 
 
 class FlaskUserMixinTest(TestCase):

@@ -38,12 +38,14 @@ which is the instance of current in-use Token.
 Multiple Scopes
 ---------------
 
-You can apply multiple scopes to one endpoint in **AND** and **OR** modes.
-The default is **AND** mode.
+.. versionchanged:: v1.0
+
+You can apply multiple scopes to one endpoint in **AND**, **OR** and mix modes.
+Here are some examples:
 
 .. code-block:: python
 
-    @require_oauth('profile email', 'AND')
+    @require_oauth(['profile email'])
     def user_profile(request):
         user = request.oauth_token.user
         return JsonResponse(dict(sub=user.pk, username=user.username))
@@ -52,24 +54,26 @@ It requires the token containing both ``profile`` and ``email`` scope.
 
 .. code-block:: python
 
-    @require_oauth('profile email', 'OR')
+    @require_oauth(['profile', 'email'])
     def user_profile(request):
         user = request.oauth_token.user
         return JsonResponse(dict(sub=user.pk, username=user.username))
 
 It requires the token containing either ``profile`` or ``email`` scope.
 
-It is also possible to pass a function as the scope operator. e.g.::
 
-    def scope_operator(token_scopes, resource_scopes):
-        # this equals "AND"
-        return token_scopes.issuperset(resource_scopes)
+It is also possible to mix **AND** and **OR** logic. e.g.::
 
-    @require_oauth('profile email', scope_operator)
+    @app.route('/profile')
+    @require_oauth(['profile email', 'user'])
     def user_profile(request):
         user = request.oauth_token.user
         return JsonResponse(dict(sub=user.pk, username=user.username))
 
+This means if the token will be valid if:
+
+1. token contains both ``profile`` and ``email`` scope
+2. or token contains ``user`` scope
 
 Optional ``require_oauth``
 --------------------------

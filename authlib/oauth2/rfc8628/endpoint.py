@@ -1,7 +1,6 @@
 from authlib.consts import default_json_headers
 from authlib.common.security import generate_token
 from authlib.common.urls import add_params_to_uri
-from ..rfc6749.errors import InvalidRequestError
 
 
 class DeviceAuthorizationEndpoint(object):
@@ -46,6 +45,7 @@ class DeviceAuthorizationEndpoint(object):
     """
 
     ENDPOINT_NAME = 'device_authorization'
+    CLIENT_AUTH_METHODS = ['client_secret_basic', 'client_secret_post', 'none']
 
     #: customize "user_code" type, string or digital
     USER_CODE_TYPE = 'string'
@@ -68,11 +68,33 @@ class DeviceAuthorizationEndpoint(object):
     def create_endpoint_request(self, request):
         return self.server.create_oauth2_request(request)
 
+    def authenticate_client(self, request):
+        """client_id is REQUIRED **if the client is not** authenticating with the
+        authorization server as described in Section 3.2.1. of [RFC6749].
+
+        This means the endpoint support "none" authentication method. In this case,
+        this endpoint's auth methods are:
+
+        - client_secret_basic
+        - client_secret_post
+        - none
+
+        Developers change the value of ``CLIENT_AUTH_METHODS`` in subclass. For
+        instance::
+
+            class MyDeviceAuthorizationEndpoint(DeviceAuthorizationEndpoint):
+                # only support ``client_secret_basic`` auth method
+                CLIENT_AUTH_METHODS = ['client_secret_basic']
+        """
+        client = self.server.authenticate_client(
+            request, self.CLIENT_AUTH_METHODS, self.ENDPOINT_NAME)
+        request.client = client
+        return client
+
     def create_endpoint_response(self, request):
         # https://tools.ietf.org/html/rfc8628#section-3.1
-        if not request.client_id:
-            raise InvalidRequestError('Missing "client_id" in payload')
 
+        self.authenticate_client(request)
         self.server.validate_requested_scope(request.scope)
 
         device_code = self.generate_device_code()

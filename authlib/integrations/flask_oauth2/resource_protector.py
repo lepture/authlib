@@ -43,7 +43,7 @@ class ResourceProtector(_ResourceProtector):
         # protect resource with require_oauth
 
         @app.route('/user')
-        @require_oauth('profile')
+        @require_oauth(['profile'])
         def user_profile():
             user = User.query.get(current_token.user_id)
             return jsonify(user.to_dict())
@@ -61,11 +61,10 @@ class ResourceProtector(_ResourceProtector):
         headers = error.get_headers()
         raise_http_exception(status, body, headers)
 
-    def acquire_token(self, scope=None, operator='AND'):
+    def acquire_token(self, scopes=None):
         """A method to acquire current valid token with the given scope.
 
-        :param scope: string or list of scope values
-        :param operator: value of "AND" or "OR"
+        :param scopes: a list of scope values
         :return: token object
         """
         request = HttpRequest(
@@ -74,16 +73,17 @@ class ResourceProtector(_ResourceProtector):
             _req.data,
             _req.headers
         )
-        if not callable(operator):
-            operator = operator.upper()
-        token = self.validate_request(scope, request, operator)
+        # backward compatible
+        if isinstance(scopes, str):
+            scopes = [scopes]
+        token = self.validate_request(scopes, request)
         token_authenticated.send(self, token=token)
         ctx = _app_ctx_stack.top
         ctx.authlib_server_oauth2_token = token
         return token
 
     @contextmanager
-    def acquire(self, scope=None, operator='AND'):
+    def acquire(self, scopes=None):
         """The with statement of ``require_oauth``. Instead of using a
         decorator, you can use a with statement instead::
 
@@ -94,16 +94,16 @@ class ResourceProtector(_ResourceProtector):
                     return jsonify(user.to_dict())
         """
         try:
-            yield self.acquire_token(scope, operator)
+            yield self.acquire_token(scopes)
         except OAuth2Error as error:
             self.raise_error_response(error)
 
-    def __call__(self, scope=None, operator='AND', optional=False):
+    def __call__(self, scopes=None, optional=False):
         def wrapper(f):
             @functools.wraps(f)
             def decorated(*args, **kwargs):
                 try:
-                    self.acquire_token(scope, operator)
+                    self.acquire_token(scopes)
                 except MissingAuthorizationError as error:
                     if optional:
                         return f(*args, **kwargs)

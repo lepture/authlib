@@ -1,6 +1,5 @@
-
-class BearerToken(object):
-    """Bearer Token generator which can create the payload for token response
+class BearerTokenGenerator(object):
+    """Bearer token generator which can create the payload for token response
     by OAuth 2 server. A typical token response would be:
 
     .. code-block:: http
@@ -16,37 +15,6 @@ class BearerToken(object):
             "expires_in":3600,
             "refresh_token":"tGzv3JOkF0XG5Qx2TlKWIA"
         }
-
-    :param access_token_generator: a function to generate access_token.
-    :param refresh_token_generator: a function to generate refresh_token,
-        if not provided, refresh_token will not be added into token response.
-    :param expires_generator: The expires_generator can be an int value or a
-        function. If it is int, all token expires_in will be this value. If it
-        is function, it can  generate expires_in depending on client and
-        grant_type::
-
-            def expires_generator(client, grant_type):
-                if is_official_client(client):
-                    return 3600 * 1000
-                if grant_type == 'implicit':
-                    return 3600
-                return 3600 * 10
-    :return: Callable
-
-    When BearerToken is initialized, it will be callable::
-
-        token_generator = BearerToken(access_token_generator)
-        token = token_generator(client, grant_type, expires_in=None,
-                    scope=None, include_refresh_token=True)
-
-    The callable function that BearerToken created accepts these parameters:
-
-    :param client: the client that making the request.
-    :param grant_type: current requested grant_type.
-    :param expires_in: if provided, use this value as expires_in.
-    :param scope: current requested scope.
-    :param include_refresh_token: should refresh_token be included.
-    :return: Token dict
     """
 
     #: default expires_in value
@@ -78,9 +46,27 @@ class BearerToken(object):
             expires_in = self.DEFAULT_EXPIRES_IN
         return expires_in
 
-    def __call__(self, client, grant_type, user=None, scope=None,
+    @staticmethod
+    def get_allowed_scope(client, scope):
+        if scope:
+            scope = client.get_allowed_scope(scope)
+        return scope
+
+    def generate(self, grant_type, client, user=None, scope=None,
                  expires_in=None, include_refresh_token=True):
-        access_token = self.access_token_generator(client, grant_type, user, scope)
+        """Generate a bearer token for OAuth 2.0 authorization token endpoint.
+
+        :param client: the client that making the request.
+        :param grant_type: current requested grant_type.
+        :param user: current authorized user.
+        :param expires_in: if provided, use this value as expires_in.
+        :param scope: current requested scope.
+        :param include_refresh_token: should refresh_token be included.
+        :return: Token dict
+        """
+        scope = self.get_allowed_scope(client, scope)
+        access_token = self.access_token_generator(
+            client=client, grant_type=grant_type, user=user, scope=scope)
         if expires_in is None:
             expires_in = self._get_expires_in(client, grant_type)
 
@@ -91,7 +77,11 @@ class BearerToken(object):
         }
         if include_refresh_token and self.refresh_token_generator:
             token['refresh_token'] = self.refresh_token_generator(
-                client, grant_type, user, scope)
+                client=client, grant_type=grant_type, user=user, scope=scope)
         if scope:
             token['scope'] = scope
         return token
+
+    def __call__(self, grant_type, client, user=None, scope=None,
+                 expires_in=None, include_refresh_token=True):
+        return self.generate(grant_type, client, user, scope, expires_in, include_refresh_token)

@@ -7,9 +7,11 @@
 
     https://tools.ietf.org/html/rfc7517
 """
-from .models import Key, KeySet
 from ._cryptography_key import load_pem_key
+from .base_key import Key
+from .asymmetric_key import AsymmetricKey
+from .key_set import KeySet
 from .jwk import JsonWebKey
 
 
-__all__ = ['Key', 'KeySet', 'JsonWebKey', 'load_pem_key']
+__all__ = ['Key', 'AsymmetricKey', 'KeySet', 'JsonWebKey', 'load_pem_key']

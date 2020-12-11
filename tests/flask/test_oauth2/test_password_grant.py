@@ -3,9 +3,22 @@ from authlib.common.urls import add_params_to_uri
 from authlib.oauth2.rfc6749.grants import (
     ResourceOwnerPasswordCredentialsGrant as _PasswordGrant,
 )
+from authlib.oidc.core import OpenIDToken
 from .models import db, User, Client
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
+
+
+class IDToken(OpenIDToken):
+    def get_jwt_config(self, grant):
+        return {
+            'iss': 'Authlib',
+            'key': 'secret',
+            'alg': 'HS256',
+        }
+
+    def generate_user_info(self, user, scopes):
+        return user.generate_user_info(scopes)
 
 
 class PasswordGrant(_PasswordGrant):
@@ -16,9 +29,9 @@ class PasswordGrant(_PasswordGrant):
 
 
 class PasswordTest(TestCase):
-    def prepare_data(self, grant_type='password'):
+    def prepare_data(self, grant_type='password', extensions=None):
         server = create_authorization_server(self.app)
-        server.register_grant(PasswordGrant)
+        server.register_grant(PasswordGrant, extensions)
         self.server = server
 
         user = User(username='foo')
@@ -30,7 +43,7 @@ class PasswordTest(TestCase):
             client_secret='password-secret',
         )
         client.set_client_metadata({
-            'scope': 'profile',
+            'scope': 'openid profile',
             'grant_types': [grant_type],
             'redirect_uris': ['http://localhost/authorized'],
         })
@@ -164,3 +177,18 @@ class PasswordTest(TestCase):
         resp = json.loads(rv.data)
         self.assertIn('access_token', resp)
         self.assertEqual(resp['expires_in'], 1800)
+
+    def test_id_token_extension(self):
+        self.prepare_data(extensions=[IDToken()])
+        headers = self.create_basic_header(
+            'password-client', 'password-secret'
+        )
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': 'password',
+            'username': 'foo',
+            'password': 'ok',
+            'scope': 'openid profile',
+        }, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertIn('access_token', resp)
+        self.assertIn('id_token', resp)

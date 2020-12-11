@@ -16,24 +16,21 @@ JWT_BEARER_GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:jwt-bearer'
 class JWTBearerGrant(BaseGrant, TokenEndpointMixin):
     GRANT_TYPE = JWT_BEARER_GRANT_TYPE
 
+    #: Options for verifying JWT payload claims. Developers MAY
+    #: overwrite this constant to create a more strict options.
+    CLAIMS_OPTIONS = {
+        'iss': {'essential': True},
+        'sub': {'essential': True},
+        'aud': {'essential': True},
+        'exp': {'essential': True},
+    }
+
     @staticmethod
     def sign(key, issuer, audience, subject=None,
              issued_at=None, expires_at=None, claims=None, **kwargs):
         return sign_jwt_bearer_assertion(
             key, issuer, audience, subject, issued_at,
             expires_at, claims, **kwargs)
-
-    def create_claims_options(self):
-        """Create a claims_options for verify JWT payload claims. Developers
-        MAY overwrite this method to create a more strict options.
-        """
-        # https://tools.ietf.org/html/rfc7523#section-3
-        return {
-            'iss': {'essential': True},
-            'sub': {'essential': True},
-            'aud': {'essential': True},
-            'exp': {'essential': True},
-        }
 
     def process_assertion_claims(self, assertion):
         """Extract JWT payload claims from request "assertion", per
@@ -47,7 +44,7 @@ class JWTBearerGrant(BaseGrant, TokenEndpointMixin):
         """
         claims = jwt.decode(
             assertion, self.resolve_public_key,
-            claims_options=self.create_claims_options())
+            claims_options=self.CLAIMS_OPTIONS)
         try:
             claims.validate()
         except JoseError as e:
@@ -107,6 +104,7 @@ class JWTBearerGrant(BaseGrant, TokenEndpointMixin):
         """
         token = self.generate_token(
             scope=self.request.scope,
+            user=self.request.user,
             include_refresh_token=False,
         )
         log.debug('Issue token %r to %r', token, self.request.client)

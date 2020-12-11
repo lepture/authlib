@@ -68,7 +68,7 @@ class JWTBearerClientAssertion(object):
         return claims
 
     def authenticate_client(self, client):
-        if client.check_token_endpoint_auth_method(self.CLIENT_AUTH_METHOD):
+        if client.check_endpoint_auth_method(self.CLIENT_AUTH_METHOD, 'token'):
             return client
         raise InvalidClientError()
 

@@ -12,10 +12,9 @@
     :copyright: (c) 2017 by Hsiaoming Yang.
 """
 from ..base import OAuth2Error
-from ..rfc6749.errors import InvalidRequestError
 
 __all__ = [
-    'InvalidRequestError', 'InvalidTokenError', 'InsufficientScopeError'
+    'InvalidTokenError', 'InsufficientScopeError'
 ]
 
 
@@ -36,10 +35,11 @@ class InvalidTokenError(OAuth2Error):
     status_code = 401
 
     def __init__(self, description=None, uri=None, status_code=None,
-                 state=None, realm=None):
+                 state=None, realm=None, **extra_attributes):
         super(InvalidTokenError, self).__init__(
             description, uri, status_code, state)
         self.realm = realm
+        self.extra_attributes = extra_attributes
 
     def get_headers(self):
         """If the protected resource request does not include authentication
@@ -54,10 +54,12 @@ class InvalidTokenError(OAuth2Error):
 
         extras = []
         if self.realm:
-            extras.append('realm="{}"'.format(self.realm))
-        extras.append('error="{}"'.format(self.error))
+            extras.append(f'realm="{self.realm}"')
+        if self.extra_attributes:
+            extras.extend([f'{k}="{self.extra_attributes[k]}"' for k in self.extra_attributes])
+        extras.append(f'error="{self.error}"')
         error_description = self.get_error_description()
-        extras.append('error_description="{}"'.format(error_description))
+        extras.append(f'error_description="{error_description}"')
         headers.append(
             ('WWW-Authenticate', 'Bearer ' + ', '.join(extras))
         )

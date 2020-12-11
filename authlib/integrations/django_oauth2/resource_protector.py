@@ -15,28 +15,27 @@ from .signals import token_authenticated
 
 
 class ResourceProtector(_ResourceProtector):
-    def acquire_token(self, request, scope=None, operator='AND'):
+    def acquire_token(self, request, scopes=None):
         """A method to acquire current valid token with the given scope.
 
         :param request: Django HTTP request instance
-        :param scope: string or list of scope values
-        :param operator: value of "AND" or "OR"
+        :param scopes: a list of scope values
         :return: token object
         """
         url = request.get_raw_uri()
         req = HttpRequest(request.method, url, request.body, request.headers)
-        if not callable(operator):
-            operator = operator.upper()
-        token = self.validate_request(scope, req, operator)
+        if isinstance(scopes, str):
+            scopes = [scopes]
+        token = self.validate_request(scopes, req)
         token_authenticated.send(sender=self.__class__, token=token)
         return token
 
-    def __call__(self, scope=None, operator='AND', optional=False):
+    def __call__(self, scopes=None, optional=False):
         def wrapper(f):
             @functools.wraps(f)
             def decorated(request, *args, **kwargs):
                 try:
-                    token = self.acquire_token(request, scope, operator)
+                    token = self.acquire_token(request, scopes)
                     request.oauth_token = token
                 except MissingAuthorizationError as error:
                     if optional:
@@ -51,9 +50,9 @@ class ResourceProtector(_ResourceProtector):
 
 
 class BearerTokenValidator(_BearerTokenValidator):
-    def __init__(self, token_model, realm=None):
+    def __init__(self, token_model, realm=None, **extra_attributes):
         self.token_model = token_model
-        super(BearerTokenValidator, self).__init__(realm)
+        super(BearerTokenValidator, self).__init__(realm, **extra_attributes)
 
     def authenticate_token(self, token_string):
         try:

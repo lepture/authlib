@@ -120,7 +120,7 @@ class ECAlgorithm(JWSAlgorithm):
 
     def prepare_key(self, raw_data):
         key = ECKey.import_key(raw_data)
-        if key.curve_name != self.curve:
+        if key['crv'] != self.curve:
             raise ValueError(f'Key for "{self.name}" not supported, only "{self.curve}" allowed')
         return key
 

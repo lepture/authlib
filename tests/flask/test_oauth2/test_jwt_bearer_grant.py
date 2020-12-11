@@ -1,5 +1,7 @@
 from flask import json
 from authlib.oauth2.rfc7523 import JWTBearerGrant as _JWTBearerGrant
+from authlib.oauth2.rfc7523 import JWTBearerTokenGenerator, JWTBearerTokenValidator
+from tests.util import read_file_path
 from .models import db, User, Client
 from .oauth2_server import TestCase
 from .oauth2_server import create_authorization_server
@@ -19,15 +21,19 @@ class JWTBearerGrant(_JWTBearerGrant):
 
 
 class JWTBearerGrantTest(TestCase):
-    def prepare_data(self, grant_type=None):
+    def prepare_data(self, grant_type=None, token_generator=None):
         server = create_authorization_server(self.app)
         server.register_grant(JWTBearerGrant)
+
+        if token_generator:
+            server.register_token_generator(JWTBearerGrant.GRANT_TYPE, token_generator)
+
+        if grant_type is None:
+            grant_type = JWTBearerGrant.GRANT_TYPE
 
         user = User(username='foo')
         db.session.add(user)
         db.session.commit()
-        if grant_type is None:
-            grant_type = JWTBearerGrant.GRANT_TYPE
         client = Client(
             user_id=user.id,
             client_id='jwt-client',
@@ -104,3 +110,18 @@ class JWTBearerGrantTest(TestCase):
         resp = json.loads(rv.data)
         self.assertIn('access_token', resp)
         self.assertIn('j-', resp['access_token'])
+
+    def test_jwt_bearer_token_generator(self):
+        private_key = read_file_path('jwks_private.json')
+        self.prepare_data(token_generator=JWTBearerTokenGenerator(private_key))
+        assertion = JWTBearerGrant.sign(
+            'foo', issuer='jwt-client', audience='https://i.b/token',
+            subject='self', header={'alg': 'HS256', 'kid': '1'}
+        )
+        rv = self.client.post('/oauth/token', data={
+            'grant_type': JWTBearerGrant.GRANT_TYPE,
+            'assertion': assertion
+        })
+        resp = json.loads(rv.data)
+        self.assertIn('access_token', resp)
+        self.assertEqual(resp['access_token'].count('.'), 2)

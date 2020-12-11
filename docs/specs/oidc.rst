@@ -15,6 +15,10 @@ OpenID Grants
 
 .. module:: authlib.oidc.core.grants
 
+.. autoclass:: OpenIDToken
+    :show-inheritance:
+    :members:
+
 .. autoclass:: OpenIDCode
     :show-inheritance:
     :members:
