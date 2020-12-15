@@ -41,7 +41,7 @@ jobs:
 
     - name: Test with tox ${{ matrix.python.toxenv }}
       env:
-        TOXENV: py,flask,django,starlette
+        TOXENV: py,flask,django,fastapi,starlette
       run: tox
 
     - name: Report coverage
