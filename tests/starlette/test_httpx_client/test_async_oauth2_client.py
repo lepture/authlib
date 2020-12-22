@@ -21,17 +21,36 @@ default_token = {
 }
 
 
-@pytest.mark.asyncio
-async def test_add_token_to_header():
-    async def assert_func(request):
-        token = 'Bearer ' + default_token['access_token']
-        auth_header = request.headers.get('authorization')
-        assert auth_header == token
+async def assert_token_in_header(request):
+    token = 'Bearer ' + default_token['access_token']
+    auth_header = request.headers.get('authorization')
+    assert auth_header == token
 
+
+async def assert_token_in_body(request):
+    content = await request.body()
+    assert default_token['access_token'] in content.decode()
+
+
+async def assert_token_in_uri(request):
+    assert default_token['access_token'] in str(request.url)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "assert_func, token_placement",
+    [
+        (assert_token_in_header, "header"),
+        (assert_token_in_body, "body"),
+        (assert_token_in_uri, "uri")
+    ]
+)
+async def test_add_token_get_request(assert_func, token_placement):
     mock_response = AsyncMockDispatch({'a': 'a'}, assert_func=assert_func)
     async with AsyncOAuth2Client(
             'foo',
             token=default_token,
+            token_placement=token_placement,
             app=mock_response
     ) as client:
         resp = await client.get('https://i.b')
@@ -41,58 +60,26 @@ async def test_add_token_to_header():
 
 
 @pytest.mark.asyncio
-async def test_add_token_to_streaming_header():
-    async def assert_func(request):
-        token = 'Bearer ' + default_token['access_token']
-        auth_header = request.headers.get('authorization')
-        assert auth_header == token
-
+@pytest.mark.parametrize(
+    "assert_func, token_placement",
+    [
+        (assert_token_in_header, "header"),
+        (assert_token_in_body, "body"),
+        (assert_token_in_uri, "uri")
+    ]
+)
+async def test_add_token_to_streaming_request(assert_func, token_placement):
     mock_response = AsyncMockDispatch({'a': 'a'}, assert_func=assert_func)
     async with AsyncOAuth2Client(
             'foo',
             token=default_token,
+            token_placement=token_placement,
             app=mock_response
     ) as client:
         async with await client.stream("GET", 'https://i.b') as stream:
-            stream.read()
+            await stream.aread()
             data = stream.json()
-    assert data['a'] == 'a'
 
-
-@pytest.mark.asyncio
-async def test_add_token_to_body():
-    async def assert_func(request):
-        content = await request.body()
-        assert default_token['access_token'] in content.decode()
-
-    mock_response = AsyncMockDispatch({'a': 'a'}, assert_func=assert_func)
-    async with AsyncOAuth2Client(
-            'foo',
-            token=default_token,
-            token_placement='body',
-            app=mock_response
-    ) as client:
-        resp = await client.get('https://i.b')
-
-    data = resp.json()
-    assert data['a'] == 'a'
-
-
-@pytest.mark.asyncio
-async def test_add_token_to_uri():
-    async def assert_func(request):
-        assert default_token['access_token'] in str(request.url)
-
-    mock_response = AsyncMockDispatch({'a': 'a'}, assert_func=assert_func)
-    async with AsyncOAuth2Client(
-            'foo',
-            token=default_token,
-            token_placement='uri',
-            app=mock_response
-    ) as client:
-        resp = await client.get('https://i.b')
-
-    data = resp.json()
     assert data['a'] == 'a'
 
 
