@@ -18,43 +18,43 @@ class FrameworkIntegration(object):
         except (TypeError, ValueError):
             return None
 
-    def _clear_session_state(self, request):
+    def _clear_session_state(self, session):
         now = time.time()
-        for key in dict(request.session):
+        for key in dict(session):
             if '_authlib_' in key:
                 # TODO: remove in future
-                request.session.pop(key)
+                session.pop(key)
             elif key.startswith('_state_'):
-                value = request.session[key]
+                value = session[key]
                 exp = value.get('exp')
                 if not exp or exp < now:
-                    request.session.pop(key)
+                    session.pop(key)
 
-    def get_state_data(self, request, state):
+    def get_state_data(self, session, state):
         key = f'_state_{self.name}_{state}'
         if self.cache:
             value = self._get_cache_data(key)
         else:
-            value = request.session.get(key)
+            value = session.get(key)
         if value:
             return value.get('data')
         return None
 
-    def set_state_data(self, request, state, data):
+    def set_state_data(self, session, state, data):
         key = f'_state_{self.name}_{state}'
         if self.cache:
             self.cache.set(key, {'data': data}, self.expires_in)
         else:
             now = time.time()
-            request.session[key] = {'data': data, 'exp': now + self.expires_in}
+            session[key] = {'data': data, 'exp': now + self.expires_in}
 
-    def clear_state_data(self, request, state):
+    def clear_state_data(self, session, state):
         key = f'_state_{self.name}_{state}'
         if self.cache:
             self.cache.delete(key)
         else:
-            request.session.pop(key, None)
-            self._clear_session_state(request)
+            session.pop(key, None)
+            self._clear_session_state(session)
 
     def update_token(self, token, refresh_token=None, access_token=None):
         raise NotImplementedError()

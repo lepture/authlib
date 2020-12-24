@@ -1,8 +1,10 @@
+import time
 import logging
 from authlib.common.urls import urlparse
 from authlib.consts import default_user_agent
 from authlib.common.security import generate_token
 from .errors import (
+    MismatchingStateError,
     MissingRequestTokenError,
     MissingTokenError,
 )
@@ -204,6 +206,19 @@ class OAuth2Base(object):
         session.headers['User-Agent'] = self._user_agent
         return session
 
+    def _format_state_params(self, state_data, params):
+        if state_data is None:
+            raise MismatchingStateError()
+
+        code_verifier = state_data.get('code_verifier')
+        if code_verifier:
+            params['code_verifier'] = code_verifier
+
+        redirect_uri = state_data.get('redirect_uri')
+        if redirect_uri:
+            params['redirect_uri'] = redirect_uri
+        return params
+
     @staticmethod
     def _create_oauth2_authorization_url(client, authorization_endpoint, **kwargs):
         rv = {}
@@ -251,7 +266,15 @@ class OAuth2Mixin(OAuth2Base):
             return _http_request(self, session, method, url, token, kwargs)
 
     def load_server_metadata(self):
-        raise NotImplementedError()
+        if self._server_metadata_url and '_loaded_at' not in self.server_metadata:
+            with self.client_cls() as session:
+                resp = session.get(
+                    self._server_metadata_url, withhold_token=True, **self.client_kwargs)
+                metadata = resp.json()
+
+            metadata['_loaded_at'] = time.time()
+            self.server_metadata.update(metadata)
+        return self.server_metadata
 
     def create_authorization_url(self, redirect_uri=None, **kwargs):
         """Generate the authorization url and state for HTTP redirect.

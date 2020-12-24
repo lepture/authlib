@@ -1,11 +1,51 @@
-# flake8: noqa
+from werkzeug.local import LocalProxy
+from .integration import FlaskIntegration, token_update
+from .apps import FlaskOAuth1App, FlaskOAuth2App
+from ..base_client import BaseOAuth, OAuthError
 
-from .oauth_registry import OAuth
-from .remote_app import FlaskRemoteApp
-from .integration import token_update, FlaskIntegration
-from ..base_client import OAuthError
+
+class OAuth(BaseOAuth):
+    oauth1_client_cls = FlaskOAuth1App
+    oauth2_client_cls = FlaskOAuth2App
+    framework_integration_cls = FlaskIntegration
+
+    def __init__(self, app=None, cache=None, fetch_token=None, update_token=None):
+        super(OAuth, self).__init__(
+            cache=cache, fetch_token=fetch_token, update_token=update_token)
+        self.app = app
+        if app:
+            self.init_app(app)
+
+    def init_app(self, app, cache=None, fetch_token=None, update_token=None):
+        """Initialize lazy for Flask app. This is usually used for Flask application
+        factory pattern.
+        """
+        self.app = app
+        if cache is not None:
+            self.cache = cache
+
+        if fetch_token:
+            self.fetch_token = fetch_token
+        if update_token:
+            self.update_token = update_token
+
+        app.extensions = getattr(app, 'extensions', {})
+        app.extensions['authlib.integrations.flask_client'] = self
+
+    def create_client(self, name):
+        if not self.app:
+            raise RuntimeError('OAuth is not init with Flask app.')
+        return super(OAuth, self).create_client(name)
+
+    def register(self, name, overwrite=False, **kwargs):
+        self._registry[name] = (overwrite, kwargs)
+        if self.app:
+            return self.create_client(name)
+        return LocalProxy(lambda: self.create_client(name))
+
 
 __all__ = [
-    'OAuth', 'FlaskRemoteApp', 'FlaskIntegration',
+    'OAuth', 'FlaskIntegration',
+    'FlaskOAuth1App', 'FlaskOAuth2App',
     'token_update', 'OAuthError',
 ]

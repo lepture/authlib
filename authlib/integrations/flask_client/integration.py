@@ -1,7 +1,6 @@
 from flask import current_app
 from flask.signals import Namespace
-from ..base_client import FrameworkIntegration, OAuthError
-from ..requests_client import OAuth1Session, OAuth2Session
+from ..base_client import FrameworkIntegration
 
 _signal = Namespace()
 #: signal when token is updated
@@ -9,9 +8,6 @@ token_update = _signal.signal('token_update')
 
 
 class FlaskIntegration(FrameworkIntegration):
-    oauth1_client_cls = OAuth1Session
-    oauth2_client_cls = OAuth2Session
-
     def update_token(self, token, refresh_token=None, access_token=None):
         token_update.send(
             current_app,
@@ -20,27 +16,6 @@ class FlaskIntegration(FrameworkIntegration):
             refresh_token=refresh_token,
             access_token=access_token,
         )
-
-    def generate_access_token_params(self, request_token_url, request):
-        if request_token_url:
-            return request.args.to_dict(flat=True)
-
-        if request.method == 'GET':
-            error = request.args.get('error')
-            if error:
-                description = request.args.get('error_description')
-                raise OAuthError(error=error, description=description)
-
-            params = {
-                'code': request.args['code'],
-                'state': request.args.get('state'),
-            }
-        else:
-            params = {
-                'code': request.form['code'],
-                'state': request.form.get('state'),
-            }
-        return params
 
     @staticmethod
     def load_config(oauth, name, params):

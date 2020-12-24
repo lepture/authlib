@@ -13,31 +13,31 @@ class StartletteIntegration(FrameworkIntegration):
         except (TypeError, ValueError):
             return None
 
-    async def get_state_data(self, request, state):
+    async def get_state_data(self, session, state):
         key = f'_state_{self.name}_{state}'
         if self.cache:
             value = await self._get_cache_data(key)
         else:
-            value = request.session.get(key)
+            value = session.get(key)
         if value:
             return value.get('data')
         return None
 
-    async def set_state_data(self, request, state, data):
+    async def set_state_data(self, session, state, data):
         key = f'_state_{self.name}_{state}'
         if self.cache:
             await self.cache.set(key, {'data': data}, self.expires_in)
         else:
             now = time.time()
-            request.session[key] = {'data': data, 'exp': now + self.expires_in}
+            session[key] = {'data': data, 'exp': now + self.expires_in}
 
-    async def clear_state_data(self, request, state):
+    async def clear_state_data(self, session, state):
         key = f'_state_{self.name}_{state}'
         if self.cache:
             await self.cache.delete(key)
         else:
-            request.session.pop(key, None)
-            self._clear_session_state(request)
+            session.pop(key, None)
+            self._clear_session_state(session)
 
     def update_token(self, token, refresh_token=None, access_token=None):
         pass

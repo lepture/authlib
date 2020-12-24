@@ -4,7 +4,21 @@ from authlib.oidc.core import UserInfo, CodeIDToken, ImplicitIDToken
 
 class OpenIDMixin(object):
     def fetch_jwk_set(self, force=False):
-        raise NotImplementedError()
+        metadata = self.load_server_metadata()
+        jwk_set = metadata.get('jwks')
+        if jwk_set and not force:
+            return jwk_set
+
+        uri = metadata.get('jwks_uri')
+        if not uri:
+            raise RuntimeError('Missing "jwks_uri" in metadata')
+
+        with self.client_cls() as session:
+            resp = session.get(uri, withhold_token=True, **self.client_kwargs)
+            jwk_set = resp.json()
+
+        self.server_metadata['jwks'] = jwk_set
+        return jwk_set
 
     def userinfo(self, **kwargs):
         """Fetch user info from ``userinfo_endpoint``."""

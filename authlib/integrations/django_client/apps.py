@@ -1,13 +1,16 @@
 from django.http import HttpResponseRedirect
-from ..base_client import OAuthError, MismatchingStateError
-from ..requests_client.apps import OAuth1App, OAuth2App
+from ..requests_client import OAuth1Session, OAuth2Session
+from ..base_client import (
+    BaseApp, OAuthError,
+    OAuth1Mixin, OAuth2Mixin, OpenIDMixin,
+)
 
 
 class DjangoAppMixin(object):
     def save_authorize_data(self, request, **kwargs):
         state = kwargs.pop('state', None)
         if state:
-            self.framework.set_state_data(request, state, kwargs)
+            self.framework.set_state_data(request.session, state, kwargs)
         else:
             raise RuntimeError('Missing state value')
 
@@ -24,7 +27,9 @@ class DjangoAppMixin(object):
         return HttpResponseRedirect(rv['url'])
 
 
-class DjangoOAuth1App(DjangoAppMixin, OAuth1App):
+class DjangoOAuth1App(DjangoAppMixin, OAuth1Mixin, BaseApp):
+    client_cls = OAuth1Session
+
     def authorize_access_token(self, request, **kwargs):
         """Fetch access token in one step.
 
@@ -36,7 +41,7 @@ class DjangoOAuth1App(DjangoAppMixin, OAuth1App):
         if not state:
             raise OAuthError(description='Missing "oauth_token" parameter')
 
-        data = self.framework.get_state_data(request, state)
+        data = self.framework.get_state_data(request.session, state)
         if not data:
             raise OAuthError(description='Missing "request_token" in temporary data')
 
@@ -46,11 +51,13 @@ class DjangoOAuth1App(DjangoAppMixin, OAuth1App):
             params['redirect_uri'] = redirect_uri
 
         params.update(kwargs)
-        self.framework.clear_state_data(request, state)
+        self.framework.clear_state_data(request.session, state)
         return self.fetch_access_token(**params)
 
 
-class DjangoOAuth2App(DjangoAppMixin, OAuth2App):
+class DjangoOAuth2App(DjangoAppMixin, OAuth2Mixin, OpenIDMixin, BaseApp):
+    client_cls = OAuth2Session
+
     def authorize_access_token(self, request, **kwargs):
         """Fetch access token in one step.
 
@@ -72,19 +79,9 @@ class DjangoOAuth2App(DjangoAppMixin, OAuth2App):
                 'state': request.POST.get('state'),
             }
 
-        data = self.framework.get_state_data(request, params.get('state'))
-        if data is None:
-            raise MismatchingStateError()
-
-        code_verifier = data.get('code_verifier')
-        if code_verifier:
-            params['code_verifier'] = code_verifier
-
-        redirect_uri = data.get('redirect_uri')
-        if redirect_uri:
-            params['redirect_uri'] = redirect_uri
-        params.update(kwargs)
-        token = self.fetch_access_token(**params)
+        state_data = self.framework.get_state_data(request.session, params.get('state'))
+        params = self._format_state_params(state_data, params)
+        token = self.fetch_access_token(**params, **kwargs)
 
         if 'id_token' in token and 'nonce' in params:
             userinfo = self.parse_id_token(token, nonce=params['nonce'])

@@ -6,7 +6,21 @@ __all__ = ['AsyncOpenIDMixin']
 
 class AsyncOpenIDMixin(object):
     async def fetch_jwk_set(self, force=False):
-        raise NotImplementedError()
+        metadata = await self.load_server_metadata()
+        jwk_set = metadata.get('jwks')
+        if jwk_set and not force:
+            return jwk_set
+
+        uri = metadata.get('jwks_uri')
+        if not uri:
+            raise RuntimeError('Missing "jwks_uri" in metadata')
+
+        async with self.client_cls(**self.client_kwargs) as client:
+            resp = await client.request('GET', uri, withhold_token=True)
+            jwk_set = resp.json()
+
+        self.server_metadata['jwks'] = jwk_set
+        return jwk_set
 
     async def userinfo(self, **kwargs):
         """Fetch user info from ``userinfo_endpoint``."""

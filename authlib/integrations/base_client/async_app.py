@@ -1,3 +1,4 @@
+import time
 import logging
 from authlib.common.urls import urlparse
 from .errors import (
@@ -73,7 +74,13 @@ class AsyncOAuth2Mixin(OAuth2Base):
             )
 
     async def load_server_metadata(self):
-        raise NotImplementedError()
+        if self._server_metadata_url and '_loaded_at' not in self.server_metadata:
+            async with self.client_cls(**self.client_kwargs) as client:
+                resp = await client.request('GET', self._server_metadata_url, withhold_token=True)
+                metadata = resp.json()
+                metadata['_loaded_at'] = time.time()
+            self.server_metadata.update(metadata)
+        return self.server_metadata
 
     async def request(self, method, url, token=None, **kwargs):
         metadata = await self.load_server_metadata()
