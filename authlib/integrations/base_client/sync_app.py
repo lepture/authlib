@@ -267,9 +267,8 @@ class OAuth2Mixin(OAuth2Base):
 
     def load_server_metadata(self):
         if self._server_metadata_url and '_loaded_at' not in self.server_metadata:
-            with self.client_cls() as session:
-                resp = session.get(
-                    self._server_metadata_url, withhold_token=True, **self.client_kwargs)
+            with self.client_cls(**self.client_kwargs) as session:
+                resp = session.request('GET', self._server_metadata_url, withhold_token=True)
                 metadata = resp.json()
 
             metadata['_loaded_at'] = time.time()

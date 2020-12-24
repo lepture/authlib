@@ -2,6 +2,7 @@ from requests import Session
 from authlib.oauth2.rfc7521 import AssertionClient
 from authlib.oauth2.rfc7523 import JWTBearerGrant
 from .oauth2_session import OAuth2Auth
+from .utils import update_session_configure
 
 
 class AssertionAuth(OAuth2Auth):
@@ -26,6 +27,7 @@ class AssertionSession(AssertionClient, Session):
     def __init__(self, token_endpoint, issuer, subject, audience=None, grant_type=None,
                  claims=None, token_placement='header', scope=None, **kwargs):
         Session.__init__(self)
+        update_session_configure(self, kwargs)
         AssertionClient.__init__(
             self, session=self,
             token_endpoint=token_endpoint, issuer=issuer, subject=subject,

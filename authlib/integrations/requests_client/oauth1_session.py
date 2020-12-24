@@ -9,6 +9,7 @@ from authlib.common.encoding import to_native
 from authlib.oauth1 import ClientAuth
 from authlib.oauth1.client import OAuth1Client
 from ..base_client import OAuthError
+from .utils import update_session_configure
 
 
 class OAuth1Auth(AuthBase, ClientAuth):
@@ -35,6 +36,7 @@ class OAuth1Session(OAuth1Client, Session):
                  signature_type=SIGNATURE_TYPE_HEADER,
                  force_include_body=False, **kwargs):
         Session.__init__(self)
+        update_session_configure(self, kwargs)
         OAuth1Client.__init__(
             self, session=self,
             client_id=client_id, client_secret=client_secret,

@@ -8,6 +8,7 @@ from ..base_client import (
     MissingTokenError,
     UnsupportedTokenTypeError,
 )
+from .utils import update_session_configure
 
 __all__ = ['OAuth2Session', 'OAuth2Auth']
 
@@ -78,6 +79,8 @@ class OAuth2Session(OAuth2Client, Session):
                  update_token=None, **kwargs):
 
         Session.__init__(self)
+        update_session_configure(self, kwargs)
+
         OAuth2Client.__init__(
             self, session=self,
             client_id=client_id, client_secret=client_secret,

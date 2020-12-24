@@ -13,8 +13,8 @@ class OpenIDMixin(object):
         if not uri:
             raise RuntimeError('Missing "jwks_uri" in metadata')
 
-        with self.client_cls() as session:
-            resp = session.get(uri, withhold_token=True, **self.client_kwargs)
+        with self.client_cls(**self.client_kwargs) as session:
+            resp = session.request('GET', uri, withhold_token=True)
             jwk_set = resp.json()
 
         self.server_metadata['jwks'] = jwk_set
