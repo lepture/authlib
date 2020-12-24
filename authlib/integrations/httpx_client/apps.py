@@ -39,7 +39,10 @@ class OAuth2App(OAuth2Mixin, OpenIDMixin, BaseApp):
         if not uri:
             raise RuntimeError('Missing "jwks_uri" in metadata')
 
-        jwk_set = httpx.get(uri)
+        with httpx.Client(**self.client_kwargs) as client:
+            resp = client.get(uri)
+            jwk_set = resp.json()
+
         self.server_metadata['jwks'] = jwk_set
         return jwk_set
 
@@ -67,7 +70,8 @@ class AsyncOAuth2App(AsyncOAuth2Mixin, AsyncOpenIDMixin, BaseApp):
             raise RuntimeError('Missing "jwks_uri" in metadata')
 
         async with httpx.AsyncClient(**self.client_kwargs) as client:
-            jwk_set = await client.get(uri)
+            resp = await client.get(uri)
+            jwk_set = resp.json()
 
         self.server_metadata['jwks'] = jwk_set
         return jwk_set

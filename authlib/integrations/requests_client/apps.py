@@ -32,6 +32,6 @@ class OAuth2App(OAuth2Mixin, OpenIDMixin, BaseApp):
         if not uri:
             raise RuntimeError('Missing "jwks_uri" in metadata')
 
-        jwk_set = requests.get(uri)
-        self.server_metadata['jwks'] = jwk_set
+        resp = requests.get(uri)
+        self.server_metadata['jwks'] = resp.json()
         return jwk_set

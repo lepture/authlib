@@ -37,20 +37,20 @@ class AsyncOpenIDMixin(object):
 
         jwt = JsonWebToken(alg_values)
 
-        resp = await self.fetch_jwk_set()
+        jwk_set = await self.fetch_jwk_set()
         try:
             claims = jwt.decode(
                 token['id_token'],
-                key=JsonWebKey.import_key_set(resp.json()),
+                key=JsonWebKey.import_key_set(jwk_set),
                 claims_cls=claims_cls,
                 claims_options=claims_options,
                 claims_params=claims_params,
             )
         except ValueError:
-            resp = await self.fetch_jwk_set(force=True)
+            jwk_set = await self.fetch_jwk_set(force=True)
             claims = jwt.decode(
                 token['id_token'],
-                key=JsonWebKey.import_key_set(resp.json()),
+                key=JsonWebKey.import_key_set(jwk_set),
                 claims_cls=claims_cls,
                 claims_options=claims_options,
                 claims_params=claims_params,
