@@ -22,10 +22,11 @@ class OAuth2App(OAuth2Mixin, OpenIDMixin, BaseApp):
 
     def load_server_metadata(self):
         if self._server_metadata_url and '_loaded_at' not in self.server_metadata:
-            resp = httpx.get(self._server_metadata_url)
-            metadata = resp.json()
-            metadata['_loaded_at'] = time.time()
-            self.server_metadata.update(metadata)
+            with httpx.Client(**self.client_kwargs) as client:
+                resp = client.get(self._server_metadata_url)
+                metadata = resp.json()
+                metadata['_loaded_at'] = time.time()
+                self.server_metadata.update(metadata)
         return self.server_metadata
 
     def fetch_jwk_set(self, force=False):
@@ -48,7 +49,7 @@ class AsyncOAuth2App(AsyncOAuth2Mixin, AsyncOpenIDMixin, BaseApp):
 
     async def load_server_metadata(self):
         if self._server_metadata_url and '_loaded_at' not in self.server_metadata:
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(**self.client_kwargs) as client:
                 resp = await client.get(self._server_metadata_url)
                 metadata = resp.json()
                 metadata['_loaded_at'] = time.time()
@@ -65,7 +66,7 @@ class AsyncOAuth2App(AsyncOAuth2Mixin, AsyncOpenIDMixin, BaseApp):
         if not uri:
             raise RuntimeError('Missing "jwks_uri" in metadata')
 
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(**self.client_kwargs) as client:
             jwk_set = await client.get(uri)
 
         self.server_metadata['jwks'] = jwk_set

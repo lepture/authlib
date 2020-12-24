@@ -37,7 +37,8 @@ class AsyncOAuth1Mixin(OAuth1Base):
             request_token = await client.fetch_request_token(self.request_token_url, **params)
             log.debug('Fetch request token: {!r}'.format(request_token))
             url = client.create_authorization_url(self.authorize_url, **kwargs)
-        return {'url': url, 'request_token': request_token}
+            state = request_token['oauth_token']
+        return {'url': url, 'request_token': request_token, 'state': state}
 
     async def fetch_access_token(self, redirect_uri=None, request_token=None, **kwargs):
         """Fetch access token in one step.
@@ -63,6 +64,14 @@ class AsyncOAuth1Mixin(OAuth1Base):
 
 
 class AsyncOAuth2Mixin(OAuth2Base):
+    async def _on_update_token(self, token, refresh_token=None, access_token=None):
+        if self._update_token:
+            await self._update_token(
+                token,
+                refresh_token=refresh_token,
+                access_token=access_token,
+            )
+
     async def load_server_metadata(self):
         raise NotImplementedError()
 

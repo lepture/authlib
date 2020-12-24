@@ -43,14 +43,6 @@ async def test_fetch_userinfo():
 
 
 @pytest.mark.asyncio
-async def test_userinfo_compliance_fix():
-    async def _fix(remote, data):
-        return {'sub': data['id']}
-
-    await run_fetch_userinfo({'id': '123'}, _fix)
-
-
-@pytest.mark.asyncio
 async def test_parse_id_token():
     key = jwk.dumps('secret', 'oct', kid='f')
     token = get_bearer_token()
@@ -59,6 +51,7 @@ async def test_parse_id_token():
         alg='HS256', iss='https://i.b',
         aud='dev', exp=3600, nonce='n',
     )
+    token['id_token'] = id_token
 
     oauth = OAuth()
     client = oauth.register(
@@ -70,23 +63,16 @@ async def test_parse_id_token():
         issuer='https://i.b',
         id_token_signing_alg_values_supported=['HS256', 'RS256'],
     )
-    req_scope = {'type': 'http', 'session': {'_dev_authlib_nonce_': 'n'}}
-    req = Request(req_scope)
-
-    user = await client.parse_id_token(req, token)
-    assert user is None
-
-    token['id_token'] = id_token
-    user = await client.parse_id_token(req, token)
+    user = await client.parse_id_token(token, nonce='n')
     assert user.sub == '123'
 
     claims_options = {'iss': {'value': 'https://i.b'}}
-    user = await client.parse_id_token(req, token, claims_options)
+    user = await client.parse_id_token(token, nonce='n', claims_options=claims_options)
     assert user.sub == '123'
 
     with pytest.raises(InvalidClaimError):
         claims_options = {'iss': {'value': 'https://i.c'}}
-        await client.parse_id_token(req, token, claims_options)
+        await client.parse_id_token(token, nonce='n', claims_options=claims_options)
 
 
 @pytest.mark.asyncio
@@ -124,6 +110,7 @@ async def test_force_fetch_jwks_uri():
         alg='RS256', iss='https://i.b',
         aud='dev', exp=3600, nonce='n',
     )
+    token['id_token'] = id_token
 
     app = AsyncPathMapDispatch({
         '/jwks': {'body': read_file_path('jwks_public.json')}
@@ -141,9 +128,5 @@ async def test_force_fetch_jwks_uri():
             'app': app,
         }
     )
-
-    req_scope = {'type': 'http', 'session': {'_dev_authlib_nonce_': 'n'}}
-    req = Request(req_scope)
-    token['id_token'] = id_token
-    user = await client.parse_id_token(req, token)
+    user = await client.parse_id_token(token, nonce='n')
     assert user.sub == '123'

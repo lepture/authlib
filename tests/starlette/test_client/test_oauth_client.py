@@ -1,6 +1,7 @@
 import pytest
 from starlette.config import Config
 from starlette.requests import Request
+from authlib.common.urls import urlparse, url_decode
 from authlib.integrations.starlette_client import OAuth, OAuthError
 from tests.client_base import get_bearer_token
 from ..utils import AsyncPathMapDispatch
@@ -62,10 +63,7 @@ async def test_oauth1_authorize():
     assert resp.status_code == 302
     url = resp.headers.get('Location')
     assert 'oauth_token=foo' in url
-
-    req_token = req.session.get('_dev_authlib_request_token_')
-    assert req_token is not None
-
+    assert '_state_dev_foo' in req.session
     req.scope['query_string'] = 'oauth_token=foo&oauth_verifier=baz'
     token = await client.authorize_access_token(req)
     assert token['oauth_token'] == 'a'
@@ -95,9 +93,9 @@ async def test_oauth2_authorize():
     assert resp.status_code == 302
     url = resp.headers.get('Location')
     assert 'state=' in url
+    state = dict(url_decode(urlparse.urlparse(url).query))['state']
 
-    state = req.session.get('_dev_authlib_state_')
-    assert state is not None
+    assert f'_state_dev_{state}' in req.session
 
     req_scope.update(
         {
@@ -167,10 +165,10 @@ async def test_oauth2_authorize_code_challenge():
     assert 'code_challenge=' in url
     assert 'code_challenge_method=S256' in url
 
-    state = req.session['_dev_authlib_state_']
-    assert state is not None
+    state = dict(url_decode(urlparse.urlparse(url).query))['state']
+    state_data = req.session[f'_state_dev_{state}']['data']
 
-    verifier = req.session['_dev_authlib_code_verifier_']
+    verifier = state_data['code_verifier']
     assert verifier is not None
 
     req_scope.update(
@@ -265,7 +263,7 @@ async def test_request_withhold_token():
 
 
 @pytest.mark.asyncio
-async def test_oauth2_authorize_with_metadata():
+async def test_oauth2_authorize_no_url():
     oauth = OAuth()
     client = oauth.register(
         'dev',
@@ -280,13 +278,16 @@ async def test_oauth2_authorize_with_metadata():
         await client.create_authorization_url(req)
 
 
+@pytest.mark.asyncio
+async def test_oauth2_authorize_with_metadata():
+    oauth = OAuth()
     app = AsyncPathMapDispatch({
         '/.well-known/openid-configuration': {'body': {
             'authorization_endpoint': 'https://i.b/authorize'
         }}
     })
     client = oauth.register(
-        'dev2',
+        'dev',
         client_id='dev',
         client_secret='dev',
         api_base_url='https://i.b/api',
@@ -296,5 +297,7 @@ async def test_oauth2_authorize_with_metadata():
             'app': app,
         }
     )
+    req_scope = {'type': 'http', 'session': {}}
+    req = Request(req_scope)
     resp = await client.authorize_redirect(req, 'https://b.com/bar')
     assert resp.status_code == 302

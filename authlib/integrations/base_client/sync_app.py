@@ -67,7 +67,7 @@ class OAuth1Base(object):
     client_cls = None
 
     def __init__(
-            self, framework, name=None, fetch_token=None, update_token=None,
+            self, framework, name=None, fetch_token=None,
             client_id=None, client_secret=None,
             request_token_url=None, request_token_params=None,
             access_token_url=None, access_token_params=None,
@@ -87,7 +87,6 @@ class OAuth1Base(object):
         self.client_kwargs = client_kwargs or {}
 
         self._fetch_token = fetch_token
-        self._update_token = update_token
         self._user_agent = user_agent or default_user_agent
         self._kwargs = kwargs
 
@@ -192,7 +191,7 @@ class OAuth2Base(object):
         session = self.client_cls(
             client_id=self.client_id,
             client_secret=self.client_secret,
-            # update_token=self._on_update_token,
+            update_token=self._on_update_token,
             **client_kwargs
         )
         if self.client_auth_methods:
@@ -205,7 +204,8 @@ class OAuth2Base(object):
         session.headers['User-Agent'] = self._user_agent
         return session
 
-    def _create_oauth2_authorization_url(self, client, authorization_endpoint, **kwargs):
+    @staticmethod
+    def _create_oauth2_authorization_url(client, authorization_endpoint, **kwargs):
         rv = {}
         if client.code_challenge_method:
             code_verifier = kwargs.get('code_verifier')
@@ -232,6 +232,19 @@ class OAuth2Base(object):
 
 
 class OAuth2Mixin(OAuth2Base):
+    def _on_update_token(self, token, refresh_token=None, access_token=None):
+        if callable(self._update_token):
+            self._update_token(
+                token,
+                refresh_token=refresh_token,
+                access_token=access_token,
+            )
+        self.framework.update_token(
+            token,
+            refresh_token=refresh_token,
+            access_token=access_token,
+        )
+
     def request(self, method, url, token=None, **kwargs):
         metadata = self.load_server_metadata()
         with self._get_oauth_client(**metadata) as session:
