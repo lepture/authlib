@@ -66,7 +66,11 @@ class BaseApp(object):
 
 
 class _RequestMixin:
-    def _http_request(self, session, method, url, token, kwargs):
+    def _get_requested_token(self, request):
+        if self._fetch_token and request:
+            return self._fetch_token(request)
+
+    def _send_token_request(self, session, method, url, token, kwargs):
         request = kwargs.pop('request', None)
         withhold_token = kwargs.get('withhold_token')
         if self.api_base_url and not url.startswith(('https://', 'http://')):
@@ -76,10 +80,7 @@ class _RequestMixin:
             return session.request(method, url, **kwargs)
 
         if token is None and self._fetch_token:
-            if request:
-                token = self._fetch_token(request)
-            else:
-                token = self._fetch_token()
+            token = self._get_requested_token(request)
 
         if token is None:
             raise MissingTokenError()
@@ -124,7 +125,7 @@ class OAuth1Base(object):
 class OAuth1Mixin(_RequestMixin, OAuth1Base):
     def request(self, method, url, token=None, **kwargs):
         with self._get_oauth_client() as session:
-            return self._http_request(session, method, url, token, kwargs)
+            return self._send_token_request(session, method, url, token, kwargs)
 
     def create_authorization_url(self, redirect_uri=None, **kwargs):
         """Generate the authorization url and state for HTTP redirect.
@@ -290,7 +291,7 @@ class OAuth2Mixin(_RequestMixin, OAuth2Base):
     def request(self, method, url, token=None, **kwargs):
         metadata = self.load_server_metadata()
         with self._get_oauth_client(**metadata) as session:
-            return self._http_request(session, method, url, token, kwargs)
+            return self._send_token_request(session, method, url, token, kwargs)
 
     def load_server_metadata(self):
         if self._server_metadata_url and '_loaded_at' not in self.server_metadata:

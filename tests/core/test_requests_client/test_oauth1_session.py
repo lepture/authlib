@@ -1,7 +1,5 @@
-from __future__ import unicode_literals, print_function
-import mock
 import requests
-from unittest import TestCase
+from unittest import TestCase, mock
 from io import StringIO
 
 from authlib.oauth1 import (

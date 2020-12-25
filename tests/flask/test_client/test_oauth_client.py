@@ -1,8 +1,8 @@
-import mock
-from unittest import TestCase
+from unittest import TestCase, mock
 from flask import Flask, session
 from authlib.integrations.flask_client import OAuth, OAuthError
 from authlib.integrations.flask_client import FlaskOAuth2App
+from authlib.common.urls import urlparse, url_decode
 from tests.flask.cache import SimpleCache
 from tests.client_base import (
     mock_send_value,
@@ -108,15 +108,11 @@ class FlaskOAuthTest(TestCase):
         self.assertEqual(oauth.dev.client_id, 'dev')
 
     def test_oauth1_authorize_cache(self):
-        self.run_oauth1_authorize(cache=SimpleCache())
-
-    def test_oauth1_authorize_session(self):
-        self.run_oauth1_authorize(cache=None)
-
-    def run_oauth1_authorize(self, cache):
         app = Flask(__name__)
         app.secret_key = '!'
+        cache = SimpleCache()
         oauth = OAuth(app, cache=cache)
+
         client = oauth.register(
             'dev',
             client_id='dev',
@@ -135,6 +131,37 @@ class FlaskOAuthTest(TestCase):
                 url = resp.headers.get('Location')
                 self.assertIn('oauth_token=foo', url)
 
+        with app.test_request_context('/?oauth_token=foo'):
+            with mock.patch('requests.sessions.Session.send') as send:
+                send.return_value = mock_send_value('oauth_token=a&oauth_token_secret=b')
+                token = client.authorize_access_token()
+                self.assertEqual(token['oauth_token'], 'a')
+
+    def test_oauth1_authorize_session(self):
+        app = Flask(__name__)
+        app.secret_key = '!'
+        oauth = OAuth(app)
+        client = oauth.register(
+            'dev',
+            client_id='dev',
+            client_secret='dev',
+            request_token_url='https://i.b/reqeust-token',
+            api_base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+            authorize_url='https://i.b/authorize'
+        )
+
+        with app.test_request_context():
+            with mock.patch('requests.sessions.Session.send') as send:
+                send.return_value = mock_send_value('oauth_token=foo&oauth_verifier=baz')
+                resp = client.authorize_redirect('https://b.com/bar')
+                self.assertEqual(resp.status_code, 302)
+                url = resp.headers.get('Location')
+                self.assertIn('oauth_token=foo', url)
+                data = session['_state_dev_foo']
+
+        with app.test_request_context('/?oauth_token=foo'):
+            session['_state_dev_foo'] = data
             with mock.patch('requests.sessions.Session.send') as send:
                 send.return_value = mock_send_value('oauth_token=a&oauth_token_secret=b')
                 token = client.authorize_access_token()
@@ -175,15 +202,13 @@ class FlaskOAuthTest(TestCase):
             self.assertEqual(resp.status_code, 302)
             url = resp.headers.get('Location')
             self.assertIn('state=', url)
-            state = session['_dev_authlib_state_']
+            state = dict(url_decode(urlparse.urlparse(url).query))['state']
             self.assertIsNotNone(state)
-            # duplicate request will create the same location
-            resp2 = client.authorize_redirect('https://b.com/bar')
-            self.assertEqual(resp2.headers['Location'], url)
+            data = session[f'_state_dev_{state}']
 
-        with app.test_request_context(path='/?code=a&state={}'.format(state)):
+        with app.test_request_context(path=f'/?code=a&state={state}'):
             # session is cleared in tests
-            session['_dev_authlib_state_'] = state
+            session[f'_state_dev_{state}'] = data
 
             with mock.patch('requests.sessions.Session.send') as send:
                 send.return_value = mock_send_value(get_bearer_token())
@@ -281,23 +306,22 @@ class FlaskOAuthTest(TestCase):
             url = resp.headers.get('Location')
             self.assertIn('code_challenge=', url)
             self.assertIn('code_challenge_method=S256', url)
-            state = session['_dev_authlib_state_']
+
+            state = dict(url_decode(urlparse.urlparse(url).query))['state']
             self.assertIsNotNone(state)
-            verifier = session['_dev_authlib_code_verifier_']
+            data = session[f'_state_dev_{state}']
+
+            verifier = data['data']['code_verifier']
             self.assertIsNotNone(verifier)
 
-            resp2 = client.authorize_redirect('https://b.com/bar')
-            self.assertEqual(resp2.headers['Location'], url)
-
         def fake_send(sess, req, **kwargs):
-            self.assertIn('code_verifier={}'.format(verifier), req.body)
+            self.assertIn(f'code_verifier={verifier}', req.body)
             return mock_send_value(get_bearer_token())
 
         path = '/?code=a&state={}'.format(state)
         with app.test_request_context(path=path):
             # session is cleared in tests
-            session['_dev_authlib_state_'] = state
-            session['_dev_authlib_code_verifier_'] = verifier
+            session[f'_state_dev_{state}'] = data
 
             with mock.patch('requests.sessions.Session.send', fake_send):
                 token = client.authorize_access_token()
@@ -319,10 +343,14 @@ class FlaskOAuthTest(TestCase):
         with app.test_request_context():
             resp = client.authorize_redirect('https://b.com/bar')
             self.assertEqual(resp.status_code, 302)
-            nonce = session['_dev_authlib_nonce_']
+
+            url = resp.headers['Location']
+            state = dict(url_decode(urlparse.urlparse(url).query))['state']
+            self.assertIsNotNone(state)
+            data = session[f'_state_dev_{state}']
+            nonce = data['data']['nonce']
             self.assertIsNotNone(nonce)
-            url = resp.headers.get('Location')
-            self.assertIn('nonce={}'.format(nonce), url)
+            self.assertIn(f'nonce={nonce}', url)
 
     def test_oauth2_access_token_with_post(self):
         app = Flask(__name__)
@@ -338,7 +366,7 @@ class FlaskOAuthTest(TestCase):
         )
         payload = {'code': 'a', 'state': 'b'}
         with app.test_request_context(data=payload, method='POST'):
-            session['_dev_authlib_state_'] = 'b'
+            session['_state_dev_b'] = {'data': payload}
             with mock.patch('requests.sessions.Session.send') as send:
                 send.return_value = mock_send_value(get_bearer_token())
                 token = client.authorize_access_token()

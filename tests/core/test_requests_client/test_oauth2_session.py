@@ -1,8 +1,6 @@
-from __future__ import unicode_literals
-import mock
 import time
 from copy import deepcopy
-from unittest import TestCase
+from unittest import TestCase, mock
 from authlib.common.security import generate_token
 from authlib.common.urls import url_encode, add_params_to_uri
 from authlib.integrations.requests_client import OAuth2Session, OAuthError

@@ -43,7 +43,7 @@ class FrameworkIntegration(object):
     def set_state_data(self, session, state, data):
         key = f'_state_{self.name}_{state}'
         if self.cache:
-            self.cache.set(key, {'data': data}, self.expires_in)
+            self.cache.set(key, json.dumps({'data': data}), self.expires_in)
         else:
             now = time.time()
             session[key] = {'data': data, 'exp': now + self.expires_in}

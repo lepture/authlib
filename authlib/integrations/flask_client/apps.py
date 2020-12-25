@@ -1,4 +1,5 @@
 from flask import redirect, request, session
+from flask import _app_ctx_stack
 from ..requests_client import OAuth1Session, OAuth2Session
 from ..base_client import (
     BaseApp, OAuthError,
@@ -7,6 +8,27 @@ from ..base_client import (
 
 
 class FlaskAppMixin(object):
+    @property
+    def token(self):
+        ctx = _app_ctx_stack.top
+        attr = '_oauth_token_{}'.format(self.name)
+        token = getattr(ctx, attr, None)
+        if token:
+            return token
+        if self._fetch_token:
+            token = self._fetch_token()
+            self.token = token
+            return token
+
+    @token.setter
+    def token(self, token):
+        ctx = _app_ctx_stack.top
+        attr = '_oauth_token_{}'.format(self.name)
+        setattr(ctx, attr, token)
+
+    def _get_requested_token(self, *args, **kwargs):
+        return self.token
+
     def save_authorize_data(self, **kwargs):
         state = kwargs.pop('state', None)
         if state:
@@ -50,7 +72,9 @@ class FlaskOAuth1App(FlaskAppMixin, OAuth1Mixin, BaseApp):
 
         params.update(kwargs)
         self.framework.clear_state_data(session, state)
-        return self.fetch_access_token(**params)
+        token = self.fetch_access_token(**params)
+        self.token = token
+        return token
 
 
 class FlaskOAuth2App(FlaskAppMixin, OAuth2Mixin, OpenIDMixin, BaseApp):
@@ -80,6 +104,7 @@ class FlaskOAuth2App(FlaskAppMixin, OAuth2Mixin, OpenIDMixin, BaseApp):
         state_data = self.framework.get_state_data(session, params.get('state'))
         params = self._format_state_params(state_data, params)
         token = self.fetch_access_token(**params, **kwargs)
+        self.token = token
 
         if 'id_token' in token and 'nonce' in params:
             userinfo = self.parse_id_token(token, nonce=params['nonce'])

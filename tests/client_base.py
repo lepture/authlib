@@ -1,7 +1,6 @@
-from __future__ import unicode_literals, print_function
+from unittest import mock
 import time
 import requests
-import mock
 
 
 def mock_json_response(payload):

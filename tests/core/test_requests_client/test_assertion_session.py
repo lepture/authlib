@@ -1,6 +1,5 @@
-import mock
 import time
-from unittest import TestCase
+from unittest import TestCase, mock
 from authlib.integrations.requests_client import AssertionSession
 
 

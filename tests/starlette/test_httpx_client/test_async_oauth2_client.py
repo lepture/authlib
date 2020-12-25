@@ -1,7 +1,7 @@
 import asyncio
-import mock
 import time
 import pytest
+from unittest import mock
 from copy import deepcopy
 from authlib.common.security import generate_token
 from authlib.common.urls import url_encode
