@@ -1,5 +1,7 @@
 from unittest import mock
 from django.test import override_settings
+from authlib.jose import jwk
+from authlib.oidc.core.grants.util import generate_id_token
 from authlib.integrations.django_client import OAuth, OAuthError
 from authlib.common.urls import urlparse, url_decode
 from tests.django.base import TestCase
@@ -199,11 +201,13 @@ class DjangoOAuthTest(TestCase):
     def test_openid_authorize(self):
         request = self.factory.get('/login')
         request.session = self.factory.session
+        key = jwk.dumps('secret', 'oct', kid='f')
 
         oauth = OAuth()
         client = oauth.register(
             'dev',
             client_id='dev',
+            jwks={'keys': [key]},
             api_base_url='https://i.b/api',
             access_token_url='https://i.b/token',
             authorize_url='https://i.b/authorize',
@@ -214,6 +218,25 @@ class DjangoOAuthTest(TestCase):
         self.assertEqual(resp.status_code, 302)
         url = resp.get('Location')
         self.assertIn('nonce=', url)
+        query_data = dict(url_decode(urlparse.urlparse(url).query))
+
+        token = get_bearer_token()
+        token['id_token'] = generate_id_token(
+            token, {'sub': '123'}, key,
+            alg='HS256', iss='https://i.b',
+            aud='dev', exp=3600, nonce=query_data['nonce'],
+        )
+        state = query_data['state']
+        with mock.patch('requests.sessions.Session.send') as send:
+            send.return_value = mock_send_value(token)
+
+            request2 = self.factory.get('/authorize?state={}&code=foo'.format(state))
+            request2.session = request.session
+
+            token = client.authorize_access_token(request2)
+            self.assertEqual(token['access_token'], 'a')
+            self.assertIn('userinfo', token)
+            self.assertEqual(token['userinfo']['sub'], '123')
 
     def test_oauth2_access_token_with_post(self):
         oauth = OAuth()

@@ -1,5 +1,7 @@
 from unittest import TestCase, mock
 from flask import Flask, session
+from authlib.jose import jwk
+from authlib.oidc.core.grants.util import generate_id_token
 from authlib.integrations.flask_client import OAuth, OAuthError
 from authlib.integrations.flask_client import FlaskOAuth2App
 from authlib.common.urls import urlparse, url_decode
@@ -331,6 +333,8 @@ class FlaskOAuthTest(TestCase):
         app = Flask(__name__)
         app.secret_key = '!'
         oauth = OAuth(app)
+        key = jwk.dumps('secret', 'oct', kid='f')
+
         client = oauth.register(
             'dev',
             client_id='dev',
@@ -338,6 +342,7 @@ class FlaskOAuthTest(TestCase):
             access_token_url='https://i.b/token',
             authorize_url='https://i.b/authorize',
             client_kwargs={'scope': 'openid profile'},
+            jwks={'keys': [key]},
         )
 
         with app.test_request_context():
@@ -345,12 +350,29 @@ class FlaskOAuthTest(TestCase):
             self.assertEqual(resp.status_code, 302)
 
             url = resp.headers['Location']
-            state = dict(url_decode(urlparse.urlparse(url).query))['state']
+            query_data = dict(url_decode(urlparse.urlparse(url).query))
+
+            state = query_data['state']
             self.assertIsNotNone(state)
-            data = session[f'_state_dev_{state}']
-            nonce = data['data']['nonce']
+            session_data = session[f'_state_dev_{state}']
+            nonce = session_data['data']['nonce']
             self.assertIsNotNone(nonce)
-            self.assertIn(f'nonce={nonce}', url)
+            self.assertEqual(nonce, query_data['nonce'])
+
+        token = get_bearer_token()
+        token['id_token'] = generate_id_token(
+            token, {'sub': '123'}, key,
+            alg='HS256', iss='https://i.b',
+            aud='dev', exp=3600, nonce=query_data['nonce'],
+        )
+        path = '/?code=a&state={}'.format(state)
+        with app.test_request_context(path=path):
+            session[f'_state_dev_{state}'] = session_data
+            with mock.patch('requests.sessions.Session.send') as send:
+                send.return_value = mock_send_value(token)
+                token = client.authorize_access_token()
+                self.assertEqual(token['access_token'], 'a')
+                self.assertIn('userinfo', token)
 
     def test_oauth2_access_token_with_post(self):
         app = Flask(__name__)

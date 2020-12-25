@@ -1,4 +1,4 @@
-from authlib.jose import JsonWebToken, JsonWebKey
+from authlib.jose import jwt, JsonWebToken, JsonWebKey
 from authlib.oidc.core import UserInfo, CodeIDToken, ImplicitIDToken
 
 
@@ -56,11 +56,12 @@ class OpenIDMixin(object):
             claims_options = {'iss': {'values': [metadata['issuer']]}}
 
         alg_values = metadata.get('id_token_signing_alg_values_supported')
-        if not alg_values:
-            alg_values = ['RS256']
+        if alg_values:
+            _jwt = JsonWebToken(alg_values)
+        else:
+            _jwt = jwt
 
-        jwt = JsonWebToken(alg_values)
-        claims = jwt.decode(
+        claims = _jwt.decode(
             token['id_token'], key=load_key,
             claims_cls=claims_cls,
             claims_options=claims_options,
@@ -69,5 +70,6 @@ class OpenIDMixin(object):
         # https://github.com/lepture/authlib/issues/259
         if claims.get('nonce_supported') is False:
             claims.params['nonce'] = None
+
         claims.validate(leeway=leeway)
         return UserInfo(claims)

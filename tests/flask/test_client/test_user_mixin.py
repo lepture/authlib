@@ -1,5 +1,5 @@
 from unittest import TestCase, mock
-from flask import Flask, session
+from flask import Flask
 from authlib.jose import jwk
 from authlib.jose.errors import InvalidClaimError
 from authlib.integrations.flask_client import OAuth

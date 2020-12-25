@@ -106,7 +106,7 @@ class FlaskOAuth2App(FlaskAppMixin, OAuth2Mixin, OpenIDMixin, BaseApp):
         token = self.fetch_access_token(**params, **kwargs)
         self.token = token
 
-        if 'id_token' in token and 'nonce' in params:
-            userinfo = self.parse_id_token(token, nonce=params['nonce'])
+        if 'id_token' in token and 'nonce' in state_data:
+            userinfo = self.parse_id_token(token, nonce=state_data['nonce'])
             token['userinfo'] = userinfo
         return token
