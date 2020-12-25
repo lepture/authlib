@@ -65,6 +65,29 @@ class BaseApp(object):
         return self.request('DELETE', url, **kwargs)
 
 
+class _RequestMixin:
+    def _http_request(self, session, method, url, token, kwargs):
+        request = kwargs.pop('request', None)
+        withhold_token = kwargs.get('withhold_token')
+        if self.api_base_url and not url.startswith(('https://', 'http://')):
+            url = urlparse.urljoin(self.api_base_url, url)
+
+        if withhold_token:
+            return session.request(method, url, **kwargs)
+
+        if token is None and self._fetch_token:
+            if request:
+                token = self._fetch_token(request)
+            else:
+                token = self._fetch_token()
+
+        if token is None:
+            raise MissingTokenError()
+
+        session.token = token
+        return session.request(method, url, **kwargs)
+
+
 class OAuth1Base(object):
     client_cls = None
 
@@ -98,10 +121,10 @@ class OAuth1Base(object):
         return session
 
 
-class OAuth1Mixin(OAuth1Base):
+class OAuth1Mixin(_RequestMixin, OAuth1Base):
     def request(self, method, url, token=None, **kwargs):
         with self._get_oauth_client() as session:
-            return _http_request(self, session, method, url, token, kwargs)
+            return self._http_request(session, method, url, token, kwargs)
 
     def create_authorization_url(self, redirect_uri=None, **kwargs):
         """Generate the authorization url and state for HTTP redirect.
@@ -180,6 +203,9 @@ class OAuth2Base(object):
         self._server_metadata_url = server_metadata_url
         self.server_metadata = kwargs
 
+    def _on_update_token(self, token, refresh_token=None, access_token=None):
+        raise NotImplementedError()
+
     def _get_oauth_client(self, **metadata):
         client_kwargs = {}
         client_kwargs.update(self.client_kwargs)
@@ -206,7 +232,8 @@ class OAuth2Base(object):
         session.headers['User-Agent'] = self._user_agent
         return session
 
-    def _format_state_params(self, state_data, params):
+    @staticmethod
+    def _format_state_params(state_data, params):
         if state_data is None:
             raise MismatchingStateError()
 
@@ -246,7 +273,7 @@ class OAuth2Base(object):
         return rv
 
 
-class OAuth2Mixin(OAuth2Base):
+class OAuth2Mixin(_RequestMixin, OAuth2Base):
     def _on_update_token(self, token, refresh_token=None, access_token=None):
         if callable(self._update_token):
             self._update_token(
@@ -263,7 +290,7 @@ class OAuth2Mixin(OAuth2Base):
     def request(self, method, url, token=None, **kwargs):
         metadata = self.load_server_metadata()
         with self._get_oauth_client(**metadata) as session:
-            return _http_request(self, session, method, url, token, kwargs)
+            return self._http_request(session, method, url, token, kwargs)
 
     def load_server_metadata(self):
         if self._server_metadata_url and '_loaded_at' not in self.server_metadata:
@@ -315,22 +342,3 @@ class OAuth2Mixin(OAuth2Base):
             params.update(kwargs)
             token = client.fetch_token(token_endpoint, **params)
             return token
-
-
-def _http_request(ctx, session, method, url, token, kwargs):
-    request = kwargs.pop('request', None)
-    withhold_token = kwargs.get('withhold_token')
-    if ctx.api_base_url and not url.startswith(('https://', 'http://')):
-        url = urlparse.urljoin(ctx.api_base_url, url)
-
-    if withhold_token:
-        return session.request(method, url, **kwargs)
-
-    if token is None and ctx._fetch_token and request:
-        token = ctx._fetch_token(request)
-
-    if token is None:
-        raise MissingTokenError()
-
-    session.token = token
-    return session.request(method, url, **kwargs)

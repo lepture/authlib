@@ -1,6 +1,9 @@
 from flask import redirect, request, session
-from ..base_client import OAuthError, MismatchingStateError
-from ..requests_client.apps import OAuth1App, OAuth2App
+from ..requests_client import OAuth1Session, OAuth2Session
+from ..base_client import (
+    BaseApp, OAuthError,
+    OAuth1Mixin, OAuth2Mixin, OpenIDMixin,
+)
 
 
 class FlaskAppMixin(object):
@@ -23,7 +26,9 @@ class FlaskAppMixin(object):
         return redirect(rv['url'])
 
 
-class FlaskOAuth1App(FlaskAppMixin, OAuth1App):
+class FlaskOAuth1App(FlaskAppMixin, OAuth1Mixin, BaseApp):
+    client_cls = OAuth1Session
+
     def authorize_access_token(self, **kwargs):
         """Fetch access token in one step.
 
@@ -48,7 +53,9 @@ class FlaskOAuth1App(FlaskAppMixin, OAuth1App):
         return self.fetch_access_token(**params)
 
 
-class FlaskOAuth2App(FlaskAppMixin, OAuth2App):
+class FlaskOAuth2App(FlaskAppMixin, OAuth2Mixin, OpenIDMixin, BaseApp):
+    client_cls = OAuth2Session
+
     def authorize_access_token(self, **kwargs):
         """Fetch access token in one step.
 
@@ -70,21 +77,9 @@ class FlaskOAuth2App(FlaskAppMixin, OAuth2App):
                 'state': request.form.get('state'),
             }
 
-        data = self.framework.get_state_data(session, params.get('state'))
-
-        if data is None:
-            raise MismatchingStateError()
-
-        code_verifier = data.get('code_verifier')
-        if code_verifier:
-            params['code_verifier'] = code_verifier
-
-        redirect_uri = data.get('redirect_uri')
-        if redirect_uri:
-            params['redirect_uri'] = redirect_uri
-
-        params.update(kwargs)
-        token = self.fetch_access_token(**params)
+        state_data = self.framework.get_state_data(session, params.get('state'))
+        params = self._format_state_params(state_data, params)
+        token = self.fetch_access_token(**params, **kwargs)
 
         if 'id_token' in token and 'nonce' in params:
             userinfo = self.parse_id_token(token, nonce=params['nonce'])
