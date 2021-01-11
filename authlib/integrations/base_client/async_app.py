@@ -41,16 +41,14 @@ class AsyncOAuth1Mixin(OAuth1Base):
             state = request_token['oauth_token']
         return {'url': url, 'request_token': request_token, 'state': state}
 
-    async def fetch_access_token(self, redirect_uri=None, request_token=None, **kwargs):
+    async def fetch_access_token(self, request_token=None, **kwargs):
         """Fetch access token in one step.
-        :param redirect_uri: Callback or Redirect URI that is used in
-                             previous :meth:`authorize_redirect`.
+
         :param request_token: A previous request token for OAuth 1.
         :param kwargs: Extra parameters to fetch access token.
         :return: A token dict.
         """
         async with self._get_oauth_client() as client:
-            client.redirect_uri = redirect_uri
             if request_token is None:
                 raise MissingRequestTokenError()
             # merge request token with verifier
@@ -60,7 +58,6 @@ class AsyncOAuth1Mixin(OAuth1Base):
             client.token = token
             params = self.access_token_params or {}
             token = await client.fetch_access_token(self.access_token_url, **params)
-            client.redirect_uri = None
         return token
 
 

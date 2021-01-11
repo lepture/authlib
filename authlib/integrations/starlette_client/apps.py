@@ -41,10 +41,6 @@ class StarletteOAuth1App(StarletteAppMixin, AsyncOAuth1Mixin, BaseApp):
             raise OAuthError(description='Missing "request_token" in temporary data')
 
         params['request_token'] = data['request_token']
-        redirect_uri = data.get('redirect_uri')
-        if redirect_uri:
-            params['redirect_uri'] = redirect_uri
-
         params.update(kwargs)
         await self.framework.clear_state_data(request.session, state)
         return await self.fetch_access_token(**params)

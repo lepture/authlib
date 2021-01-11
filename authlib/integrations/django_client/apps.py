@@ -46,10 +46,6 @@ class DjangoOAuth1App(DjangoAppMixin, OAuth1Mixin, BaseApp):
             raise OAuthError(description='Missing "request_token" in temporary data')
 
         params['request_token'] = data['request_token']
-        redirect_uri = data.get('redirect_uri')
-        if redirect_uri:
-            params['redirect_uri'] = redirect_uri
-
         params.update(kwargs)
         self.framework.clear_state_data(request.session, state)
         return self.fetch_access_token(**params)

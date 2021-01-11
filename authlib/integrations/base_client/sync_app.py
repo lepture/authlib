@@ -149,17 +149,14 @@ class OAuth1Mixin(_RequestMixin, OAuth1Base):
             state = request_token['oauth_token']
         return {'url': url, 'request_token': request_token, 'state': state}
 
-    def fetch_access_token(self, redirect_uri=None, request_token=None, **kwargs):
+    def fetch_access_token(self, request_token=None, **kwargs):
         """Fetch access token in one step.
 
-        :param redirect_uri: Callback or Redirect URI that is used in
-                             previous :meth:`authorize_redirect`.
         :param request_token: A previous request token for OAuth 1.
         :param kwargs: Extra parameters to fetch access token.
         :return: A token dict.
         """
         with self._get_oauth_client() as client:
-            client.redirect_uri = redirect_uri
             if request_token is None:
                 raise MissingRequestTokenError()
             # merge request token with verifier
@@ -169,8 +166,6 @@ class OAuth1Mixin(_RequestMixin, OAuth1Base):
             client.token = token
             params = self.access_token_params or {}
             token = client.fetch_access_token(self.access_token_url, **params)
-            # reset redirect_uri
-            client.redirect_uri = None
         return token
 
 
