@@ -49,7 +49,7 @@ class AuthorizationServer(object):
         func = self._token_generators.get(grant_type)
         if not func:
             # default generator for all grant types
-            func = self._token_generators.get('none')
+            func = self._token_generators.get('default')
         if not func:
             raise RuntimeError('No configured token generator')
 

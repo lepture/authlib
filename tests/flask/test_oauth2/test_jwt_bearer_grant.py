@@ -1,6 +1,6 @@
 from flask import json
 from authlib.oauth2.rfc7523 import JWTBearerGrant as _JWTBearerGrant
-from authlib.oauth2.rfc7523 import JWTBearerTokenGenerator, JWTBearerTokenValidator
+from authlib.oauth2.rfc7523 import JWTBearerTokenGenerator
 from tests.util import read_file_path
 from .models import db, User, Client
 from .oauth2_server import TestCase
@@ -8,16 +8,18 @@ from .oauth2_server import create_authorization_server
 
 
 class JWTBearerGrant(_JWTBearerGrant):
-    def authenticate_user(self, client, claims):
-        return None
+    def resolve_issuer_client(self, issuer):
+        return Client.query.filter_by(client_id=issuer).first()
 
-    def authenticate_client(self, claims):
-        iss = claims['iss']
-        return Client.query.filter_by(client_id=iss).first()
-
-    def resolve_public_key(self, headers, payload):
+    def resolve_client_key(self, client, headers, payload):
         keys = {'1': 'foo', '2': 'bar'}
         return keys[headers['kid']]
+
+    def authenticate_user(self, subject):
+        return None
+
+    def has_granted_permission(self, client, user):
+        return True
 
 
 class JWTBearerGrantTest(TestCase):
@@ -60,7 +62,7 @@ class JWTBearerGrantTest(TestCase):
         self.prepare_data()
         assertion = JWTBearerGrant.sign(
             'foo', issuer='jwt-client', audience='https://i.b/token',
-            header={'alg': 'HS256', 'kid': '1'}
+            subject='none', header={'alg': 'HS256', 'kid': '1'}
         )
         rv = self.client.post('/oauth/token', data={
             'grant_type': JWTBearerGrant.GRANT_TYPE,
@@ -73,7 +75,7 @@ class JWTBearerGrantTest(TestCase):
         self.prepare_data()
         assertion = JWTBearerGrant.sign(
             'foo', issuer='jwt-client', audience='https://i.b/token',
-            subject='self', header={'alg': 'HS256', 'kid': '1'}
+            subject=None, header={'alg': 'HS256', 'kid': '1'}
         )
         rv = self.client.post('/oauth/token', data={
             'grant_type': JWTBearerGrant.GRANT_TYPE,
@@ -86,7 +88,7 @@ class JWTBearerGrantTest(TestCase):
         self.prepare_data('password')
         assertion = JWTBearerGrant.sign(
             'bar', issuer='jwt-client', audience='https://i.b/token',
-            subject='self', header={'alg': 'HS256', 'kid': '2'}
+            subject=None, header={'alg': 'HS256', 'kid': '2'}
         )
         rv = self.client.post('/oauth/token', data={
             'grant_type': JWTBearerGrant.GRANT_TYPE,
@@ -101,7 +103,7 @@ class JWTBearerGrantTest(TestCase):
         self.prepare_data()
         assertion = JWTBearerGrant.sign(
             'foo', issuer='jwt-client', audience='https://i.b/token',
-            subject='self', header={'alg': 'HS256', 'kid': '1'}
+            subject=None, header={'alg': 'HS256', 'kid': '1'}
         )
         rv = self.client.post('/oauth/token', data={
             'grant_type': JWTBearerGrant.GRANT_TYPE,
@@ -116,7 +118,7 @@ class JWTBearerGrantTest(TestCase):
         self.prepare_data(token_generator=JWTBearerTokenGenerator(private_key))
         assertion = JWTBearerGrant.sign(
             'foo', issuer='jwt-client', audience='https://i.b/token',
-            subject='self', header={'alg': 'HS256', 'kid': '1'}
+            subject=None, header={'alg': 'HS256', 'kid': '1'}
         )
         rv = self.client.post('/oauth/token', data={
             'grant_type': JWTBearerGrant.GRANT_TYPE,

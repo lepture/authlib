@@ -54,7 +54,7 @@ class AuthorizationServer(_AuthorizationServer):
         if save_token is not None:
             self._save_token = save_token
 
-        self.register_token_generator('none', self.create_bearer_token_generator(app.config))
+        self.register_token_generator('default', self.create_bearer_token_generator(app.config))
         self.scopes_supported = app.config.get('OAUTH2_SCOPES_SUPPORTED')
         self._error_uris = app.config.get('OAUTH2_ERROR_URIS')
 

@@ -30,7 +30,7 @@ class AuthorizationServer(_AuthorizationServer):
         scopes_supported = self.config.get('scopes_supported')
         super(AuthorizationServer, self).__init__(scopes_supported=scopes_supported)
         # add default token generator
-        self.register_token_generator('none', self.create_bearer_token_generator())
+        self.register_token_generator('default', self.create_bearer_token_generator())
 
     def query_client(self, client_id):
         """Default method for ``AuthorizationServer.query_client``. Developers MAY
