@@ -56,7 +56,7 @@ class IDToken(JWTClaims):
         if self.params.get('max_age') and not auth_time:
             raise MissingClaimError('auth_time')
 
-        if auth_time and not isinstance(auth_time, int):
+        if auth_time and not isinstance(auth_time, (int, float)):
             raise InvalidClaimError('auth_time')
 
     def validate_nonce(self):
