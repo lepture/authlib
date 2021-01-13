@@ -1,6 +1,5 @@
 import logging
-from authlib.jose import jwt
-from authlib.jose.errors import JoseError
+from authlib.jose import jwt, JoseError
 from ..rfc6749 import BaseGrant, TokenEndpointMixin
 from ..rfc6749 import (
     UnauthorizedClientError,

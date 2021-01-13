@@ -216,8 +216,7 @@ class AuthorizationServer(object):
         :return: grant instance
         """
         for (grant_cls, extensions) in self._token_grants:
-            if grant_cls.check_token_endpoint(request) and \
-                    request.method in grant_cls.TOKEN_ENDPOINT_HTTP_METHODS:
+            if grant_cls.check_token_endpoint(request):
                 return _create_grant(grant_cls, extensions, request, self)
         raise UnsupportedGrantTypeError(request.grant_type)
 

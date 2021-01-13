@@ -38,7 +38,13 @@ class JWTBearerTokenGenerator(object):
         return scope
 
     @staticmethod
-    def get_user_id(user):
+    def get_sub_value(user):
+        """Return user's ID as ``sub`` value in token payload. For instance::
+
+            @staticmethod
+            def get_sub_value(user):
+                return str(user.id)
+        """
         return user.get_user_id()
 
     def get_token_data(self, grant_type, client, user=None, scope=None, expires_in=None):
@@ -56,7 +62,7 @@ class JWTBearerTokenGenerator(object):
         if self.issuer:
             data['iss'] = self.issuer
         if user:
-            data['sub'] = self.get_user_id(user)
+            data['sub'] = self.get_sub_value(user)
         return data
 
     def generate(self, grant_type, client, user=None, scope=None, expires_in=None):

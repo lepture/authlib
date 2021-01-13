@@ -1,7 +1,4 @@
-from authlib.common.encoding import (
-    json_dumps,
-    to_bytes,
-)
+from authlib.common.encoding import to_bytes
 from cryptography.hazmat.primitives.serialization import (
     Encoding, PrivateFormat, PublicFormat,
     BestAvailableEncryption, NoEncryption,

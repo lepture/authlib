@@ -21,13 +21,13 @@ class AuthorizationServer(_AuthorizationServer):
 
         def save_token(token, request):
             if request.user:
-                user_id = request.user.get_user_id()
+                user_id = request.user.id
             else:
                 user_id = None
             client = request.client
             tok = Token(
                 client_id=client.client_id,
-                user_id=user.get_user_id(),
+                user_id=user.id,
                 **token
             )
             db.session.add(tok)

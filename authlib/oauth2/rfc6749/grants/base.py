@@ -101,7 +101,8 @@ class TokenEndpointMixin(object):
 
     @classmethod
     def check_token_endpoint(cls, request):
-        return request.grant_type == cls.GRANT_TYPE
+        return request.grant_type == cls.GRANT_TYPE and \
+               request.method in cls.TOKEN_ENDPOINT_HTTP_METHODS
 
     def validate_token_request(self):
         raise NotImplementedError()
