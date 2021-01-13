@@ -9,6 +9,8 @@ Here you can see the full list of changes between each Authlib release.
 Version 1.0
 -----------
 
+**Plan to release in Mar, 2021.**
+
 **Breaking Changes**: find how to solve the deprecate issues via https://git.io/JkY4f
 
 
@@ -104,74 +106,13 @@ for clients.
 **Breaking Change**: drop sync OAuth clients of HTTPX.
 
 
-Version 0.13
-------------
-
-**Released on Nov 11, 2019. Go Async**
-
-This is the release that makes Authlib one more step close to v1.0. We
-did a huge refactor on our integrations. Authlib believes in monolithic
-design, it enables us to design the API to integrate with every framework
-in the best way. In this release, Authlib has re-organized the folder
-structure, moving every integration into the ``integrations`` folder. It
-makes Authlib to add more integrations easily in the future.
-
-**RFC implementations** and updates in this release:
-
-- RFC7591: OAuth 2.0 Dynamic Client Registration Protocol
-- RFC8628: OAuth 2.0 Device Authorization Grant
-
-**New integrations** and changes in this release:
-
-- **HTTPX** OAuth 1.0 and OAuth 2.0 clients in both sync and async way
-- **Starlette** OAuth 1.0 and OAuth 2.0 client registry
-- The experimental ``authlib.client.aiohttp`` has been removed
-
-**Bug fixes** and enhancements in this release:
-
-- Add custom client authentication methods for framework integrations.
-- Refresh token automatically for client_credentials grant type.
-- Enhancements on JOSE, specifying ``alg`` values easily for JWS and JWE.
-- Add PKCE into requests OAuth2Session and HTTPX OAuth2Client.
-
-**Deprecate Changes**: find how to solve the deprecate issues via https://git.io/Jeclj
-
-Version 0.12
-------------
-
-**Released on Sep 3, 2019.**
-
-**Breaking Change**: Authlib Grant system has been redesigned. If you
-are creating OpenID Connect providers, please read the new documentation
-for OpenID Connect.
-
-**Important Update**: Django OAuth 2.0 server integration is ready now.
-You can create OAuth 2.0 provider and OpenID Connect 1.0 with Django
-framework.
-
-RFC implementations and updates in this release:
-
-- RFC6749: Fixed scope validation, omit the invalid scope
-- RFC7521: Added a common ``AssertionClient`` for the assertion framework
-- RFC7662: Added ``IntrospectionToken`` for introspection token endpoint
-- OpenID Connect Discover: Added discovery model based on RFC8414
-
-Refactor and bug fixes in this release:
-
-- **Breaking Change**: add ``RefreshTokenGrant.revoke_old_credential`` method
-- Rewrite lots of code for ``authlib.client``, no breaking changes
-- Refactor ``OAuth2Request``, use explicit query and form
-- Change ``requests`` to optional dependency
-- Add ``AsyncAssertionClient`` for aiohttp
-
-**Deprecate Changes**: find how to solve the deprecate issues via https://git.io/fjPsV
-
-
 Old Versions
 ------------
 
 Find old changelog at https://github.com/lepture/authlib/releases
 
+- Version 0.13.0: Released on Nov 11, 2019
+- Version 0.12.0: Released on Sep 3, 2019
 - Version 0.11.0: Released on Apr 6, 2019
 - Version 0.10.0: Released on Oct 12, 2018
 - Version 0.9.0: Released on Aug 12, 2018
