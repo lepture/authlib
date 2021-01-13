@@ -1,7 +1,10 @@
 import time
+import logging
 from authlib.jose import jwt, JoseError, JWTClaims
 from ..rfc6749 import TokenMixin
 from ..rfc6750 import BearerTokenValidator
+
+logger = logging.getLogger(__name__)
 
 
 class JWTBearerToken(TokenMixin, JWTClaims):
@@ -29,7 +32,6 @@ class JWTBearerTokenValidator(BearerTokenValidator):
         super(JWTBearerTokenValidator, self).__init__(realm, **extra_attributes)
         self.public_key = public_key
         claims_options = {
-            'sub': {'essential': True},
             'exp': {'essential': True},
             'client_id': {'essential': True},
             'grant_type': {'essential': True},
@@ -47,5 +49,6 @@ class JWTBearerTokenValidator(BearerTokenValidator):
             )
             claims.validate()
             return claims
-        except JoseError:
+        except JoseError as error:
+            logger.debug('Authenticate token failed. %r', error)
             return None

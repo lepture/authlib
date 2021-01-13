@@ -3,11 +3,9 @@
 
 
 from setuptools import setup, find_packages
-from authlib.consts import version, homepage
 
 setup(
     name='Authlib',
-    version=version,
-    url=homepage,
+    url='https://authlib.org/',
     packages=find_packages(include=('authlib', 'authlib.*')),
 )
