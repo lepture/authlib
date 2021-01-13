@@ -47,10 +47,8 @@ class JWTBearerTokenGenerator(object):
         """
         return user.get_user_id()
 
-    def get_token_data(self, grant_type, client, user=None, scope=None, expires_in=None):
+    def get_token_data(self, grant_type, client, expires_in, user=None, scope=None):
         scope = self.get_allowed_scope(client, scope)
-        if not expires_in:
-            expires_in = self.DEFAULT_EXPIRES_IN
         issued_at = int(time.time())
         data = {
             'scope': scope,
@@ -75,7 +73,10 @@ class JWTBearerTokenGenerator(object):
         :param scope: current requested scope.
         :return: Token dict
         """
-        token_data = self.get_token_data(grant_type, client, user, scope, expires_in)
+        if not expires_in:
+            expires_in = self.DEFAULT_EXPIRES_IN
+
+        token_data = self.get_token_data(grant_type, client, expires_in, user, scope)
         access_token = jwt.encode({'alg': self.alg}, token_data, key=self.secret_key, check=False)
         token = {
             'token_type': 'Bearer',
