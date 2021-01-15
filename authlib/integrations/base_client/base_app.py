@@ -143,10 +143,9 @@ class BaseApp(object):
             params['request_token'] = request_token
         else:
             params = self._retrieve_oauth2_access_token_params(request, params)
-
-        redirect_uri = self.framework.get_session_data(request, 'redirect_uri')
-        if redirect_uri:
-            params['redirect_uri'] = redirect_uri
+            redirect_uri = self.framework.get_session_data(request, 'redirect_uri')
+            if redirect_uri:
+                params['redirect_uri'] = redirect_uri
 
         log.debug('Retrieve temporary data: {!r}'.format(params))
         return params
