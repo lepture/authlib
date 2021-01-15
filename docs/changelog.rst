@@ -6,6 +6,13 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 0.15.3
+--------------
+
+**Released on Jan 15, 2021.**
+
+- Fixed fetch OAuth 1.0 token bug, via :gh:`issue#308`.
+
 Version 0.15.2
 --------------
 
