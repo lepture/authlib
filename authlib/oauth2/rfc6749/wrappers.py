@@ -68,7 +68,11 @@ class OAuth2Request(object):
 
     @property
     def response_type(self):
-        return self.data.get('response_type')
+        rt = self.data.get('response_type')
+        if rt and ' ' in rt:
+            # sort multiple response types
+            return ' '.join(sorted(rt.split()))
+        return rt
 
     @property
     def grant_type(self):

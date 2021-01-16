@@ -14,13 +14,7 @@ class OpenIDHybridGrant(OpenIDImplicitGrant):
     #: Generated "code" length
     AUTHORIZATION_CODE_LENGTH = 48
 
-    RESPONSE_TYPES = {
-        'code id_token', 'id_token code',
-        'code token', 'token code',
-        'code id_token token', 'code token id_token',
-        'id_token code token', 'id_token token code',
-        'token code id_token', 'token id_token code',
-    }
+    RESPONSE_TYPES = {'code id_token', 'code token', 'code id_token token'}
     GRANT_TYPE = 'code'
     DEFAULT_RESPONSE_MODE = 'fragment'
 

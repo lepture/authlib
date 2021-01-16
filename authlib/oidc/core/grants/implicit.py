@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 
 
 class OpenIDImplicitGrant(ImplicitGrant):
-    RESPONSE_TYPES = {'id_token token', 'token id_token', 'id_token'}
+    RESPONSE_TYPES = {'id_token token', 'id_token'}
     DEFAULT_RESPONSE_MODE = 'fragment'
 
     def exists_nonce(self, nonce, request):
