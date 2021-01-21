@@ -8,7 +8,7 @@ echo "$BRANCH_NAME"
 make build
 
 NAME=authlib
-VERSION=$(awk '$1 == "__version__" {print $NF}' ./authlib/consts.py | sed "s/'//g")
+VERSION=$(awk '$1 == "version" {print $NF}' ./authlib/consts.py | sed "s/'//g")
 OS=none
 CPU_ARCH=any
 
