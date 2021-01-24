@@ -73,8 +73,9 @@ class BearerTokenGenerator(object):
         token = {
             'token_type': 'Bearer',
             'access_token': access_token,
-            'expires_in': expires_in
         }
+        if expires_in:
+            token['expires_in'] = expires_in
         if include_refresh_token and self.refresh_token_generator:
             token['refresh_token'] = self.refresh_token_generator(
                 client=client, grant_type=grant_type, user=user, scope=scope)
