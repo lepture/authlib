@@ -33,7 +33,7 @@ class AsyncAssertionClient(_AssertionClient, AsyncClient):
             token_placement=token_placement, scope=scope, **kwargs
         )
 
-    async def request(self, method, url, withhold_token=False, auth=None, **kwargs):
+    async def request(self, method, url, withhold_token=False, auth=UNSET, **kwargs):
         """Send request with auto refresh token feature."""
         if not withhold_token and auth is UNSET:
             if not self.token or self.token.is_expired():
@@ -78,7 +78,7 @@ class AssertionClient(_AssertionClient, Client):
             token_placement=token_placement, scope=scope, **kwargs
         )
 
-    def request(self, method, url, withhold_token=False, auth=None, **kwargs):
+    def request(self, method, url, withhold_token=False, auth=UNSET, **kwargs):
         """Send request with auto refresh token feature."""
         if not withhold_token and auth is UNSET:
             if not self.token or self.token.is_expired():
