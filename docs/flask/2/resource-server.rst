@@ -7,7 +7,7 @@ Protect users resources, so that only the authorized clients with the
 authorized access token can access the given scope resources.
 
 A resource server can be a different server other than the authorization
-server. Here is the way to protect your users' resources::
+server. Authlib offers a **decorator** to protect your API endpoints::
 
     from flask import jsonify
     from authlib.integrations.flask_oauth2 import ResourceProtector, current_token
@@ -17,26 +17,21 @@ server. Here is the way to protect your users' resources::
         def authenticate_token(self, token_string):
             return Token.query.filter_by(access_token=token_string).first()
 
-        def request_invalid(self, request):
-            return False
-
-        def token_revoked(self, token):
-            return token.revoked
-
     require_oauth = ResourceProtector()
 
     # only bearer token is supported currently
     require_oauth.register_token_validator(MyBearerTokenValidator())
 
-    # you can also create BearerTokenValidator with shortcut
-    from authlib.integrations.sqla_oauth2 import create_bearer_token_validator
+When resource server has no access to ``Token`` model (database), and there is
+an introspection token endpoint in authorization server, you can
+:ref:`require_oauth_introspection`_.
 
-    BearerTokenValidator = create_bearer_token_validator(db.session, Token)
-    require_oauth.register_token_validator(BearerTokenValidator())
+Here is the way to protect your users' resources::
 
     @app.route('/user')
     @require_oauth('profile')
     def user_profile():
+        # if Token model has `.user` foreign key
         user = current_token.user
         return jsonify(user)
 
@@ -140,4 +135,3 @@ and ``flask_restful.Resource``::
 
     class UserAPI(Resource):
         method_decorators = [require_oauth('profile')]
-

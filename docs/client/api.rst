@@ -94,16 +94,6 @@ Flask Registry and RemoteApp
         register,
         create_client
 
-.. autoclass:: FlaskRemoteApp
-    :members:
-        authorize_redirect,
-        authorize_access_token,
-        save_authorize_data,
-        get,
-        post,
-        patch,
-        put,
-        delete
 
 Django Registry and RemoteApp
 -----------------------------
@@ -115,16 +105,6 @@ Django Registry and RemoteApp
         register,
         create_client
 
-.. autoclass:: DjangoRemoteApp
-    :members:
-        authorize_redirect,
-        authorize_access_token,
-        save_authorize_data,
-        get,
-        post,
-        patch,
-        put,
-        delete
 
 Starlette Registry and RemoteApp
 --------------------------------
@@ -135,14 +115,3 @@ Starlette Registry and RemoteApp
     :members:
         register,
         create_client
-
-.. autoclass:: StarletteRemoteApp
-    :members:
-        authorize_redirect,
-        authorize_access_token,
-        save_authorize_data,
-        get,
-        post,
-        patch,
-        put,
-        delete

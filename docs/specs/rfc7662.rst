@@ -20,6 +20,8 @@ a token.
 Register Introspection Endpoint
 -------------------------------
 
+.. versionchanged:: v1.0
+
 Authlib is designed to be very extendable, with the method of
 ``.register_endpoint`` on ``AuthorizationServer``, it is easy to add the
 introspection endpoint to the authorization server. It works on both
@@ -29,7 +31,7 @@ we need to implement the missing methods::
     from authlib.oauth2.rfc7662 import IntrospectionEndpoint
 
     class MyIntrospectionEndpoint(IntrospectionEndpoint):
-        def query_token(self, token, token_type_hint, client):
+        def query_token(self, token, token_type_hint):
             if token_type_hint == 'access_token':
                 tok = Token.query.filter_by(access_token=token).first()
             elif token_type_hint == 'refresh_token':
@@ -39,11 +41,7 @@ we need to implement the missing methods::
                 tok = Token.query.filter_by(access_token=token).first()
                 if not tok:
                     tok = Token.query.filter_by(refresh_token=token).first()
-            if tok:
-                if tok.client_id == client.client_id:
-                    return tok
-                if has_introspect_permission(client):
-                    return tok
+            return tok
 
         def introspect_token(self, token):
             return {
@@ -59,6 +57,10 @@ we need to implement the missing methods::
                 'iat': token.issued_at,
             }
 
+        def check_permission(self, token, client, request):
+            # for example, we only allow internal client to access introspection endpoint
+            return client.client_type == 'internal'
+
     # register it to authorization server
     server.register_endpoint(MyIntrospectionEndpoint)
 
@@ -69,6 +71,36 @@ After the registration, we can create a response with::
         return server.create_endpoint_response(MyIntrospectionEndpoint.ENDPOINT_NAME)
 
 
+.. _require_oauth_introspection:
+
+Use Introspection in Resource Server
+------------------------------------
+
+.. versionadded:: v1.0
+
+When resource server has no access to token database, it can use introspection
+endpoint to validate the given token. Here is how::
+
+    import requests
+    from authlib.oauth2.rfc7662 import IntrospectTokenValidator
+    from your_project import secrets
+
+    class MyIntrospectTokenValidator(IntrospectTokenValidator):
+        def introspect_token(self, token_string):
+            url = 'https://example.com/oauth/introspect'
+            data = {'token': token_string, 'token_type_hint': 'access_token'}
+            auth = (secrets.internal_client_id, secrets.internal_client_secret)
+            resp = requests.post(url, data=data, auth=auth)
+            return resp.json()
+
+We can then register this token validator in to resource protector::
+
+    require_oauth = ResourceProtector()
+    require_oauth.register_token_validator(MyIntrospectTokenValidator())
+
+Please note, when using ``IntrospectTokenValidator``, the ``current_token`` will be
+a dict.
+
 API Reference
 -------------
 
@@ -76,3 +108,6 @@ API Reference
     :member-order: bysource
     :members:
     :inherited-members:
+
+.. autoclass:: IntrospectTokenValidator
+    :members:

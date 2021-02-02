@@ -6,7 +6,7 @@
 
     .. _`Section 7`: https://tools.ietf.org/html/rfc6749#section-7
 """
-from ..rfc6749 import scope_to_list
+from .util import scope_to_list
 from .errors import MissingAuthorizationError, UnsupportedTokenTypeError
 
 
