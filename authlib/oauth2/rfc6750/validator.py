@@ -5,7 +5,6 @@
     Validate Bearer Token for in request, scope and token.
 """
 
-from ..rfc6749 import scope_to_list
 from ..rfc6749 import TokenValidator
 from .errors import (
     InvalidTokenError,
@@ -36,20 +35,5 @@ class BearerTokenValidator(TokenValidator):
             raise InvalidTokenError(realm=self.realm, extra_attributes=self.extra_attributes)
         if token.is_revoked():
             raise InvalidTokenError(realm=self.realm, extra_attributes=self.extra_attributes)
-        if self.scope_insufficient(token, scopes):
+        if self.scope_insufficient(token.get_scope(), scopes):
             raise InsufficientScopeError()
-
-    def scope_insufficient(self, token, scopes):
-        if not scopes:
-            return False
-
-        token_scopes = scope_to_list(token.get_scope())
-        if not token_scopes:
-            return True
-
-        token_scopes = set(token_scopes)
-        for scope in scopes:
-            resource_scopes = set(scope_to_list(scope))
-            if token_scopes.issuperset(resource_scopes):
-                return False
-        return True

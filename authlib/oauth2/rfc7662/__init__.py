@@ -11,5 +11,6 @@
 
 from .introspection import IntrospectionEndpoint
 from .models import IntrospectionToken
+from .token_validator import IntrospectTokenValidator
 
-__all__ = ['IntrospectionEndpoint', 'IntrospectionToken']
+__all__ = ['IntrospectionEndpoint', 'IntrospectionToken', 'IntrospectTokenValidator']

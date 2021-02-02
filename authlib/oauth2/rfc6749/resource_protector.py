@@ -6,7 +6,7 @@
 
     .. _`Section 7`: https://tools.ietf.org/html/rfc6749#section-7
 """
-
+from ..rfc6749 import scope_to_list
 from .errors import MissingAuthorizationError, UnsupportedTokenTypeError
 
 
@@ -19,6 +19,23 @@ class TokenValidator(object):
     def __init__(self, realm=None, **extra_attributes):
         self.realm = realm
         self.extra_attributes = extra_attributes
+
+    @staticmethod
+    def scope_insufficient(token_scopes, required_scopes):
+        if not required_scopes:
+            return False
+
+        token_scopes = scope_to_list(token_scopes)
+        if not token_scopes:
+            return True
+
+        token_scopes = set(token_scopes)
+        for scope in required_scopes:
+            resource_scopes = set(scope_to_list(scope))
+            if token_scopes.issuperset(resource_scopes):
+                return False
+
+        return True
 
     def authenticate_token(self, token_string):
         """A method to query token from database with the given token string.
