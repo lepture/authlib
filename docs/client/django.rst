@@ -125,6 +125,22 @@ it is also possible to use signal to listen for token updating::
         item.save()
 
 
+Manually Refreshing Expired Token
+----------------------------
+When not actively making requests using the Authlib client. You may
+need to refresh a users access token. This can be done by by accessing 
+your client,  manually exchanging the refresh token, and then updating
+the stored token::
+
+    new_token = oauth.google.fetch_access_token(
+        redirect_uri=redirect_uri,
+        refresh_token=refresh_token,
+        grant_type="refresh_token",
+    )
+
+    update_token(name, new_token, refresh_token=refresh_token)
+
+
 Django OpenID Connect Client
 ----------------------------
 
