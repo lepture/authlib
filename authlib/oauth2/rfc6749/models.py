@@ -69,17 +69,6 @@ class ClientMixin(object):
         """
         raise NotImplementedError()
 
-    def has_client_secret(self):
-        """A method returns that if the client has ``client_secret`` value.
-        If the value is in ``client_secret`` column::
-
-            def has_client_secret(self):
-                return bool(self.client_secret)
-
-        :return: bool
-        """
-        raise NotImplementedError()
-
     def check_client_secret(self, client_secret):
         """Check client_secret matching with the client. For instance, in
         the client table, the column is called ``client_secret``::
