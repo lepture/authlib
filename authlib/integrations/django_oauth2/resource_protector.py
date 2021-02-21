@@ -24,6 +24,7 @@ class ResourceProtector(_ResourceProtector):
         """
         url = request.get_raw_uri()
         req = HttpRequest(request.method, url, request.body, request.headers)
+        req.req = request
         if isinstance(scopes, str):
             scopes = [scopes]
         token = self.validate_request(scopes, req)

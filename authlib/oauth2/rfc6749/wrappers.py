@@ -98,3 +98,5 @@ class HttpRequest(object):
         self.data = data
         self.headers = headers or {}
         self.user = None
+        # the framework request instance
+        self.req = None

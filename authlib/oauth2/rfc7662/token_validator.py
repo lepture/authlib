@@ -26,7 +26,7 @@ class IntrospectTokenValidator(TokenValidator):
     def authenticate_token(self, token_string):
         return self.introspect_token(token_string)
 
-    def validate_token(self, token, scopes):
+    def validate_token(self, token, scopes, request):
         if not token or not token['active']:
             raise InvalidTokenError(realm=self.realm, extra_attributes=self.extra_attributes)
         if self.scope_insufficient(token.get('scope'), scopes):

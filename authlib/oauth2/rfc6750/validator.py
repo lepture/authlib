@@ -27,7 +27,7 @@ class BearerTokenValidator(TokenValidator):
         """
         raise NotImplementedError()
 
-    def validate_token(self, token, scopes):
+    def validate_token(self, token, scopes, request):
         """Check if token is active and matches the requested scopes."""
         if not token:
             raise InvalidTokenError(realm=self.realm, extra_attributes=self.extra_attributes)

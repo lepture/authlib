@@ -65,12 +65,12 @@ class TokenValidator(object):
         :raise: InvalidRequestError
         """
 
-    def validate_token(self, token, scopes):
+    def validate_token(self, token, scopes, request):
         """A method to validate if the authorized token is valid, if it has the
         permission on the given scopes. Developers MUST re-implement this method.
         e.g, check if token is expired, revoked::
 
-            def validate_token(self, token, scopes):
+            def validate_token(self, token, scopes, request):
                 if not token:
                     raise InvalidTokenError()
                 if token.is_expired() or token.is_revoked():
@@ -136,5 +136,5 @@ class ResourceProtector(object):
         validator, token_string = self.parse_request_authorization(request)
         validator.validate_request(request)
         token = validator.authenticate_token(token_string)
-        validator.validate_token(token, scopes)
+        validator.validate_token(token, scopes, request)
         return token

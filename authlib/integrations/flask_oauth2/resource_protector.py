@@ -73,6 +73,7 @@ class ResourceProtector(_ResourceProtector):
             _req.data,
             _req.headers
         )
+        request.req = _req
         # backward compatible
         if isinstance(scopes, str):
             scopes = [scopes]
