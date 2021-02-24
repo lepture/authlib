@@ -11,8 +11,43 @@ Version 1.0
 
 **Plan to release in Mar, 2021.**
 
+We have dropped support for Python 2 in this release.
+
+**OAuth Client Changes:**
+
+The whole framework client integrations have been restructured, if you are
+using the client properly, e.g. ``oauth.register(...)``, it would work as
+before.
+
+**OAuth Provider Changes:**
+
+In Flask OAuth 2.0 provider, we have removed the deprecated
+``OAUTH2_JWT_XXX`` configuration, instead, developers should define
+`.get_jwt_config` on OpenID extensions and grant types.
+
+**SQLAlchemy** integrations has been removed from Authlib. Developers
+should define the database by themselves.
+
+**JOSE Changes**
+
+- ``JWS`` has been renamed to ``JsonWebSignature``
+- ``JWE`` has been renamed to ``JsonWebEncryption``
+- ``JWK`` has been renamed to ``JsonWebKey``
+- ``JWT`` has been renamed to ``JsonWebToken``
+
+The "Key" model has been re-designed, checkout the :ref:`jwk_guide` for updates.
+
+Added ``ES256K`` algorithm for JWS and JWT.
+
 **Breaking Changes**: find how to solve the deprecate issues via https://git.io/JkY4f
 
+
+Version 0.15.3
+--------------
+
+**Released on Jan 15, 2020.**
+
+- Fixed `.authorize_access_token` for OAuth 1.0 services, via :gh:`issue#308`.
 
 Version 0.15.2
 --------------
