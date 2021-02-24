@@ -128,6 +128,9 @@ class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def validate_device_credential(self, credential):
+        if credential.is_expired():
+            raise ExpiredTokenError()
+
         user_code = credential.get_user_code()
         user_grant = self.query_user_grant(user_code)
 
@@ -136,9 +139,6 @@ class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
             if not approved:
                 raise AccessDeniedError()
             return user
-
-        if credential.is_expired():
-            raise ExpiredTokenError()
 
         if self.should_slow_down(credential):
             raise SlowDownError()
