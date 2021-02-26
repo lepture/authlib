@@ -123,6 +123,7 @@ Here is the example for Twitter login::
         twitter = oauth.create_client('twitter')
         token = twitter.authorize_access_token(request)
         resp = twitter.get('account/verify_credentials.json')
+        resp.raise_for_status()
         profile = resp.json()
         # do something with the token and profile
         return '...'
@@ -202,6 +203,7 @@ Here is the example for GitHub login::
     def authorize(request):
         token = oauth.github.authorize_access_token(request)
         resp = oauth.github.get('user', token=token)
+        resp.raise_for_status()
         profile = resp.json()
         # do something with the token and profile
         return '...'
@@ -277,6 +279,7 @@ in user's twitter time line and GitHub repositories. You will use
         )
         # API URL: https://api.twitter.com/1.1/statuses/user_timeline.json
         resp = oauth.twitter.get('statuses/user_timeline.json', token=token.to_token())
+        resp.raise_for_status()
         return resp.json()
 
     def get_github_repositories(request):
@@ -286,6 +289,7 @@ in user's twitter time line and GitHub repositories. You will use
         )
         # API URL: https://api.github.com/user/repos
         resp = oauth.github.get('user/repos', token=token.to_token())
+        resp.raise_for_status()
         return resp.json()
 
 In this case, we need a place to store the access token in order to use
@@ -408,6 +412,7 @@ instead, they can pass the ``request``::
 
     def get_twitter_tweets(request):
         resp = oauth.twitter.get('statuses/user_timeline.json', request=request)
+        resp.raise_for_status()
         return resp.json()
 
 
@@ -479,6 +484,7 @@ a method to fix the requests session::
 
     def slack_compliance_fix(session):
         def _fix(resp):
+            resp.raise_for_status()
             token = resp.json()
             # slack returns no token_type
             token['token_type'] = 'Bearer'

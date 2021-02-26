@@ -126,6 +126,7 @@ into routes. In this case, the routes for authorization should look like::
     def authorize():
         token = oauth.twitter.authorize_access_token()
         resp = oauth.twitter.get('account/verify_credentials.json')
+        resp.raise_for_status()
         profile = resp.json()
         # do something with the token and profile
         return redirect('/')
@@ -142,6 +143,7 @@ automatically::
     @app.route('/github')
     def show_github_profile():
         resp = oauth.github.get('user')
+        resp.raise_for_status()
         profile = resp.json()
         return render_template('github.html', profile=profile)
 

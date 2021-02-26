@@ -47,6 +47,7 @@ class AsyncAssertionClient(_AssertionClient, AsyncClient):
         resp = await self.request(
             'POST', self.token_endpoint, data=data, withhold_token=True)
 
+        resp.raise_for_status()
         token = resp.json()
         if 'error' in token:
             raise OAuth2Error(
