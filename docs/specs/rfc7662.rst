@@ -91,6 +91,7 @@ endpoint to validate the given token. Here is how::
             data = {'token': token_string, 'token_type_hint': 'access_token'}
             auth = (secrets.internal_client_id, secrets.internal_client_secret)
             resp = requests.post(url, data=data, auth=auth)
+            resp.raise_for_status()
             return resp.json()
 
 We can then register this token validator in to resource protector::

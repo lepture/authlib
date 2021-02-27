@@ -15,6 +15,7 @@ class OpenIDMixin(object):
 
         with self.client_cls(**self.client_kwargs) as session:
             resp = session.request('GET', uri, withhold_token=True)
+            resp.raise_for_status()
             jwk_set = resp.json()
 
         self.server_metadata['jwks'] = jwk_set
@@ -24,6 +25,7 @@ class OpenIDMixin(object):
         """Fetch user info from ``userinfo_endpoint``."""
         metadata = self.load_server_metadata()
         resp = self.get(metadata['userinfo_endpoint'], **kwargs)
+        resp.raise_for_status()
         data = resp.json()
         return UserInfo(data)
 

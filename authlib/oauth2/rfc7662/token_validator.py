@@ -19,6 +19,7 @@ class IntrospectTokenValidator(TokenValidator):
                 # authentication.
                 url = 'https://example.com/oauth/introspect'
                 resp = requests.post(url, data={'token': token_string})
+                resp.raise_for_status()
                 return resp.json()
         """
         raise NotImplementedError()

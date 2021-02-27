@@ -17,6 +17,7 @@ class AsyncOpenIDMixin(object):
 
         async with self.client_cls(**self.client_kwargs) as client:
             resp = await client.request('GET', uri, withhold_token=True)
+            resp.raise_for_status()
             jwk_set = resp.json()
 
         self.server_metadata['jwks'] = jwk_set
@@ -26,6 +27,7 @@ class AsyncOpenIDMixin(object):
         """Fetch user info from ``userinfo_endpoint``."""
         metadata = await self.load_server_metadata()
         resp = await self.get(metadata['userinfo_endpoint'], **kwargs)
+        resp.raise_for_status()
         data = resp.json()
         return UserInfo(data)
 
