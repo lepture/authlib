@@ -20,16 +20,36 @@ default_token = {
 }
 
 
-def test_add_token_to_header():
-    def assert_func(request):
-        token = 'Bearer ' + default_token['access_token']
-        auth_header = request.headers.get('authorization')
-        assert auth_header == token
+def assert_token_in_header(request):
+    token = 'Bearer ' + default_token['access_token']
+    auth_header = request.headers.get('authorization')
+    assert auth_header == token
 
+
+def assert_token_in_body(request):
+    content = request.data
+    content = content.decode()
+    assert content == 'access_token=%s' % default_token['access_token']
+
+
+def assert_token_in_uri(request):
+    assert default_token['access_token'] in str(request.url)
+
+
+@pytest.mark.parametrize(
+    "assert_func, token_placement",
+    [
+        (assert_token_in_header, "header"),
+        (assert_token_in_body, "body"),
+        (assert_token_in_uri, "uri")
+    ]
+)
+def test_add_token_get_request(assert_func, token_placement):
     mock_response = MockDispatch({'a': 'a'}, assert_func=assert_func)
     with OAuth2Client(
             'foo',
             token=default_token,
+            token_placement=token_placement,
             app=mock_response
     ) as client:
         resp = client.get('https://i.b')
@@ -38,39 +58,25 @@ def test_add_token_to_header():
     assert data['a'] == 'a'
 
 
-def test_add_token_to_body():
-    def assert_func(request):
-        content = request.data
-        content = content.decode()
-        assert content == 'access_token=%s' % default_token['access_token']
-
+@pytest.mark.parametrize(
+    "assert_func, token_placement",
+    [
+        (assert_token_in_header, "header"),
+        (assert_token_in_body, "body"),
+        (assert_token_in_uri, "uri")
+    ]
+)
+def test_add_token_to_streaming_request(assert_func, token_placement):
     mock_response = MockDispatch({'a': 'a'}, assert_func=assert_func)
     with OAuth2Client(
             'foo',
             token=default_token,
-            token_placement='body',
+            token_placement=token_placement,
             app=mock_response
     ) as client:
-        resp = client.get('https://i.b')
-
-    data = resp.json()
-    assert data['a'] == 'a'
-
-
-def test_add_token_to_uri():
-    def assert_func(request):
-        assert default_token['access_token'] in str(request.url)
-
-    mock_response = MockDispatch({'a': 'a'}, assert_func=assert_func)
-    with OAuth2Client(
-            'foo',
-            token=default_token,
-            token_placement='uri',
-            app=mock_response
-    ) as client:
-        resp = client.get('https://i.b')
-
-    data = resp.json()
+        with client.stream("GET", 'https://i.b') as stream:
+            stream.read()
+            data = stream.json()
     assert data['a'] == 'a'
 
 
