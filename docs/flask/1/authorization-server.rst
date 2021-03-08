@@ -6,6 +6,10 @@ authorization, and issuing token credentials. When the resource owner (user)
 grants the authorization, this server will issue a token credential to the
 client.
 
+.. versionchanged:: v1.0.0
+    We have removed built-in SQLAlchemy integrations.
+
+
 Resource Owner
 --------------
 
@@ -31,16 +35,29 @@ information:
 - Client Password, usually called **client_secret**
 - Client RSA Public Key (if RSA-SHA1 signature method supported)
 
-Authlib has provided a mixin for SQLAlchemy, define the client with this mixin::
+Developers MUST implement the missing methods of ``authlib.oauth1.ClientMixin``, take an
+example of Flask-SQAlchemy::
 
-    from authlib.integrations.sqla_oauth1 import OAuth1ClientMixin
+    from authlib.oauth1 import ClientMixin
 
-    class Client(db.Model, OAuth1ClientMixin):
+    class Client(ClientMixin, db.Model):
         id = db.Column(db.Integer, primary_key=True)
+        client_id = db.Column(db.String(48), index=True)
+        client_secret = db.Column(db.String(120), nullable=False)
+        default_redirect_uri = db.Column(db.Text, nullable=False, default='')
         user_id = db.Column(
             db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')
         )
         user = db.relationship('User')
+
+        def get_default_redirect_uri(self):
+            return self.default_redirect_uri
+
+        def get_client_secret(self):
+            return self.client_secret
+
+        def get_rsa_public_key(self):
+            return None
 
 A client is registered by a user (developer) on your website. Get a deep
 inside with :class:`~authlib.oauth1.rfc5849.ClientMixin` API reference.
@@ -58,19 +75,37 @@ methods:
 - ``.delete(key)``
 
 A cache can be a memcache, redis or something else. If cache is not available,
-there is also a SQLAlchemy mixin::
+developers can also implement it with database. For example, using SQLAlchemy::
 
-    from authlib.integrations.sqla_oauth1 import OAuth1TemporaryCredentialMixin
+    from authlib.oauth1 import TemporaryCredentialMixin
 
-    class TemporaryCredential(db.Model, OAuth1TemporaryCredentialMixin):
+    class TemporaryCredential(TemporaryCredentialMixin, db.Model):
         id = db.Column(db.Integer, primary_key=True)
         user_id = db.Column(
             db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')
         )
         user = db.relationship('User')
+        client_id = db.Column(db.String(48), index=True)
+        oauth_token = db.Column(db.String(84), unique=True, index=True)
+        oauth_token_secret = db.Column(db.String(84))
+        oauth_verifier = db.Column(db.String(84))
+        oauth_callback = db.Column(db.Text, default='')
 
-To make a Temporary Credentials model yourself, get more information with
-:class:`~authlib.oauth1.rfc5849.ClientMixin` API reference.
+        def get_client_id(self):
+            return self.client_id
+
+        def get_redirect_uri(self):
+            return self.oauth_callback
+
+        def check_verifier(self, verifier):
+            return self.oauth_verifier == verifier
+
+        def get_oauth_token(self):
+            return self.oauth_token
+
+        def get_oauth_token_secret(self):
+            return self.oauth_token_secret
+
 
 Token Credentials
 -----------------
@@ -79,23 +114,27 @@ A token credential is used to access resource owners' resources. Unlike
 OAuth 2, the token credential will not expire in OAuth 1. This token credentials
 are supposed to be saved into a persist database rather than a cache.
 
-Here is a SQLAlchemy mixin for easy integration::
+Developers MUST implement :class:`~authlib.oauth1.rfc5849.TokenCredentialMixin`
+missing methods. Here is an example of SQLAlchemy integration::
 
-    from authlib.integrations.sqla_oauth1 import OAuth1TokenCredentialMixin
+    from authlib.oauth1 import TokenCredentialMixin
 
-    class TokenCredential(db.Model, OAuth1TokenCredentialMixin):
+    class TokenCredential(TokenCredentialMixin, db.Model):
         id = db.Column(db.Integer, primary_key=True)
         user_id = db.Column(
             db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')
         )
         user = db.relationship('User')
+        client_id = db.Column(db.String(48), index=True)
+        oauth_token = db.Column(db.String(84), unique=True, index=True)
+        oauth_token_secret = db.Column(db.String(84))
 
-    def set_user_id(self, user_id):
-        self.user_id = user_id
+        def get_oauth_token(self):
+            return self.oauth_token
 
-If SQLAlchemy is not what you want, read the API reference of
-:class:`~authlib.oauth1.rfc5849.TokenCredentialMixin` and implement the missing
-methods.
+        def get_oauth_token_secret(self):
+            return self.oauth_token_secret
+
 
 Timestamp and Nonce
 -------------------
@@ -104,12 +143,21 @@ The nonce value MUST be unique across all requests with the same timestamp,
 client credentials, and token combinations. Authlib Flask integration has a
 built-in validation with cache.
 
-If cache is not available, there is also a SQLAlchemy mixin::
+If cache is not available, developers can use a database, here is an exmaple of
+using SQLAlchemy::
 
-    from authlib.integrations.sqla_oauth1 import OAuth1TimestampNonceMixin
-
-    class TimestampNonce(db.Model, OAuth1TimestampNonceMixin)
+    class TimestampNonce(db.Model):
+        __table_args__ = (
+            db.UniqueConstraint(
+                'client_id', 'timestamp', 'nonce', 'oauth_token',
+                name='unique_nonce'
+            ),
+        )
         id = db.Column(db.Integer, primary_key=True)
+        client_id = db.Column(db.String(48), nullable=False)
+        timestamp = db.Column(db.Integer, nullable=False)
+        nonce = db.Column(db.String(48), nullable=False)
+        oauth_token = db.Column(db.String(84))
 
 
 Define A Server
@@ -120,9 +168,10 @@ Authlib provides a ready to use
 which has built-in tools to handle requests and responses::
 
     from authlib.integrations.flask_oauth1 import AuthorizationServer
-    from authlib.integrations.sqla_oauth1 import create_query_client_func
 
-    query_client = create_query_client_func(db.session, Client)
+    def query_client(client_id):
+        return Client.query.filter_by(client_id=client_id).first()
+
     server = AuthorizationServer(app, query_client=query_client)
 
 It can also be initialized lazily with init_app::
@@ -176,23 +225,86 @@ can take the advantage with::
         register_nonce_hooks,
         register_temporary_credential_hooks
     )
-    from authlib.integrations.sqla_oauth1 import register_token_credential_hooks
 
     register_nonce_hooks(server, cache)
     register_temporary_credential_hooks(server, cache)
-    register_token_credential_hooks(server, db.session, TokenCredential)
 
-If cache is not available, here are the helpers for SQLAlchemy::
+If cache is not available, developers MUST register the hooks with the database we
+defined above::
 
-    from authlib.integrations.sqla_oauth1 import (
-        register_nonce_hooks,
-        register_temporary_credential_hooks,
-        register_token_credential_hooks
-    )
+    # check if nonce exists
 
-    register_nonce_hooks(server, db.session, TimestampNonce)
-    register_temporary_credential_hooks(server, db.session, TemporaryCredential)
-    register_token_credential_hooks(server, db.session, TokenCredential)
+    def exists_nonce(nonce, timestamp, client_id, oauth_token):
+        q = TimestampNonce.query.filter_by(
+            nonce=nonce,
+            timestamp=timestamp,
+            client_id=client_id,
+        )
+        if oauth_token:
+            q = q.filter_by(oauth_token=oauth_token)
+        rv = q.first()
+        if rv:
+            return True
+
+        item = TimestampNonce(
+            nonce=nonce,
+            timestamp=timestamp,
+            client_id=client_id,
+            oauth_token=oauth_token,
+        )
+        db.session.add(item)
+        db.session.commit()
+        return False
+    server.register_hook('exists_nonce', exists_nonce)
+
+    # hooks for temporary credential
+
+    def create_temporary_credential(token, client_id, redirect_uri):
+        item = TemporaryCredential(
+            client_id=client_id,
+            oauth_token=token['oauth_token'],
+            oauth_token_secret=token['oauth_token_secret'],
+            oauth_callback=redirect_uri,
+        )
+        db.session.add(item)
+        db.session.commit()
+        return item
+
+    def get_temporary_credential(oauth_token):
+        return TemporaryCredential.query.filter_by(oauth_token=oauth_token).first()
+
+    def delete_temporary_credential(oauth_token):
+        q = TemporaryCredential.query.filter_by(oauth_token=oauth_token)
+        q.delete(synchronize_session=False)
+        db.session.commit()
+
+    def create_authorization_verifier(credential, grant_user, verifier):
+        credential.user_id = grant_user.id  # assuming your end user model has `.id`
+        credential.oauth_verifier = verifier
+        db.session.add(credential)
+        db.session.commit()
+        return credential
+
+    server.register_hook('create_temporary_credential', create_temporary_credential)
+    server.register_hook('get_temporary_credential', get_temporary_credential)
+    server.register_hook('delete_temporary_credential', delete_temporary_credential)
+    server.register_hook('create_authorization_verifier', create_authorization_verifier)
+
+For both cache and database temporary credential, Developers MUST register a
+``create_token_credential`` hook::
+
+    def create_token_credential(token, temporary_credential):
+        credential = TokenCredential(
+            oauth_token=token['oauth_token'],
+            oauth_token_secret=token['oauth_token_secret'],
+            client_id=temporary_credential.get_client_id()
+        )
+        credential.user_id = temporary_credential.user_id
+        db.session.add(credential)
+        db.session.commit()
+        return credential
+
+    server.register_hook('create_token_credential', create_token_credential)
 
 
 Server Implementation
@@ -238,4 +350,3 @@ the token credential::
     @app.route('/token', methods=['POST'])
     def issue_token():
         return server.create_token_response()
-

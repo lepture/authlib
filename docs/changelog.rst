@@ -11,7 +11,8 @@ Version 1.0
 
 **Plan to release in Mar, 2021.**
 
-We have dropped support for Python 2 in this release.
+We have dropped support for Python 2 in this release. We have removed
+built-in SQLAlchemy integration.
 
 **OAuth Client Changes:**
 

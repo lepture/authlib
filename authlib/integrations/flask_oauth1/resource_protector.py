@@ -10,31 +10,33 @@ from authlib.oauth1.errors import OAuth1Error
 
 class ResourceProtector(_ResourceProtector):
     """A protecting method for resource servers. Initialize a resource
-    protector with the query_token method::
+    protector with the these method:
 
-        from authlib.integrations.flask_oauth1 import ResourceProtector, current_credential
+    1. query_client
+    2. query_token,
+    3. exists_nonce
+
+    Usually, a ``query_client`` method would look like (if using SQLAlchemy)::
+
+        def query_client(client_id):
+            return Client.query.filter_by(client_id=client_id).first()
+
+    A ``query_token`` method accept two parameters, ``client_id`` and ``oauth_token``::
+
+        def query_token(client_id, oauth_token):
+            return Token.query.filter_by(client_id=client_id, oauth_token=oauth_token).first()
+
+    And for ``exists_nonce``, if using cache, we have a built-in hook to create this method::
+
         from authlib.integrations.flask_oauth1 import create_exists_nonce_func
-        from authlib.integrations.sqla_oauth1 import (
-            create_query_client_func,
-            create_query_token_func,
-        )
-        from your_project.models import Token, User, cache
 
-        # you need to define a ``cache`` instance yourself
+        exists_nonce = create_exists_nonce_func(cache)
 
-        require_oauth= ResourceProtector(
-            app,
-            query_client=create_query_client_func(db.session, OAuth1Client),
-            query_token=create_query_token_func(db.session, OAuth1Token),
-            exists_nonce=create_exists_nonce_func(cache)
-        )
-        # or initialize it lazily
-        require_oauth = ResourceProtector()
-        require_oauth.init_app(
-            app,
-            query_client=create_query_client_func(db.session, OAuth1Client),
-            query_token=create_query_token_func(db.session, OAuth1Token),
-            exists_nonce=create_exists_nonce_func(cache)
+    Then initialize the resource protector with those methods::
+
+        require_oauth = ResourceProtector(
+            app, query_client=query_client,
+            query_token=query_token, exists_nonce=exists_nonce,
         )
     """
     def __init__(self, app=None, query_client=None,

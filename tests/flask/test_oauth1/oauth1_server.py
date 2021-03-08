@@ -2,18 +2,13 @@ import os
 import unittest
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from authlib.oauth1 import (
+    ClientMixin,
+    TokenCredentialMixin,
+    TemporaryCredentialMixin,
+)
 from authlib.integrations.flask_oauth1 import (
     AuthorizationServer, ResourceProtector, current_credential
-)
-from authlib.integrations.sqla_oauth1 import (
-    OAuth1ClientMixin,
-    OAuth1TokenCredentialMixin,
-    OAuth1TemporaryCredentialMixin,
-    OAuth1TimestampNonceMixin,
-    create_query_client_func,
-    create_query_token_func,
-    register_authorization_hooks,
-    create_exists_nonce_func as create_db_exists_nonce_func,
 )
 from authlib.integrations.flask_oauth1 import (
     register_temporary_credential_hooks,
@@ -37,39 +32,157 @@ class User(db.Model):
         return self.id
 
 
-class Client(db.Model, OAuth1ClientMixin):
+class Client(ClientMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    client_id = db.Column(db.String(48), index=True)
+    client_secret = db.Column(db.String(120), nullable=False)
+    default_redirect_uri = db.Column(db.Text, nullable=False, default='')
     user_id = db.Column(
         db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')
     )
     user = db.relationship('User')
+
+    def get_default_redirect_uri(self):
+        return self.default_redirect_uri
+
+    def get_client_secret(self):
+        return self.client_secret
 
     def get_rsa_public_key(self):
         return read_file_path('rsa_public.pem')
 
 
-class TokenCredential(db.Model, OAuth1TokenCredentialMixin):
+class TokenCredential(TokenCredentialMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
         db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')
     )
     user = db.relationship('User')
+    client_id = db.Column(db.String(48), index=True)
+    oauth_token = db.Column(db.String(84), unique=True, index=True)
+    oauth_token_secret = db.Column(db.String(84))
+
+    def get_oauth_token(self):
+        return self.oauth_token
+
+    def get_oauth_token_secret(self):
+        return self.oauth_token_secret
 
 
-class TemporaryCredential(db.Model, OAuth1TemporaryCredentialMixin):
+class TemporaryCredential(TemporaryCredentialMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
         db.Integer, db.ForeignKey('user.id', ondelete='CASCADE')
     )
     user = db.relationship('User')
+    client_id = db.Column(db.String(48), index=True)
+    oauth_token = db.Column(db.String(84), unique=True, index=True)
+    oauth_token_secret = db.Column(db.String(84))
+    oauth_verifier = db.Column(db.String(84))
+    oauth_callback = db.Column(db.Text, default='')
+
+    def get_user_id(self):
+        return self.user_id
+
+    def get_client_id(self):
+        return self.client_id
+
+    def get_redirect_uri(self):
+        return self.oauth_callback
+
+    def check_verifier(self, verifier):
+        return self.oauth_verifier == verifier
+
+    def get_oauth_token(self):
+        return self.oauth_token
+
+    def get_oauth_token_secret(self):
+        return self.oauth_token_secret
 
 
-class TimestampNonce(db.Model, OAuth1TimestampNonceMixin):
+class TimestampNonce(db.Model):
+    __table_args__ = (
+        db.UniqueConstraint(
+            'client_id', 'timestamp', 'nonce', 'oauth_token',
+            name='unique_nonce'
+        ),
+    )
     id = db.Column(db.Integer, primary_key=True)
+    client_id = db.Column(db.String(48), nullable=False)
+    timestamp = db.Column(db.Integer, nullable=False)
+    nonce = db.Column(db.String(48), nullable=False)
+    oauth_token = db.Column(db.String(84))
+
+
+def exists_nonce(nonce, timestamp, client_id, oauth_token):
+    q = TimestampNonce.query.filter_by(
+        nonce=nonce,
+        timestamp=timestamp,
+        client_id=client_id,
+    )
+    if oauth_token:
+        q = q.filter_by(oauth_token=oauth_token)
+    rv = q.first()
+    if rv:
+        return True
+
+    item = TimestampNonce(
+        nonce=nonce,
+        timestamp=timestamp,
+        client_id=client_id,
+        oauth_token=oauth_token,
+    )
+    db.session.add(item)
+    db.session.commit()
+    return False
+
+
+def create_temporary_credential(token, client_id, redirect_uri):
+    item = TemporaryCredential(
+        client_id=client_id,
+        oauth_token=token['oauth_token'],
+        oauth_token_secret=token['oauth_token_secret'],
+        oauth_callback=redirect_uri,
+    )
+    db.session.add(item)
+    db.session.commit()
+    return item
+
+
+def get_temporary_credential(oauth_token):
+    return TemporaryCredential.query.filter_by(oauth_token=oauth_token).first()
+
+
+def delete_temporary_credential(oauth_token):
+    q = TemporaryCredential.query.filter_by(oauth_token=oauth_token)
+    q.delete(synchronize_session=False)
+    db.session.commit()
+
+
+def create_authorization_verifier(credential, grant_user, verifier):
+    credential.user_id = grant_user.id  # assuming your end user model has `.id`
+    credential.oauth_verifier = verifier
+    db.session.add(credential)
+    db.session.commit()
+    return credential
+
+
+def create_token_credential(token, temporary_credential):
+    credential = TokenCredential(
+        oauth_token=token['oauth_token'],
+        oauth_token_secret=token['oauth_token_secret'],
+        client_id=temporary_credential.get_client_id()
+    )
+    credential.user_id = temporary_credential.get_user_id()
+    db.session.add(credential)
+    db.session.commit()
+    return credential
 
 
 def create_authorization_server(app, use_cache=False, lazy=False):
-    query_client = create_query_client_func(db.session, Client)
+    def query_client(client_id):
+        return Client.query.filter_by(client_id=client_id).first()
+
     if lazy:
         server = AuthorizationServer()
         server.init_app(app, query_client)
@@ -79,14 +192,14 @@ def create_authorization_server(app, use_cache=False, lazy=False):
         cache = SimpleCache()
         register_nonce_hooks(server, cache)
         register_temporary_credential_hooks(server, cache)
-        register_authorization_hooks(server, db.session, TokenCredential)
+        server.register_hook('create_token_credential', create_token_credential)
     else:
-        register_authorization_hooks(
-            server, db.session,
-            token_credential_model=TokenCredential,
-            temporary_credential_model=TemporaryCredential,
-            timestamp_nonce_model=TimestampNonce,
-        )
+        server.register_hook('exists_nonce', exists_nonce)
+        server.register_hook('create_temporary_credential', create_temporary_credential)
+        server.register_hook('get_temporary_credential', get_temporary_credential)
+        server.register_hook('delete_temporary_credential', delete_temporary_credential)
+        server.register_hook('create_authorization_verifier', create_authorization_verifier)
+        server.register_hook('create_token_credential', create_token_credential)
 
     @app.route('/oauth/initiate', methods=['GET', 'POST'])
     def initiate():
@@ -122,10 +235,33 @@ def create_resource_server(app, use_cache=False, lazy=False):
         cache = SimpleCache()
         exists_nonce = create_cache_exists_nonce_func(cache)
     else:
-        exists_nonce = create_db_exists_nonce_func(db.session, TimestampNonce)
+        def exists_nonce(nonce, timestamp, client_id, oauth_token):
+            q = db.session.query(TimestampNonce.nonce).filter_by(
+                nonce=nonce,
+                timestamp=timestamp,
+                client_id=client_id,
+            )
+            if oauth_token:
+                q = q.filter_by(oauth_token=oauth_token)
+            rv = q.first()
+            if rv:
+                return True
 
-    query_client = create_query_client_func(db.session, Client)
-    query_token = create_query_token_func(db.session, TokenCredential)
+            tn = TimestampNonce(
+                nonce=nonce,
+                timestamp=timestamp,
+                client_id=client_id,
+                oauth_token=oauth_token,
+            )
+            db.session.add(tn)
+            db.session.commit()
+            return False
+
+    def query_client(client_id):
+        return Client.query.filter_by(client_id=client_id).first()
+
+    def query_token(client_id, oauth_token):
+        return TokenCredential.query.filter_by(client_id=client_id, oauth_token=oauth_token).first()
 
     if lazy:
         require_oauth = ResourceProtector()
