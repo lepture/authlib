@@ -95,5 +95,5 @@ class BearerTokenValidator(object):
         if self.token_revoked(token):
             raise InvalidTokenError(realm=self.realm)
         if self.scope_insufficient(token, scope, scope_operator):
-            raise InsufficientScopeError()
+            raise InsufficientScopeError(token_scope=token.get_scope(), resource_scope=scope)
         return token

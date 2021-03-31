@@ -78,8 +78,14 @@ class InsufficientScopeError(OAuth2Error):
     error = 'insufficient_scope'
     status_code = 403
 
+    def __init__(self, token_scope, resource_scope):
+        super(InsufficientScopeError, self).__init__()
+        self.token_scope = token_scope
+        self.resource_scope = resource_scope
+
     def get_error_description(self):
         return self.gettext(
             'The request requires higher privileges than '
-            'provided by the access token.'
-        )
+            'provided by the access token. '
+            'Required: "%(required)s", Provided:"%(provided)s"'
+        )  % dict(required=self.resource_scope, provided=self.token_scope)
