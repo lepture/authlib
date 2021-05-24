@@ -9,10 +9,10 @@ class _HTTPException(HTTPException):
         self.body = body
         self.headers = headers
 
-    def get_body(self, environ=None):
+    def get_body(self, environ=None, scope=None):
         return self.body
 
-    def get_headers(self, environ=None):
+    def get_headers(self, environ=None, scope=None):
         return self.headers
 
 
