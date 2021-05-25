@@ -7,7 +7,7 @@ from .rfc6750 import add_bearer_token
 
 def encode_client_secret_basic(client, method, uri, headers, body):
     text = '{}:{}'.format(client.client_id, client.client_secret)
-    auth = to_native(base64.urlsafe_b64encode(to_bytes(text, 'latin1')))
+    auth = to_native(base64.b64encode(to_bytes(text, 'latin1')))
     headers['Authorization'] = 'Basic {}'.format(auth)
     return uri, headers, body
 
