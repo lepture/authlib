@@ -1,19 +1,36 @@
+import werkzeug
 from werkzeug.exceptions import HTTPException
 
+_version = werkzeug.__version__.split('.')[0]
 
-class _HTTPException(HTTPException):
-    def __init__(self, code, body, headers, response=None):
-        super(_HTTPException, self).__init__(None, response)
-        self.code = code
+if _version in ('0', '1'):
+    class _HTTPException(HTTPException):
+        def __init__(self, code, body, headers, response=None):
+            super(_HTTPException, self).__init__(None, response)
+            self.code = code
 
-        self.body = body
-        self.headers = headers
+            self.body = body
+            self.headers = headers
 
-    def get_body(self, environ=None, scope=None):
-        return self.body
+        def get_body(self, environ=None):
+            return self.body
 
-    def get_headers(self, environ=None, scope=None):
-        return self.headers
+        def get_headers(self, environ=None):
+            return self.headers
+else:
+    class _HTTPException(HTTPException):
+        def __init__(self, code, body, headers, response=None):
+            super(_HTTPException, self).__init__(None, response)
+            self.code = code
+
+            self.body = body
+            self.headers = headers
+
+        def get_body(self, environ=None, scope=None):
+            return self.body
+
+        def get_headers(self, environ=None, scope=None):
+            return self.headers
 
 
 def raise_http_exception(status, body, headers):
