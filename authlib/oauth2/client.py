@@ -154,7 +154,7 @@ class OAuth2Client(object):
         return uri, state
 
     def fetch_token(self, url=None, body='', method='POST', headers=None,
-                    auth=None, grant_type=None, **kwargs):
+                    auth=None, grant_type=None, state=None, **kwargs):
         """Generic method for fetching an access token from the token endpoint.
 
         :param url: Access Token endpoint URL, if not configured,
@@ -173,7 +173,7 @@ class OAuth2Client(object):
         # implicit  grant_type
         authorization_response = kwargs.pop('authorization_response', None)
         if authorization_response and '#' in authorization_response:
-            return self.token_from_fragment(authorization_response, kwargs.get('state'))
+            return self.token_from_fragment(authorization_response, state)
 
         session_kwargs = self._extract_session_request_params(kwargs)
 
@@ -181,7 +181,7 @@ class OAuth2Client(object):
             grant_type = 'authorization_code'
             params = parse_authorization_code_response(
                 authorization_response,
-                state=kwargs.get('state'),
+                state=state,
             )
             kwargs['code'] = params['code']
 
