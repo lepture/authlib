@@ -154,6 +154,19 @@ class JWTTest(unittest.TestCase):
             claims.validate
         )
 
+    def test_validate_custom(self):
+        id_token = jwt.encode({'alg': 'HS256'}, {'custom': 'foo'}, 'k')
+        claims_options = {
+            'custom': {
+                'validate': lambda c, o: o == 'bar'
+            }
+        }
+        claims = jwt.decode(id_token, 'k', claims_options=claims_options)
+        self.assertRaises(
+            errors.InvalidClaimError,
+            claims.validate
+        )
+
     def test_use_jws(self):
         payload = {'name': 'hi'}
         private_key = read_file_path('rsa_private.pem')
