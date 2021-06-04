@@ -100,6 +100,11 @@ class JWTClaims(BaseClaims):
         self.validate_iat(now, leeway)
         self.validate_jti()
 
+        # Validate custom claims
+        for key in self.options.keys():
+            if key not in self.REGISTERED_CLAIMS:
+                self._validate_claim_value(key)
+
     def validate_iss(self):
         """The "iss" (issuer) claim identifies the principal that issued the
         JWT.  The processing of this claim is generally application specific.
