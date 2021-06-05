@@ -73,6 +73,20 @@ class JWTTest(unittest.TestCase):
             claims.validate,
         )
 
+    def test_validate_expected_issuer_received_None(self):
+        id_token = jwt.encode({'alg': 'HS256'}, {'iss': None, 'sub': None}, 'k')
+        claims_options = {
+            'iss': {
+                'essential': True,
+                'values': ['foo']
+            }
+        }
+        claims = jwt.decode(id_token, 'k', claims_options=claims_options)
+        self.assertRaises(
+            errors.InvalidClaimError,
+            claims.validate
+        )
+
     def test_validate_aud(self):
         id_token = jwt.encode({'alg': 'HS256'}, {'aud': 'foo'}, 'k')
         claims_options = {
