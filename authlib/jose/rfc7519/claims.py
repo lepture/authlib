@@ -58,10 +58,10 @@ class BaseClaims(dict):
 
     def _validate_claim_value(self, claim_name):
         option = self.options.get(claim_name)
-        value = self.get(claim_name)
-        if not option or not value:
+        if not option:
             return
 
+        value = self.get(claim_name)
         option_value = option.get('value')
         if option_value and value != option_value:
             raise InvalidClaimError(claim_name)
