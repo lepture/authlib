@@ -1,7 +1,9 @@
 import time
+import base64
+import hashlib
 from authlib.common.security import generate_token
 from authlib.common.urls import extract_params
-from authlib.common.encoding import to_native
+from authlib.common.encoding import to_native, to_bytes, to_unicode
 from .wrapper import OAuth1Request
 from .signature import (
     SIGNATURE_HMAC_SHA1,
@@ -116,23 +118,17 @@ class ClientAuth(object):
             raise ValueError('Unknown signature type specified.')
         return uri, headers, body
 
-    def sign(self, method, uri, headers, body, nonce=None, timestamp=None):
+    def sign(self, method, uri, headers, body):
         """Sign the HTTP request, add OAuth parameters and signature.
 
         :param method: HTTP method of the request.
         :param uri:  URI of the HTTP request.
         :param body: Body payload of the HTTP request.
         :param headers: Headers of the HTTP request.
-        :param nonce: A string to represent nonce value. If not configured,
-                      this method will generate one for you.
-        :param timestamp: Current timestamp. If not configured, this method
-                          will generate one for you.
         :return: uri, headers, body
         """
-        if nonce is None:
-            nonce = generate_nonce()
-        if timestamp is None:
-            timestamp = generate_timestamp()
+        nonce = generate_nonce()
+        timestamp = generate_timestamp()
         if body is None:
             body = ''
 
