@@ -1,10 +1,6 @@
 import asyncio
 import typing
-from httpx import AsyncClient, Auth, Client, Request, Response
-try:
-    from httpx._config import UNSET
-except ImportError:
-    UNSET = None
+from httpx import AsyncClient, Auth, Client, Request, Response, USE_CLIENT_DEFAULT
 from authlib.common.urls import url_decode
 from authlib.oauth2.client import OAuth2Client as _OAuth2Client
 from authlib.oauth2.auth import ClientAuth, TokenAuth
@@ -82,8 +78,8 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
     def handle_error(error_type, error_description):
         raise OAuthError(error_type, error_description)
 
-    async def request(self, method, url, withhold_token=False, auth=UNSET, **kwargs):
-        if not withhold_token and auth is UNSET:
+    async def request(self, method, url, withhold_token=False, auth=USE_CLIENT_DEFAULT, **kwargs):
+        if not withhold_token and auth is USE_CLIENT_DEFAULT:
             if not self.token:
                 raise MissingTokenError()
 
@@ -95,8 +91,8 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
         return await super(AsyncOAuth2Client, self).request(
             method, url, auth=auth, **kwargs)
 
-    async def stream(self, method, url, withhold_token=False, auth=UNSET, **kwargs):
-        if not withhold_token and auth is UNSET:
+    async def stream(self, method, url, withhold_token=False, auth=USE_CLIENT_DEFAULT, **kwargs):
+        if not withhold_token and auth is USE_CLIENT_DEFAULT:
             if not self.token:
                 raise MissingTokenError()
 
@@ -128,7 +124,7 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
             return
         await self._token_refresh_event.wait()  # wait until the token is ready
 
-    async def _fetch_token(self, url, body='', headers=None, auth=UNSET,
+    async def _fetch_token(self, url, body='', headers=None, auth=USE_CLIENT_DEFAULT,
                            method='POST', **kwargs):
         if method.upper() == 'POST':
             resp = await self.post(
@@ -148,7 +144,7 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
         return self.parse_response_token(resp.json())
 
     async def _refresh_token(self, url, refresh_token=None, body='',
-                             headers=None, auth=UNSET, **kwargs):
+                             headers=None, auth=USE_CLIENT_DEFAULT, **kwargs):
         resp = await self.post(
             url, data=dict(url_decode(body)), headers=headers,
             auth=auth, **kwargs)
@@ -166,7 +162,7 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
 
         return self.token
 
-    def _http_post(self, url, body=None, auth=UNSET, headers=None, **kwargs):
+    def _http_post(self, url, body=None, auth=USE_CLIENT_DEFAULT, headers=None, **kwargs):
         return self.post(
             url, data=dict(url_decode(body)),
             headers=headers, auth=auth, **kwargs)
@@ -203,8 +199,8 @@ class OAuth2Client(_OAuth2Client, Client):
     def handle_error(error_type, error_description):
         raise OAuthError(error_type, error_description)
 
-    def request(self, method, url, withhold_token=False, auth=UNSET, **kwargs):
-        if not withhold_token and auth is UNSET:
+    def request(self, method, url, withhold_token=False, auth=USE_CLIENT_DEFAULT, **kwargs):
+        if not withhold_token and auth is USE_CLIENT_DEFAULT:
             if not self.token:
                 raise MissingTokenError()
 
@@ -216,8 +212,8 @@ class OAuth2Client(_OAuth2Client, Client):
         return super(OAuth2Client, self).request(
             method, url, auth=auth, **kwargs)
 
-    def stream(self, method, url, withhold_token=False, auth=UNSET, **kwargs):
-        if not withhold_token and auth is UNSET:
+    def stream(self, method, url, withhold_token=False, auth=USE_CLIENT_DEFAULT, **kwargs):
+        if not withhold_token and auth is USE_CLIENT_DEFAULT:
             if not self.token:
                 raise MissingTokenError()
 

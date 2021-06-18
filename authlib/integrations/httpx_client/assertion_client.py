@@ -1,8 +1,4 @@
-from httpx import AsyncClient, Client
-try:
-    from httpx._config import UNSET
-except ImportError:
-    UNSET = None
+from httpx import AsyncClient, Client, USE_CLIENT_DEFAULT
 from authlib.oauth2.rfc7521 import AssertionClient as _AssertionClient
 from authlib.oauth2.rfc7523 import JWTBearerGrant
 from authlib.oauth2 import OAuth2Error
@@ -33,9 +29,9 @@ class AsyncAssertionClient(_AssertionClient, AsyncClient):
             token_placement=token_placement, scope=scope, **kwargs
         )
 
-    async def request(self, method, url, withhold_token=False, auth=UNSET, **kwargs):
+    async def request(self, method, url, withhold_token=False, auth=USE_CLIENT_DEFAULT, **kwargs):
         """Send request with auto refresh token feature."""
-        if not withhold_token and auth is UNSET:
+        if not withhold_token and auth is USE_CLIENT_DEFAULT:
             if not self.token or self.token.is_expired():
                 await self.refresh_token()
 
@@ -79,9 +75,9 @@ class AssertionClient(_AssertionClient, Client):
             token_placement=token_placement, scope=scope, **kwargs
         )
 
-    def request(self, method, url, withhold_token=False, auth=UNSET, **kwargs):
+    def request(self, method, url, withhold_token=False, auth=USE_CLIENT_DEFAULT, **kwargs):
         """Send request with auto refresh token feature."""
-        if not withhold_token and auth is UNSET:
+        if not withhold_token and auth is USE_CLIENT_DEFAULT:
             if not self.token or self.token.is_expired():
                 self.refresh_token()
 
