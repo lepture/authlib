@@ -101,13 +101,13 @@ class OAuth1SessionTest(TestCase):
         generate_timestamp.return_value = '123'
         fake_xml = StringIO('hello world')
         headers = {'Content-Type': 'application/xml'}
-        signature = (
-            'OAuth oauth_nonce="abc", oauth_timestamp="123", oauth_version="1.0", '
-            'oauth_signature_method="HMAC-SHA1", oauth_consumer_key="foo", '
-            'oauth_signature="h2sRqLArjhlc5p3FTkuNogVHlKE%3D"'
-        )
-        auth = OAuth1Session('foo')
-        auth.send = self.verify_signature(signature)
+
+        def fake_send(r, **kwargs):
+            auth_header = r.headers['Authorization']
+            self.assertIn('oauth_body_hash', auth_header)
+
+        auth = OAuth1Session('foo', force_include_body=True)
+        auth.send = fake_send
         auth.post('https://i.b', headers=headers, files=[('fake', fake_xml)])
 
     @mock.patch('authlib.oauth1.rfc5849.client_auth.generate_timestamp')

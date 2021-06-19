@@ -130,7 +130,7 @@ class ClientAuth(object):
         nonce = generate_nonce()
         timestamp = generate_timestamp()
         if body is None:
-            body = ''
+            body = b''
 
         # transform int to str
         timestamp = str(timestamp)
@@ -139,6 +139,13 @@ class ClientAuth(object):
             headers = {}
 
         oauth_params = self.get_oauth_params(nonce, timestamp)
+
+        # https://datatracker.ietf.org/doc/html/draft-eaton-oauth-bodyhash-00.html
+        # include oauth_body_hash
+        if body and headers.get('Content-Type') != CONTENT_TYPE_FORM_URLENCODED:
+            oauth_body_hash = base64.b64encode(hashlib.sha1(body).digest())
+            oauth_params.append(('oauth_body_hash', oauth_body_hash.decode('utf-8')))
+
         uri, headers, body = self._render(uri, headers, body, oauth_params)
 
         sig = self.get_oauth_signature(method, uri, headers, body)
@@ -167,8 +174,8 @@ class ClientAuth(object):
             uri, headers, body = self.sign(method, uri, headers, body)
         else:
             # Omit body data in the signing of non form-encoded requests
-            uri, headers, _ = self.sign(method, uri, headers, '')
-            body = ''
+            uri, headers, _ = self.sign(method, uri, headers, b'')
+            body = b''
         return uri, headers, body
 
 
