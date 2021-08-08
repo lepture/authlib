@@ -67,7 +67,6 @@ class RSAAlgorithm(JWEAlgorithm):
         # it will raise ValueError if failed
         op_key = key.get_op_key('unwrapKey')
         cek = op_key.decrypt(ek, self.padding)
-        print(cek, enc_alg.key_size)
         if len(cek) * 8 != enc_alg.CEK_SIZE:
             raise ValueError('Invalid "cek" length')
         return cek
