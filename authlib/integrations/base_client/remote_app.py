@@ -90,7 +90,8 @@ class RemoteApp(BaseApp):
 
         with self._get_oauth_client(**metadata) as client:
             if self.request_token_url:
-                client.redirect_uri = redirect_uri
+                if redirect_uri is not None:
+                    client.redirect_uri = redirect_uri
                 if request_token is None:
                     raise MissingRequestTokenError()
                 # merge request token with verifier
@@ -102,7 +103,8 @@ class RemoteApp(BaseApp):
                 token = client.fetch_access_token(token_endpoint, **kwargs)
                 client.redirect_uri = None
             else:
-                client.redirect_uri = redirect_uri
+                if redirect_uri is not None:
+                    client.redirect_uri = redirect_uri
                 kwargs = {}
                 if self.access_token_params:
                     kwargs.update(self.access_token_params)
