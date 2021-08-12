@@ -60,6 +60,7 @@ Generic, spec-compliant implementation to build clients and providers:
   - [RFC7638: JSON Web Key (JWK) Thumbprint](https://docs.authlib.org/en/latest/specs/rfc7638.html)
   - [ ] RFC7797: JSON Web Signature (JWS) Unencoded Payload Option
   - [RFC8037: ECDH in JWS and JWE](https://docs.authlib.org/en/latest/specs/rfc8037.html)
+  - [ ] draft-madden-jose-ecdh-1pu-04: Public Key Authenticated Encryption for JOSE: ECDH-1PU
 - [OpenID Connect 1.0](https://docs.authlib.org/en/latest/specs/oidc.html)
   - [x] OpenID Connect Core 1.0
   - [x] OpenID Connect Discovery 1.0

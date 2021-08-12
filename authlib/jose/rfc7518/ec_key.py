@@ -36,7 +36,7 @@ class ECKey(AsymmetricKey):
     SSH_PUBLIC_PREFIX = b'ecdsa-sha2-'
 
     def exchange_shared_key(self, pubkey):
-        # # used in ECDHAlgorithm
+        # # used in ECDHESAlgorithm
         private_key = self.get_private_key()
         if private_key:
             return private_key.exchange(ec.ECDH(), pubkey)

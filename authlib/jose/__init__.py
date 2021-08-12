@@ -15,14 +15,14 @@ from .rfc7517 import Key, KeySet, JsonWebKey
 from .rfc7518 import (
     register_jws_rfc7518,
     register_jwe_rfc7518,
-    ECDHAlgorithm,
+    ECDHESAlgorithm,
     OctKey,
     RSAKey,
     ECKey,
 )
 from .rfc7519 import JsonWebToken, BaseClaims, JWTClaims
 from .rfc8037 import OKPKey, register_jws_rfc8037
-from .drafts import register_jwe_draft
+from .drafts import register_jwe_enc_draft, register_jwe_alg_draft, ECDH1PUAlgorithm
 
 from .errors import JoseError
 
@@ -31,10 +31,12 @@ register_jws_rfc7518(JsonWebSignature)
 register_jws_rfc8037(JsonWebSignature)
 
 register_jwe_rfc7518(JsonWebEncryption)
-register_jwe_draft(JsonWebEncryption)
+register_jwe_enc_draft(JsonWebEncryption)
+register_jwe_alg_draft(JsonWebEncryption)
 
 # attach algorithms
-ECDHAlgorithm.ALLOWED_KEY_CLS = (ECKey, OKPKey)
+ECDHESAlgorithm.ALLOWED_KEY_CLS = (ECKey, OKPKey)
+ECDH1PUAlgorithm.ALLOWED_KEY_CLS = (ECKey, OKPKey)
 
 # register supported keys
 JsonWebKey.JWK_KEY_CLS = {

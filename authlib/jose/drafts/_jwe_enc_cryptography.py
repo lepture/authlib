@@ -50,5 +50,5 @@ class C20PEncAlgorithm(JWEEncAlgorithm):
         return chacha.decrypt(iv, ciphertext + tag, aad)
 
 
-def register_jwe_draft(cls):
+def register_jwe_enc_draft(cls):
     cls.register_algorithm(C20PEncAlgorithm(256))  # C20P

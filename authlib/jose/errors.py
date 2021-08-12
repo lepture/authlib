@@ -25,12 +25,22 @@ class BadSignatureError(JoseError):
         self.result = result
 
 
-class InvalidHeaderParameterName(JoseError):
+class InvalidHeaderParameterNameError(JoseError):
     error = 'invalid_header_parameter_name'
 
     def __init__(self, name):
         description = 'Invalid Header Parameter Names: {}'.format(name)
-        super(InvalidHeaderParameterName, self).__init__(
+        super(InvalidHeaderParameterNameError, self).__init__(
+            description=description)
+
+
+class InvalidEncryptionAlgorithmForECDH1PUWithKeyWrappingError(JoseError):
+    error = 'invalid_encryption_algorithm_for_ECDH_1PU_with_key_wrapping'
+
+    def __init__(self):
+        description = 'In key agreement with key wrapping mode ECDH-1PU algorithm ' \
+                      'only supports AES_CBC_HMAC_SHA2 family encryption algorithms'
+        super(InvalidEncryptionAlgorithmForECDH1PUWithKeyWrappingError, self).__init__(
             description=description)
 
 

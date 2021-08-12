@@ -15,10 +15,22 @@ class JWEAlgorithm(object):
     def prepare_key(self, raw_data):
         raise NotImplementedError
 
-    def wrap(self, enc_alg, headers, key):
+    def wrap(self, enc_alg, headers, key, sender_key):
         raise NotImplementedError
 
-    def unwrap(self, enc_alg, ek, headers, key):
+    def unwrap(self, enc_alg, ek, headers, key, sender_key, tag):
+        raise NotImplementedError
+
+
+class JWEAlgorithmWithTagAwareKeyAgreement(JWEAlgorithm):
+    """Interface for JWE algorithm with tag-aware key agreement (in key agreement with key wrapping mode).
+    ECDH-1PU is an example of such an algorithm.
+    """
+
+    def generate_keys_and_prepare_headers(self, enc_alg, key, sender_key):
+        raise NotImplementedError
+
+    def agree_upon_key_and_wrap_cek(self, enc_alg, headers, key, sender_key, epk, cek, tag):
         raise NotImplementedError
 
 

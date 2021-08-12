@@ -1,6 +1,7 @@
 from authlib.common.encoding import (
     to_bytes, urlsafe_b64encode, json_b64encode
 )
+from authlib.jose.rfc7516.models import JWEAlgorithmWithTagAwareKeyAgreement
 from authlib.jose.util import (
     extract_header,
     extract_segment,
@@ -12,7 +13,7 @@ from authlib.jose.errors import (
     MissingEncryptionAlgorithmError,
     UnsupportedEncryptionAlgorithmError,
     UnsupportedCompressionAlgorithmError,
-    InvalidHeaderParameterName,
+    InvalidHeaderParameterNameError,
 )
 
 
@@ -47,7 +48,7 @@ class JsonWebEncryption(object):
         elif algorithm.algorithm_location == 'zip':
             cls.ZIP_REGISTRY[algorithm.name] = algorithm
 
-    def serialize_compact(self, protected, payload, key):
+    def serialize_compact(self, protected, payload, key, sender_key=None):
         """Generate a JWE Compact Serialization. The JWE Compact Serialization
         represents encrypted content as a compact, URL-safe string.  This
         string is:
@@ -64,7 +65,8 @@ class JsonWebEncryption(object):
 
         :param protected: A dict of protected header
         :param payload: A string/dict of payload
-        :param key: Private key used to generate signature
+        :param key: Public key used to encrypt payload
+        :param sender_key: Sender's private key if needed by the key agreement algorithm being used
         :return: byte
         """
 
@@ -75,18 +77,30 @@ class JsonWebEncryption(object):
         self._validate_private_headers(protected, alg)
 
         key = prepare_key(alg, protected, key)
+        if sender_key is not None:
+            sender_key = alg.prepare_key(sender_key)
 
         # self._post_validate_header(protected, algorithm)
 
         # step 2: Generate a random Content Encryption Key (CEK)
-        # use enc_alg.generate_cek() in .wrap method
+        # use enc_alg.generate_cek() in scope of upcoming .wrap or .generate_keys_and_prepare_headers call
 
         # step 3: Encrypt the CEK with the recipient's public key
-        wrapped = alg.wrap(enc, protected, key)
-        cek = wrapped['cek']
-        ek = wrapped['ek']
-        if 'header' in wrapped:
-            protected.update(wrapped['header'])
+        if isinstance(alg, JWEAlgorithmWithTagAwareKeyAgreement) and alg.key_size is not None:
+            # For a JWE algorithm with tag-aware key agreement in case key agreement with key wrapping mode is used:
+            # Defer key agreement with key wrapping until authentication tag is computed
+            prep = alg.generate_keys_and_prepare_headers(enc, key, sender_key)
+            epk = prep['epk']
+            cek = prep['cek']
+            protected.update(prep['header'])
+        else:
+            # In any other case:
+            # Keep the normal steps order defined by RFC 7516
+            wrapped = alg.wrap(enc, protected, key, sender_key)
+            cek = wrapped['cek']
+            ek = wrapped['ek']
+            if 'header' in wrapped:
+                protected.update(wrapped['header'])
 
         # step 4: Generate a random JWE Initialization Vector
         iv = enc.generate_iv()
@@ -104,6 +118,14 @@ class JsonWebEncryption(object):
 
         # step 7: perform encryption
         ciphertext, tag = enc.encrypt(msg, aad, iv, cek)
+
+        if isinstance(alg, JWEAlgorithmWithTagAwareKeyAgreement) and alg.key_size is not None:
+            # For a JWE algorithm with tag-aware key agreement in case key agreement with key wrapping mode is used:
+            # Perform key agreement with key wrapping deferred at step 3
+            wrapped = alg.agree_upon_key_and_wrap_cek(enc, protected, key, sender_key, epk, cek, tag)
+            ek = wrapped['ek']
+
+        # step 8: build resulting message
         return b'.'.join([
             protected_segment,
             urlsafe_b64encode(ek),
@@ -112,12 +134,13 @@ class JsonWebEncryption(object):
             urlsafe_b64encode(tag)
         ])
 
-    def deserialize_compact(self, s, key, decode=None):
+    def deserialize_compact(self, s, key, decode=None, sender_key=None):
         """Exact JWS Compact Serialization, and validate with the given key.
 
         :param s: text of JWS Compact Serialization
-        :param key: key used to verify the signature
+        :param key: private key used to decrypt payload
         :param decode: a function to decode plaintext data
+        :param sender_key: sender's public key if needed by the key agreement algorithm being used
         :return: dict
         """
         try:
@@ -138,8 +161,18 @@ class JsonWebEncryption(object):
         self._validate_private_headers(protected, alg)
 
         key = prepare_key(alg, protected, key)
+        if sender_key is not None:
+            sender_key = alg.prepare_key(sender_key)
 
-        cek = alg.unwrap(enc, ek, protected, key)
+        if isinstance(alg, JWEAlgorithmWithTagAwareKeyAgreement) and alg.key_size is not None:
+            # For a JWE algorithm with tag-aware key agreement in case key agreement with key wrapping mode is used:
+            # Provide authentication tag to .unwrap method
+            cek = alg.unwrap(enc, ek, protected, key, sender_key, tag)
+        else:
+            # In any other case:
+            # Don't provide authentication tag to .unwrap method
+            cek = alg.unwrap(enc, ek, protected, key, sender_key)
+
         aad = to_bytes(protected_s, 'ascii')
         msg = enc.decrypt(ciphertext, aad, iv, tag, cek)
 
@@ -196,7 +229,7 @@ class JsonWebEncryption(object):
 
         for k in header:
             if k not in names:
-                raise InvalidHeaderParameterName(k)
+                raise InvalidHeaderParameterNameError(k)
 
 
 def prepare_key(alg, header, key):
