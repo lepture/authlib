@@ -124,8 +124,6 @@ class BaseApp(object):
         state = self.framework.get_session_data(request, 'state')
         if state != request_state:
             raise MismatchingStateError()
-        if state:
-            params['state'] = state
 
         code_verifier = self.framework.get_session_data(request, 'code_verifier')
         if code_verifier:
