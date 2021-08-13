@@ -60,7 +60,7 @@ class JWEEncAlgorithm(object):
         :param aad: additional authenticated data in bytes
         :param iv: initialization vector in bytes
         :param key: encrypted key in bytes
-        :return: (ciphertext, iv, tag)
+        :return: (ciphertext, tag)
         """
         raise NotImplementedError
 
