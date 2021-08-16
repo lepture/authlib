@@ -29,13 +29,13 @@ class DirectAlgorithm(JWEAlgorithm):
     def prepare_key(self, raw_data):
         return OctKey.import_key(raw_data)
 
-    def wrap(self, enc_alg, headers, key, sender_key=None):
+    def wrap(self, enc_alg, headers, key):
         cek = key.get_op_key('encrypt')
         if len(cek) * 8 != enc_alg.CEK_SIZE:
             raise ValueError('Invalid "cek" length')
         return {'ek': b'', 'cek': cek}
 
-    def unwrap(self, enc_alg, ek, headers, key, sender_key=None, tag=None):
+    def unwrap(self, enc_alg, ek, headers, key):
         cek = key.get_op_key('decrypt')
         if len(cek) * 8 != enc_alg.CEK_SIZE:
             raise ValueError('Invalid "cek" length')
@@ -55,7 +55,7 @@ class RSAAlgorithm(JWEAlgorithm):
     def prepare_key(self, raw_data):
         return RSAKey.import_key(raw_data)
 
-    def wrap(self, enc_alg, headers, key, sender_key=None):
+    def wrap(self, enc_alg, headers, key):
         cek = enc_alg.generate_cek()
         op_key = key.get_op_key('wrapKey')
         if op_key.key_size < self.key_size:
@@ -63,7 +63,7 @@ class RSAAlgorithm(JWEAlgorithm):
         ek = op_key.encrypt(cek, self.padding)
         return {'ek': ek, 'cek': cek}
 
-    def unwrap(self, enc_alg, ek, headers, key, sender_key=None, tag=None):
+    def unwrap(self, enc_alg, ek, headers, key):
         # it will raise ValueError if failed
         op_key = key.get_op_key('unwrapKey')
         cek = op_key.decrypt(ek, self.padding)
@@ -92,11 +92,11 @@ class AESAlgorithm(JWEAlgorithm):
         ek = aes_key_wrap(op_key, cek, default_backend())
         return {'ek': ek, 'cek': cek}
 
-    def wrap(self, enc_alg, headers, key, sender_key=None):
+    def wrap(self, enc_alg, headers, key):
         cek = enc_alg.generate_cek()
         return self.wrap_cek(cek, key)
 
-    def unwrap(self, enc_alg, ek, headers, key, sender_key=None, tag=None):
+    def unwrap(self, enc_alg, ek, headers, key):
         op_key = key.get_op_key('unwrapKey')
         self._check_key(op_key)
         cek = aes_key_unwrap(op_key, ek, default_backend())
@@ -121,7 +121,7 @@ class AESGCMAlgorithm(JWEAlgorithm):
             raise ValueError(
                 'A key of size {} bits is required.'.format(self.key_size))
 
-    def wrap(self, enc_alg, headers, key, sender_key=None):
+    def wrap(self, enc_alg, headers, key):
         cek = enc_alg.generate_cek()
         op_key = key.get_op_key('wrapKey')
         self._check_key(op_key)
@@ -142,7 +142,7 @@ class AESGCMAlgorithm(JWEAlgorithm):
         }
         return {'ek': ek, 'cek': cek, 'header': h}
 
-    def unwrap(self, enc_alg, ek, headers, key, sender_key=None, tag=None):
+    def unwrap(self, enc_alg, ek, headers, key):
         op_key = key.get_op_key('unwrapKey')
         self._check_key(op_key)
 
@@ -219,7 +219,7 @@ class ECDHESAlgorithm(JWEAlgorithm):
         fixed_info = self.compute_fixed_info(headers, bit_size)
         return self.compute_derived_key(shared_key, fixed_info, bit_size)
 
-    def wrap(self, enc_alg, headers, key, sender_key=None):
+    def wrap(self, enc_alg, headers, key):
         if self.key_size is None:
             bit_size = enc_alg.CEK_SIZE
         else:
@@ -241,7 +241,7 @@ class ECDHESAlgorithm(JWEAlgorithm):
         rv['header'] = h
         return rv
 
-    def unwrap(self, enc_alg, ek, headers, key, sender_key=None, tag=None):
+    def unwrap(self, enc_alg, ek, headers, key):
         if 'epk' not in headers:
             raise ValueError('Missing "epk" in headers')
 
