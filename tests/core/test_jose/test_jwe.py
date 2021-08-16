@@ -95,6 +95,70 @@ class JWETest(unittest.TestCase):
             s, private_key,
         )
 
+    def test_inappropriate_sender_key_for_serialize_compact(self):
+        jwe = JsonWebEncryption()
+        alice_key = {
+            "kty": "EC",
+            "crv": "P-256",
+            "x": "WKn-ZIGevcwGIyyrzFoZNBdaq9_TsqzGl96oc0CWuis",
+            "y": "y77t-RvAHRKTsSGdIYUfweuOvwrvDD-Q3Hv5J0fSKbE",
+            "d": "Hndv7ZZjs_ke8o9zXYo3iq-Yr8SewI5vrqd0pAvEPqg"
+        }
+        bob_key = {
+            "kty": "EC",
+            "crv": "P-256",
+            "x": "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
+            "y": "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck",
+            "d": "VEmDZpDXXK8p8N0Cndsxs924q6nS1RXFASRl6BfUqdw"
+        }
+
+        protected = {'alg': 'ECDH-1PU', 'enc': 'A256GCM'}
+        self.assertRaises(
+            ValueError,
+            jwe.serialize_compact,
+            protected, b'hello', bob_key
+        )
+
+        protected = {'alg': 'ECDH-ES', 'enc': 'A256GCM'}
+        self.assertRaises(
+            ValueError,
+            jwe.serialize_compact,
+            protected, b'hello', bob_key, sender_key=alice_key
+        )
+
+    def test_inappropriate_sender_key_for_deserialize_compact(self):
+        jwe = JsonWebEncryption()
+        alice_key = {
+            "kty": "EC",
+            "crv": "P-256",
+            "x": "WKn-ZIGevcwGIyyrzFoZNBdaq9_TsqzGl96oc0CWuis",
+            "y": "y77t-RvAHRKTsSGdIYUfweuOvwrvDD-Q3Hv5J0fSKbE",
+            "d": "Hndv7ZZjs_ke8o9zXYo3iq-Yr8SewI5vrqd0pAvEPqg"
+        }
+        bob_key = {
+            "kty": "EC",
+            "crv": "P-256",
+            "x": "weNJy2HscCSM6AEDTDg04biOvhFhyyWvOHQfeF_PxMQ",
+            "y": "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck",
+            "d": "VEmDZpDXXK8p8N0Cndsxs924q6nS1RXFASRl6BfUqdw"
+        }
+
+        protected = {'alg': 'ECDH-1PU', 'enc': 'A256GCM'}
+        data = jwe.serialize_compact(protected, b'hello', bob_key, sender_key=alice_key)
+        self.assertRaises(
+            ValueError,
+            jwe.deserialize_compact,
+            data, bob_key
+        )
+
+        protected = {'alg': 'ECDH-ES', 'enc': 'A256GCM'}
+        data = jwe.serialize_compact(protected, b'hello', bob_key)
+        self.assertRaises(
+            ValueError,
+            jwe.deserialize_compact,
+            data, bob_key, sender_key=alice_key
+        )
+
     def test_compact_rsa(self):
         jwe = JsonWebEncryption()
         s = jwe.serialize_compact(

@@ -66,12 +66,21 @@ class JsonWebEncryption(object):
         :param protected: A dict of protected header
         :param payload: A string/dict of payload
         :param key: Public key used to encrypt payload
-        :param sender_key: Sender's private key if needed by the key agreement algorithm being used
+        :param sender_key: Sender's private key in case JWEAlgorithmWithTagAwareKeyAgreement is used
         :return: byte
         """
 
         # step 1: Prepare algorithms & key
         alg = self.get_header_alg(protected)
+        if isinstance(alg, JWEAlgorithmWithTagAwareKeyAgreement):
+            if sender_key is None:
+                raise ValueError("{} algorithm requires sender_key but passed sender_key value is None"
+                                 .format(alg.name))
+        else:
+            if sender_key is not None:
+                raise ValueError("{} algorithm does not use sender_key but passed sender_key value is not None"
+                                 .format(alg.name))
+
         enc = self.get_header_enc(protected)
         zip_alg = self.get_header_zip(protected)
         self._validate_private_headers(protected, alg)
@@ -96,7 +105,10 @@ class JsonWebEncryption(object):
         else:
             # In any other case:
             # Keep the normal steps order defined by RFC 7516
-            wrapped = alg.wrap(enc, protected, key, sender_key)
+            if isinstance(alg, JWEAlgorithmWithTagAwareKeyAgreement):
+                wrapped = alg.wrap(enc, protected, key, sender_key)
+            else:
+                wrapped = alg.wrap(enc, protected, key)
             cek = wrapped['cek']
             ek = wrapped['ek']
             if 'header' in wrapped:
@@ -140,7 +152,7 @@ class JsonWebEncryption(object):
         :param s: text of JWS Compact Serialization
         :param key: private key used to decrypt payload
         :param decode: a function to decode plaintext data
-        :param sender_key: sender's public key if needed by the key agreement algorithm being used
+        :param sender_key: sender's public key in case JWEAlgorithmWithTagAwareKeyAgreement is used
         :return: dict
         """
         try:
@@ -156,6 +168,15 @@ class JsonWebEncryption(object):
         tag = extract_segment(tag_s, DecodeError, 'authentication tag')
 
         alg = self.get_header_alg(protected)
+        if isinstance(alg, JWEAlgorithmWithTagAwareKeyAgreement):
+            if sender_key is None:
+                raise ValueError("{} algorithm requires sender_key but passed sender_key value is None"
+                                 .format(alg.name))
+        else:
+            if sender_key is not None:
+                raise ValueError("{} algorithm does not use sender_key but passed sender_key value is not None"
+                                 .format(alg.name))
+
         enc = self.get_header_enc(protected)
         zip_alg = self.get_header_zip(protected)
         self._validate_private_headers(protected, alg)
@@ -164,14 +185,19 @@ class JsonWebEncryption(object):
         if sender_key is not None:
             sender_key = alg.prepare_key(sender_key)
 
-        if isinstance(alg, JWEAlgorithmWithTagAwareKeyAgreement) and alg.key_size is not None:
-            # For a JWE algorithm with tag-aware key agreement in case key agreement with key wrapping mode is used:
-            # Provide authentication tag to .unwrap method
-            cek = alg.unwrap(enc, ek, protected, key, sender_key, tag)
+        if isinstance(alg, JWEAlgorithmWithTagAwareKeyAgreement):
+            # For a JWE algorithm with tag-aware key agreement:
+            if alg.key_size is not None:
+                # In case key agreement with key wrapping mode is used:
+                # Provide authentication tag to .unwrap method
+                cek = alg.unwrap(enc, ek, protected, key, sender_key, tag)
+            else:
+                # Otherwise, don't provide authentication tag to .unwrap method
+                cek = alg.unwrap(enc, ek, protected, key, sender_key)
         else:
-            # In any other case:
+            # For any other JWE algorithm:
             # Don't provide authentication tag to .unwrap method
-            cek = alg.unwrap(enc, ek, protected, key, sender_key)
+            cek = alg.unwrap(enc, ek, protected, key)
 
         aad = to_bytes(protected_s, 'ascii')
         msg = enc.decrypt(ciphertext, aad, iv, tag, cek)

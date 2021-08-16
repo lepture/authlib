@@ -1,9 +1,9 @@
 import os
+from abc import ABCMeta
 
 
-class JWEAlgorithm(object):
-    """Interface for JWE algorithm. JWA specification (RFC7518) SHOULD
-    implement the algorithms for JWE with this base implementation.
+class JWEAlgorithmBase(object, metaclass=ABCMeta):
+    """Base interface for all JWE algorithms.
     """
     EXTRA_HEADERS = None
 
@@ -15,22 +15,32 @@ class JWEAlgorithm(object):
     def prepare_key(self, raw_data):
         raise NotImplementedError
 
-    def wrap(self, enc_alg, headers, key, sender_key):
+
+class JWEAlgorithm(JWEAlgorithmBase, metaclass=ABCMeta):
+    """Interface for JWE algorithm conforming to RFC7518.
+    JWA specification (RFC7518) SHOULD implement the algorithms for JWE with this base implementation.
+    """
+    def wrap(self, enc_alg, headers, key):
         raise NotImplementedError
 
-    def unwrap(self, enc_alg, ek, headers, key, sender_key, tag):
+    def unwrap(self, enc_alg, ek, headers, key):
         raise NotImplementedError
 
 
-class JWEAlgorithmWithTagAwareKeyAgreement(JWEAlgorithm):
+class JWEAlgorithmWithTagAwareKeyAgreement(JWEAlgorithmBase, metaclass=ABCMeta):
     """Interface for JWE algorithm with tag-aware key agreement (in key agreement with key wrapping mode).
     ECDH-1PU is an example of such an algorithm.
     """
-
     def generate_keys_and_prepare_headers(self, enc_alg, key, sender_key):
         raise NotImplementedError
 
     def agree_upon_key_and_wrap_cek(self, enc_alg, headers, key, sender_key, epk, cek, tag):
+        raise NotImplementedError
+
+    def wrap(self, enc_alg, headers, key, sender_key):
+        raise NotImplementedError
+
+    def unwrap(self, enc_alg, ek, headers, key, sender_key, tag=None):
         raise NotImplementedError
 
 
