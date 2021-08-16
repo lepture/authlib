@@ -72,17 +72,10 @@ class JsonWebEncryption(object):
 
         # step 1: Prepare algorithms & key
         alg = self.get_header_alg(protected)
-        if isinstance(alg, JWEAlgorithmWithTagAwareKeyAgreement):
-            if sender_key is None:
-                raise ValueError("{} algorithm requires sender_key but passed sender_key value is None"
-                                 .format(alg.name))
-        else:
-            if sender_key is not None:
-                raise ValueError("{} algorithm does not use sender_key but passed sender_key value is not None"
-                                 .format(alg.name))
-
         enc = self.get_header_enc(protected)
         zip_alg = self.get_header_zip(protected)
+
+        self._validate_sender_key(sender_key, alg)
         self._validate_private_headers(protected, alg)
 
         key = prepare_key(alg, protected, key)
@@ -168,17 +161,10 @@ class JsonWebEncryption(object):
         tag = extract_segment(tag_s, DecodeError, 'authentication tag')
 
         alg = self.get_header_alg(protected)
-        if isinstance(alg, JWEAlgorithmWithTagAwareKeyAgreement):
-            if sender_key is None:
-                raise ValueError("{} algorithm requires sender_key but passed sender_key value is None"
-                                 .format(alg.name))
-        else:
-            if sender_key is not None:
-                raise ValueError("{} algorithm does not use sender_key but passed sender_key value is not None"
-                                 .format(alg.name))
-
         enc = self.get_header_enc(protected)
         zip_alg = self.get_header_zip(protected)
+
+        self._validate_sender_key(sender_key, alg)
         self._validate_private_headers(protected, alg)
 
         key = prepare_key(alg, protected, key)
@@ -240,6 +226,16 @@ class JsonWebEncryption(object):
             if z not in self.ZIP_REGISTRY:
                 raise UnsupportedCompressionAlgorithmError()
             return self.ZIP_REGISTRY[z]
+
+    def _validate_sender_key(self, sender_key, alg):
+        if isinstance(alg, JWEAlgorithmWithTagAwareKeyAgreement):
+            if sender_key is None:
+                raise ValueError("{} algorithm requires sender_key but passed sender_key value is None"
+                                 .format(alg.name))
+        else:
+            if sender_key is not None:
+                raise ValueError("{} algorithm does not use sender_key but passed sender_key value is not None"
+                                 .format(alg.name))
 
     def _validate_private_headers(self, header, alg):
         # only validate private headers when developers set
