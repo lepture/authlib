@@ -14,7 +14,7 @@ from authlib.jose.errors import (
     MissingAlgorithmError,
     UnsupportedAlgorithmError,
     BadSignatureError,
-    InvalidHeaderParameterName,
+    InvalidHeaderParameterNameError,
 )
 from .models import JWSHeader, JWSObject
 
@@ -267,7 +267,7 @@ class JsonWebSignature(object):
 
             for k in header:
                 if k not in names:
-                    raise InvalidHeaderParameterName(k)
+                    raise InvalidHeaderParameterNameError(k)
 
     def _validate_json_jws(self, payload_segment, payload, header_obj, key):
         protected_segment = header_obj.get('protected')

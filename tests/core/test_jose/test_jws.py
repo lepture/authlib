@@ -173,7 +173,7 @@ class JWSTest(unittest.TestCase):
         protected = {'alg': 'HS256', 'invalid': 'k'}
         header = {'protected': protected, 'header': {'kid': 'a'}}
         self.assertRaises(
-            errors.InvalidHeaderParameterName,
+            errors.InvalidHeaderParameterNameError,
             jws.serialize, header, b'hello', 'secret'
         )
         jws = JsonWebSignature(private_headers=['invalid'])

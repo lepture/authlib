@@ -38,6 +38,7 @@ Specifications
 - RFC8628: OAuth 2.0 Device Authorization Grant
 - OpenID Connect 1.0
 - OpenID Connect Discovery 1.0
+- draft-madden-jose-ecdh-1pu-04: Public Key Authenticated Encryption for JOSE: ECDH-1PU
 
 Implementations
 ---------------

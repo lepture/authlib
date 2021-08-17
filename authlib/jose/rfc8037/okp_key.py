@@ -46,9 +46,10 @@ class OKPKey(AsymmetricKey):
     SSH_PUBLIC_PREFIX = b'ssh-ed25519'
 
     def exchange_shared_key(self, pubkey):
-        # used in ECDHAlgorithm
-        if self.private_key and isinstance(self.private_key, (X25519PrivateKey, X448PrivateKey)):
-            return self.private_key.exchange(pubkey)
+        # used in ECDHESAlgorithm
+        private_key = self.get_private_key()
+        if private_key and isinstance(private_key, (X25519PrivateKey, X448PrivateKey)):
+            return private_key.exchange(pubkey)
         raise ValueError('Invalid key for exchanging shared key')
 
     @staticmethod

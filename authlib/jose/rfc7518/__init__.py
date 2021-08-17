@@ -2,7 +2,7 @@ from .oct_key import OctKey
 from .rsa_key import RSAKey
 from .ec_key import ECKey
 from .jws_algs import JWS_ALGORITHMS
-from .jwe_algs import JWE_ALG_ALGORITHMS, ECDHAlgorithm
+from .jwe_algs import JWE_ALG_ALGORITHMS, ECDHESAlgorithm
 from .jwe_encs import JWE_ENC_ALGORITHMS
 from .jwe_zips import DeflateZipAlgorithm
 
@@ -28,5 +28,5 @@ __all__ = [
     'OctKey',
     'RSAKey',
     'ECKey',
-    'ECDHAlgorithm',
+    'ECDHESAlgorithm',
 ]

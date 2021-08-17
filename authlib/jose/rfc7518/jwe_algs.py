@@ -86,12 +86,15 @@ class AESAlgorithm(JWEAlgorithm):
             raise ValueError(
                 'A key of size {} bits is required.'.format(self.key_size))
 
-    def wrap(self, enc_alg, headers, key):
-        cek = enc_alg.generate_cek()
+    def wrap_cek(self, cek, key):
         op_key = key.get_op_key('wrapKey')
         self._check_key(op_key)
         ek = aes_key_wrap(op_key, cek, default_backend())
         return {'ek': ek, 'cek': cek}
+
+    def wrap(self, enc_alg, headers, key):
+        cek = enc_alg.generate_cek()
+        return self.wrap_cek(cek, key)
 
     def unwrap(self, enc_alg, ek, headers, key):
         op_key = key.get_op_key('unwrapKey')
@@ -162,7 +165,7 @@ class AESGCMAlgorithm(JWEAlgorithm):
         return cek
 
 
-class ECDHAlgorithm(JWEAlgorithm):
+class ECDHESAlgorithm(JWEAlgorithm):
     EXTRA_HEADERS = ['epk', 'apu', 'apv']
     ALLOWED_KEY_CLS = ECKey
 
@@ -184,35 +187,41 @@ class ECDHAlgorithm(JWEAlgorithm):
             return raw_data
         return ECKey.import_key(raw_data)
 
-    def deliver(self, key, pubkey, headers, bit_size):
+    def compute_fixed_info(self, headers, bit_size):
         # AlgorithmID
         if self.key_size is None:
-            alg_id = _u32be_len_input(headers['enc'])
+            alg_id = u32be_len_input(headers['enc'])
         else:
-            alg_id = _u32be_len_input(headers['alg'])
+            alg_id = u32be_len_input(headers['alg'])
 
         # PartyUInfo
-        apu_info = _u32be_len_input(headers.get('apu'), True)
+        apu_info = u32be_len_input(headers.get('apu'), True)
 
         # PartyVInfo
-        apv_info = _u32be_len_input(headers.get('apv'), True)
+        apv_info = u32be_len_input(headers.get('apv'), True)
 
         # SuppPubInfo
         pub_info = struct.pack('>I', bit_size)
 
-        other_info = alg_id + apu_info + apv_info + pub_info
-        shared_key = key.exchange_shared_key(pubkey)
+        return alg_id + apu_info + apv_info + pub_info
+
+    def compute_derived_key(self, shared_key, fixed_info, bit_size):
         ckdf = ConcatKDFHash(
             algorithm=hashes.SHA256(),
             length=bit_size // 8,
-            otherinfo=other_info,
+            otherinfo=fixed_info,
             backend=default_backend()
         )
         return ckdf.derive(shared_key)
 
+    def deliver(self, key, pubkey, headers, bit_size):
+        shared_key = key.exchange_shared_key(pubkey)
+        fixed_info = self.compute_fixed_info(headers, bit_size)
+        return self.compute_derived_key(shared_key, fixed_info, bit_size)
+
     def wrap(self, enc_alg, headers, key):
         if self.key_size is None:
-            bit_size = enc_alg.key_size
+            bit_size = enc_alg.CEK_SIZE
         else:
             bit_size = self.key_size
 
@@ -237,7 +246,7 @@ class ECDHAlgorithm(JWEAlgorithm):
             raise ValueError('Missing "epk" in headers')
 
         if self.key_size is None:
-            bit_size = enc_alg.key_size
+            bit_size = enc_alg.CEK_SIZE
         else:
             bit_size = self.key_size
 
@@ -252,7 +261,7 @@ class ECDHAlgorithm(JWEAlgorithm):
         return self.aeskw.unwrap(enc_alg, ek, headers, kek)
 
 
-def _u32be_len_input(s, base64=False):
+def u32be_len_input(s, base64=False):
     if not s:
         return b'\x00\x00\x00\x00'
     if base64:
@@ -278,10 +287,10 @@ JWE_ALG_ALGORITHMS = [
     AESGCMAlgorithm(128),  # A128GCMKW
     AESGCMAlgorithm(192),  # A192GCMKW
     AESGCMAlgorithm(256),  # A256GCMKW
-    ECDHAlgorithm(None),  # ECDH-ES
-    ECDHAlgorithm(128),  # ECDH-ES+A128KW
-    ECDHAlgorithm(192),  # ECDH-ES+A192KW
-    ECDHAlgorithm(256),  # ECDH-ES+A256KW
+    ECDHESAlgorithm(None),  # ECDH-ES
+    ECDHESAlgorithm(128),  # ECDH-ES+A128KW
+    ECDHESAlgorithm(192),  # ECDH-ES+A192KW
+    ECDHESAlgorithm(256),  # ECDH-ES+A256KW
 ]
 
 # 'PBES2-HS256+A128KW': '',
