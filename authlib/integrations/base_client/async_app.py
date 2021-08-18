@@ -116,7 +116,8 @@ class AsyncOAuth2Mixin(OAuth2Base):
         metadata = await self.load_server_metadata()
         token_endpoint = self.access_token_url or metadata.get('token_endpoint')
         async with self._get_oauth_client(**metadata) as client:
-            client.redirect_uri = redirect_uri
+            if redirect_uri is not None:
+                client.redirect_uri = redirect_uri
             params = {}
             if self.access_token_params:
                 params.update(self.access_token_params)
