@@ -7,7 +7,10 @@ from authlib.jose import OctKey, OKPKey
 from authlib.jose import JsonWebEncryption
 from authlib.common.encoding import urlsafe_b64encode, json_b64encode, to_bytes
 from authlib.jose.errors import InvalidEncryptionAlgorithmForECDH1PUWithKeyWrappingError
+from authlib.jose.drafts import register_jwe_draft
 from tests.util import read_file_path
+
+register_jwe_draft(JsonWebEncryption)
 
 
 class JWETest(unittest.TestCase):

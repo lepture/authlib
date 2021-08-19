@@ -2,8 +2,8 @@ from .oct_key import OctKey
 from .rsa_key import RSAKey
 from .ec_key import ECKey
 from .jws_algs import JWS_ALGORITHMS
-from .jwe_algs import JWE_ALG_ALGORITHMS, ECDHESAlgorithm
-from .jwe_encs import JWE_ENC_ALGORITHMS
+from .jwe_algs import JWE_ALG_ALGORITHMS, AESAlgorithm, ECDHESAlgorithm, u32be_len_input
+from .jwe_encs import JWE_ENC_ALGORITHMS, CBCHS2EncAlgorithm
 from .jwe_zips import DeflateZipAlgorithm
 
 
@@ -28,5 +28,8 @@ __all__ = [
     'OctKey',
     'RSAKey',
     'ECKey',
+    'u32be_len_input',
+    'AESAlgorithm',
     'ECDHESAlgorithm',
+    'CBCHS2EncAlgorithm',
 ]

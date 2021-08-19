@@ -1,18 +1,17 @@
 import struct
-
 from cryptography.hazmat.backends import default_backend
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.kdf.concatkdf import ConcatKDFHash
 
 from authlib.jose.errors import InvalidEncryptionAlgorithmForECDH1PUWithKeyWrappingError
 from authlib.jose.rfc7516 import JWEAlgorithmWithTagAwareKeyAgreement
-from authlib.jose.rfc7518.jwe_algs import AESAlgorithm, ECKey, u32be_len_input
-from authlib.jose.rfc7518.jwe_encs import CBCHS2EncAlgorithm
+from authlib.jose.rfc7518 import AESAlgorithm, CBCHS2EncAlgorithm, ECKey, u32be_len_input
+from authlib.jose.rfc8037 import OKPKey
 
 
 class ECDH1PUAlgorithm(JWEAlgorithmWithTagAwareKeyAgreement):
     EXTRA_HEADERS = ['epk', 'apu', 'apv', 'skid']
-    ALLOWED_KEY_CLS = ECKey
+    ALLOWED_KEY_CLS = (ECKey, OKPKey)
 
     # https://datatracker.ietf.org/doc/html/draft-madden-jose-ecdh-1pu-04
     def __init__(self, key_size=None):

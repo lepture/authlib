@@ -21,7 +21,6 @@ Installing Authlib is simple with `pip <http://www.pip-installer.org/>`_::
 It will also install the dependencies:
 
 - cryptography
-- pycryptodomex
 
 .. note::
     You may enter problems when installing cryptography, check its official
