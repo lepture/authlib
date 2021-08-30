@@ -3,11 +3,10 @@ from authlib.common.encoding import (
     to_unicode,
     urlsafe_b64encode,
     json_b64encode,
-    json_loads,
 )
 from authlib.jose.util import (
     extract_header,
-    extract_segment,
+    extract_segment, ensure_dict,
 )
 from authlib.jose.errors import (
     DecodeError,
@@ -166,7 +165,7 @@ class JsonWebSignature(object):
 
         .. _`Section 7.2`: https://tools.ietf.org/html/rfc7515#section-7.2
         """
-        obj = _ensure_dict(obj)
+        obj = ensure_dict(obj, 'JWS')
 
         payload_segment = obj.get('payload')
         if not payload_segment:
@@ -303,16 +302,3 @@ def _extract_signature(signature_segment):
 
 def _extract_payload(payload_segment):
     return extract_segment(payload_segment, DecodeError, 'payload')
-
-
-def _ensure_dict(s):
-    if not isinstance(s, dict):
-        try:
-            s = json_loads(to_unicode(s))
-        except (ValueError, TypeError):
-            raise DecodeError('Invalid JWS')
-
-    if not isinstance(s, dict):
-        raise DecodeError('Invalid JWS')
-
-    return s

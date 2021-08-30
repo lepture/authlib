@@ -1,5 +1,6 @@
 import binascii
-from authlib.common.encoding import urlsafe_b64decode, json_loads
+from authlib.common.encoding import urlsafe_b64decode, json_loads, to_unicode
+from authlib.jose.errors import DecodeError
 
 
 def extract_header(header_segment, error_cls):
@@ -21,3 +22,16 @@ def extract_segment(segment, error_cls, name='payload'):
     except (TypeError, binascii.Error):
         msg = 'Invalid {} padding'.format(name)
         raise error_cls(msg)
+
+
+def ensure_dict(s, structure_name):
+    if not isinstance(s, dict):
+        try:
+            s = json_loads(to_unicode(s))
+        except (ValueError, TypeError):
+            raise DecodeError('Invalid {}'.format(structure_name))
+
+    if not isinstance(s, dict):
+        raise DecodeError('Invalid {}'.format(structure_name))
+
+    return s
