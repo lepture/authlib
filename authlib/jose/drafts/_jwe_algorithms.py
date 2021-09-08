@@ -31,6 +31,15 @@ class ECDH1PUAlgorithm(JWEAlgorithmWithTagAwareKeyAgreement):
             return raw_data
         return ECKey.import_key(raw_data)
 
+    def generate_preset(self, enc_alg, key):
+        epk = self._generate_ephemeral_key(key)
+        h = self._prepare_headers(epk)
+        preset = {'epk': epk, 'header': h}
+        if self.key_size is not None:
+            cek = enc_alg.generate_cek()
+            preset['cek'] = cek
+        return preset
+
     def compute_shared_key(self, shared_key_e, shared_key_s):
         return shared_key_e + shared_key_s
 
@@ -87,19 +96,27 @@ class ECDH1PUAlgorithm(JWEAlgorithmWithTagAwareKeyAgreement):
     def _generate_ephemeral_key(self, key):
         return key.generate_key(key['crv'], is_private=True)
 
-    def _prepare_headers(self, sender_key, epk):
+    def _prepare_headers(self, epk):
         # REQUIRED_JSON_FIELDS contains only public fields
         pub_epk = {k: epk[k] for k in epk.REQUIRED_JSON_FIELDS}
         pub_epk['kty'] = epk.kty
         return {'epk': pub_epk}
 
-    def generate_keys_and_prepare_headers(self, enc_alg, key, sender_key):
+    def generate_keys_and_prepare_headers(self, enc_alg, key, sender_key, preset=None):
         if not isinstance(enc_alg, CBCHS2EncAlgorithm):
             raise InvalidEncryptionAlgorithmForECDH1PUWithKeyWrappingError()
 
-        epk = self._generate_ephemeral_key(key)
-        cek = enc_alg.generate_cek()
-        h = self._prepare_headers(sender_key, epk)
+        if preset and 'epk' in preset:
+            epk = preset['epk']
+            h = {}
+        else:
+            epk = self._generate_ephemeral_key(key)
+            h = self._prepare_headers(epk)
+
+        if preset and 'cek' in preset:
+            cek = preset['cek']
+        else:
+            cek = enc_alg.generate_cek()
 
         return {'epk': epk, 'cek': cek, 'header': h}
 
@@ -121,13 +138,17 @@ class ECDH1PUAlgorithm(JWEAlgorithmWithTagAwareKeyAgreement):
         dk = self._agree_upon_key_at_sender(enc_alg, headers, key, sender_key, epk, tag)
         return self._wrap_cek(cek, dk)
 
-    def wrap(self, enc_alg, headers, key, sender_key):
+    def wrap(self, enc_alg, headers, key, sender_key, preset=None):
         # In this class this method is used in direct key agreement mode only
         if self.key_size is not None:
             raise RuntimeError('Invalid algorithm state detected')
 
-        epk = self._generate_ephemeral_key(key)
-        h = self._prepare_headers(sender_key, epk)
+        if preset and 'epk' in preset:
+            epk = preset['epk']
+            h = {}
+        else:
+            epk = self._generate_ephemeral_key(key)
+            h = self._prepare_headers(epk)
 
         dk = self._agree_upon_key_at_sender(enc_alg, headers, key, sender_key, epk)
 

@@ -29,7 +29,10 @@ class DirectAlgorithm(JWEAlgorithm):
     def prepare_key(self, raw_data):
         return OctKey.import_key(raw_data)
 
-    def wrap(self, enc_alg, headers, key):
+    def generate_preset(self, enc_alg, key):
+        return {}
+
+    def wrap(self, enc_alg, headers, key, preset=None):
         cek = key.get_op_key('encrypt')
         if len(cek) * 8 != enc_alg.CEK_SIZE:
             raise ValueError('Invalid "cek" length')
@@ -55,8 +58,16 @@ class RSAAlgorithm(JWEAlgorithm):
     def prepare_key(self, raw_data):
         return RSAKey.import_key(raw_data)
 
-    def wrap(self, enc_alg, headers, key):
+    def generate_preset(self, enc_alg, key):
         cek = enc_alg.generate_cek()
+        return {'cek': cek}
+
+    def wrap(self, enc_alg, headers, key, preset=None):
+        if preset and 'cek' in preset:
+            cek = preset['cek']
+        else:
+            cek = enc_alg.generate_cek()
+
         op_key = key.get_op_key('wrapKey')
         if op_key.key_size < self.key_size:
             raise ValueError('A key of size 2048 bits or larger MUST be used')
@@ -81,6 +92,10 @@ class AESAlgorithm(JWEAlgorithm):
     def prepare_key(self, raw_data):
         return OctKey.import_key(raw_data)
 
+    def generate_preset(self, enc_alg, key):
+        cek = enc_alg.generate_cek()
+        return {'cek': cek}
+
     def _check_key(self, key):
         if len(key) * 8 != self.key_size:
             raise ValueError(
@@ -92,8 +107,11 @@ class AESAlgorithm(JWEAlgorithm):
         ek = aes_key_wrap(op_key, cek, default_backend())
         return {'ek': ek, 'cek': cek}
 
-    def wrap(self, enc_alg, headers, key):
-        cek = enc_alg.generate_cek()
+    def wrap(self, enc_alg, headers, key, preset=None):
+        if preset and 'cek' in preset:
+            cek = preset['cek']
+        else:
+            cek = enc_alg.generate_cek()
         return self.wrap_cek(cek, key)
 
     def unwrap(self, enc_alg, ek, headers, key):
@@ -116,13 +134,21 @@ class AESGCMAlgorithm(JWEAlgorithm):
     def prepare_key(self, raw_data):
         return OctKey.import_key(raw_data)
 
+    def generate_preset(self, enc_alg, key):
+        cek = enc_alg.generate_cek()
+        return {'cek': cek}
+
     def _check_key(self, key):
         if len(key) * 8 != self.key_size:
             raise ValueError(
                 'A key of size {} bits is required.'.format(self.key_size))
 
-    def wrap(self, enc_alg, headers, key):
-        cek = enc_alg.generate_cek()
+    def wrap(self, enc_alg, headers, key, preset=None):
+        if preset and 'cek' in preset:
+            cek = preset['cek']
+        else:
+            cek = enc_alg.generate_cek()
+
         op_key = key.get_op_key('wrapKey')
         self._check_key(op_key)
 
@@ -187,6 +213,15 @@ class ECDHESAlgorithm(JWEAlgorithm):
             return raw_data
         return ECKey.import_key(raw_data)
 
+    def generate_preset(self, enc_alg, key):
+        epk = self._generate_ephemeral_key(key)
+        h = self._prepare_headers(epk)
+        preset = {'epk': epk, 'header': h}
+        if self.key_size is not None:
+            cek = enc_alg.generate_cek()
+            preset['cek'] = cek
+        return preset
+
     def compute_fixed_info(self, headers, bit_size):
         # AlgorithmID
         if self.key_size is None:
@@ -219,25 +254,41 @@ class ECDHESAlgorithm(JWEAlgorithm):
         fixed_info = self.compute_fixed_info(headers, bit_size)
         return self.compute_derived_key(shared_key, fixed_info, bit_size)
 
-    def wrap(self, enc_alg, headers, key):
+    def _generate_ephemeral_key(self, key):
+        return key.generate_key(key['crv'], is_private=True)
+
+    def _prepare_headers(self, epk):
+        # REQUIRED_JSON_FIELDS contains only public fields
+        pub_epk = {k: epk[k] for k in epk.REQUIRED_JSON_FIELDS}
+        pub_epk['kty'] = epk.kty
+        return {'epk': pub_epk}
+
+    def wrap(self, enc_alg, headers, key, preset=None):
         if self.key_size is None:
             bit_size = enc_alg.CEK_SIZE
         else:
             bit_size = self.key_size
 
-        epk = key.generate_key(key['crv'], is_private=True)
+        if preset and 'epk' in preset:
+            epk = preset['epk']
+            h = {}
+        else:
+            epk = self._generate_ephemeral_key(key)
+            h = self._prepare_headers(epk)
+
         public_key = key.get_op_key('wrapKey')
         dk = self.deliver(epk, public_key, headers, bit_size)
 
-        # REQUIRED_JSON_FIELDS contains only public fields
-        pub_epk = {k: epk[k] for k in epk.REQUIRED_JSON_FIELDS}
-        pub_epk['kty'] = epk.kty
-        h = {'epk': pub_epk}
         if self.key_size is None:
             return {'ek': b'', 'cek': dk, 'header': h}
 
+        if preset and 'cek' in preset:
+            preset_for_kw = {'cek': preset['cek']}
+        else:
+            preset_for_kw = None
+
         kek = self.aeskw.prepare_key(dk)
-        rv = self.aeskw.wrap(enc_alg, headers, kek)
+        rv = self.aeskw.wrap(enc_alg, headers, kek, preset_for_kw)
         rv['header'] = h
         return rv
 

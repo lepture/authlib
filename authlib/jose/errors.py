@@ -29,7 +29,7 @@ class InvalidHeaderParameterNameError(JoseError):
     error = 'invalid_header_parameter_name'
 
     def __init__(self, name):
-        description = 'Invalid Header Parameter Names: {}'.format(name)
+        description = 'Invalid Header Parameter Name: {}'.format(name)
         super(InvalidHeaderParameterNameError, self).__init__(
             description=description)
 
@@ -42,6 +42,20 @@ class InvalidEncryptionAlgorithmForECDH1PUWithKeyWrappingError(JoseError):
                       'only supports AES_CBC_HMAC_SHA2 family encryption algorithms'
         super(InvalidEncryptionAlgorithmForECDH1PUWithKeyWrappingError, self).__init__(
             description=description)
+
+
+class InvalidAlgorithmForMultipleRecipientsMode(JoseError):
+    error = 'invalid_algorithm_for_multiple_recipients_mode'
+
+    def __init__(self, alg):
+        description = '{} algorithm cannot be used in multiple recipients mode'.format(alg)
+        super(InvalidAlgorithmForMultipleRecipientsMode, self).__init__(
+            description=description)
+
+
+class KeyMismatchError(JoseError):
+    error = 'key_mismatch_error'
+    description = 'Key does not match to any recipient'
 
 
 class MissingEncryptionAlgorithmError(JoseError):
