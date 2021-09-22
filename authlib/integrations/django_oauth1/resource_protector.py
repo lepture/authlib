@@ -42,7 +42,7 @@ class ResourceProtector(_ResourceProtector):
         else:
             body = None
 
-        url = request.get_raw_uri()
+        url = request.build_absolute_uri()
         req = self.validate_request(request.method, url, body, request.headers)
         return req.credential
 

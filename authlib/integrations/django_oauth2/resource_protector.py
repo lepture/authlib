@@ -22,7 +22,7 @@ class ResourceProtector(_ResourceProtector):
         :param scopes: a list of scope values
         :return: token object
         """
-        url = request.get_raw_uri()
+        url = request.build_absolute_uri()
         req = HttpRequest(request.method, url, request.body, request.headers)
         req.req = request
         if isinstance(scopes, str):
