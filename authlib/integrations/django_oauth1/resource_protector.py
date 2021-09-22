@@ -44,7 +44,7 @@ class ResourceProtector(_ResourceProtector):
             body = None
 
         headers = parse_request_headers(request)
-        url = request.get_raw_uri()
+        url = request.build_absolute_uri()
         req = self.validate_request(request.method, url, body, headers)
         return req.credential
 

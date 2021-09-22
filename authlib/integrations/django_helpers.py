@@ -18,7 +18,7 @@ def create_oauth_request(request, request_cls, use_json=False):
         body = None
 
     headers = parse_request_headers(request)
-    url = request.get_raw_uri()
+    url = request.build_absolute_uri()
     return request_cls(request.method, url, body, headers)
 
 

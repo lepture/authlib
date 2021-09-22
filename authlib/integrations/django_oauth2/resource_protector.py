@@ -25,7 +25,7 @@ class ResourceProtector(_ResourceProtector):
         :return: token object
         """
         headers = parse_request_headers(request)
-        url = request.get_raw_uri()
+        url = request.build_absolute_uri()
         req = HttpRequest(request.method, url, request.body, headers)
         if not callable(operator):
             operator = operator.upper()
