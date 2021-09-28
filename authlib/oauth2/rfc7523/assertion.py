@@ -5,10 +5,11 @@ from authlib.common.security import generate_token
 
 def sign_jwt_bearer_assertion(
         key, issuer, audience, subject=None, issued_at=None,
-        expires_at=None, alg=None, header=None, claims=None, **kwargs):
+        expires_at=None, claims=None, header=None, **kwargs):
 
     if header is None:
         header = {}
+    alg = kwargs.pop('alg', None)
     if alg is not None:
         header['alg'] = alg
     if 'alg' not in header:
