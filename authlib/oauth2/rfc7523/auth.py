@@ -25,10 +25,13 @@ class ClientSecretJWT(object):
     :param claims: Extra JWT claims
     """
     name = 'client_secret_jwt'
+    alg = 'HS256'
 
-    def __init__(self, token_endpoint=None, claims=None):
+    def __init__(self, token_endpoint=None, claims=None, alg=None):
         self.token_endpoint = token_endpoint
         self.claims = claims
+        if alg is not None:
+            self.alg = alg
 
     def sign(self, auth, token_endpoint):
         return client_secret_jwt_sign(
@@ -36,6 +39,7 @@ class ClientSecretJWT(object):
             client_id=auth.client_id,
             token_endpoint=token_endpoint,
             claims=self.claims,
+            alg=self.alg,
         )
 
     def __call__(self, auth, method, uri, headers, body):
@@ -72,6 +76,7 @@ class PrivateKeyJWT(ClientSecretJWT):
     :param claims: Extra JWT claims
     """
     name = 'private_key_jwt'
+    alg = 'RS256'
 
     def sign(self, auth, token_endpoint):
         return private_key_jwt_sign(
@@ -79,6 +84,7 @@ class PrivateKeyJWT(ClientSecretJWT):
             client_id=auth.client_id,
             token_endpoint=token_endpoint,
             claims=self.claims,
+            alg=self.alg,
         )
 
 
