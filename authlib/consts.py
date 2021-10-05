@@ -1,5 +1,5 @@
 name = 'authlib'
-version = '1.0.dev374'
+version = '1.1.dev1'
 author = 'Quartic.ai Engineering Team'
 homepage = 'https://github.com/Quarticai/authlib'
 
