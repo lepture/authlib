@@ -38,15 +38,15 @@ def sign_jwt_bearer_assertion(
 
 
 def client_secret_jwt_sign(client_secret, client_id, token_endpoint, alg='HS256',
-                           header=None, claims=None, **kwargs):
+                           claims=None, header=None, **kwargs):
     return _sign(client_secret, client_id, token_endpoint,
-                 alg, header=header, claims=claims, **kwargs)
+                 alg, claims=claims, header=header, **kwargs)
 
 
 def private_key_jwt_sign(private_key, client_id, token_endpoint, alg='RS256',
-                         header=None, claims=None, **kwargs):
+                         claims=None, header=None, **kwargs):
     return _sign(private_key, client_id, token_endpoint,
-                 alg, header=header, claims=claims, **kwargs)
+                 alg, claims=claims, header=header, **kwargs)
 
 
 def _sign(key, client_id, token_endpoint, alg, claims=None, **kwargs):

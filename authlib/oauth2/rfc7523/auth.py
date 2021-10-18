@@ -27,21 +27,19 @@ class ClientSecretJWT(object):
     name = 'client_secret_jwt'
     alg = 'HS256'
 
-    def __init__(self, token_endpoint=None, alg=None, header=None, claims=None):
+    def __init__(self, token_endpoint=None, claims=None, header=None):
         self.token_endpoint = token_endpoint
-        self.header = header
         self.claims = claims
-        if alg is not None:
-            self.alg = alg
+        self.header = header
 
     def sign(self, auth, token_endpoint):
         return client_secret_jwt_sign(
             auth.client_secret,
             client_id=auth.client_id,
             token_endpoint=token_endpoint,
-            alg=self.alg,
-            header=self.header,
             claims=self.claims,
+            header=self.header,
+            alg=self.alg,
         )
 
     def __call__(self, auth, method, uri, headers, body):
@@ -85,9 +83,9 @@ class PrivateKeyJWT(ClientSecretJWT):
             auth.client_secret,
             client_id=auth.client_id,
             token_endpoint=token_endpoint,
-            alg=self.alg,
-            header=self.header,
             claims=self.claims,
+            header=self.header,
+            alg=self.alg,
         )
 
 
