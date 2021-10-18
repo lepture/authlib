@@ -1,4 +1,4 @@
-from httpx import AsyncClient, Client
+from httpx import AsyncClient, Client, USE_CLIENT_DEFAULT
 try:
     from httpx._config import UNSET
 except ImportError:
@@ -9,7 +9,7 @@ from authlib.oauth2 import OAuth2Error
 from .utils import extract_client_kwargs
 from .oauth2_client import OAuth2Auth
 
-__all__ = ['AsyncAssertionClient']
+__all__ = ['AsyncAssertionClient', 'AssertionClient']
 
 
 class AsyncAssertionClient(_AssertionClient, AsyncClient):
@@ -35,7 +35,7 @@ class AsyncAssertionClient(_AssertionClient, AsyncClient):
 
     async def request(self, method, url, withhold_token=False, auth=None, **kwargs):
         """Send request with auto refresh token feature."""
-        if not withhold_token and auth is UNSET:
+        if not withhold_token and auth is USE_CLIENT_DEFAULT:
             if not self.token or self.token.is_expired():
                 await self.refresh_token()
 
@@ -80,7 +80,7 @@ class AssertionClient(_AssertionClient, Client):
 
     def request(self, method, url, withhold_token=False, auth=None, **kwargs):
         """Send request with auto refresh token feature."""
-        if not withhold_token and auth is UNSET:
+        if not withhold_token and auth is USE_CLIENT_DEFAULT:
             if not self.token or self.token.is_expired():
                 self.refresh_token()
 
