@@ -6,6 +6,23 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 0.15.5
+--------------
+
+**Released on Oct 18, 2021.**
+
+- Make Authlib compatible with latest httpx
+- Make Authlib compatible with latest werkzeug
+- Allow customize RFC7523 ``alg`` value
+
+
+Version 0.15.4
+--------------
+
+**Released on Jul 17, 2021.**
+
+- Security fix when JWT claims is None
+
 Version 0.15.3
 --------------
 
