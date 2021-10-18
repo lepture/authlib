@@ -27,8 +27,9 @@ class ClientSecretJWT(object):
     name = 'client_secret_jwt'
     alg = 'HS256'
 
-    def __init__(self, token_endpoint=None, claims=None, alg=None):
+    def __init__(self, token_endpoint=None, alg=None, header=None, claims=None):
         self.token_endpoint = token_endpoint
+        self.header = header
         self.claims = claims
         if alg is not None:
             self.alg = alg
@@ -38,8 +39,9 @@ class ClientSecretJWT(object):
             auth.client_secret,
             client_id=auth.client_id,
             token_endpoint=token_endpoint,
-            claims=self.claims,
             alg=self.alg,
+            header=self.header,
+            claims=self.claims,
         )
 
     def __call__(self, auth, method, uri, headers, body):
@@ -83,8 +85,9 @@ class PrivateKeyJWT(ClientSecretJWT):
             auth.client_secret,
             client_id=auth.client_id,
             token_endpoint=token_endpoint,
-            claims=self.claims,
             alg=self.alg,
+            header=self.header,
+            claims=self.claims,
         )
 
 

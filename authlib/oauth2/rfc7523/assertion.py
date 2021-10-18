@@ -10,7 +10,7 @@ def sign_jwt_bearer_assertion(
     if header is None:
         header = {}
     alg = kwargs.pop('alg', None)
-    if alg:
+    if alg is not None:
         header['alg'] = alg
     if 'alg' not in header:
         raise ValueError('Missing "alg" in header')
@@ -38,13 +38,15 @@ def sign_jwt_bearer_assertion(
 
 
 def client_secret_jwt_sign(client_secret, client_id, token_endpoint, alg='HS256',
-                           claims=None, **kwargs):
-    return _sign(client_secret, client_id, token_endpoint, alg, claims, **kwargs)
+                           header=None, claims=None, **kwargs):
+    return _sign(client_secret, client_id, token_endpoint,
+                 alg, header=header, claims=claims, **kwargs)
 
 
 def private_key_jwt_sign(private_key, client_id, token_endpoint, alg='RS256',
-                         claims=None, **kwargs):
-    return _sign(private_key, client_id, token_endpoint, alg, claims, **kwargs)
+                         header=None, claims=None, **kwargs):
+    return _sign(private_key, client_id, token_endpoint,
+                 alg, header=header, claims=claims, **kwargs)
 
 
 def _sign(key, client_id, token_endpoint, alg, claims=None, **kwargs):
