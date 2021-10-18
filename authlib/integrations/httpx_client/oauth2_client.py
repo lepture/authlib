@@ -26,6 +26,7 @@ class OAuth2Auth(Auth, TokenAuth):
         try:
             url, headers, body = self.prepare(
                 str(request.url), request.headers, request.content)
+            headers['Content-Length'] = str(len(body))
             yield Request(method=request.method, url=url, headers=headers, data=body)
         except KeyError as error:
             description = 'Unsupported token_type: {}'.format(str(error))
@@ -38,6 +39,7 @@ class OAuth2ClientAuth(Auth, ClientAuth):
     def auth_flow(self, request: Request) -> typing.Generator[Request, Response, None]:
         url, headers, body = self.prepare(
             request.method, str(request.url), request.headers, request.content)
+        headers['Content-Length'] = str(len(body))
         yield Request(method=request.method, url=url, headers=headers, data=body)
 
 
