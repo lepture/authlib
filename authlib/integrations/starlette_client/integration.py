@@ -10,7 +10,7 @@ from typing import (
 from ..base_client import FrameworkIntegration
 
 
-class StartletteIntegration(FrameworkIntegration):
+class StarletteIntegration(FrameworkIntegration):
     async def _get_cache_data(self, key: Hashable):
         value = await self.cache.get(key)
         if not value:
