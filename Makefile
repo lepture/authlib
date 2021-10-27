@@ -1,4 +1,7 @@
-.PHONY: tests clean clean-pyc clean-build docs
+.PHONY: tests clean clean-pyc clean-build docs build
+
+build:
+	@python3 -m build
 
 clean: clean-build clean-pyc clean-docs clean-tox
 
