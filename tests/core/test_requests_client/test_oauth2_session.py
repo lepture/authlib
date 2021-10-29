@@ -4,9 +4,7 @@ from unittest import TestCase, mock
 from authlib.common.security import generate_token
 from authlib.common.urls import url_encode, add_params_to_uri
 from authlib.integrations.requests_client import OAuth2Session, OAuthError
-from authlib.oauth2.rfc6749 import (
-    MismatchingStateException,
-)
+from authlib.oauth2.rfc6749 import MismatchingStateException
 from authlib.oauth2.rfc7523 import ClientSecretJWT, PrivateKeyJWT
 from tests.util import read_file_path
 from tests.client_base import mock_json_response

@@ -218,7 +218,13 @@ is how we can get our OAuth 2.0 client authenticated::
     client.register_client_auth_method(('client_secret_uri', auth_client_secret_uri))
 
 With ``client_secret_uri`` registered, OAuth 2.0 client will authenticate with
-the signed URI.
+the signed URI. It is also possible to assign the function to ``token_endpoint_auth_method``
+directly::
+
+    client = OAuth2Session(
+        'client_id', 'client_secret',
+        token_endpoint_auth_method=auth_client_secret_uri,
+    )
 
 Access Protected Resources
 --------------------------

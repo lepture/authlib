@@ -28,17 +28,10 @@ Create a registry with :class:`OAuth` object::
 The common use case for OAuth is authentication, e.g. let your users log in
 with Twitter, GitHub, Google etc.
 
-.. note::
+.. important::
 
     Please read :ref:`frameworks_clients` at first. Authlib has a shared API
     design among framework integrations, learn them from :ref:`frameworks_clients`.
-
-.. versionchanged:: v0.13
-
-    Authlib moved all integrations into ``authlib.integrations`` module since v0.13.
-    For earlier version, developers can import the Django client with::
-
-        from authlib.django.client import OAuth
 
 
 Configuration

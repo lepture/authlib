@@ -110,3 +110,35 @@ It is a dict configuration, the option key is the name of a claim.
 - **values**: claim value can be any one in the values list.
 - **value**: claim value MUST be the same value.
 - **validate**: a function to validate the claim value.
+
+
+Use dynamic keys
+----------------
+
+When ``.encode`` and ``.decode`` a token, there is a ``key`` parameter to use.
+This ``key`` can be the bytes of your PEM key, a JWK set, and a function.
+
+There ara cases that you don't know which key to use to ``.decode`` the token.
+For instance, you have a JWK set::
+
+    jwks = {
+      "keys": [
+        { "kid": "k1", ...},
+        { "kid": "k2", ...},
+      ]
+    }
+
+And in the token, it has a ``kid=k2`` in the header part, if you pass ``jwks`` to
+the ``key`` parameter, Authlib will auto resolve the correct key::
+
+    jwt.decode(s, key=jwks, ...)
+
+It is also possible to resolve the correct key by yourself::
+
+    def resolve_key(header, payload):
+        return my_keys[header['kid']]
+
+    jwt.decode(s, key=resolve_key)
+
+For ``.encode``, if you pass a JWK set, it will randomly pick a key and assign its
+``kid`` into the header.
