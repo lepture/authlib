@@ -56,8 +56,8 @@ They can be configured from your Django settings::
         }
     }
 
-We suggest that you keep ONLY ``client_id`` and ``client_secret`` in
-your application settings, other parameters are better in ``.register()``.
+There are differences between OAuth 1.0 and OAuth 2.0, please check the paramters
+in ``.register`` in :ref:`frameworks_clients`.
 
 Saving Temporary Credential
 ---------------------------
