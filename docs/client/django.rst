@@ -38,7 +38,7 @@ Configuration
 -------------
 
 Authlib Django OAuth registry can load the configuration from your Django
-application settings automatically. Every key value pair can be omit.
+application settings automatically. Every key value pair can be omitted.
 They can be configured from your Django settings::
 
     AUTHLIB_OAUTH_CLIENTS = {
@@ -56,7 +56,7 @@ They can be configured from your Django settings::
         }
     }
 
-There are differences between OAuth 1.0 and OAuth 2.0, please check the paramters
+There are differences between OAuth 1.0 and OAuth 2.0, please check the parameters
 in ``.register`` in :ref:`frameworks_clients`.
 
 Saving Temporary Credential
@@ -96,8 +96,8 @@ But there is a hint to create ``redirect_uri`` with ``request`` in Django::
 Auto Update Token via Signal
 ----------------------------
 
-Instead of define a ``update_token`` method and passing it into OAuth registry,
-it is also possible to use signal to listen for token updating::
+Instead of defining an ``update_token`` method and passing it into OAuth registry,
+it is also possible to use signals to listen for token updates::
 
     from django.dispatch import receiver
     from authlib.integrations.django_client import token_update
@@ -122,7 +122,7 @@ Django OpenID Connect Client
 ----------------------------
 
 An OpenID Connect client is no different than a normal OAuth 2.0 client. When
-register with ``openid`` scope, the built-in Django OAuth client will handle
+registered with the ``openid`` scope, the built-in Django OAuth client will handle
 everything automatically::
 
     oauth.register(
