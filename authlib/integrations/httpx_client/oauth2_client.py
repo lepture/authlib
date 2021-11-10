@@ -27,7 +27,13 @@ class OAuth2Auth(Auth, TokenAuth):
             url, headers, body = self.prepare(
                 str(request.url), request.headers, request.content)
             headers['Content-Length'] = str(len(body))
-            yield Request(method=request.method, url=url, headers=headers, content=body)
+            yield Request(
+                method=request.method,
+                url=url,
+                headers=headers,
+                content=body,
+                extensions=request.extensions,
+            )
         except KeyError as error:
             description = 'Unsupported token_type: {}'.format(str(error))
             raise UnsupportedTokenTypeError(description=description)
@@ -40,7 +46,13 @@ class OAuth2ClientAuth(Auth, ClientAuth):
         url, headers, body = self.prepare(
             request.method, str(request.url), request.headers, request.content)
         headers['Content-Length'] = str(len(body))
-        yield Request(method=request.method, url=url, headers=headers, content=body)
+        yield Request(
+            method=request.method,
+            url=url,
+            headers=headers,
+            content=body,
+            extensions=request.extensions,
+        )
 
 
 class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
