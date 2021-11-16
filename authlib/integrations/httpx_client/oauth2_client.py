@@ -4,7 +4,7 @@ from httpx import AsyncClient, Auth, Client, Request, Response, USE_CLIENT_DEFAU
 from authlib.common.urls import url_decode
 from authlib.oauth2.client import OAuth2Client as _OAuth2Client
 from authlib.oauth2.auth import ClientAuth, TokenAuth
-from .utils import HTTPX_CLIENT_KWARGS
+from .utils import HTTPX_CLIENT_KWARGS, build_request
 from ..base_client import (
     OAuthError,
     InvalidTokenError,
@@ -27,7 +27,10 @@ class OAuth2Auth(Auth, TokenAuth):
             url, headers, body = self.prepare(
                 str(request.url), request.headers, request.content)
             headers['Content-Length'] = str(len(body))
-            yield Request(method=request.method, url=url, headers=headers, content=body)
+
+            updated_request: Request = build_request(url=url, headers=headers, body=body, initial_request=request)
+
+            yield updated_request
         except KeyError as error:
             description = 'Unsupported token_type: {}'.format(str(error))
             raise UnsupportedTokenTypeError(description=description)
@@ -40,7 +43,10 @@ class OAuth2ClientAuth(Auth, ClientAuth):
         url, headers, body = self.prepare(
             request.method, str(request.url), request.headers, request.content)
         headers['Content-Length'] = str(len(body))
-        yield Request(method=request.method, url=url, headers=headers, content=body)
+
+        updated_request: Request = build_request(url=url, headers=headers, body=body, initial_request=request)
+
+        yield updated_request
 
 
 class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
