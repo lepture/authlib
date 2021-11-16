@@ -55,7 +55,7 @@ class JsonWebEncryption(object):
         """Generate a JWE Compact Serialization.
 
         The JWE Compact Serialization represents encrypted content as a compact,
-        URL-safe string. This string is:
+        URL-safe string. This string is::
 
             BASE64URL(UTF8(JWE Protected Header)) || '.' ||
             BASE64URL(JWE Encrypted Key) || '.' ||
@@ -223,7 +223,7 @@ class JsonWebEncryption(object):
             JWEAlgorithmWithTagAwareKeyAgreement is used
         :return: JWE JSON serialization (in fully general syntax) as dict
 
-        Example of `header_obj`:
+        Example of `header_obj`::
 
             {
                 "protected": {

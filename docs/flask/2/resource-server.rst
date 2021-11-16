@@ -24,7 +24,7 @@ server. Authlib offers a **decorator** to protect your API endpoints::
 
 When resource server has no access to ``Token`` model (database), and there is
 an introspection token endpoint in authorization server, you can
-:ref:`require_oauth_introspection`_.
+:ref:`require_oauth_introspection`.
 
 Here is the way to protect your users' resources::
 
