@@ -136,8 +136,9 @@ When we get the returned token::
 
     token = oauth.google.authorize_access_token(request)
 
-We can get the user information from the ``id_token`` in the returned token::
+There should be a ``id_token`` in the response. Authlib has called `.parse_id_token`
+automatically, we can get ``userinfo`` in the ``token``::
 
-    userinfo = oauth.google.parse_id_token(request, token)
+    userinfo = token['userinfo']
 
 Find Django Google login example at https://github.com/authlib/demo-oauth-client/tree/master/django-google-login

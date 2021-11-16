@@ -214,14 +214,18 @@ When we get the returned token::
 
     token = oauth.google.authorize_access_token()
 
-We can get the user information from the ``id_token`` in the returned token::
+There should be a ``id_token`` in the response. Authlib has called `.parse_id_token`
+automatically, we can get ``userinfo`` in the ``token``::
 
-    userinfo = oauth.google.parse_id_token(token)
+    userinfo = token['userinfo']
 
 Examples
 ---------
 
 Here are some example code for you learn Flask OAuth client integrations:
 
-1. OAuth 1.0: `Flask Twitter login <https://github.com/authlib/demo-oauth-client/tree/master/flask-twitter-tool>`_
-2. OAuth 2.0 & OpenID Connect: `Flask Google login <https://github.com/authlib/demo-oauth-client/tree/master/flask-google-login>`_
+1. OAuth 1.0: `Flask Twitter Login`_.
+2. OAuth 2.0 & OpenID Connect: `Flask Google Login`_.
+
+.. _`Flask Twitter Login`: https://github.com/authlib/demo-oauth-client/tree/master/flask-twitter-tool
+.. _`Flask Google Login`: https://github.com/authlib/demo-oauth-client/tree/master/flask-google-login
