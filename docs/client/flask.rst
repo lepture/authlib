@@ -222,7 +222,7 @@ automatically, we can get ``userinfo`` in the ``token``::
 Examples
 ---------
 
-Here are some example code for you learn Flask OAuth client integrations:
+Here are some example projects for you to learn Flask OAuth client integrations:
 
 1. OAuth 1.0: `Flask Twitter Login`_.
 2. OAuth 2.0 & OpenID Connect: `Flask Google Login`_.
