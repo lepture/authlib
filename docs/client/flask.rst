@@ -44,7 +44,7 @@ Configuration
 -------------
 
 Authlib Flask OAuth registry can load the configuration from Flask ``app.config``
-automatically. Every key value pair in ``.register`` can be omited. They can be
+automatically. Every key value pair in ``.register`` can be omitted. They can be
 configured in your Flask App configuration. Config keys are formatted as
 ``{name}_{key}`` in uppercase, e.g.
 
