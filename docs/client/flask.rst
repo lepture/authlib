@@ -44,8 +44,8 @@ Configuration
 -------------
 
 Authlib Flask OAuth registry can load the configuration from Flask ``app.config``
-automatically. Every key value pair in ``.register`` can be omit. They can be
-configured in your Flask App configuration. Config key is formatted with
+automatically. Every key value pair in ``.register`` can be omited. They can be
+configured in your Flask App configuration. Config keys are formatted as
 ``{name}_{key}`` in uppercase, e.g.
 
 ========================== ================================
@@ -55,7 +55,7 @@ TWITTER_REQUEST_TOKEN_URL  URL to fetch OAuth request token
 ========================== ================================
 
 If you register your remote app as ``oauth.register('example', ...)``, the
-config key would look like:
+config keys would look like:
 
 ========================== ===============================
 EXAMPLE_CLIENT_ID          OAuth Consumer Key
