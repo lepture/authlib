@@ -509,7 +509,7 @@ Find all the available compliance hooks at :ref:`compliance_fix_oauth2`.
 OpenID Connect & UserInfo
 -------------------------
 
-When log in with OAuth 1.0 and OAuth 2.0, "access_token" is not what developers
+When logging in with OpenID Connect, "access_token" is not what developers
 want. Instead, what developers want is **user info**, Authlib wrap it with
 :class:`~authlib.oidc.core.UserInfo`.
 
@@ -530,7 +530,7 @@ Passing a ``userinfo_endpoint`` when ``.register`` remote client::
         userinfo_endpoint='https://openidconnect.googleapis.com/v1/userinfo',
     )
 
-And later, when the client has obtained access token, we can call::
+And later, when the client has obtained the access token, we can call::
 
     def authorize(request):
         token = oauth.google.authorize_access_token(request)
@@ -576,7 +576,7 @@ A simple solution is to provide the OpenID Connect Discovery Endpoint::
         client_kwargs={'scope': 'openid email profile'},
     )
 
-The discovery endpoint provides all the information we need so that you don't
+The discovery endpoint provides all the information we need so that we don't
 have to add ``authorize_url`` and ``access_token_url``.
 
 Check out our client example: https://github.com/authlib/demo-oauth-client
