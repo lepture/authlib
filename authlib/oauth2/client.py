@@ -335,15 +335,17 @@ class OAuth2Client(object):
 
     def _fetch_token(self, url, body='', headers=None, auth=None,
                      method='POST', **kwargs):
-        if method == 'GET':
+
+        if method.upper() == 'POST':
+            resp = self.session.post(
+                url, data=dict(url_decode(body)),
+                headers=headers, auth=auth, **kwargs)
+        else:
             if '?' in url:
                 url = '&'.join([url, body])
             else:
                 url = '?'.join([url, body])
-            body = ''
-
-        resp = self.session.request(
-            method, url, data=body, headers=headers, auth=auth, **kwargs)
+            resp = self.session.request(method, url, headers=headers, auth=auth, **kwargs)
 
         for hook in self.compliance_hook['access_token_response']:
             resp = hook(resp)
