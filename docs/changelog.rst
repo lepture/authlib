@@ -9,7 +9,7 @@ Here you can see the full list of changes between each Authlib release.
 Version 1.0
 -----------
 
-**Plan to release in Mar, 2021.**
+**Plan to release in Dec, 2021.**
 
 We have dropped support for Python 2 in this release. We have removed
 built-in SQLAlchemy integration.
@@ -43,10 +43,27 @@ Added ``ES256K`` algorithm for JWS and JWT.
 **Breaking Changes**: find how to solve the deprecate issues via https://git.io/JkY4f
 
 
+Version 0.15.5
+--------------
+
+**Released on Oct 18, 2021.**
+
+- Make Authlib compatible with latest httpx
+- Make Authlib compatible with latest werkzeug
+- Allow customize RFC7523 ``alg`` value
+
+Version 0.15.4
+--------------
+
+**Released on Jul 17, 2021.**
+
+- Security fix when JWT claims is None.
+
+
 Version 0.15.3
 --------------
 
-**Released on Jan 15, 2020.**
+**Released on Jan 15, 2021.**
 
 - Fixed `.authorize_access_token` for OAuth 1.0 services, via :gh:`issue#308`.
 
