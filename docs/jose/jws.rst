@@ -115,6 +115,28 @@ To deserialize a JWS Compact Serialization, use
     jws_header = data['header']
     payload = data['payload']
 
+.. important::
+
+    The above method is susceptible to a signature bypass described in CVE-2016-10555.
+    It allows mixing symmetric algorithms and asymmetric algorithms. You should never
+    combine symmetric (HS) and asymmetric (RS, ES, PS) signature schemes.
+
+    If you must support both protocols use a custom key loader which provides a different
+    keys for different methods.
+
+Load a different ``key`` for symmetric and asymmetric signatures::
+
+    def load_key(header, payload):
+        if header['alg'] == 'RS256':
+            return rsa_pub_key
+        elif header['alg'] == 'HS256':
+            return shared_secret
+        else:
+            raise UnsupportedAlgorithmError()
+
+    claims = jws.deserialize_compact(token, load_key)
+
+
 A ``key`` can be dynamically loaded, if you don't know which key to be used::
 
     def load_key(header, payload):

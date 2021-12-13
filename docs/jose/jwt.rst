@@ -61,6 +61,14 @@ dict of the payload::
     >>> from authlib.jose import jwt
     >>> claims = jwt.decode(s, read_file('public.pem'))
 
+.. important::
+
+   This decoding method is insecure. By default ``jwt.decode`` parses the alg header.
+   This allows symmetric macs and asymmetric signatures. If both are allowed a signatrue bypass described in CVE-2016-10555 is possible.
+
+   See the following section for a mitigation.
+
+
 The returned value is a :class:`JWTClaims`, check the next section to
 validate claims value.
 
@@ -73,6 +81,28 @@ of supported ``alg`` into :class:`JsonWebToken`::
 
     >>> from authlib.jose import JsonWebToken
     >>> jwt = JsonWebToken(['RS256'])
+
+.. important::
+
+    You should never combine symmetric (HS) and asymmetric (RS, ES, PS) signature schemes.
+    When both are allowed a signature bypass described in CVE-2016-10555 is possible.
+
+    If you must support both protocols use a custom key loader which provides a different
+    keys for different methods.
+
+Load a different ``key`` for symmetric and asymmetric signatures::
+
+    def load_key(header, payload):
+        if header['alg'] == 'RS256':
+            return rsa_pub_key
+        elif header['alg'] == 'HS256':
+            return shared_secret
+        else:
+            raise UnsupportedAlgorithmError()
+
+    claims = jwt.decode(token, load_key)
+
+
 
 JWT Payload Claims Validation
 -----------------------------
