@@ -41,7 +41,7 @@ expose that ``request`` to Authlib. According to the documentation on
     @app.get("/auth/google")
     async def auth_via_google(request: Request):
         token = await oauth.google.authorize_access_token(request)
-        user = await oauth.google.parse_id_token(request, token)
+        user = token['userinfo']
         return dict(user)
 
 .. _FastAPI: https://fastapi.tiangolo.com/

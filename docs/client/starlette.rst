@@ -108,22 +108,15 @@ the routes for authorization should look like::
     async def authorize_google(request):
         google = oauth.create_client('google')
         token = await google.authorize_access_token(request)
-        user = await google.parse_id_token(request, token)
-        # do something with the token and profile
+        # do something with the token and userinfo
         return '...'
 
 Starlette OpenID Connect
 ------------------------
 
 An OpenID Connect client is no different than a normal OAuth 2.0 client, just add
-``openid`` scope when ``.register``. In the above example, in ``authorize``::
-
-    user = await google.parse_id_token(request, token)
-
-There is a ``id_token`` in the response ``token``. We can parse userinfo from this
-``id_token``.
-
-Here is how you can add ``openid`` scope in ``.register``::
+``openid`` scope when ``.register``. The built-in Starlette OAuth client will handle
+everything automatically::
 
     oauth.register(
         'google',
@@ -131,6 +124,15 @@ Here is how you can add ``openid`` scope in ``.register``::
         server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
         client_kwargs={'scope': 'openid profile email'}
     )
+
+When we get the returned token::
+
+    token = await oauth.google.authorize_access_token()
+
+There should be a ``id_token`` in the response. Authlib has called `.parse_id_token`
+automatically, we can get ``userinfo`` in the ``token``::
+
+    userinfo = token['userinfo']
 
 Examples
 --------
