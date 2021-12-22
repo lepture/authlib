@@ -55,7 +55,7 @@ Token
 
 .. note::
 
-    Only Bearer Token is supported by now. MAC Token is still under drafts,
+    Only Bearer Token is supported for now. MAC Token is still under draft,
     it will be available when it goes into RFC.
 
 Tokens are used to access the users' resources. A token is issued with a
@@ -82,7 +82,7 @@ A token is associated with a resource owner. There is no certain name for
 it, here we call it ``user``, but it can be anything else.
 
 If you decide to implement all the missing methods by yourself, get a deep
-inside with :class:`~authlib.oauth2.rfc6749.TokenMixin` API reference.
+inside the :class:`~authlib.oauth2.rfc6749.TokenMixin` API reference.
 
 Server
 ------
@@ -210,7 +210,7 @@ Register Error URIs
 -------------------
 
 To create a better developer experience for debugging, it is suggested that
-you creating some documentation for errors. Here is a list of built-in
+you create some documentation for errors. Here is a list of built-in
 :ref:`specs/rfc6949-errors`.
 
 You can design a documentation page with a description of each error. For
@@ -233,4 +233,4 @@ I18N on Errors
 ~~~~~~~~~~~~~~
 
 It is also possible to add i18n support to the ``error_description``. The
-feature has been implemented in version 0.8, but there are still work to do.
+feature has been implemented in version 0.8, but there is still work to do.
