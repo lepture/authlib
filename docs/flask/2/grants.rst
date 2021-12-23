@@ -14,8 +14,8 @@ Authorization Code Grant
 
 Authorization Code Grant is a very common grant type, it is supported by almost
 every OAuth 2 providers. It uses an authorization code to exchange access
-token. In this case, we need a place to store the authorization code. It can be
-kept in a database or a cache like redis. Here is a SQLAlchemy mixin for
+tokens. In this case, we need a place to store the authorization code. It can
+be kept in a database or a cache like redis. Here is a SQLAlchemy mixin for
 **AuthorizationCode**::
 
     from authlib.integrations.sqla_oauth2 import OAuth2AuthorizationCodeMixin
@@ -27,7 +27,7 @@ kept in a database or a cache like redis. Here is a SQLAlchemy mixin for
         )
         user = db.relationship('User')
 
-Implement this grant by subclass :class:`AuthorizationCodeGrant`::
+Implement this grant by subclassing :class:`AuthorizationCodeGrant`::
 
     from authlib.oauth2.rfc6749 import grants
 
@@ -80,7 +80,7 @@ Implicit Grant
 --------------
 
 The implicit grant type is usually used in a browser, when resource
-owner granted the access, access token is issued in the redirect URI,
+owner granted the access, an access token is issued in the redirect URI,
 there is no missing implementation, which means it can be easily registered
 with::
 
@@ -89,15 +89,16 @@ with::
     # register it to grant endpoint
     server.register_grant(grants.ImplicitGrant)
 
-Implicit Grant is used by **public** client which has no **client_secret**.
-Only allowed :ref:`client_auth_methods`: ``none``.
+Implicit Grant is used by **public** clients which have no **client_secret**.
+Default allowed :ref:`client_auth_methods`: ``none``.
 
 Resource Owner Password Credentials Grant
 -----------------------------------------
 
-Resource owner uses their username and password to exchange an access token,
-this grant type should be used only when the client is trustworthy, implement
-it with a subclass of :class:`ResourceOwnerPasswordCredentialsGrant`::
+The resource owner uses its username and password to exchange an access
+token. This grant type should be used only when the client is trustworthy;
+implement it with a subclass of
+:class:`ResourceOwnerPasswordCredentialsGrant`::
 
     from authlib.oauth2.rfc6749 import grants
 
@@ -142,8 +143,8 @@ You can add more in the subclass::
 Refresh Token Grant
 -------------------
 
-Many OAuth 2 providers haven't implemented refresh token endpoint. Authlib
-provides it as a grant type, implement it with a subclass of
+Many OAuth 2 providers do not implement a refresh token endpoint. Authlib
+provides it as a grant type; implement it with a subclass of
 :class:`RefreshTokenGrant`::
 
     from authlib.oauth2.rfc6749 import grants
@@ -231,12 +232,12 @@ Grant Extensions
 
 .. versionadded:: 0.10
 
-Grant can accept extensions. Developers can pass extensions when registering
-grant::
+Grants can accept extensions. Developers can pass extensions when registering
+grants::
 
     authorization_server.register_grant(AuthorizationCodeGrant, [extension])
 
-For instance, there is ``CodeChallenge`` extension in Authlib::
+For instance, there is the ``CodeChallenge`` extension in Authlib::
 
     server.register_grant(AuthorizationCodeGrant, [CodeChallenge(required=False)])
 

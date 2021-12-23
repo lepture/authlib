@@ -67,7 +67,7 @@ secrets between server and client. Most OpenID Connect services are using
 key
 ~~~
 
-A private key is required to generate JWT. The key that you are going to use
+A private key is required to generate a JWT. The key that you are going to use
 dependents on the ``alg`` you are using. For instance, the alg is ``RS256``,
 you need to use an RSA private key. It can be set with::
 
@@ -79,8 +79,8 @@ you need to use an RSA private key. It can be set with::
 iss
 ~~~
 
-The ``iss`` value in JWT payload. The value can be your website name or URL.
-For example, Google is using::
+The ``iss`` value in the JWT payload. The value can be your website name or
+URL. For example, Google is using::
 
     {"iss": "https://accounts.google.com"}
 
@@ -121,9 +121,9 @@ First, we need to implement the missing methods for ``OpenIDCode``::
                 user_info['email'] = user.email
             return user_info
 
-Second, since there is one more ``nonce`` value in ``AuthorizationCode`` data,
-we need to save this value into database. In this case, we have to update our
-:ref:`flask_oauth2_code_grant` ``save_authorization_code`` method::
+Second, since there is one more ``nonce`` value in the ``AuthorizationCode``
+data, we need to save this value into the database. In this case, we have to
+update our :ref:`flask_oauth2_code_grant` ``save_authorization_code`` method::
 
     class AuthorizationCodeGrant(_AuthorizationCodeGrant):
         def save_authorization_code(self, code, request):
@@ -143,14 +143,14 @@ we need to save this value into database. In this case, we have to update our
 
         # ...
 
-Finally, you can register ``AuthorizationCodeGrant`` with ``OpenIDCode``
+Finally, you can register ``AuthorizationCodeGrant`` with the ``OpenIDCode``
 extension::
 
     # register it to grant endpoint
     server.register_grant(AuthorizationCodeGrant, [OpenIDCode(require_nonce=True)])
 
 The difference between OpenID Code flow and the standard code flow is that
-OpenID Connect request has a scope of "openid":
+OpenID Connect requests have a scope of "openid":
 
 .. code-block:: http
 
@@ -176,7 +176,7 @@ Implicit Flow
 
 The Implicit Flow is mainly used by Clients implemented in a browser using
 a scripting language. You need to implement the missing methods of
-:class:`OpenIDImplicitGrant` before register it::
+:class:`OpenIDImplicitGrant` before registering it::
 
     from authlib.oidc.core import grants
 
@@ -208,8 +208,8 @@ a scripting language. You need to implement the missing methods of
 Hybrid Flow
 ------------
 
-Hybrid flow is a mix of the code flow and implicit flow. You only need to
-implement the authorization endpoint part, token endpoint will be handled
+The Hybrid flow is a mix of code flow and implicit flow. You only need to
+implement the authorization endpoint part, as token endpoint will be handled
 by Authorization Code Flow.
 
 OpenIDHybridGrant is a subclass of OpenIDImplicitGrant, so the missing methods
@@ -258,7 +258,7 @@ is ``save_authorization_code``. You can implement it like this::
     server.register_grant(OpenIDHybridGrant)
 
 
-Since all OpenID Connect Flow requires ``exists_nonce``, ``get_jwt_config``
+Since all OpenID Connect Flow require ``exists_nonce``, ``get_jwt_config``
 and ``generate_user_info`` methods, you can create shared functions for them.
 
 Find the `example of OpenID Connect server <https://github.com/authlib/example-oidc-server>`_.
