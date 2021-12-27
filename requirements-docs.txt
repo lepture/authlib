@@ -4,7 +4,7 @@ Flask
 Django
 SQLAlchemy
 requests
-httpx
+httpx>=0.18.2
 starlette
 Sphinx==4.3.0
 sphinx-typlog-theme==0.8.0
