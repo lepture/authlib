@@ -1,6 +1,7 @@
-import asyncio
 import typing
+
 from httpx import AsyncClient, Auth, Client, Request, Response, USE_CLIENT_DEFAULT
+from anyio import Lock  # Import after httpx so import errors refer to httpx
 from authlib.common.urls import url_decode
 from authlib.oauth2.client import OAuth2Client as _OAuth2Client
 from authlib.oauth2.auth import ClientAuth, TokenAuth
@@ -60,10 +61,9 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
         client_kwargs = self._extract_session_request_params(kwargs)
         AsyncClient.__init__(self, **client_kwargs)
 
-        # We use a "reverse" Event to synchronize coroutines to prevent
+        # We use a Lock to synchronize coroutines to prevent
         # multiple concurrent attempts to refresh the same token
-        self._token_refresh_event = asyncio.Event()
-        self._token_refresh_event.set()
+        self._token_refresh_lock = Lock()
 
         _OAuth2Client.__init__(
             self, session=None,
@@ -84,8 +84,7 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
             if not self.token:
                 raise MissingTokenError()
 
-            if self.token.is_expired():
-                await self.ensure_active_token(self.token)
+            await self.ensure_active_token(self.token)
 
             auth = self.token_auth
 
@@ -97,8 +96,7 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
             if not self.token:
                 raise MissingTokenError()
 
-            if self.token.is_expired():
-                await self.ensure_active_token(self.token)
+            await self.ensure_active_token(self.token)
 
             auth = self.token_auth
 
@@ -106,24 +104,19 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
             method, url, auth=auth, **kwargs)
 
     async def ensure_active_token(self, token):
-        if self._token_refresh_event.is_set():
-            # Unset the event so other coroutines don't try to update the token
-            self._token_refresh_event.clear()
-            refresh_token = token.get('refresh_token')
-            url = self.metadata.get('token_endpoint')
-            if refresh_token and url:
-                await self.refresh_token(url, refresh_token=refresh_token)
-            elif self.metadata.get('grant_type') == 'client_credentials':
-                access_token = token['access_token']
-                new_token = await self.fetch_token(url, grant_type='client_credentials')
-                if self.update_token:
-                    await self.update_token(new_token, access_token=access_token)
-            else:
-                raise InvalidTokenError()
-            # Notify coroutines that token is refreshed
-            self._token_refresh_event.set()
-            return
-        await self._token_refresh_event.wait()  # wait until the token is ready
+        async with self._token_refresh_lock:
+            if self.token.is_expired():
+                refresh_token = token.get('refresh_token')
+                url = self.metadata.get('token_endpoint')
+                if refresh_token and url:
+                    await self.refresh_token(url, refresh_token=refresh_token)
+                elif self.metadata.get('grant_type') == 'client_credentials':
+                    access_token = token['access_token']
+                    new_token = await self.fetch_token(url, grant_type='client_credentials')
+                    if self.update_token:
+                        await self.update_token(new_token, access_token=access_token)
+                else:
+                    raise InvalidTokenError()
 
     async def _fetch_token(self, url, body='', headers=None, auth=USE_CLIENT_DEFAULT,
                            method='POST', **kwargs):
