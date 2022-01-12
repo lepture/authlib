@@ -378,7 +378,10 @@ async def test_auto_refresh_token3():
 @pytest.mark.asyncio
 async def test_auto_refresh_token4():
     async def _update_token(token, refresh_token=None, access_token=None):
-        await asyncio.sleep(0.1) # artificial sleep to force other coroutines to wake
+        # This test only makes sense if the expired token is refreshed
+        token["expires_at"] = int(time.time()) + 3600
+        # artificial sleep to force other coroutines to wake
+        await asyncio.sleep(0.1)
 
     update_token = mock.Mock(side_effect=_update_token)
 
