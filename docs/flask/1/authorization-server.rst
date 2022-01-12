@@ -67,7 +67,7 @@ Temporary Credentials
 
 A temporary credential is used to exchange a token credential. It is also
 known as "request token and secret". Since it is temporary, it is better to
-save them into cache instead of database. A cache instance should has these
+save them into cache instead of database. A cache instance should have these
 methods:
 
 - ``.get(key)``

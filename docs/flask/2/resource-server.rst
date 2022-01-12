@@ -3,7 +3,7 @@
 Resource Server
 ===============
 
-Protect users resources, so that only the authorized clients with the
+Protects users resources, so that only the authorized clients with the
 authorized access token can access the given scope resources.
 
 A resource server can be a different server other than the authorization
@@ -22,8 +22,8 @@ server. Authlib offers a **decorator** to protect your API endpoints::
     # only bearer token is supported currently
     require_oauth.register_token_validator(MyBearerTokenValidator())
 
-When resource server has no access to ``Token`` model (database), and there is
-an introspection token endpoint in authorization server, you can
+When the resource server has no access to the ``Token`` model (database), and
+there is an introspection token endpoint in authorization server, you can
 :ref:`require_oauth_introspection`.
 
 Here is the way to protect your users' resources::
@@ -55,7 +55,7 @@ The ``current_token`` is a proxy to the Token model you have defined above.
 Since there is a ``user`` relationship on the Token model, we can access this
 ``user`` with ``current_token.user``.
 
-If decorator is not your favorite, there is a ``with`` statement for you::
+If the decorator is not your favorite, there is a ``with`` statement for you::
 
     @app.route('/user')
     def user_profile():
