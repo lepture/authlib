@@ -97,7 +97,7 @@ async def test_runtime_error_fetch_jwks_uri():
     req_scope = {'type': 'http', 'session': {'_dev_authlib_nonce_': 'n'}}
     req = Request(req_scope)
     token['id_token'] = id_token
-    with pytest.raises(RuntimeError):
+    with pytest.raises(RuntimeError, match='Missing "jwks_uri" in metadata'):
         await client.parse_id_token(req, token)
 
 
