@@ -27,8 +27,11 @@ class StarletteIntegration(FrameworkIntegration):
         elif session is not None:
             value = session.get(key)
         else:
-            value = {}
-        return value.get('data', {})
+            value = None
+
+        if value:
+            return value.get('data')
+        return None
 
     async def set_state_data(self, session: Optional[Dict[str, Any]], state: str, data: Any):
         key = f'_state_{self.name}_{state}'
