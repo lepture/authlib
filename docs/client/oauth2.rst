@@ -112,6 +112,19 @@ another website. You need to create another session yourself::
 
 Authlib has a built-in Flask/Django integration. Learn from them.
 
+Add PKCE for Authorization Code
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Authlib client can handle PKCE automatically, just pass ``code_verifier`` to ``create_authorization_url``
+and ``fetch_token``::
+
+    >>> client = OAuth2Session(..., code_challenge_method='S256')
+    >>> code_verifier = generate_token(48)
+    >>> uri, state = client.create_authorization_url(authorization_endpoint, code_verifier=code_verifier)
+    >>> # ...
+    >>> token = client.fetch_token(..., code_verifier=code_verifier)
+
+
 OAuth2Session for Implicit
 --------------------------
 

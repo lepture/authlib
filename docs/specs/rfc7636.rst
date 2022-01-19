@@ -83,11 +83,6 @@ consider that we already have a ``session``::
     >>> authorization_response = 'https://example.com/auth?code=42..e9&state=d..t'
     >>> token = session.fetch_token(token_endpoint, authorization_response=authorization_response, code_verifier=code_verifier)
 
-The authorization flow is the same as in :ref:`oauth_2_session`, what you need
-to do is:
-
-1. adding ``code_challenge`` and ``code_challenge_method`` in ``.create_authorization_url``.
-2. adding ``code_verifier`` in ``.fetch_token``.
 
 API Reference
 -------------
