@@ -94,7 +94,7 @@ def add_params_to_uri(uri, params, fragment=False):
     """Add a list of two-tuples to the uri query components."""
     sch, net, path, par, query, fra = urlparse.urlparse(uri)
     if fragment:
-        fra = add_params_to_qs(fra, params)
+        fra += '?' + add_params_to_qs('', params)
     else:
         query = add_params_to_qs(query, params)
     return urlparse.urlunparse((sch, net, path, par, query, fra))
