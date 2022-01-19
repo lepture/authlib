@@ -14,7 +14,7 @@ from .util import list_to_scope
 
 
 def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
-                      scope=None, state=None, **kwargs):
+                      scope=None, state=None, in_fragment=False, **kwargs):
     """Prepare the authorization grant request URI.
 
     The client constructs the request URI by adding the following
@@ -63,7 +63,7 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
         if kwargs[k]:
             params.append((to_unicode(k), kwargs[k]))
 
-    return add_params_to_uri(uri, params)
+    return add_params_to_uri(uri, params, fragment=in_fragment)
 
 
 def prepare_token_request(grant_type, body='', redirect_uri=None, **kwargs):
