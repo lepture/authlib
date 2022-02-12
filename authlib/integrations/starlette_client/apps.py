@@ -10,7 +10,11 @@ class StarletteAppMixin(object):
     async def save_authorize_data(self, request, **kwargs):
         state = kwargs.pop('state', None)
         if state:
-            await self.framework.set_state_data(request.session, state, kwargs)
+            if self.framework.cache:
+                session = None
+            else:
+                session = request.session
+            await self.framework.set_state_data(session, state, kwargs)
         else:
             raise RuntimeError('Missing state value')
 
@@ -60,7 +64,12 @@ class StarletteOAuth2App(StarletteAppMixin, AsyncOAuth2Mixin, AsyncOpenIDMixin, 
             'state': request.query_params.get('state'),
         }
 
-        state_data = await self.framework.get_state_data(request.session, params.get('state'))
+        if self.framework.cache:
+            session = None
+        else:
+            session = request.session
+
+        state_data = await self.framework.get_state_data(session, params.get('state'))
         params = self._format_state_params(state_data, params)
         token = await self.fetch_access_token(**params, **kwargs)
 
