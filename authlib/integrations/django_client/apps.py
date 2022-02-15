@@ -76,6 +76,7 @@ class DjangoOAuth2App(DjangoAppMixin, OAuth2Mixin, OpenIDMixin, BaseApp):
             }
 
         state_data = self.framework.get_state_data(request.session, params.get('state'))
+        self.framework.clear_state_data(request.session, params.get('state'))
         params = self._format_state_params(state_data, params)
         token = self.fetch_access_token(**params, **kwargs)
 
