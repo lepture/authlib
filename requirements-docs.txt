@@ -1,6 +1,7 @@
 cryptography
 pycryptodomex>=3.10,<4
 Flask
+Quart
 Django
 SQLAlchemy
 requests
