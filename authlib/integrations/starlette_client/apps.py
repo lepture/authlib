@@ -70,6 +70,7 @@ class StarletteOAuth2App(StarletteAppMixin, AsyncOAuth2Mixin, AsyncOpenIDMixin, 
             session = request.session
 
         state_data = await self.framework.get_state_data(session, params.get('state'))
+        await self.framework.clear_state_data(session, params.get('state'))
         params = self._format_state_params(state_data, params)
         token = await self.fetch_access_token(**params, **kwargs)
 
