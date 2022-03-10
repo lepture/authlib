@@ -321,7 +321,7 @@ class OAuth2Client(object):
         self.compliance_hook[hook_type].add(hook)
 
     def parse_response_token(self, token):
-        if 'error' not in token:
+        if 'error' not in token or token['error'] is None:
             self.token = token
             return self.token
 
