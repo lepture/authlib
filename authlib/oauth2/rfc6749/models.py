@@ -73,8 +73,10 @@ class ClientMixin(object):
         """Check client_secret matching with the client. For instance, in
         the client table, the column is called ``client_secret``::
 
+            import secrets
+
             def check_client_secret(self, client_secret):
-                return self.client_secret == client_secret
+                return secrets.compare_digest(self.client_secret, client_secret)
 
         :param client_secret: A string of client secret
         :return: bool

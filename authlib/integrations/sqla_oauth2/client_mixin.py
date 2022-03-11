@@ -1,3 +1,5 @@
+import secrets
+
 from sqlalchemy import Column, String, Text, Integer
 from authlib.common.encoding import json_loads, json_dumps
 from authlib.oauth2.rfc6749 import ClientMixin
@@ -122,7 +124,7 @@ class OAuth2ClientMixin(ClientMixin):
         return bool(self.client_secret)
 
     def check_client_secret(self, client_secret):
-        return self.client_secret == client_secret
+        return secrets.compare_digest(self.client_secret, client_secret)
 
     def check_endpoint_auth_method(self, method, endpoint):
         if endpoint == 'token':
