@@ -17,6 +17,28 @@ Many thanks to these awesome sponsors and backers.
 </tr>
 </table>
 
+<table>
+<tr>
+<td align="center">
+<a href="https://github.com/getsentry">
+<img src="https://avatars.githubusercontent.com/u/1396951?s=200&v=4" alt="Sentry" width="48" height="48">
+</a><br>
+Sentry
+</td>
+<td align="center">
+<a href="https://github.com/indeedeng">
+<img src="https://avatars.githubusercontent.com/u/2905043?s=200&v=4" alt="Indeed" width="48" height="48">
+</a><br>
+Indeed
+</td>
+<td align="center">
+<a href="https://github.com/around">
+<img src="https://avatars.githubusercontent.com/u/62425723?s=200&v=4" alt="Around" width="48" height="48">
+</a><br>
+Around
+</td>
+</tr>
+</table>
 
 ## Awesome Backers
 
@@ -51,6 +73,12 @@ Krishna Kumar
 <img src="https://avatars.githubusercontent.com/u/8097526?v=4" alt="Junnplus" width="48" height="48">
 </a><br>
 Jun
+</td>
+<td align="center">
+<a href="https://github.com/malikpiara">
+<img src="https://avatars.githubusercontent.com/u/6923650?v=4" alt="Malik Piara" width="48" height="48">
+</a><br>
+Malik Piara
 </td>
 </tr>
 </table>
