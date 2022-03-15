@@ -9,7 +9,7 @@ Here you can see the full list of changes between each Authlib release.
 Version 1.0
 -----------
 
-**Plan to release in Dec, 2021.**
+**Released on Mar 15, 2022.**
 
 We have dropped support for Python 2 in this release. We have removed
 built-in SQLAlchemy integration.
