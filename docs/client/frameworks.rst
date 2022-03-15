@@ -537,23 +537,6 @@ And later, when the client has obtained the access token, we can call::
         user = oauth.google.userinfo(request)
         return '...'
 
-If the ``userinfo_endpoint`` is not compatible with
-:class:`~authlib.oidc.core.UserInfo`, we can use a ``userinfo_compliance_fix``::
-
-
-    def compliance_fix(client, user_data):
-        return {
-            'sub': user_data['id'],
-            'name': user_data['name']
-        }
-
-    oauth.register(
-        'example',
-        client_id='...',
-        client_secret='...',
-        userinfo_endpoint='https://example.com/userinfo',
-        userinfo_compliance_fix=compliance_fix,
-    )
 
 Parsing ``id_token``
 ~~~~~~~~~~~~~~~~~~~~

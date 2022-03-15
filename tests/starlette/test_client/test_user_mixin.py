@@ -9,7 +9,7 @@ from tests.client_base import get_bearer_token
 from ..utils import AsyncPathMapDispatch
 
 
-async def run_fetch_userinfo(payload, compliance_fix=None):
+async def run_fetch_userinfo(payload):
     oauth = OAuth()
 
     async def fetch_token(request):
@@ -25,7 +25,6 @@ async def run_fetch_userinfo(payload, compliance_fix=None):
         client_secret='dev',
         fetch_token=fetch_token,
         userinfo_endpoint='https://i.b/userinfo',
-        userinfo_compliance_fix=compliance_fix,
         client_kwargs={
             'app': app,
         }
