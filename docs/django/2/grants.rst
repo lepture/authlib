@@ -76,8 +76,8 @@ grant type. Here is how::
 
         def query_authorization_code(self, code, client):
             try:
-                item = OAuth2Code.objects.get(code=code, client_id=client.client_id)
-            except OAuth2Code.DoesNotExist:
+                item = AuthorizationCode.objects.get(code=code, client_id=client.client_id)
+            except AuthorizationCode.DoesNotExist:
                 return None
 
             if not item.is_expired():
