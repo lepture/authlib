@@ -93,7 +93,7 @@ class OpenIDCode(OpenIDToken):
     MUST implement the missing methods::
 
         class MyOpenIDCode(OpenIDCode):
-            def get_jwt_config(self):
+            def get_jwt_config(self, grant):
                 return {...}
 
             def exists_nonce(self, nonce, request):
