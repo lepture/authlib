@@ -69,12 +69,13 @@ class StarletteOAuth2App(StarletteAppMixin, AsyncOAuth2Mixin, AsyncOpenIDMixin, 
         else:
             session = request.session
 
+        claims_options = kwargs.pop('claims_options', None)
         state_data = await self.framework.get_state_data(session, params.get('state'))
         await self.framework.clear_state_data(session, params.get('state'))
         params = self._format_state_params(state_data, params)
         token = await self.fetch_access_token(**params, **kwargs)
 
         if 'id_token' in token and 'nonce' in state_data:
-            userinfo = await self.parse_id_token(token, nonce=state_data['nonce'])
+            userinfo = await self.parse_id_token(token, nonce=state_data['nonce'], claims_options=claims_options)
             token['userinfo'] = userinfo
         return token
