@@ -56,6 +56,7 @@ class OAuth2Session(OAuth2Client, Session):
     :param revocation_endpoint_auth_method: client authentication method for
         revocation endpoint.
     :param scope: Scope that you needed to access user resources.
+    :param state: Shared secret to prevent CSRF attack.
     :param redirect_uri: Redirect URI you registered as callback.
     :param token: A dict of token attributes such as ``access_token``,
         ``token_type`` and ``expires_at``.
@@ -74,7 +75,7 @@ class OAuth2Session(OAuth2Client, Session):
     def __init__(self, client_id=None, client_secret=None,
                  token_endpoint_auth_method=None,
                  revocation_endpoint_auth_method=None,
-                 scope=None, redirect_uri=None,
+                 scope=None, state=None, redirect_uri=None,
                  token=None, token_placement='header',
                  update_token=None, **kwargs):
 
@@ -86,7 +87,7 @@ class OAuth2Session(OAuth2Client, Session):
             client_id=client_id, client_secret=client_secret,
             token_endpoint_auth_method=token_endpoint_auth_method,
             revocation_endpoint_auth_method=revocation_endpoint_auth_method,
-            scope=scope, redirect_uri=redirect_uri,
+            scope=scope, state=state, redirect_uri=redirect_uri,
             token=token, token_placement=token_placement,
             update_token=update_token, **kwargs
         )
