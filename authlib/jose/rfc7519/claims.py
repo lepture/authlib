@@ -53,8 +53,11 @@ class BaseClaims(dict):
 
     def _validate_essential_claims(self):
         for k in self.options:
-            if self.options[k].get('essential') and not self.get(k):
-                raise MissingClaimError(k)
+            if self.options[k].get('essential'):
+                if k not in self:
+                    raise MissingClaimError(k)
+                elif not self.get(k):
+                    raise InvalidClaimError(k)
 
     def _validate_claim_value(self, claim_name):
         option = self.options.get(claim_name)
