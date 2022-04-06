@@ -1,5 +1,0 @@
-cryptography
-pycryptodomex>=3.10,<4
-requests
-pytest
-coverage

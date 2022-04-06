@@ -1,14 +1,19 @@
-from unittest import mock
+import os
 import time
+import json
 import requests
+from unittest import mock
 
 
-def mock_json_response(payload):
-    def fake_send(r, **kwargs):
-        resp = mock.MagicMock()
-        resp.json = lambda: payload
-        return resp
-    return fake_send
+ROOT = os.path.abspath(os.path.dirname(__file__))
+
+
+def read_key_file(name):
+    file_path = os.path.join(ROOT, 'keys', name)
+    with open(file_path, 'r') as f:
+        if name.endswith('.json'):
+            return json.load(f)
+        return f.read()
 
 
 def mock_text_response(body, status_code=200):

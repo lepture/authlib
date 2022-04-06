@@ -1,11 +1,11 @@
 from unittest import mock
-from django.test import override_settings
 from authlib.jose import jwk
 from authlib.oidc.core.grants.util import generate_id_token
 from authlib.integrations.django_client import OAuth, OAuthError
 from authlib.common.urls import urlparse, url_decode
-from tests.django.base import TestCase
-from tests.client_base import (
+from django.test import override_settings
+from tests.django_helper import TestCase
+from ..util import (
     mock_send_value,
     get_bearer_token
 )

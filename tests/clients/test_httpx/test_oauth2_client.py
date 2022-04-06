@@ -8,7 +8,7 @@ from authlib.integrations.httpx_client import (
     OAuthError,
     OAuth2Client,
 )
-from ..utils import MockDispatch
+from ..wsgi_helper import MockDispatch
 
 
 default_token = {

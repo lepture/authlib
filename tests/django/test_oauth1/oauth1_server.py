@@ -2,8 +2,8 @@ import os
 from authlib.integrations.django_oauth1 import (
     CacheAuthorizationServer,
 )
+from tests.django_helper import TestCase as _TestCase
 from .models import Client, TokenCredential
-from ..base import TestCase as _TestCase
 
 
 class TestCase(_TestCase):

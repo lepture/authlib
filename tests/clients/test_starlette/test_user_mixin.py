@@ -4,9 +4,8 @@ from authlib.integrations.starlette_client import OAuth
 from authlib.jose import jwk
 from authlib.jose.errors import InvalidClaimError
 from authlib.oidc.core.grants.util import generate_id_token
-from tests.util import read_file_path
-from tests.client_base import get_bearer_token
-from ..utils import AsyncPathMapDispatch
+from ..util import get_bearer_token, read_key_file
+from ..asgi_helper import AsyncPathMapDispatch
 
 
 async def run_fetch_userinfo(payload):
@@ -102,7 +101,7 @@ async def test_runtime_error_fetch_jwks_uri():
 
 @pytest.mark.asyncio
 async def test_force_fetch_jwks_uri():
-    secret_keys = read_file_path('jwks_private.json')
+    secret_keys = read_key_file('jwks_private.json')
     token = get_bearer_token()
     id_token = generate_id_token(
         token, {'sub': '123'}, secret_keys,
@@ -112,7 +111,7 @@ async def test_force_fetch_jwks_uri():
     token['id_token'] = id_token
 
     app = AsyncPathMapDispatch({
-        '/jwks': {'body': read_file_path('jwks_public.json')}
+        '/jwks': {'body': read_key_file('jwks_public.json')}
     })
 
     oauth = OAuth()

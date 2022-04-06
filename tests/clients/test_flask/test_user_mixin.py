@@ -4,8 +4,7 @@ from authlib.jose import jwk
 from authlib.jose.errors import InvalidClaimError
 from authlib.integrations.flask_client import OAuth
 from authlib.oidc.core.grants.util import generate_id_token
-from tests.util import read_file_path
-from tests.client_base import get_bearer_token
+from ..util import get_bearer_token, read_key_file
 
 
 class FlaskUserMixinTest(TestCase):
@@ -122,7 +121,7 @@ class FlaskUserMixinTest(TestCase):
             self.assertRaises(RuntimeError, client.parse_id_token, token, 'n')
 
     def test_force_fetch_jwks_uri(self):
-        secret_keys = read_file_path('jwks_private.json')
+        secret_keys = read_key_file('jwks_private.json')
         token = get_bearer_token()
         id_token = generate_id_token(
             token, {'sub': '123'}, secret_keys,
@@ -145,7 +144,7 @@ class FlaskUserMixinTest(TestCase):
 
         def fake_send(sess, req, **kwargs):
             resp = mock.MagicMock()
-            resp.json = lambda: read_file_path('jwks_public.json')
+            resp.json = lambda: read_key_file('jwks_public.json')
             resp.status_code = 200
             return resp
 

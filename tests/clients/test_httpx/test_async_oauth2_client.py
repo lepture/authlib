@@ -9,7 +9,7 @@ from authlib.integrations.httpx_client import (
     OAuthError,
     AsyncOAuth2Client,
 )
-from ..utils import AsyncMockDispatch
+from ..asgi_helper import AsyncMockDispatch
 
 
 default_token = {
@@ -21,17 +21,20 @@ default_token = {
 }
 
 
+@pytest.mark.asyncio
 async def assert_token_in_header(request):
     token = 'Bearer ' + default_token['access_token']
     auth_header = request.headers.get('authorization')
     assert auth_header == token
 
 
+@pytest.mark.asyncio
 async def assert_token_in_body(request):
     content = await request.body()
     assert default_token['access_token'] in content.decode()
 
 
+@pytest.mark.asyncio
 async def assert_token_in_uri(request):
     assert default_token['access_token'] in str(request.url)
 

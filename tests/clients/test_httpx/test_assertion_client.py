@@ -1,7 +1,7 @@
 import time
 import pytest
 from authlib.integrations.httpx_client import AssertionClient
-from ..utils import MockDispatch
+from ..wsgi_helper import MockDispatch
 
 
 default_token = {
@@ -13,7 +13,6 @@ default_token = {
 }
 
 
-@pytest.mark.asyncio
 def test_refresh_token():
     def verifier(request):
         content = request.form
@@ -50,7 +49,6 @@ def test_refresh_token():
         client.get('https://i.b')
 
 
-@pytest.mark.asyncio
 def test_without_alg():
     with AssertionClient(
         'https://i.b/token',

@@ -5,8 +5,8 @@ from authlib.oidc.core.grants.util import generate_id_token
 from authlib.integrations.flask_client import OAuth, OAuthError
 from authlib.integrations.flask_client import FlaskOAuth2App
 from authlib.common.urls import urlparse, url_decode
-from tests.flask.cache import SimpleCache
-from tests.client_base import (
+from cachelib import SimpleCache
+from ..util import (
     mock_send_value,
     get_bearer_token
 )

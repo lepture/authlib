@@ -20,11 +20,17 @@ CACHES = {
     }
 }
 
-INSTALLED_APPS=[
-    'django.contrib.contenttypes',
-    'django.contrib.auth',
-    'tests.django.test_oauth1',
-    'tests.django.test_oauth2',
-]
+INSTALLED_APPS=[]
+
+AUTHLIB_OAUTH_CLIENTS = {
+    'dev_overwrite': {
+        'client_id': 'dev-client-id',
+        'client_secret': 'dev-client-secret',
+        'access_token_params': {
+            'foo': 'foo-1',
+            'bar': 'bar-2'
+        }
+    }
+}
 
 USE_TZ = True

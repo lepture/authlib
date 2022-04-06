@@ -6,8 +6,16 @@ from authlib.common.urls import url_encode, add_params_to_uri
 from authlib.integrations.requests_client import OAuth2Session, OAuthError
 from authlib.oauth2.rfc6749 import MismatchingStateException
 from authlib.oauth2.rfc7523 import ClientSecretJWT, PrivateKeyJWT
-from tests.util import read_file_path
-from tests.client_base import mock_json_response
+from ..util import read_key_file
+
+
+def mock_json_response(payload):
+    def fake_send(r, **kwargs):
+        resp = mock.MagicMock()
+        resp.json = lambda: payload
+        return resp
+    return fake_send
+
 
 
 class OAuth2SessionTest(TestCase):
@@ -439,7 +447,7 @@ class OAuth2SessionTest(TestCase):
         self.assertEqual(token, self.token)
 
     def test_private_key_jwt(self):
-        client_secret = read_file_path('rsa_private.pem')
+        client_secret = read_key_file('rsa_private.pem')
         sess = OAuth2Session(
             'id', client_secret,
             token_endpoint_auth_method='private_key_jwt'

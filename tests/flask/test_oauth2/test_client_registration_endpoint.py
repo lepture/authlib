@@ -53,14 +53,14 @@ class ClientRegistrationTest(TestCase):
 
     def test_access_denied(self):
         self.prepare_data()
-        rv = self.client.post('/create_client')
+        rv = self.client.post('/create_client', json={})
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'access_denied')
 
     def test_invalid_request(self):
         self.prepare_data()
         headers = {'Authorization': 'bearer abc'}
-        rv = self.client.post('/create_client', headers=headers)
+        rv = self.client.post('/create_client', json={}, headers=headers)
         resp = json.loads(rv.data)
         self.assertEqual(resp['error'], 'invalid_request')
 

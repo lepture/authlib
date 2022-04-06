@@ -1,7 +1,7 @@
 import time
 import pytest
 from authlib.integrations.httpx_client import AsyncAssertionClient
-from ..utils import AsyncMockDispatch
+from ..asgi_helper import AsyncMockDispatch
 
 
 default_token = {
