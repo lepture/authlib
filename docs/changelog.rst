@@ -6,8 +6,20 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
-Version 1.0
------------
+Version 1.0.1
+-------------
+
+**Released on April 6, 2022**
+
+- Fix authenticate_none method, via :gh:`issue#438`.
+- Allow to pass in alternative signing algorithm to RFC7523 authentication methods via :gh:`PR#447`.
+- Fix ``missing_token`` for Flask OAuth client, via :gh:`issue#448`.
+- Allow ``openid`` in any place of the scope, via :gh:`issue#449`.
+- Security fix for validating essential value on blank value in JWT, via :gh:`issue#445`.
+
+
+Version 1.0.0
+-------------
 
 **Released on Mar 15, 2022.**
 
