@@ -79,7 +79,7 @@ class _RequestMixin:
         if withhold_token:
             return session.request(method, url, **kwargs)
 
-        if token is None and self._fetch_token:
+        if token is None:
             token = self._get_requested_token(request)
 
         if token is None:
