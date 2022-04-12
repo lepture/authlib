@@ -75,12 +75,13 @@ class DjangoOAuth2App(DjangoAppMixin, OAuth2Mixin, OpenIDMixin, BaseApp):
                 'state': request.POST.get('state'),
             }
 
+        claims_options = kwargs.pop('claims_options', None)
         state_data = self.framework.get_state_data(request.session, params.get('state'))
         self.framework.clear_state_data(request.session, params.get('state'))
         params = self._format_state_params(state_data, params)
         token = self.fetch_access_token(**params, **kwargs)
 
         if 'id_token' in token and 'nonce' in state_data:
-            userinfo = self.parse_id_token(token, nonce=state_data['nonce'])
+            userinfo = self.parse_id_token(token, nonce=state_data['nonce'], claims_options=claims_options)
             token['userinfo'] = userinfo
         return token
