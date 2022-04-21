@@ -93,8 +93,9 @@ algorithms:
 
 1. HS256, HS384, HS512
 2. RS256, RS384, RS512
-3. ES256, ES384, ES512
+3. ES256, ES384, ES512, ES256K
 4. PS256, PS384, PS512
+5. EdDSA
 
 For example, a JWS with RS256 requires a private PEM key to sign the JWS::
 
