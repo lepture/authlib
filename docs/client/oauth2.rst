@@ -270,6 +270,19 @@ protected resources. In this case, we can refresh the token manually, or even
 better, Authlib will refresh the token automatically and update the token
 for us.
 
+Automatically refreshing tokens
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If your :class:`~requests_client.OAuth2Session` class was created with the
+`token_endpoint` parameter, Authlib will automatically refresh the token when
+it has expired::
+
+    >>> openid_configuration = requests.get("https://example.org/.well-known/openid-configuration").json()
+    >>> session = OAuth2Session(…, token_endpoint=openid_configuration["token_endpoint"])
+
+Manually refreshing tokens
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 To call :meth:`~requests_client.OAuth2Session.refresh_token` manually means
 we are going to exchange a new "access_token" with "refresh_token"::
 
