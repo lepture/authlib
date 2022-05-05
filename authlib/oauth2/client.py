@@ -350,7 +350,6 @@ class OAuth2Client(object):
         for hook in self.compliance_hook['access_token_response']:
             resp = hook(resp)
 
-        resp.raise_for_status()
         return self.parse_response_token(resp.json())
 
     def _refresh_token(self, url, refresh_token=None, body='', headers=None,
@@ -360,7 +359,6 @@ class OAuth2Client(object):
         for hook in self.compliance_hook['refresh_token_response']:
             resp = hook(resp)
 
-        resp.raise_for_status()
         token = self.parse_response_token(resp.json())
         if 'refresh_token' not in token:
             self.token['refresh_token'] = refresh_token
