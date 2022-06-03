@@ -3,6 +3,9 @@ import time
 import pytest
 from unittest import mock
 from copy import deepcopy
+
+from httpx import AsyncClient
+
 from authlib.common.security import generate_token
 from authlib.common.urls import url_encode
 from authlib.integrations.httpx_client import (
@@ -79,11 +82,26 @@ async def test_add_token_to_streaming_request(assert_func, token_placement):
             token_placement=token_placement,
             app=mock_response
     ) as client:
-        async with await client.stream("GET", 'https://i.b') as stream:
+        async with client.stream("GET", 'https://i.b') as stream:
             await stream.aread()
             data = stream.json()
 
     assert data['a'] == 'a'
+
+
+@pytest.mark.parametrize("client", [
+    AsyncOAuth2Client(
+        'foo',
+        token=default_token,
+        token_placement="header",
+        app=AsyncMockDispatch({'a': 'a'}, assert_func=assert_token_in_header)
+    ),
+    AsyncClient(app=AsyncMockDispatch({'a': 'a'}))
+])
+async def test_httpx_client_stream_match(client):
+    async with client as client_entered:
+        async with client_entered.stream("GET", 'https://i.b') as stream:
+            assert stream.status_code == 200
 
 
 def test_create_authorization_url():
