@@ -1,4 +1,5 @@
 import typing
+from contextlib import asynccontextmanager
 
 from httpx import AsyncClient, Auth, Client, Request, Response, USE_CLIENT_DEFAULT
 from anyio import Lock  # Import after httpx so import errors refer to httpx
@@ -91,6 +92,7 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
         return await super(AsyncOAuth2Client, self).request(
             method, url, auth=auth, **kwargs)
 
+    @asynccontextmanager
     async def stream(self, method, url, withhold_token=False, auth=USE_CLIENT_DEFAULT, **kwargs):
         if not withhold_token and auth is USE_CLIENT_DEFAULT:
             if not self.token:
@@ -100,8 +102,9 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
 
             auth = self.token_auth
 
-        return super(AsyncOAuth2Client, self).stream(
-            method, url, auth=auth, **kwargs)
+        async with super(AsyncOAuth2Client, self).stream(
+            method, url, auth=auth, **kwargs) as resp:
+            yield resp
 
     async def ensure_active_token(self, token):
         async with self._token_refresh_lock:
