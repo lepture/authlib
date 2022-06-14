@@ -13,7 +13,7 @@ Many thanks to these awesome sponsors and backers.
 </tr>
 <tr>
 <td><img align="middle" width="48" src="https://user-images.githubusercontent.com/290496/67944168-33843980-fc1f-11e9-8f69-6a7515344b92.png"></td>
-<td>For quickly implementing token-based authencation, feel free to check <a href="https://learn.authing.cn/authing/sdk/sdk-for-python">Authing's Python SDK</a>.</td>
+<td>For quickly implementing token-based authentication, feel free to check <a href="https://learn.authing.cn/authing/sdk/sdk-for-python">Authing's Python SDK</a>.</td>
 </tr>
 </table>
 

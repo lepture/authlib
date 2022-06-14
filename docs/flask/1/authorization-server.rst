@@ -143,7 +143,7 @@ The nonce value MUST be unique across all requests with the same timestamp,
 client credentials, and token combinations. Authlib Flask integration has a
 built-in validation with cache.
 
-If cache is not available, developers can use a database, here is an exmaple of
+If cache is not available, developers can use a database, here is an example of
 using SQLAlchemy::
 
     class TimestampNonce(db.Model):
