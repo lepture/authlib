@@ -60,7 +60,7 @@ class AuthorizationServer(object):
     def register_token_generator(self, grant_type, func):
         """Register a function as token generator for the given ``grant_type``.
         Developers MUST register a default token generator with a special
-        ``grant_type=none``::
+        ``grant_type=default``::
 
             def generate_bearer_token(grant_type, client, user=None, scope=None,
                                       expires_in=None, include_refresh_token=True):
@@ -70,7 +70,7 @@ class AuthorizationServer(object):
                 ...
                 return token
 
-            authorization_server.register_token_generator('none', generate_bearer_token)
+            authorization_server.register_token_generator('default', generate_bearer_token)
 
         If you register a generator for a certain grant type, that generator will only works
         for the given grant type::
