@@ -28,6 +28,7 @@ class OAuth2Client(object):
     :param revocation_endpoint_auth_method: client authentication method for
         revocation endpoint.
     :param scope: Scope that you needed to access user resources.
+    :param state: Shared secret to prevent CSRF attack.
     :param redirect_uri: Redirect URI you registered as callback.
     :param code_challenge_method: PKCE method name, only S256 is supported.
     :param token: A dict of token attributes such as ``access_token``,
@@ -48,12 +49,13 @@ class OAuth2Client(object):
     def __init__(self, session, client_id=None, client_secret=None,
                  token_endpoint_auth_method=None,
                  revocation_endpoint_auth_method=None,
-                 scope=None, redirect_uri=None, code_challenge_method=None,
+                 scope=None, state=None, redirect_uri=None, code_challenge_method=None,
                  token=None, token_placement='header', update_token=None, **metadata):
 
         self.session = session
         self.client_id = client_id
         self.client_secret = client_secret
+        self.state = state
 
         if token_endpoint_auth_method is None:
             if client_secret:
@@ -170,6 +172,7 @@ class OAuth2Client(object):
         :param grant_type: Use specified grant_type to fetch token
         :return: A :class:`OAuth2Token` object (a dict too).
         """
+        state = state or self.state
         # implicit  grant_type
         authorization_response = kwargs.pop('authorization_response', None)
         if authorization_response and '#' in authorization_response:
