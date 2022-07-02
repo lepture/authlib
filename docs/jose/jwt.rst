@@ -64,7 +64,7 @@ dict of the payload::
 .. important::
 
    This decoding method is insecure. By default ``jwt.decode`` parses the alg header.
-   This allows symmetric macs and asymmetric signatures. If both are allowed a signatrue bypass described in CVE-2016-10555 is possible.
+   This allows symmetric macs and asymmetric signatures. If both are allowed a signature bypass described in CVE-2016-10555 is possible.
 
    See the following section for a mitigation.
 
