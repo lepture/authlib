@@ -7,7 +7,7 @@ from authlib.oauth1 import (
 from authlib.common.encoding import to_unicode
 from authlib.oauth1 import ClientAuth
 from authlib.oauth1.client import OAuth1Client as _OAuth1Client
-from .utils import extract_client_kwargs
+from .utils import build_request, extract_client_kwargs
 from ..base_client import OAuthError
 
 
@@ -19,7 +19,7 @@ class OAuth1Auth(Auth, ClientAuth):
         url, headers, body = self.prepare(
             request.method, str(request.url), request.headers, request.content)
         headers['Content-Length'] = str(len(body))
-        yield Request(method=request.method, url=url, headers=headers, content=body)
+        yield build_request(url=url, headers=headers, body=body, initial_request=request)
 
 
 class AsyncOAuth1Client(_OAuth1Client, AsyncClient):
