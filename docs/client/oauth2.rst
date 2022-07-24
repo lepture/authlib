@@ -135,7 +135,7 @@ the ``response_type`` of ``token``::
     >>> print(uri)
     https://some-service.com/oauth/authorize?response_type=token&client_id=be..4d&...
 
-Visit this link, and grant the authorization, the OAuth authoirzation server will
+Visit this link, and grant the authorization, the OAuth authorization server will
 redirect back to your redirect_uri, the response url would be something like::
 
     https://example.com/cb#access_token=2..WpA&state=xyz&token_type=bearer&expires_in=3600
