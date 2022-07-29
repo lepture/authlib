@@ -25,14 +25,14 @@ class AssertionSession(AssertionClient, Session):
     DEFAULT_GRANT_TYPE = JWT_BEARER_GRANT_TYPE
 
     def __init__(self, token_endpoint, issuer, subject, audience=None, grant_type=None,
-                 claims=None, token_placement='header', scope=None, **kwargs):
+                 claims=None, token_placement='header', scope=None, client_id=None, **kwargs):
         Session.__init__(self)
         update_session_configure(self, kwargs)
         AssertionClient.__init__(
             self, session=self,
             token_endpoint=token_endpoint, issuer=issuer, subject=subject,
             audience=audience, grant_type=grant_type, claims=claims,
-            token_placement=token_placement, scope=scope, **kwargs
+            token_placement=token_placement, scope=scope, client_id=client_id, **kwargs
         )
 
     def request(self, method, url, withhold_token=False, auth=None, **kwargs):

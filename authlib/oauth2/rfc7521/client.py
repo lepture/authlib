@@ -14,7 +14,7 @@ class AssertionClient(object):
 
     def __init__(self, session, token_endpoint, issuer, subject,
                  audience=None, grant_type=None, claims=None,
-                 token_placement='header', scope=None, **kwargs):
+                 token_placement='header', scope=None, client_id=None, **kwargs):
 
         self.session = session
 
@@ -34,6 +34,7 @@ class AssertionClient(object):
         self.audience = audience
         self.claims = claims
         self.scope = scope
+        self.client_id = client_id
         if self.token_auth_class is not None:
             self.token_auth = self.token_auth_class(None, token_placement, self)
         self._kwargs = kwargs
@@ -66,6 +67,8 @@ class AssertionClient(object):
         }
         if self.scope:
             data['scope'] = self.scope
+        if self.client_id:
+            data['client_id'] = self.client_id
 
         return self._refresh_token(data)
 
