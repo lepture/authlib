@@ -65,5 +65,5 @@ Follow the documentation below to find out more in detail.
 .. _httpx: https://www.encode.io/httpx/
 .. _Flask: https://flask.palletsprojects.com
 .. _Django: https://djangoproject.com
-.. _Starlette: https://starlette.io
+.. _Starlette: https://www.starlette.io
 .. _FastAPI: https://fastapi.tiangolo.com/
