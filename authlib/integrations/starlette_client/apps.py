@@ -21,7 +21,7 @@ class StarletteAppMixin(object):
     async def authorize_redirect(self, request, redirect_uri=None, **kwargs):
         """Create a HTTP Redirect for Authorization Endpoint.
 
-        :param request: HTTP request instance from Django view.
+        :param request: HTTP request instance from Starlette view.
         :param redirect_uri: Callback or redirect URI for authorization.
         :param kwargs: Extra parameters to include.
         :return: A HTTP redirect response.
