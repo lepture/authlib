@@ -80,5 +80,23 @@ Jun
 </a><br>
 Malik Piara
 </td>
+<td align="center">
+<a href="https://github.com/alan-eu">
+<img src="https://avatars.githubusercontent.com/u/18175329?v=4" alt="Alan" width="48" height="48">
+</a><br>
+Alan
+</td>
+<td align="center">
+<a href="https://github.com/jeffheaton">
+<img src="https://avatars.githubusercontent.com/u/462761?v=4" alt="Alan" width="48" height="48">
+</a><br>
+Jeff Heaton
+</td>
+<td align="center">
+<a href="https://github.com/birkjernstrom">
+<img src="https://avatars.githubusercontent.com/u/281715?v=4" alt="Alan" width="48" height="48">
+</a><br>
+Birk Jernström
+</td>
 </tr>
 </table>
