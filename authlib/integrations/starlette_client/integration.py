@@ -36,7 +36,7 @@ class StarletteIntegration(FrameworkIntegration):
     async def set_state_data(self, session: Optional[Dict[str, Any]], state: str, data: Any):
         key = f'_state_{self.name}_{state}'
         if self.cache:
-            await self.cache.set(key, {'data': data}, self.expires_in)
+            await self.cache.set(key, json.dumps({'data': data}), self.expires_in)
         elif session is not None:
             now = time.time()
             session[key] = {'data': data, 'exp': now + self.expires_in}
