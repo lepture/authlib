@@ -28,7 +28,7 @@ Understand JWT
 OpenID Connect 1.0 uses JWT a lot. Make sure you have the basic understanding
 of :ref:`jose`.
 
-For OpenID Connect, we need to understand at lease four concepts:
+For OpenID Connect, we need to understand at least four concepts:
 
 1. **alg**: Algorithm for JWT
 2. **key**: Private key for JWT
