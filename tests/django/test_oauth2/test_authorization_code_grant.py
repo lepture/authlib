@@ -149,7 +149,7 @@ class AuthorizationCodeTest(TestCase):
         resp = server.create_token_response(request)
         self.assertEqual(resp.status_code, 400)
         data = json.loads(resp.content)
-        self.assertEqual(data['error'], 'invalid_request')
+        self.assertEqual(data['error'], 'invalid_grant')
 
     def test_create_token_response_success(self):
         self.prepare_data()
