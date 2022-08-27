@@ -195,16 +195,6 @@ class JWSTest(unittest.TestCase):
         self.assertEqual(payload, b'hello')
         self.assertEqual(header['alg'], 'ES512')
 
-    def test_EdDSA_alg(self):
-        jws = JsonWebSignature(algorithms=['EdDSA'])
-        private_key = read_file_path('ed25519-pkcs8.pem')
-        public_key = read_file_path('ed25519-pub.pem')
-        s = jws.serialize({'alg': 'EdDSA'}, 'hello', private_key)
-        data = jws.deserialize(s, public_key)
-        header, payload = data['header'], data['payload']
-        self.assertEqual(payload, b'hello')
-        self.assertEqual(header['alg'], 'EdDSA')
-
     def test_ES256K_alg(self):
         jws = JsonWebSignature(algorithms=['ES256K'])
         private_key = read_file_path('secp256k1-private.pem')
