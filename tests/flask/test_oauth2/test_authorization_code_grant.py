@@ -121,7 +121,7 @@ class AuthorizationCodeTest(TestCase):
             'code': 'invalid',
         }, headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_request')
+        self.assertEqual(resp['error'], 'invalid_grant')
 
         code = AuthorizationCode(
             code='no-user',
@@ -142,7 +142,7 @@ class AuthorizationCodeTest(TestCase):
         uri = self.authorize_url + '&redirect_uri=https%3A%2F%2Fa.c'
         rv = self.client.post(uri, data={'user_id': '1'})
         resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_grant')
+        self.assertEqual(resp['error'], 'invalid_request')
 
         uri = self.authorize_url + '&redirect_uri=https%3A%2F%2Fa.b'
         rv = self.client.post(uri, data={'user_id': '1'})
