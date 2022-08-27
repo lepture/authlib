@@ -121,7 +121,7 @@ class AuthorizationCodeTest(TestCase):
             'code': 'invalid',
         }, headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_request')
+        self.assertEqual(resp['error'], 'invalid_grant')
 
         code = AuthorizationCode(
             code='no-user',
@@ -135,7 +135,7 @@ class AuthorizationCodeTest(TestCase):
             'code': 'no-user',
         }, headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_request')
+        self.assertEqual(resp['error'], 'invalid_grant')
 
     def test_invalid_redirect_uri(self):
         self.prepare_data()
@@ -156,7 +156,7 @@ class AuthorizationCodeTest(TestCase):
             'code': code,
         }, headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp['error'], 'invalid_request')
+        self.assertEqual(resp['error'], 'invalid_grant')
 
     def test_invalid_grant_type(self):
         self.prepare_data(

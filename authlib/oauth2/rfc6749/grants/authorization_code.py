@@ -6,6 +6,7 @@ from ..errors import (
     OAuth2Error,
     UnauthorizedClientError,
     InvalidClientError,
+    InvalidGrantError,
     InvalidRequestError,
     AccessDeniedError,
 )
@@ -220,14 +221,14 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         # code was issued to "client_id" in the request
         authorization_code = self.query_authorization_code(code, client)
         if not authorization_code:
-            raise InvalidRequestError('Invalid "code" in request.')
+            raise InvalidGrantError('Invalid "code" in request.')
 
         # validate redirect_uri parameter
         log.debug('Validate token redirect_uri of %r', client)
         redirect_uri = self.request.redirect_uri
         original_redirect_uri = authorization_code.get_redirect_uri()
         if original_redirect_uri and redirect_uri != original_redirect_uri:
-            raise InvalidRequestError('Invalid "redirect_uri" in request.')
+            raise InvalidGrantError('Invalid "redirect_uri" in request.')
 
         # save for create_token_response
         self.request.client = client
@@ -267,7 +268,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
 
         user = self.authenticate_user(authorization_code)
         if not user:
-            raise InvalidRequestError('There is no "user" for this code.')
+            raise InvalidGrantError('There is no "user" for this code.')
         self.request.user = user
 
         scope = authorization_code.get_scope()
