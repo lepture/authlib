@@ -268,7 +268,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
 
         user = self.authenticate_user(authorization_code)
         if not user:
-            raise InvalidRequestError('There is no "user" for this code.')
+            raise InvalidGrantError('There is no "user" for this code.')
         self.request.user = user
 
         scope = authorization_code.get_scope()
