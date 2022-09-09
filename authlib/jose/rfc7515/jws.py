@@ -244,7 +244,7 @@ class JsonWebSignature(object):
             raise MissingAlgorithmError()
 
         alg = header['alg']
-        if self._algorithms and alg not in self._algorithms:
+        if self._algorithms is not None and alg not in self._algorithms:
             raise UnsupportedAlgorithmError()
         if alg not in self.ALGORITHMS_REGISTRY:
             raise UnsupportedAlgorithmError()

@@ -42,7 +42,7 @@ JsonWebKey.JWK_KEY_CLS = {
     OKPKey.kty: OKPKey,
 }
 
-jwt = JsonWebToken()
+jwt = JsonWebToken(list(JsonWebSignature.ALGORITHMS_REGISTRY.keys()))
 
 
 __all__ = [

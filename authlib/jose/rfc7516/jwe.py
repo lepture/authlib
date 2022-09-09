@@ -662,7 +662,7 @@ class JsonWebEncryption(object):
             raise MissingAlgorithmError()
 
         alg = header['alg']
-        if self._algorithms and alg not in self._algorithms:
+        if self._algorithms is not None and alg not in self._algorithms:
             raise UnsupportedAlgorithmError()
         if alg not in self.ALG_REGISTRY:
             raise UnsupportedAlgorithmError()
@@ -672,7 +672,7 @@ class JsonWebEncryption(object):
         if 'enc' not in header:
             raise MissingEncryptionAlgorithmError()
         enc = header['enc']
-        if self._algorithms and enc not in self._algorithms:
+        if self._algorithms is not None and enc not in self._algorithms:
             raise UnsupportedEncryptionAlgorithmError()
         if enc not in self.ENC_REGISTRY:
             raise UnsupportedEncryptionAlgorithmError()
@@ -681,7 +681,7 @@ class JsonWebEncryption(object):
     def get_header_zip(self, header):
         if 'zip' in header:
             z = header['zip']
-            if self._algorithms and z not in self._algorithms:
+            if self._algorithms is not None and z not in self._algorithms:
                 raise UnsupportedCompressionAlgorithmError()
             if z not in self.ZIP_REGISTRY:
                 raise UnsupportedCompressionAlgorithmError()

@@ -25,7 +25,7 @@ class JsonWebToken(object):
         r'^\b(?!(000|666|9))\d{3}-(?!00)\d{2}-(?!0000)\d{4}\b',
     ]), re.DOTALL)
 
-    def __init__(self, algorithms=None, private_headers=None):
+    def __init__(self, algorithms, private_headers=None):
         self._jws = JsonWebSignature(algorithms, private_headers=private_headers)
         self._jwe = JsonWebEncryption(algorithms, private_headers=private_headers)
 
