@@ -22,13 +22,16 @@ class ClientSecretJWT(object):
 
     :param token_endpoint: A string URL of the token endpoint
     :param claims: Extra JWT claims
+    :param headers: Extra JWT headers
+    :param alg: ``alg`` value, default is HS256
     """
     name = 'client_secret_jwt'
     alg = 'HS256'
 
-    def __init__(self, token_endpoint=None, claims=None, alg=None):
+    def __init__(self, token_endpoint=None, claims=None, headers=None, alg=None):
         self.token_endpoint = token_endpoint
         self.claims = claims
+        self.headers = headers
         if alg is not None:
             self.alg = alg
 
@@ -38,6 +41,7 @@ class ClientSecretJWT(object):
             client_id=auth.client_id,
             token_endpoint=token_endpoint,
             claims=self.claims,
+            headers=self.headers,
             alg=self.alg,
         )
 
@@ -73,6 +77,8 @@ class PrivateKeyJWT(ClientSecretJWT):
 
     :param token_endpoint: A string URL of the token endpoint
     :param claims: Extra JWT claims
+    :param headers: Extra JWT headers
+    :param alg: ``alg`` value, default is RS256
     """
     name = 'private_key_jwt'
     alg = 'RS256'
