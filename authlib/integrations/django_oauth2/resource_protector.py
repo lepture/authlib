@@ -23,7 +23,7 @@ class ResourceProtector(_ResourceProtector):
         :return: token object
         """
         url = request.build_absolute_uri()
-        req = HttpRequest(request.method, url, request.body, request.headers)
+        req = HttpRequest(request.method, url, None, request.headers)
         req.req = request
         if isinstance(scopes, str):
             scopes = [scopes]
