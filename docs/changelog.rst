@@ -6,6 +6,17 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 1.2.0
+-------------
+
+**Release date not decided**
+
+- Not passing ``request.body`` to ``ResourceProtector``, via :gh:`issue#485`.
+- Use ``flask.g`` instead of ``_app_ctx_stack``, via :gh:`issue#482`.
+- Add ``headers`` parameter back to ``ClientSecretJWT``, via :gh:`issue#457`.
+- Always passing ``realm`` parameter in OAuth 1 clients, via :gh:`issue#339`.
+
+
 Version 1.1.0
 -------------
 
