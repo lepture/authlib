@@ -6,10 +6,32 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 1.1.0
+-------------
+
+**Released on Sep 13, 2022**
+
+This release contains breaking changes and security fixes.
+
+- Allow to pass ``claims_options`` to Framework OpenID Connect clients, via :gh:`PR#446`.
+- Fix ``.stream`` with context for HTTPX OAuth clients, via :gh:`PR#465`.
+- Fix Starlette OAuth client for cache store, via :gh:`PR#478`.
+
+**Breaking changes**:
+
+- Raise ``InvalidGrantError`` for invalid code, redirect_uri and no user errors in OAuth
+  2.0 server.
+- The default ``authlib.jose.jwt`` would only work with JSON Web Signature algorithms, if
+  you would like to use JWT with JWE algorithms, please pass the algorithms parameter::
+
+      jwt = JsonWebToken(['A128KW', 'A128GCM', 'DEF'])
+
+**Security fixes**: CVE-2022-39175 and CVE-2022-39174, both related to JOSE.
+
 Version 1.0.1
 -------------
 
-**Released on April 6, 2022**
+**Released on Apr 6, 2022**
 
 - Fix authenticate_none method, via :gh:`issue#438`.
 - Allow to pass in alternative signing algorithm to RFC7523 authentication methods via :gh:`PR#447`.
