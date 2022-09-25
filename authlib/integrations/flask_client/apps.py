@@ -1,5 +1,4 @@
-from flask import redirect, request, session
-from flask import _app_ctx_stack
+from flask import g, redirect, request, session
 from ..requests_client import OAuth1Session, OAuth2Session
 from ..base_client import (
     BaseApp, OAuthError,
@@ -10,9 +9,8 @@ from ..base_client import (
 class FlaskAppMixin(object):
     @property
     def token(self):
-        ctx = _app_ctx_stack.top
         attr = '_oauth_token_{}'.format(self.name)
-        token = getattr(ctx, attr, None)
+        token = g.get(attr)
         if token:
             return token
         if self._fetch_token:
@@ -22,9 +20,8 @@ class FlaskAppMixin(object):
 
     @token.setter
     def token(self, token):
-        ctx = _app_ctx_stack.top
         attr = '_oauth_token_{}'.format(self.name)
-        setattr(ctx, attr, token)
+        setattr(g, attr, token)
 
     def _get_requested_token(self, *args, **kwargs):
         return self.token
