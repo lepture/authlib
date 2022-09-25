@@ -170,7 +170,7 @@ class OAuth1SessionTest(TestCase):
             self.assertTrue(isinstance(v, str))
 
     def test_fetch_request_token(self):
-        auth = OAuth1Session('foo')
+        auth = OAuth1Session('foo', realm='A')
         auth.send = mock_text_response('oauth_token=foo')
         resp = auth.fetch_request_token('https://example.com/token')
         self.assertEqual(resp['oauth_token'], 'foo')
@@ -178,9 +178,7 @@ class OAuth1SessionTest(TestCase):
             self.assertTrue(isinstance(k, str))
             self.assertTrue(isinstance(v, str))
 
-        resp = auth.fetch_request_token('https://example.com/token', realm='A')
-        self.assertEqual(resp['oauth_token'], 'foo')
-        resp = auth.fetch_request_token('https://example.com/token', realm=['A', 'B'])
+        resp = auth.fetch_request_token('https://example.com/token')
         self.assertEqual(resp['oauth_token'], 'foo')
 
     def test_fetch_request_token_with_optional_arguments(self):

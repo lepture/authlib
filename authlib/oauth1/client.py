@@ -20,7 +20,7 @@ class OAuth1Client(object):
                  redirect_uri=None, rsa_key=None, verifier=None,
                  signature_method=SIGNATURE_HMAC_SHA1,
                  signature_type=SIGNATURE_TYPE_HEADER,
-                 force_include_body=False, **kwargs):
+                 force_include_body=False, realm=None, **kwargs):
         if not client_id:
             raise ValueError('Missing "client_id"')
 
@@ -33,6 +33,7 @@ class OAuth1Client(object):
             signature_type=signature_type,
             rsa_key=rsa_key,
             verifier=verifier,
+            realm=realm,
             force_include_body=force_include_body
         )
         self._kwargs = kwargs
@@ -90,12 +91,9 @@ class OAuth1Client(object):
         kwargs['oauth_token'] = request_token or self.auth.token
         if self.auth.redirect_uri:
             kwargs['oauth_callback'] = self.auth.redirect_uri
-
-        self.auth.redirect_uri = None
-        self.auth.realm = None
         return add_params_to_uri(url, kwargs.items())
 
-    def fetch_request_token(self, url, realm=None, **kwargs):
+    def fetch_request_token(self, url, **kwargs):
         """Method for fetching an access token from the token endpoint.
 
         This is the first step in the OAuth 1 workflow. A request token is
@@ -104,7 +102,6 @@ class OAuth1Client(object):
         to be used to construct an authorization url.
 
         :param url: Request Token endpoint.
-        :param realm: A string/list/tuple of realm for Authorization header.
         :param kwargs: Extra parameters to include for fetching token.
         :return: A Request Token dict.
 
@@ -112,15 +109,6 @@ class OAuth1Client(object):
 
             session = OAuth1Session(client_id, client_secret, ..., realm='')
         """
-        if realm is None:
-            realm = self._kwargs.get('realm', None)
-        if realm:
-            if isinstance(realm, (tuple, list)):
-                realm = ' '.join(realm)
-            self.auth.realm = realm
-        else:
-            self.auth.realm = None
-
         return self._fetch_token(url, **kwargs)
 
     def fetch_access_token(self, url, verifier=None, **kwargs):
@@ -153,7 +141,7 @@ class OAuth1Client(object):
         self.token = token
         return token
 
-    def _fetch_token(self, url, **kwargs):
+    def _fetch_token(self, url, realm, **kwargs):
         resp = self.session.post(url, auth=self.auth, **kwargs)
         token = self.parse_response_token(resp.status_code, resp.text)
         self.token = token
