@@ -14,9 +14,10 @@ keys of :ref:`specs/rfc7517`::
     >>> from authlib.jose import jwt
     >>> header = {'alg': 'RS256'}
     >>> payload = {'iss': 'Authlib', 'sub': '123', ...}
-    >>> key = read_file('private.pem')
-    >>> s = jwt.encode(header, payload, key)
-    >>> claims = jwt.decode(s, read_file('public.pem'))
+    >>> private_key = read_file('private.pem')
+    >>> s = jwt.encode(header, payload, private_key)
+    >>> public_key = read_file('public.pem')
+    >>> claims = jwt.decode(s, public_key)
     >>> print(claims)
     {'iss': 'Authlib', 'sub': '123', ...}
     >>> print(claims.header)
@@ -47,8 +48,8 @@ payload with the given ``alg`` in header::
     >>> from authlib.jose import jwt
     >>> header = {'alg': 'RS256'}
     >>> payload = {'iss': 'Authlib', 'sub': '123', ...}
-    >>> key = read_file('private.pem')
-    >>> s = jwt.encode(header, payload, key)
+    >>> private_key = read_file('private.pem')
+    >>> s = jwt.encode(header, payload, private_key)
 
 The available keys in headers are defined by :ref:`specs/rfc7515`.
 
@@ -59,7 +60,8 @@ JWT Decode
 dict of the payload::
 
     >>> from authlib.jose import jwt
-    >>> claims = jwt.decode(s, read_file('public.pem'))
+    >>> public_key = read_file('public.pem')
+    >>> claims = jwt.decode(s, public_key)
 
 .. important::
 
