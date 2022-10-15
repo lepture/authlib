@@ -11,6 +11,7 @@ class AssertionClient(object):
     DEFAULT_GRANT_TYPE = None
     ASSERTION_METHODS = {}
     token_auth_class = None
+    oauth_error_class = OAuth2Error
 
     def __init__(self, session, token_endpoint, issuer, subject,
                  audience=None, grant_type=None, claims=None,
@@ -69,16 +70,22 @@ class AssertionClient(object):
 
         return self._refresh_token(data)
 
-    def _refresh_token(self, data):
-        resp = self.session.request(
-            'POST', self.token_endpoint, data=data, withhold_token=True)
+    def parse_response_token(self, resp):
+        if resp.status_code >= 500:
+            resp.raise_for_status()
 
         token = resp.json()
         if 'error' in token:
-            raise OAuth2Error(
+            raise self.oauth_error_class(
                 error=token['error'],
                 description=token.get('error_description')
             )
 
         self.token = token
-        return self.token
+        return token
+
+    def _refresh_token(self, data):
+        resp = self.session.request(
+            'POST', self.token_endpoint, data=data, withhold_token=True)
+
+        return self.parse_response_token(resp)

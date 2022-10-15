@@ -50,6 +50,7 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
 
     client_auth_class = OAuth2ClientAuth
     token_auth_class = OAuth2Auth
+    oauth_error_class = OAuthError
 
     def __init__(self, client_id=None, client_secret=None,
                  token_endpoint_auth_method=None,
@@ -75,10 +76,6 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
             token=token, token_placement=token_placement,
             update_token=update_token, **kwargs
         )
-
-    @staticmethod
-    def handle_error(error_type, error_description):
-        raise OAuthError(error_type, error_description)
 
     async def request(self, method, url, withhold_token=False, auth=USE_CLIENT_DEFAULT, **kwargs):
         if not withhold_token and auth is USE_CLIENT_DEFAULT:
@@ -137,7 +134,7 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
         for hook in self.compliance_hook['access_token_response']:
             resp = hook(resp)
 
-        return self.parse_response_token(resp.json())
+        return self.parse_response_token(resp)
 
     async def _refresh_token(self, url, refresh_token=None, body='',
                              headers=None, auth=USE_CLIENT_DEFAULT, **kwargs):
@@ -148,7 +145,7 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
         for hook in self.compliance_hook['refresh_token_response']:
             resp = hook(resp)
 
-        token = self.parse_response_token(resp.json())
+        token = self.parse_response_token(resp)
         if 'refresh_token' not in token:
             self.token['refresh_token'] = refresh_token
 
@@ -168,6 +165,7 @@ class OAuth2Client(_OAuth2Client, Client):
 
     client_auth_class = OAuth2ClientAuth
     token_auth_class = OAuth2Auth
+    oauth_error_class = OAuthError
 
     def __init__(self, client_id=None, client_secret=None,
                  token_endpoint_auth_method=None,

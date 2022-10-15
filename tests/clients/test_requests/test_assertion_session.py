@@ -17,6 +17,7 @@ class AssertionSessionTest(TestCase):
     def test_refresh_token(self):
         def verifier(r, **kwargs):
             resp = mock.MagicMock()
+            resp.status_code = 200
             if r.url == 'https://i.b/token':
                 self.assertIn('assertion=', r.body)
                 resp.json = lambda: self.token

@@ -12,10 +12,22 @@ from ..util import read_key_file
 def mock_json_response(payload):
     def fake_send(r, **kwargs):
         resp = mock.MagicMock()
+        resp.status_code = 200
         resp.json = lambda: payload
         return resp
     return fake_send
 
+
+def mock_assertion_response(ctx, session):
+    def fake_send(r, **kwargs):
+        ctx.assertIn('client_assertion=', r.body)
+        ctx.assertIn('client_assertion_type=', r.body)
+        resp = mock.MagicMock()
+        resp.status_code = 200
+        resp.json = lambda: ctx.token
+        return resp
+
+    session.send = fake_send
 
 
 class OAuth2SessionTest(TestCase):
@@ -123,6 +135,7 @@ class OAuth2SessionTest(TestCase):
             self.assertIn('client_id=', r.body)
             self.assertIn('grant_type=authorization_code', r.body)
             resp = mock.MagicMock()
+            resp.status_code = 200
             resp.json = lambda: self.token
             return resp
 
@@ -153,6 +166,7 @@ class OAuth2SessionTest(TestCase):
             self.assertIn('code=v', r.url)
             self.assertIn('grant_type=authorization_code', r.url)
             resp = mock.MagicMock()
+            resp.status_code = 200
             resp.json = lambda: self.token
             return resp
 
@@ -182,6 +196,7 @@ class OAuth2SessionTest(TestCase):
             self.assertIn('client_secret=bar', r.body)
             self.assertIn('grant_type=authorization_code', r.body)
             resp = mock.MagicMock()
+            resp.status_code = 200
             resp.json = lambda: self.token
             return resp
 
@@ -217,6 +232,7 @@ class OAuth2SessionTest(TestCase):
             self.assertIn('grant_type=password', r.body)
             self.assertIn('scope=profile', r.body)
             resp = mock.MagicMock()
+            resp.status_code = 200
             resp.json = lambda: self.token
             return resp
 
@@ -232,6 +248,7 @@ class OAuth2SessionTest(TestCase):
             self.assertIn('grant_type=client_credentials', r.body)
             self.assertIn('scope=profile', r.body)
             resp = mock.MagicMock()
+            resp.status_code = 200
             resp.json = lambda: self.token
             return resp
 
@@ -418,14 +435,7 @@ class OAuth2SessionTest(TestCase):
         )
         sess.register_client_auth_method(ClientSecretJWT())
 
-        def fake_send(r, **kwargs):
-            self.assertIn('client_assertion=', r.body)
-            self.assertIn('client_assertion_type=', r.body)
-            resp = mock.MagicMock()
-            resp.json = lambda: self.token
-            return resp
-
-        sess.send = fake_send
+        mock_assertion_response(self, sess)
         token = sess.fetch_token('https://i.b/token')
         self.assertEqual(token, self.token)
 
@@ -434,15 +444,7 @@ class OAuth2SessionTest(TestCase):
             'id', 'secret',
             token_endpoint_auth_method=ClientSecretJWT(),
         )
-
-        def fake_send(r, **kwargs):
-            self.assertIn('client_assertion=', r.body)
-            self.assertIn('client_assertion_type=', r.body)
-            resp = mock.MagicMock()
-            resp.json = lambda: self.token
-            return resp
-
-        sess.send = fake_send
+        mock_assertion_response(self, sess)
         token = sess.fetch_token('https://i.b/token')
         self.assertEqual(token, self.token)
 
@@ -453,15 +455,7 @@ class OAuth2SessionTest(TestCase):
             token_endpoint_auth_method='private_key_jwt'
         )
         sess.register_client_auth_method(PrivateKeyJWT())
-
-        def fake_send(r, **kwargs):
-            self.assertIn('client_assertion=', r.body)
-            self.assertIn('client_assertion_type=', r.body)
-            resp = mock.MagicMock()
-            resp.json = lambda: self.token
-            return resp
-
-        sess.send = fake_send
+        mock_assertion_response(self, sess)
         token = sess.fetch_token('https://i.b/token')
         self.assertEqual(token, self.token)
 
@@ -485,6 +479,7 @@ class OAuth2SessionTest(TestCase):
             self.assertIn('client_id=', r.url)
             self.assertIn('client_secret=', r.url)
             resp = mock.MagicMock()
+            resp.status_code = 200
             resp.json = lambda: self.token
             return resp
 

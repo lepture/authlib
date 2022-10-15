@@ -67,6 +67,7 @@ class OAuth2Session(OAuth2Client, Session):
     """
     client_auth_class = OAuth2ClientAuth
     token_auth_class = OAuth2Auth
+    oauth_error_class = OAuthError
     SESSION_REQUEST_PARAMS = (
         'allow_redirects', 'timeout', 'cookies', 'files',
         'proxies', 'hooks', 'stream', 'verify', 'cert', 'json'
@@ -104,7 +105,3 @@ class OAuth2Session(OAuth2Client, Session):
             auth = self.token_auth
         return super(OAuth2Session, self).request(
             method, url, auth=auth, **kwargs)
-
-    @staticmethod
-    def handle_error(error_type, error_description):
-        raise OAuthError(error_type, error_description)

@@ -9,6 +9,7 @@ from .rfc6749.parameters import (
 from .rfc7009 import prepare_revoke_token_request
 from .rfc7636 import create_s256_code_challenge
 from .auth import TokenAuth, ClientAuth
+from .base import OAuth2Error
 
 DEFAULT_HEADERS = {
     'Accept': 'application/json',
@@ -40,6 +41,7 @@ class OAuth2Client(object):
     """
     client_auth_class = ClientAuth
     token_auth_class = TokenAuth
+    oauth_error_class = OAuth2Error
 
     EXTRA_AUTHORIZE_PARAMS = (
         'response_mode', 'nonce', 'prompt', 'login_hint'
@@ -209,7 +211,13 @@ class OAuth2Client(object):
 
     def token_from_fragment(self, authorization_response, state=None):
         token = parse_implicit_response(authorization_response, state)
-        return self.parse_response_token(token)
+        if 'error' in token:
+            raise self.oauth_error_class(
+                error=token['error'],
+                description=token.get('error_description')
+            )
+        self.token = token
+        return token
 
     def refresh_token(self, url, refresh_token=None, body='',
                       auth=None, headers=None, **kwargs):
@@ -323,18 +331,18 @@ class OAuth2Client(object):
                              hook_type, self.compliance_hook)
         self.compliance_hook[hook_type].add(hook)
 
-    def parse_response_token(self, token):
-        if 'error' not in token:
-            self.token = token
-            return self.token
+    def parse_response_token(self, resp):
+        if resp.status_code >= 500:
+            resp.raise_for_status()
 
-        error = token['error']
-        description = token.get('error_description', error)
-        self.handle_error(error, description)
-
-    @staticmethod
-    def handle_error(error_type, error_description):
-        raise ValueError('{}: {}'.format(error_type, error_description))
+        token = resp.json()
+        if 'error' in token:
+            raise self.oauth_error_class(
+                error=token['error'],
+                description=token.get('error_description')
+            )
+        self.token = token
+        return token
 
     def _fetch_token(self, url, body='', headers=None, auth=None,
                      method='POST', **kwargs):
@@ -353,7 +361,7 @@ class OAuth2Client(object):
         for hook in self.compliance_hook['access_token_response']:
             resp = hook(resp)
 
-        return self.parse_response_token(resp.json())
+        return self.parse_response_token(resp)
 
     def _refresh_token(self, url, refresh_token=None, body='', headers=None,
                        auth=None, **kwargs):
@@ -362,7 +370,7 @@ class OAuth2Client(object):
         for hook in self.compliance_hook['refresh_token_response']:
             resp = hook(resp)
 
-        token = self.parse_response_token(resp.json())
+        token = self.parse_response_token(resp)
         if 'refresh_token' not in token:
             self.token['refresh_token'] = refresh_token
 

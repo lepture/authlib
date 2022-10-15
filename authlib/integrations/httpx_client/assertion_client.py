@@ -1,15 +1,16 @@
-from httpx import AsyncClient, Client, USE_CLIENT_DEFAULT
+from httpx import AsyncClient, Client, Response, USE_CLIENT_DEFAULT
 from authlib.oauth2.rfc7521 import AssertionClient as _AssertionClient
 from authlib.oauth2.rfc7523 import JWTBearerGrant
-from authlib.oauth2 import OAuth2Error
 from .utils import extract_client_kwargs
 from .oauth2_client import OAuth2Auth
+from ..base_client import OAuthError
 
 __all__ = ['AsyncAssertionClient']
 
 
 class AsyncAssertionClient(_AssertionClient, AsyncClient):
     token_auth_class = OAuth2Auth
+    oauth_error_class = OAuthError
     JWT_BEARER_GRANT_TYPE = JWTBearerGrant.GRANT_TYPE
     ASSERTION_METHODS = {
         JWT_BEARER_GRANT_TYPE: JWTBearerGrant.sign,
@@ -29,7 +30,7 @@ class AsyncAssertionClient(_AssertionClient, AsyncClient):
             token_placement=token_placement, scope=scope, **kwargs
         )
 
-    async def request(self, method, url, withhold_token=False, auth=USE_CLIENT_DEFAULT, **kwargs):
+    async def request(self, method, url, withhold_token=False, auth=USE_CLIENT_DEFAULT, **kwargs) -> Response:
         """Send request with auto refresh token feature."""
         if not withhold_token and auth is USE_CLIENT_DEFAULT:
             if not self.token or self.token.is_expired():
@@ -43,18 +44,12 @@ class AsyncAssertionClient(_AssertionClient, AsyncClient):
         resp = await self.request(
             'POST', self.token_endpoint, data=data, withhold_token=True)
 
-        token = resp.json()
-        if 'error' in token:
-            raise OAuth2Error(
-                error=token['error'],
-                description=token.get('error_description')
-            )
-        self.token = token
-        return self.token
+        return self.parse_response_token(resp)
 
 
 class AssertionClient(_AssertionClient, Client):
     token_auth_class = OAuth2Auth
+    oauth_error_class = OAuthError
     JWT_BEARER_GRANT_TYPE = JWTBearerGrant.GRANT_TYPE
     ASSERTION_METHODS = {
         JWT_BEARER_GRANT_TYPE: JWTBearerGrant.sign,
