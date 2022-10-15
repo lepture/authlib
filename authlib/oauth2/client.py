@@ -233,7 +233,7 @@ class OAuth2Client(object):
         )
 
         if headers is None:
-            headers = DEFAULT_HEADERS
+            headers = DEFAULT_HEADERS.copy()
 
         for hook in self.compliance_hook['refresh_token_request']:
             url, headers, body = hook(url, headers, body)
