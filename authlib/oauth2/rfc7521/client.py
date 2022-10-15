@@ -82,7 +82,7 @@ class AssertionClient(object):
             )
 
         self.token = token
-        return token
+        return self.token
 
     def _refresh_token(self, data):
         resp = self.session.request(

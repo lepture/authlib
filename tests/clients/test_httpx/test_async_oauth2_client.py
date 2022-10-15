@@ -407,7 +407,7 @@ async def test_auto_refresh_token4():
     update_token = mock.Mock(side_effect=_update_token)
 
     old_token = dict(
-        access_token='a',
+        access_token='old',
         token_type='bearer',
         expires_at=100
     )

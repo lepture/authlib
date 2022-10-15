@@ -342,7 +342,7 @@ class OAuth2Client(object):
                 description=token.get('error_description')
             )
         self.token = token
-        return token
+        return self.token
 
     def _fetch_token(self, url, body='', headers=None, auth=None,
                      method='POST', **kwargs):
