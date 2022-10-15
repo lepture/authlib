@@ -104,10 +104,6 @@ class OAuth1Client(object):
         :param url: Request Token endpoint.
         :param kwargs: Extra parameters to include for fetching token.
         :return: A Request Token dict.
-
-        Note, ``realm`` can also be configured when session created::
-
-            session = OAuth1Session(client_id, client_secret, ..., realm='')
         """
         return self._fetch_token(url, **kwargs)
 
@@ -141,7 +137,7 @@ class OAuth1Client(object):
         self.token = token
         return token
 
-    def _fetch_token(self, url, realm, **kwargs):
+    def _fetch_token(self, url, **kwargs):
         resp = self.session.post(url, auth=self.auth, **kwargs)
         token = self.parse_response_token(resp.status_code, resp.text)
         self.token = token
