@@ -24,6 +24,11 @@ Authlib is compatible with Python3.6+.
 <td>If you want to quickly add secure token-based authentication to Python projects, feel free to check Auth0's Python SDK and free plan at <a href="https://auth0.com/developers?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=authlib&utm_content=auth">auth0.com/developers</a>.</td>
 </tr>
 <tr>
+<td><img align="middle" width="48" src="https://avatars.githubusercontent.com/u/105941848?s=200&v=4"></td>
+<td>Kraken is the world's leading customer & culture platform for energy, water & broadband. Licensing enquiries at <a href="https://kraken.tech/">Kraken.tech</a>.
+</td>
+</tr>
+<tr>
 <td><img align="middle" width="48" src="https://typlog.com/assets/icon-black.svg"></td>
 <td>A blogging and podcast hosting platform with minimal design but powerful features. Host your blog and Podcast with <a href="https://typlog.com/">Typlog.com</a>.
 </td>

@@ -15,6 +15,11 @@ Many thanks to these awesome sponsors and backers.
 <td><img align="middle" width="48" src="https://user-images.githubusercontent.com/290496/67944168-33843980-fc1f-11e9-8f69-6a7515344b92.png"></td>
 <td>For quickly implementing token-based authentication, feel free to check <a href="https://learn.authing.cn/authing/sdk/sdk-for-python">Authing's Python SDK</a>.</td>
 </tr>
+<tr>
+<td><img align="middle" width="48" src="https://avatars.githubusercontent.com/u/105941848?s=200&v=4"></td>
+<td>Kraken is the world's leading customer & culture platform for energy, water & broadband. Licensing enquiries at <a href="https://kraken.tech/">Kraken.tech</a>.
+</td>
+</tr>
 </table>
 
 <table>
