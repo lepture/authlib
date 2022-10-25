@@ -15,6 +15,7 @@ Version 1.2.0
 - Use ``flask.g`` instead of ``_app_ctx_stack``, via :gh:`issue#482`.
 - Add ``headers`` parameter back to ``ClientSecretJWT``, via :gh:`issue#457`.
 - Always passing ``realm`` parameter in OAuth 1 clients, via :gh:`issue#339`.
+- Implemented RFC7592 Dynamic Client Registration Management Protocol, via :gh:`issue#499`.
 
 
 Version 1.1.0
