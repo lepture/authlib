@@ -22,7 +22,7 @@ example, you want to use ``requests`` OAuth clients::
 
 For instance, you want to use ``httpx`` OAuth clients::
 
-    $ pip install -U Authlib httpx
+    $ pip install Authlib httpx
 
 Here is a simple overview of Flask OAuth client::
 
