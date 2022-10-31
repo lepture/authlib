@@ -225,4 +225,4 @@ class TokenMixin(object):
 
         :return: boolean
         """
-        return NotImplementedError()
+        raise NotImplementedError()
