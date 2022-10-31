@@ -12,7 +12,7 @@ from ..rfc7591 import UnapprovedSoftwareStatementError
 
 
 class ClientConfigurationEndpoint(object):
-    ENDPOINT_NAME = "client_configuration"
+    ENDPOINT_NAME = 'client_configuration'
 
     #: The claims validation class
     claims_class = ClientMetadataClaims
@@ -47,11 +47,11 @@ class ClientConfigurationEndpoint(object):
 
         request.client = client
 
-        if request.method == "GET":
+        if request.method == 'GET':
             return self.create_read_client_response(client, request)
-        elif request.method == "DELETE":
+        elif request.method == 'DELETE':
             return self.create_delete_client_response(client, request)
-        elif request.method == "PUT":
+        elif request.method == 'PUT':
             return self.create_update_client_response(client, request)
 
     def create_endpoint_request(self, request):
@@ -65,37 +65,37 @@ class ClientConfigurationEndpoint(object):
     def create_delete_client_response(self, client, request):
         self.delete_client(client, request)
         headers = [
-            ("Cache-Control", "no-store"),
-            ("Pragma", "no-cache"),
+            ('Cache-Control', 'no-store'),
+            ('Pragma', 'no-cache'),
         ]
-        return 204, "", headers
+        return 204, '', headers
 
     def create_update_client_response(self, client, request):
         # The updated client metadata fields request MUST NOT include the
-        # "registration_access_token", "registration_client_uri",
-        # "client_secret_expires_at", or "client_id_issued_at" fields
+        # 'registration_access_token', 'registration_client_uri',
+        # 'client_secret_expires_at', or 'client_id_issued_at' fields
         must_not_include = (
-            "registration_access_token",
-            "registration_client_uri",
-            "client_secret_expires_at",
-            "client_id_issued_at",
+            'registration_access_token',
+            'registration_client_uri',
+            'client_secret_expires_at',
+            'client_id_issued_at',
         )
         for k in must_not_include:
             if k in request.data:
                 raise InvalidRequestError()
 
-        # The client MUST include its "client_id" field in the request
-        client_id = request.data.get("client_id")
+        # The client MUST include its 'client_id' field in the request
+        client_id = request.data.get('client_id')
         if not client_id:
             raise InvalidRequestError()
         if client_id != client.get_client_id():
             raise InvalidRequestError()
 
-        # If the client includes the "client_secret" field in the request,
+        # If the client includes the 'client_secret' field in the request,
         # the value of this field MUST match the currently issued client
         # secret for that client.
-        if "client_secret" in request.data:
-            if not client.check_client_secret(request.data["client_secret"]):
+        if 'client_secret' in request.data:
+            if not client.check_client_secret(request.data['client_secret']):
                 raise InvalidRequestError()
 
         client_metadata = self.extract_client_metadata(request)
@@ -118,10 +118,10 @@ class ClientConfigurationEndpoint(object):
         if not metadata:
             return {}
 
-        scopes_supported = metadata.get("scopes_supported")
-        response_types_supported = metadata.get("response_types_supported")
-        grant_types_supported = metadata.get("grant_types_supported")
-        auth_methods_supported = metadata.get("token_endpoint_auth_methods_supported")
+        scopes_supported = metadata.get('scopes_supported')
+        response_types_supported = metadata.get('response_types_supported')
+        grant_types_supported = metadata.get('grant_types_supported')
+        auth_methods_supported = metadata.get('token_endpoint_auth_methods_supported')
         options = {}
         if scopes_supported is not None:
             scopes_supported = set(scopes_supported)
@@ -132,7 +132,7 @@ class ClientConfigurationEndpoint(object):
                 scopes = set(scope_to_list(value))
                 return scopes_supported.issuperset(scopes)
 
-            options["scope"] = {"validate": _validate_scope}
+            options['scope'] = {'validate': _validate_scope}
 
         if response_types_supported is not None:
             response_types_supported = set(response_types_supported)
@@ -140,7 +140,7 @@ class ClientConfigurationEndpoint(object):
             def _validate_response_types(claims, value):
                 return response_types_supported.issuperset(set(value))
 
-            options["response_types"] = {"validate": _validate_response_types}
+            options['response_types'] = {'validate': _validate_response_types}
 
         if grant_types_supported is not None:
             grant_types_supported = set(grant_types_supported)
@@ -148,10 +148,10 @@ class ClientConfigurationEndpoint(object):
             def _validate_grant_types(claims, value):
                 return grant_types_supported.issuperset(set(value))
 
-            options["grant_types"] = {"validate": _validate_grant_types}
+            options['grant_types'] = {'validate': _validate_grant_types}
 
         if auth_methods_supported is not None:
-            options["token_endpoint_auth_method"] = {"values": auth_methods_supported}
+            options['token_endpoint_auth_method'] = {'values': auth_methods_supported}
 
         return options
 
@@ -165,7 +165,7 @@ class ClientConfigurationEndpoint(object):
         information.::
 
             def generate_client_registration_info(self, client, request):{
-                access_token = request.headers["Authorization"].split(" ")[1]
+                access_token = request.headers['Authorization'].split(' ')[1]
                 return {
                     'registration_client_uri': request.uri,
                     'registration_access_token': access_token,

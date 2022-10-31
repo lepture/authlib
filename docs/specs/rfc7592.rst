@@ -61,10 +61,10 @@ Before register the endpoint, developers MUST implement the missing methods::
             return client
 
         def generate_client_registration_info(self, client, request):
-            access_token = request.headers["Authorization"].split(" ")[1]
+            access_token = request.headers['Authorization'].split(' ')[1]
             return {
-                "registration_client_uri": request.uri,
-                "registration_access_token": access_token,
+                'registration_client_uri': request.uri,
+                'registration_access_token': access_token,
             }
 
 API Reference
