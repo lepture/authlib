@@ -30,25 +30,23 @@ Before register the endpoint, developers MUST implement the missing methods::
             # this method is used to authenticate the registration access
             # token returned by the RFC7591 registration endpoint
             auth_header = request.headers.get('Authorization')
-            # bearer a-token-string
             bearer_token = auth_header.split()[1]
-            token = Token.query.get(bearer_token)
+            token = Token.get(bearer_token)
             return token
 
         def authenticate_client(self, request):
-            return Client.query.filter_by(
-                client_id=request.data.get('client_id')
-            ).first()
+            client_id = request.data.get('client_id')
+            return Client.get(client_id=client_id)
 
-        def revoke_access_token(self, request):
-            request.credential.revoked = True
+        def revoke_access_token(self, token, request):
+            token.revoked = True
+            token.save()
 
         def check_permission(self, client, request):
             return client.editable
 
         def delete_client(self, client, request):
-            db.session.delete(client)
-            db.session.commit()
+            client.delete()
 
         def save_client(self, client_info, client_metadata, request):
             client = OAuthClient(

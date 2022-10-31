@@ -30,8 +30,8 @@ class ClientConfigurationEndpoint(_ClientConfigurationEndpoint):
         client_id = request.uri.split('/')[-1]
         return Client.query.filter_by(client_id=client_id).first()
 
-    def revoke_access_token(self, request):
-        request.credential.revoked = True
+    def revoke_access_token(self, request, token):
+        token.revoked = True
 
     def check_permission(self, client, request):
         client_id = request.uri.split('/')[-1]

@@ -37,7 +37,7 @@ class ClientConfigurationEndpoint(object):
             # If the client does not exist on this server, the server MUST respond
             # with HTTP 401 Unauthorized and the registration access token used to
             # make this request SHOULD be immediately revoked.
-            self.revoke_access_token(request)
+            self.revoke_access_token(request, token)
             raise InvalidClientError(status_code=401)
 
         if not self.check_permission(client, request):
@@ -193,20 +193,20 @@ class ClientConfigurationEndpoint(object):
         Developers MUST implement this method in subclass::
 
             def authenticate_client(self, request):
-                return Client.query.get(request.data.get('client_id'))
+                client_id = request.data.get('client_id')
+                return Client.get(client_id=client_id)
 
         :return: client instance
         """
         raise NotImplementedError()
 
-    def revoke_access_token(self, request):
+    def revoke_access_token(self, token, request):
         """Revoke a token access in case an invalid client has been requested.
         Developers MUST implement this method in subclass::
 
-            def revoke_access_token(self, request):
-                request.credential.revoked = True
-                db.session.add(request.token)
-                db.session.commit()
+            def revoke_access_token(self, token, request):
+                token.revoked = True
+                token.save()
 
         """
         raise NotImplementedError()
@@ -227,8 +227,7 @@ class ClientConfigurationEndpoint(object):
         implement it in subclass, e.g.::
 
             def delete_client(self, client, request):
-                db.session.delete(client)
-                db.session.commit()
+                client.delete()
 
         :param client: the instance of OAuth client
         :param request: formatted request instance
@@ -241,8 +240,7 @@ class ClientConfigurationEndpoint(object):
 
             def update_client(self, client, client_metadata, request):
                 client.set_client_metadata({**client.client_metadata, **client_metadata})
-                db.session.add(client)
-                db.session.commit()
+                client.save()
                 return client
 
         :param client: the instance of OAuth client
