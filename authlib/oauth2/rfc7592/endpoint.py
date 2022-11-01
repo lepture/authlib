@@ -250,3 +250,9 @@ class ClientConfigurationEndpoint(object):
         """
 
         raise NotImplementedError()
+
+    def get_server_metadata(self):
+        """Return server metadata which includes supported grant types,
+        response types and etc.
+        """
+        raise NotImplementedError()
