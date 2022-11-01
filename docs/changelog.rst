@@ -6,6 +6,14 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 0.15.6
+--------------
+
+**Released on Nov 1, 2022**
+
+- Backport fix to support Django 4
+
+
 Version 0.15.5
 --------------
 
