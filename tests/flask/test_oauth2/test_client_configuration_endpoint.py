@@ -32,6 +32,8 @@ class ClientConfigurationEndpoint(_ClientConfigurationEndpoint):
 
     def revoke_access_token(self, request, token):
         token.revoked = True
+        db.session.add(token)
+        db.session.commit()
 
     def check_permission(self, client, request):
         client_id = request.uri.split('/')[-1]
