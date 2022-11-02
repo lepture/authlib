@@ -65,6 +65,32 @@ Before register the endpoint, developers MUST implement the missing methods::
                 'registration_access_token': access_token,
             }
 
+        def get_server_metadata(self):
+            return {
+                'issuer': ...,
+                'authorization_endpoint': ...,
+                'token_endpoint': ...,
+                'jwks_uri': ...,
+                'registration_endpoint': ...,
+                'scopes_supported': ...,
+                'response_types_supported': ...,
+                'response_modes_supported': ...,
+                'grant_types_supported': ...,
+                'token_endpoint_auth_methods_supported': ...,
+                'token_endpoint_auth_signing_alg_values_supported': ...,
+                'service_documentation': ...,
+                'ui_locales_supported': ...,
+                'op_policy_uri': ...,
+                'op_tos_uri': ...,
+                'revocation_endpoint': ...,
+                'revocation_endpoint_auth_methods_supported': ...,
+                'revocation_endpoint_auth_signing_alg_values_supported': ...,
+                'introspection_endpoint': ...,
+                'introspection_endpoint_auth_methods_supported': ...,
+                'introspection_endpoint_auth_signing_alg_values_supported': ...,
+                'code_challenge_methods_supported': ...,
+            }
+
 API Reference
 -------------
 
