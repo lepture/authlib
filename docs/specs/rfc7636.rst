@@ -63,7 +63,7 @@ Now you can register your ``AuthorizationCodeGrant`` with the extension::
     from authlib.oauth2.rfc7636 import CodeChallenge
     server.register_grant(MyAuthorizationCodeGrant, [CodeChallenge(required=True)])
 
-If ``required=True``, code challenge is required for authorization code flow.
+If ``required=True``, code challenge is required for authorization code flow from public clients.
 If ``required=False``, it is optional, it will only valid the code challenge
 when clients send these parameters.
 
