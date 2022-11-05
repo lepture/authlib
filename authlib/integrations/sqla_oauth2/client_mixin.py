@@ -39,6 +39,8 @@ class OAuth2ClientMixin(ClientMixin):
 
     def set_client_metadata(self, value):
         self._client_metadata = json_dumps(value)
+        if 'client_metadata' in self.__dict__:
+            del self.__dict__['client_metadata']
 
     @property
     def redirect_uris(self):

@@ -9,7 +9,7 @@ def create_oauth_request(request, request_cls, use_json=False):
     if not request:
         request = flask_req
 
-    if request.method == 'POST':
+    if request.method in ('POST', 'PUT'):
         if use_json:
             body = request.get_json()
         else:

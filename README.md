@@ -49,7 +49,7 @@ Generic, spec-compliant implementation to build clients and providers:
   - [RFC7009: OAuth 2.0 Token Revocation](https://docs.authlib.org/en/latest/specs/rfc7009.html)
   - [RFC7523: JWT Profile for OAuth 2.0 Client Authentication and Authorization Grants](https://docs.authlib.org/en/latest/specs/rfc7523.html)
   - [RFC7591: OAuth 2.0 Dynamic Client Registration Protocol](https://docs.authlib.org/en/latest/specs/rfc7591.html)
-  - [ ] RFC7592: OAuth 2.0 Dynamic Client Registration Management Protocol
+  - [RFC7592: OAuth 2.0 Dynamic Client Registration Management Protocol](https://docs.authlib.org/en/latest/specs/rfc7592.html)
   - [RFC7636: Proof Key for Code Exchange by OAuth Public Clients](https://docs.authlib.org/en/latest/specs/rfc7636.html)
   - [RFC7662: OAuth 2.0 Token Introspection](https://docs.authlib.org/en/latest/specs/rfc7662.html)
   - [RFC8414: OAuth 2.0 Authorization Server Metadata](https://docs.authlib.org/en/latest/specs/rfc8414.html)
