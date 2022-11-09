@@ -18,7 +18,7 @@ class AsyncAssertionClient(_AssertionClient, AsyncClient):
     DEFAULT_GRANT_TYPE = JWT_BEARER_GRANT_TYPE
 
     def __init__(self, token_endpoint, issuer, subject, audience=None, grant_type=None,
-                 claims=None, token_placement='header', scope=None, **kwargs):
+                 claims=None, token_placement='header', scope=None, client_id=None, **kwargs):
 
         client_kwargs = extract_client_kwargs(kwargs)
         AsyncClient.__init__(self, **client_kwargs)
@@ -27,7 +27,7 @@ class AsyncAssertionClient(_AssertionClient, AsyncClient):
             self, session=None,
             token_endpoint=token_endpoint, issuer=issuer, subject=subject,
             audience=audience, grant_type=grant_type, claims=claims,
-            token_placement=token_placement, scope=scope, **kwargs
+            token_placement=token_placement, scope=scope, client_id=client_id, **kwargs
         )
 
     async def request(self, method, url, withhold_token=False, auth=USE_CLIENT_DEFAULT, **kwargs) -> Response:
@@ -57,7 +57,7 @@ class AssertionClient(_AssertionClient, Client):
     DEFAULT_GRANT_TYPE = JWT_BEARER_GRANT_TYPE
 
     def __init__(self, token_endpoint, issuer, subject, audience=None, grant_type=None,
-                 claims=None, token_placement='header', scope=None, **kwargs):
+                 claims=None, token_placement='header', scope=None, client_id=None, **kwargs):
 
         client_kwargs = extract_client_kwargs(kwargs)
         Client.__init__(self, **client_kwargs)
@@ -66,7 +66,7 @@ class AssertionClient(_AssertionClient, Client):
             self, session=self,
             token_endpoint=token_endpoint, issuer=issuer, subject=subject,
             audience=audience, grant_type=grant_type, claims=claims,
-            token_placement=token_placement, scope=scope, **kwargs
+            token_placement=token_placement, scope=scope, client_id=client_id, **kwargs
         )
 
     def request(self, method, url, withhold_token=False, auth=USE_CLIENT_DEFAULT, **kwargs):

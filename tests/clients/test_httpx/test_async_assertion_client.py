@@ -44,6 +44,7 @@ async def test_refresh_token():
         header={'alg': 'HS256'},
         key='secret',
         scope='email',
+        client_id='client',
         claims={'test_mode': 'true'},
         app=AsyncMockDispatch(default_token, assert_func=verifier)
     ) as client:
