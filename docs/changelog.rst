@@ -6,6 +6,11 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version x.x.x
+-------------
+
+- Fixed RFC7591 and RFC7592 ``grant_types`` and ``response_types`` default values, via :gh:`PR#509`.
+
 Version 1.2.0
 -------------
 
