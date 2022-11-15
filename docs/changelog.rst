@@ -12,6 +12,7 @@ Version x.x.x
 - Removed ``has_client_secret`` method and documentation, via :gh:`PR#513`
 - Removed ``request_invalid`` and ``token_revoked`` remaining occurences
   and documentation. :gh:`PR514`
+- Fixed RFC7591 ``grant_types`` and ``response_types`` default values, via :gh:`PR#509`.
 
 Version 1.2.0
 -------------

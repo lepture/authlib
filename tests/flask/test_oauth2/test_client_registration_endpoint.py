@@ -137,6 +137,15 @@ class ClientRegistrationTest(TestCase):
         self.assertIn('client_id', resp)
         self.assertEqual(resp['client_name'], 'Authlib')
 
+        # https://www.rfc-editor.org/rfc/rfc7591.html#section-2
+        # If omitted, the default is that the client will use only the "code"
+        # response type.
+        body = {'client_name': 'Authlib'}
+        rv = self.client.post('/create_client', json=body, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertIn('client_id', resp)
+        self.assertEqual(resp['client_name'], 'Authlib')
+
         body = {'response_types': ['code', 'token'], 'client_name': 'Authlib'}
         rv = self.client.post('/create_client', json=body, headers=headers)
         resp = json.loads(rv.data)
@@ -148,6 +157,15 @@ class ClientRegistrationTest(TestCase):
 
         headers = {'Authorization': 'bearer abc'}
         body = {'grant_types': ['password'], 'client_name': 'Authlib'}
+        rv = self.client.post('/create_client', json=body, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertIn('client_id', resp)
+        self.assertEqual(resp['client_name'], 'Authlib')
+
+        # https://www.rfc-editor.org/rfc/rfc7591.html#section-2
+        # If omitted, the default behavior is that the client will use only
+        # the "authorization_code" Grant Type.
+        body = {'client_name': 'Authlib'}
         rv = self.client.post('/create_client', json=body, headers=headers)
         resp = json.loads(rv.data)
         self.assertIn('client_id', resp)
