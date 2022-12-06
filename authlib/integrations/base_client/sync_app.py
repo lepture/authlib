@@ -317,7 +317,8 @@ class OAuth2Mixin(_RequestMixin, OAuth2Base):
 
 
         with self._get_oauth_client(**metadata) as client:
-            client.redirect_uri = redirect_uri
+            if redirect_uri is not None:
+                client.redirect_uri = redirect_uri
             return self._create_oauth2_authorization_url(
                 client, authorization_endpoint, **kwargs)
 
