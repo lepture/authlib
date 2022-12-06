@@ -508,7 +508,7 @@ class OAuth2SessionTest(TestCase):
         sess.get('https://i.b', auth=client.token_auth)
 
     def test_use_default_request_timeout(self):
-        expected_timeout = 10
+        expected_timeout = 15
 
         def verifier(r, **kwargs):
             timeout = kwargs.get('timeout')
@@ -519,7 +519,7 @@ class OAuth2SessionTest(TestCase):
         client = OAuth2Session(
             client_id=self.client_id,
             token=self.token,
-            timeout=expected_timeout,
+            default_timeout=expected_timeout,
         )
 
         client.send = verifier
@@ -538,7 +538,7 @@ class OAuth2SessionTest(TestCase):
         client = OAuth2Session(
             client_id=self.client_id,
             token=self.token,
-            timeout=default_timeout,
+            default_timeout=default_timeout,
         )
 
         client.send = verifier

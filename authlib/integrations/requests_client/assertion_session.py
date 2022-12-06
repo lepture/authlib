@@ -25,8 +25,9 @@ class AssertionSession(AssertionClient, Session):
     DEFAULT_GRANT_TYPE = JWT_BEARER_GRANT_TYPE
 
     def __init__(self, token_endpoint, issuer, subject, audience=None, grant_type=None,
-                 claims=None, token_placement='header', scope=None, **kwargs):
+                 claims=None, token_placement='header', scope=None, default_timeout=None, **kwargs):
         Session.__init__(self)
+        self.default_timeout = default_timeout
         update_session_configure(self, kwargs)
         AssertionClient.__init__(
             self, session=self,
@@ -37,6 +38,8 @@ class AssertionSession(AssertionClient, Session):
 
     def request(self, method, url, withhold_token=False, auth=None, **kwargs):
         """Send request with auto refresh token feature."""
+        if self.default_timeout:
+            kwargs.setdefault('timeout', self.default_timeout)
         if not withhold_token and auth is None:
             auth = self.token_auth
         return super(AssertionSession, self).request(

@@ -64,6 +64,7 @@ class OAuth2Session(OAuth2Client, Session):
         values: "header", "body", "uri".
     :param update_token: A function for you to update token. It accept a
         :class:`OAuth2Token` as parameter.
+    :param default_timeout: If settled, every requests will have a default timeout.
     """
     client_auth_class = OAuth2ClientAuth
     token_auth_class = OAuth2Auth
@@ -78,10 +79,9 @@ class OAuth2Session(OAuth2Client, Session):
                  revocation_endpoint_auth_method=None,
                  scope=None, state=None, redirect_uri=None,
                  token=None, token_placement='header',
-                 update_token=None, **kwargs):
-
-        self.default_timeout = kwargs.get('timeout')
+                 update_token=None, default_timeout=None, **kwargs):
         Session.__init__(self)
+        self.default_timeout = default_timeout
         update_session_configure(self, kwargs)
 
         OAuth2Client.__init__(
@@ -100,7 +100,8 @@ class OAuth2Session(OAuth2Client, Session):
 
     def request(self, method, url, withhold_token=False, auth=None, **kwargs):
         """Send request with auto refresh token feature (if available)."""
-        kwargs['timeout'] = kwargs.get('timeout') or self.default_timeout
+        if self.default_timeout:
+            kwargs.setdefault('timeout', self.default_timeout)
         if not withhold_token and auth is None:
             if not self.token:
                 raise MissingTokenError()
