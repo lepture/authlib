@@ -1,11 +1,13 @@
 import pytest
 from starlette.requests import Request
 from authlib.integrations.starlette_client import OAuth
-from authlib.jose import jwk
+from authlib.jose import JsonWebKey
 from authlib.jose.errors import InvalidClaimError
 from authlib.oidc.core.grants.util import generate_id_token
 from ..util import get_bearer_token, read_key_file
 from ..asgi_helper import AsyncPathMapDispatch
+
+secret_key = JsonWebKey.import_key('secret', {'kty': 'oct', 'kid': 'f'})
 
 
 async def run_fetch_userinfo(payload):
@@ -42,10 +44,9 @@ async def test_fetch_userinfo():
 
 @pytest.mark.asyncio
 async def test_parse_id_token():
-    key = jwk.dumps('secret', 'oct', kid='f')
     token = get_bearer_token()
     id_token = generate_id_token(
-        token, {'sub': '123'}, key,
+        token, {'sub': '123'}, secret_key,
         alg='HS256', iss='https://i.b',
         aud='dev', exp=3600, nonce='n',
     )
@@ -57,7 +58,7 @@ async def test_parse_id_token():
         client_id='dev',
         client_secret='dev',
         fetch_token=get_bearer_token,
-        jwks={'keys': [key]},
+        jwks={'keys': [secret_key.as_dict()]},
         issuer='https://i.b',
         id_token_signing_alg_values_supported=['HS256', 'RS256'],
     )
@@ -75,10 +76,9 @@ async def test_parse_id_token():
 
 @pytest.mark.asyncio
 async def test_runtime_error_fetch_jwks_uri():
-    key = jwk.dumps('secret', 'oct', kid='f')
     token = get_bearer_token()
     id_token = generate_id_token(
-        token, {'sub': '123'}, key,
+        token, {'sub': '123'}, secret_key,
         alg='HS256', iss='https://i.b',
         aud='dev', exp=3600, nonce='n',
     )

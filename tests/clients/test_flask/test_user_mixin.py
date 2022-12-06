@@ -1,10 +1,12 @@
 from unittest import TestCase, mock
 from flask import Flask
-from authlib.jose import jwk
+from authlib.jose import JsonWebKey
 from authlib.jose.errors import InvalidClaimError
 from authlib.integrations.flask_client import OAuth
 from authlib.oidc.core.grants.util import generate_id_token
 from ..util import get_bearer_token, read_key_file
+
+secret_key = JsonWebKey.import_key('secret', {'kty': 'oct', 'kid': 'f'})
 
 
 class FlaskUserMixinTest(TestCase):
@@ -32,10 +34,9 @@ class FlaskUserMixinTest(TestCase):
                 self.assertEqual(user.sub, '123')
 
     def test_parse_id_token(self):
-        key = jwk.dumps('secret', 'oct', kid='f')
         token = get_bearer_token()
         id_token = generate_id_token(
-            token, {'sub': '123'}, key,
+            token, {'sub': '123'}, secret_key,
             alg='HS256', iss='https://i.b',
             aud='dev', exp=3600, nonce='n',
         )
@@ -48,7 +49,7 @@ class FlaskUserMixinTest(TestCase):
             client_id='dev',
             client_secret='dev',
             fetch_token=get_bearer_token,
-            jwks={'keys': [key]},
+            jwks={'keys': [secret_key.as_dict()]},
             issuer='https://i.b',
             id_token_signing_alg_values_supported=['HS256', 'RS256'],
         )
@@ -70,10 +71,9 @@ class FlaskUserMixinTest(TestCase):
             )
 
     def test_parse_id_token_nonce_supported(self):
-        key = jwk.dumps('secret', 'oct', kid='f')
         token = get_bearer_token()
         id_token = generate_id_token(
-            token, {'sub': '123', 'nonce_supported': False}, key,
+            token, {'sub': '123', 'nonce_supported': False}, secret_key,
             alg='HS256', iss='https://i.b',
             aud='dev', exp=3600,
         )
@@ -86,7 +86,7 @@ class FlaskUserMixinTest(TestCase):
             client_id='dev',
             client_secret='dev',
             fetch_token=get_bearer_token,
-            jwks={'keys': [key]},
+            jwks={'keys': [secret_key.as_dict()]},
             issuer='https://i.b',
             id_token_signing_alg_values_supported=['HS256', 'RS256'],
         )
@@ -96,10 +96,9 @@ class FlaskUserMixinTest(TestCase):
             self.assertEqual(user.sub, '123')
 
     def test_runtime_error_fetch_jwks_uri(self):
-        key = jwk.dumps('secret', 'oct', kid='f')
         token = get_bearer_token()
         id_token = generate_id_token(
-            token, {'sub': '123'}, key,
+            token, {'sub': '123'}, secret_key,
             alg='HS256', iss='https://i.b',
             aud='dev', exp=3600, nonce='n',
         )
@@ -107,12 +106,14 @@ class FlaskUserMixinTest(TestCase):
         app = Flask(__name__)
         app.secret_key = '!'
         oauth = OAuth(app)
+        alt_key = secret_key.as_dict()
+        alt_key['kid'] = 'b'
         client = oauth.register(
             'dev',
             client_id='dev',
             client_secret='dev',
             fetch_token=get_bearer_token,
-            jwks={'keys': [jwk.dumps('secret', 'oct', kid='b')]},
+            jwks={'keys': [alt_key]},
             issuer='https://i.b',
             id_token_signing_alg_values_supported=['HS256'],
         )
@@ -137,7 +138,7 @@ class FlaskUserMixinTest(TestCase):
             client_id='dev',
             client_secret='dev',
             fetch_token=get_bearer_token,
-            jwks={'keys': [jwk.dumps('secret', 'oct', kid='f')]},
+            jwks={'keys': [secret_key.as_dict()]},
             jwks_uri='https://i.b/jwks',
             issuer='https://i.b',
         )

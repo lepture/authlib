@@ -1,5 +1,5 @@
 from unittest import mock
-from authlib.jose import jwk
+from authlib.jose import JsonWebKey
 from authlib.oidc.core.grants.util import generate_id_token
 from authlib.integrations.django_client import OAuth, OAuthError
 from authlib.common.urls import urlparse, url_decode
@@ -201,13 +201,13 @@ class DjangoOAuthTest(TestCase):
     def test_openid_authorize(self):
         request = self.factory.get('/login')
         request.session = self.factory.session
-        key = jwk.dumps('secret', 'oct', kid='f')
+        secret_key = JsonWebKey.import_key('secret', {'kty': 'oct', 'kid': 'f'})
 
         oauth = OAuth()
         client = oauth.register(
             'dev',
             client_id='dev',
-            jwks={'keys': [key]},
+            jwks={'keys': [secret_key.as_dict()]},
             api_base_url='https://i.b/api',
             access_token_url='https://i.b/token',
             authorize_url='https://i.b/authorize',
