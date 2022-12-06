@@ -222,7 +222,7 @@ class DjangoOAuthTest(TestCase):
 
         token = get_bearer_token()
         token['id_token'] = generate_id_token(
-            token, {'sub': '123'}, key,
+            token, {'sub': '123'}, secret_key,
             alg='HS256', iss='https://i.b',
             aud='dev', exp=3600, nonce=query_data['nonce'],
         )

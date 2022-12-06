@@ -9,14 +9,15 @@ Here you can see the full list of changes between each Authlib release.
 Version 1.2.0
 -------------
 
-**Release date not decided**
+**Released on Dec 6, 2022**
 
 - Not passing ``request.body`` to ``ResourceProtector``, via :gh:`issue#485`.
 - Use ``flask.g`` instead of ``_app_ctx_stack``, via :gh:`issue#482`.
 - Add ``headers`` parameter back to ``ClientSecretJWT``, via :gh:`issue#457`.
 - Always passing ``realm`` parameter in OAuth 1 clients, via :gh:`issue#339`.
 - Implemented RFC7592 Dynamic Client Registration Management Protocol, via :gh:`PR#505`.
-
+- Add ``default_timeout`` for requests ``OAuth2Session`` and ``AssertionSession``.
+- Deprecate ``jwk.loads`` and ``jwk.dumps``
 
 Version 1.1.0
 -------------
