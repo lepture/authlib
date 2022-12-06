@@ -80,6 +80,7 @@ class OAuth2Session(OAuth2Client, Session):
                  token=None, token_placement='header',
                  update_token=None, **kwargs):
 
+        self.default_timeout = kwargs.get('timeout')
         Session.__init__(self)
         update_session_configure(self, kwargs)
 
@@ -99,6 +100,7 @@ class OAuth2Session(OAuth2Client, Session):
 
     def request(self, method, url, withhold_token=False, auth=None, **kwargs):
         """Send request with auto refresh token feature (if available)."""
+        kwargs['timeout'] = kwargs.get('timeout') or self.default_timeout
         if not withhold_token and auth is None:
             if not self.token:
                 raise MissingTokenError()

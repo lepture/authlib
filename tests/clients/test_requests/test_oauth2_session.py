@@ -506,3 +506,40 @@ class OAuth2SessionTest(TestCase):
         sess = requests.Session()
         sess.send = verifier
         sess.get('https://i.b', auth=client.token_auth)
+
+    def test_use_default_request_timeout(self):
+        expected_timeout = 10
+
+        def verifier(r, **kwargs):
+            timeout = kwargs.get('timeout')
+            self.assertEqual(timeout, expected_timeout)
+            resp = mock.MagicMock()
+            return resp
+
+        client = OAuth2Session(
+            client_id=self.client_id,
+            token=self.token,
+            timeout=expected_timeout,
+        )
+
+        client.send = verifier
+        client.request('GET', 'https://i.b', withhold_token=False)
+
+    def test_override_default_request_timeout(self):
+        default_timeout = 15
+        expected_timeout = 10
+
+        def verifier(r, **kwargs):
+            timeout = kwargs.get('timeout')
+            self.assertEqual(timeout, expected_timeout)
+            resp = mock.MagicMock()
+            return resp
+
+        client = OAuth2Session(
+            client_id=self.client_id,
+            token=self.token,
+            timeout=default_timeout,
+        )
+
+        client.send = verifier
+        client.request('GET', 'https://i.b', withhold_token=False, timeout=expected_timeout)
