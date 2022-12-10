@@ -61,9 +61,6 @@ class BearerTokenValidator(_BearerTokenValidator):
         except self.token_model.DoesNotExist:
             return None
 
-    def request_invalid(self, request):
-        return False
-
 
 def return_error_response(error):
     body = dict(error.get_body())

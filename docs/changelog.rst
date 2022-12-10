@@ -10,6 +10,7 @@ Version x.x.x
 -------------
 
 - Removed ``has_client_secret`` method and documentation, via :gh:`PR#513`
+- Removed ``request_invalid`` remaining occurences and documentation. :gh:`PR514`
 
 Version 1.2.0
 -------------
