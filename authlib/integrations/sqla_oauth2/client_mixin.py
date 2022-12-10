@@ -122,9 +122,6 @@ class OAuth2ClientMixin(ClientMixin):
     def check_redirect_uri(self, redirect_uri):
         return redirect_uri in self.redirect_uris
 
-    def has_client_secret(self):
-        return bool(self.client_secret)
-
     def check_client_secret(self, client_secret):
         return secrets.compare_digest(self.client_secret, client_secret)
 
