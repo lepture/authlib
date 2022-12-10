@@ -6,6 +6,11 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version x.x.x
+-------------
+
+- Removed ``has_client_secret`` method and documentation, via :gh:`PR#513`
+
 Version 1.2.0
 -------------
 
