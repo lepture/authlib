@@ -31,9 +31,6 @@ class ResourceProtector(_ResourceProtector):
             def authenticate_token(self, token_string):
                 return Token.query.filter_by(access_token=token_string).first()
 
-            def token_revoked(self, token):
-                return False
-
         require_oauth.register_token_validator(MyBearerTokenValidator())
 
         # protect resource with require_oauth
