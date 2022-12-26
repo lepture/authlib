@@ -1,4 +1,5 @@
 from authlib.consts import default_json_headers
+from ..requests import OAuth2Request
 from ..errors import InvalidRequestError
 
 
@@ -15,7 +16,7 @@ class BaseGrant(object):
     # https://tools.ietf.org/html/rfc4627
     TOKEN_RESPONSE_HEADER = default_json_headers
 
-    def __init__(self, request, server):
+    def __init__(self, request: OAuth2Request, server):
         self.prompt = None
         self.redirect_uri = None
         self.request = request
@@ -100,7 +101,7 @@ class TokenEndpointMixin(object):
     GRANT_TYPE = None
 
     @classmethod
-    def check_token_endpoint(cls, request):
+    def check_token_endpoint(cls, request: OAuth2Request):
         return request.grant_type == cls.GRANT_TYPE and \
                request.method in cls.TOKEN_ENDPOINT_HTTP_METHODS
 
@@ -116,11 +117,11 @@ class AuthorizationEndpointMixin(object):
     ERROR_RESPONSE_FRAGMENT = False
 
     @classmethod
-    def check_authorization_endpoint(cls, request):
+    def check_authorization_endpoint(cls, request: OAuth2Request):
         return request.response_type in cls.RESPONSE_TYPES
 
     @staticmethod
-    def validate_authorization_redirect_uri(request, client):
+    def validate_authorization_redirect_uri(request: OAuth2Request, client):
         if request.redirect_uri:
             if not client.check_redirect_uri(request.redirect_uri):
                 raise InvalidRequestError(
@@ -143,5 +144,5 @@ class AuthorizationEndpointMixin(object):
     def validate_authorization_request(self):
         raise NotImplementedError()
 
-    def create_authorization_response(self, redirect_uri, grant_user):
+    def create_authorization_response(self, redirect_uri: str, grant_user):
         raise NotImplementedError()

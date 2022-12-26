@@ -9,7 +9,8 @@
     https://tools.ietf.org/html/rfc6749
 """
 
-from .wrappers import OAuth2Request, OAuth2Token, HttpRequest
+from .requests import OAuth2Request
+from .wrappers import OAuth2Token, HttpRequest
 from .errors import (
     OAuth2Error,
     AccessDeniedError,

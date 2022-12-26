@@ -137,7 +137,7 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant, TokenEndpointMixin):
         user = self.request.user
         scope = self.request.scope
         token = self.generate_token(user=user, scope=scope)
-        log.debug('Issue token %r to %r', token, self.request.client)
+        log.debug('Issue token %r to %r', token, self.client)
         self.save_token(token)
         self.execute_hook('process_token', token=token)
         return 200, token, self.TOKEN_RESPONSE_HEADER

@@ -107,7 +107,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         """
         return validate_code_authorization_request(self)
 
-    def create_authorization_response(self, redirect_uri, grant_user):
+    def create_authorization_response(self, redirect_uri: str, grant_user):
         """If the resource owner grants the access request, the authorization
         server issues an authorization code and delivers it to the client by
         adding the following parameters to the query component of the
@@ -232,7 +232,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
 
         # save for create_token_response
         self.request.client = client
-        self.request.credential = authorization_code
+        self.request.authorization_code = authorization_code
         self.execute_hook('after_validate_token_request')
 
     def create_token_response(self):
@@ -264,7 +264,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         .. _`Section 4.1.4`: https://tools.ietf.org/html/rfc6749#section-4.1.4
         """
         client = self.request.client
-        authorization_code = self.request.credential
+        authorization_code = self.request.authorization_code
 
         user = self.authenticate_user(authorization_code)
         if not user:

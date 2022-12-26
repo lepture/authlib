@@ -102,9 +102,9 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
         """
         client = self._validate_request_client()
         self.request.client = client
-        token = self._validate_request_token(client)
-        self._validate_token_scope(token)
-        self.request.credential = token
+        refresh_token = self._validate_request_token(client)
+        self._validate_token_scope(refresh_token)
+        self.request.refresh_token = refresh_token
 
     def create_token_response(self):
         """If valid and authorized, the authorization server issues an access
@@ -112,30 +112,28 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
         verification or is invalid, the authorization server returns an error
         response as described in Section 5.2.
         """
-        credential = self.request.credential
-        user = self.authenticate_user(credential)
+        refresh_token = self.request.refresh_token
+        user = self.authenticate_user(refresh_token)
         if not user:
             raise InvalidRequestError('There is no "user" for this token.')
 
         client = self.request.client
-        token = self.issue_token(user, credential)
+        token = self.issue_token(user, refresh_token)
         log.debug('Issue token %r to %r', token, client)
 
         self.request.user = user
         self.save_token(token)
         self.execute_hook('process_token', token=token)
-        self.revoke_old_credential(credential)
+        self.revoke_old_credential(refresh_token)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
-    def issue_token(self, user, credential):
-        expires_in = credential.get_expires_in()
+    def issue_token(self, user, refresh_token):
         scope = self.request.scope
         if not scope:
-            scope = credential.get_scope()
+            scope = refresh_token.get_scope()
 
         token = self.generate_token(
             user=user,
-            expires_in=expires_in,
             scope=scope,
             include_refresh_token=self.INCLUDE_NEW_REFRESH_TOKEN,
         )
@@ -155,27 +153,27 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
         """
         raise NotImplementedError()
 
-    def authenticate_user(self, credential):
+    def authenticate_user(self, refresh_token):
         """Authenticate the user related to this credential. Developers MUST
         implement this method in subclass::
 
             def authenticate_user(self, credential):
                 return User.query.get(credential.user_id)
 
-        :param credential: Token object
+        :param refresh_token: Token object
         :return: user
         """
         raise NotImplementedError()
 
-    def revoke_old_credential(self, credential):
+    def revoke_old_credential(self, refresh_token):
         """The authorization server MAY revoke the old refresh token after
         issuing a new refresh token to the client. Developers MUST implement
         this method in subclass::
 
-            def revoke_old_credential(self, credential):
+            def revoke_old_credential(self, refresh_token):
                 credential.revoked = True
                 credential.save()
 
-        :param credential: Token object
+        :param refresh_token: Token object
         """
         raise NotImplementedError()

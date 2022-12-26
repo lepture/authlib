@@ -95,9 +95,8 @@ class ClientCredentialsGrant(BaseGrant, TokenEndpointMixin):
 
         :returns: (status_code, body, headers)
         """
-        client = self.request.client
         token = self.generate_token(scope=self.request.scope, include_refresh_token=False)
-        log.debug('Issue token %r to %r', token, client)
+        log.debug('Issue token %r to %r', token, self.client)
         self.save_token(token)
         self.execute_hook('process_token', self, token=token)
         return 200, token, self.TOKEN_RESPONSE_HEADER

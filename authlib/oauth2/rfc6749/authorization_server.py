@@ -1,4 +1,5 @@
 from .authenticate_client import ClientAuthentication
+from .requests import OAuth2Request
 from .errors import (
     OAuth2Error,
     InvalidScopeError,
@@ -127,7 +128,7 @@ class AuthorizationServer(object):
         """
         raise NotImplementedError()
 
-    def create_oauth2_request(self, request):
+    def create_oauth2_request(self, request) -> OAuth2Request:
         """This method MUST be implemented in framework integrations. It is
         used to create an OAuth2Request instance.
 
