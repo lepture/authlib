@@ -9,6 +9,7 @@
 """
 
 import logging
+from authlib.oauth2.rfc6749 import OAuth2Request
 from .util import (
     is_openid_scope,
     validate_nonce,
@@ -69,15 +70,15 @@ class OpenIDToken(object):
             # standard authorization code flow
             return token
 
-        request = grant.request
-        credential = request.credential
+        request: OAuth2Request = grant.request
+        authorization_code = request.authorization_code
 
         config = self.get_jwt_config(grant)
         config['aud'] = self.get_audiences(request)
 
-        if credential:
-            config['nonce'] = credential.get_nonce()
-            config['auth_time'] = credential.get_auth_time()
+        if authorization_code:
+            config['nonce'] = authorization_code.get_nonce()
+            config['auth_time'] = authorization_code.get_auth_time()
 
         user_info = self.generate_user_info(request.user, token['scope'])
         id_token = generate_id_token(token, user_info, **config)

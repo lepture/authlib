@@ -1,5 +1,5 @@
 from .authenticate_client import ClientAuthentication
-from .requests import OAuth2Request
+from .requests import OAuth2Request, JsonRequest
 from .errors import (
     OAuth2Error,
     InvalidScopeError,
@@ -137,7 +137,7 @@ class AuthorizationServer(object):
         """
         raise NotImplementedError()
 
-    def create_json_request(self, request):
+    def create_json_request(self, request) -> JsonRequest:
         """This method MUST be implemented in framework integrations. It is
         used to create an HttpRequest instance.
 

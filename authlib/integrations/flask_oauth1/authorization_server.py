@@ -1,13 +1,13 @@
 import logging
 from werkzeug.utils import import_string
 from flask import Response
+from flask import request as flask_req
 from authlib.oauth1 import (
     OAuth1Request,
     AuthorizationServer as _AuthorizationServer,
 )
 from authlib.common.security import generate_token
 from authlib.common.urls import url_encode
-from ..flask_helpers import create_oauth_request
 
 log = logging.getLogger(__name__)
 
@@ -153,10 +153,6 @@ class AuthorizationServer(_AuthorizationServer):
             '"create_token_credential" hook is required.'
         )
 
-    def create_temporary_credentials_response(self, request=None):
-        return super(AuthorizationServer, self)\
-            .create_temporary_credentials_response(request)
-
     def check_authorization_request(self):
         req = self.create_oauth1_request(None)
         self.validate_authorization_request(req)
@@ -170,7 +166,13 @@ class AuthorizationServer(_AuthorizationServer):
         return super(AuthorizationServer, self).create_token_response(request)
 
     def create_oauth1_request(self, request):
-        return create_oauth_request(request, OAuth1Request)
+        if request is None:
+            request = flask_req
+        if request.method in ('POST', 'PUT'):
+            body = request.form.to_dict(flat=True)
+        else:
+            body = None
+        return OAuth1Request(request.method, request.url, body, request.headers)
 
     def handle_response(self, status_code, payload, headers):
         return Response(

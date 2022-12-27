@@ -6,11 +6,11 @@ from authlib.oauth2 import (
 )
 from authlib.oauth2.rfc6749 import (
     MissingAuthorizationError,
-    HttpRequest,
 )
 from authlib.oauth2.rfc6750 import (
     BearerTokenValidator as _BearerTokenValidator
 )
+from .requests import DjangoJsonRequest
 from .signals import token_authenticated
 
 
@@ -22,9 +22,7 @@ class ResourceProtector(_ResourceProtector):
         :param scopes: a list of scope values
         :return: token object
         """
-        url = request.build_absolute_uri()
-        req = HttpRequest(request.method, url, None, request.headers)
-        req.req = request
+        req = DjangoJsonRequest(request)
         if isinstance(scopes, str):
             scopes = [scopes]
         token = self.validate_request(scopes, req)

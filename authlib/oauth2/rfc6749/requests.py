@@ -1,3 +1,4 @@
+from authlib.common.encoding import json_loads
 from authlib.common.urls import urlparse, url_decode
 from .errors import InsecureTransportError
 
@@ -20,12 +21,9 @@ class OAuth2Request(object):
         self.credential = None
 
     @property
-    def query(self):
-        return urlparse.urlparse(self.uri).query
-
-    @property
     def args(self):
-        return dict(url_decode(self.query))
+        query = urlparse.urlparse(self.uri).query
+        return dict(url_decode(query))
 
     @property
     def form(self):
@@ -47,13 +45,11 @@ class OAuth2Request(object):
 
         :return: string
         """
-        if self.method == 'GET':
-            return self.args.get('client_id')
-        return self.form.get('client_id')
+        return self.data.get('client_id')
 
     @property
     def response_type(self) -> str:
-        rt = self.args.get('response_type')
+        rt = self.data.get('response_type')
         if rt and ' ' in rt:
             # sort multiple response types
             return ' '.join(sorted(rt.split()))
@@ -73,4 +69,16 @@ class OAuth2Request(object):
 
     @property
     def state(self):
-        return self.args.get('state')
+        return self.data.get('state')
+
+
+class JsonRequest(object):
+    def __init__(self, method, uri, body=None, headers=None):
+        self.method = method
+        self.uri = uri
+        self.body = body
+        self.headers = headers or {}
+
+    @property
+    def data(self):
+        return json_loads(self.body)

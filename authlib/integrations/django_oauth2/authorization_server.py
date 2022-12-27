@@ -2,15 +2,13 @@ from django.http import HttpResponse
 from django.utils.module_loading import import_string
 from django.conf import settings
 from authlib.oauth2 import (
-    OAuth2Request,
-    HttpRequest,
     AuthorizationServer as _AuthorizationServer,
 )
 from authlib.oauth2.rfc6750 import BearerTokenGenerator
 from authlib.common.security import generate_token as _generate_token
 from authlib.common.encoding import json_dumps
+from .requests import DjangoOAuth2Request, DjangoJsonRequest
 from .signals import client_authenticated, token_revoked
-from ..django_helpers import create_oauth_request
 
 
 class AuthorizationServer(_AuthorizationServer):
@@ -59,12 +57,10 @@ class AuthorizationServer(_AuthorizationServer):
         return item
 
     def create_oauth2_request(self, request):
-        return create_oauth_request(request, OAuth2Request)
+        return DjangoOAuth2Request(request)
 
     def create_json_request(self, request):
-        req = create_oauth_request(request, HttpRequest, True)
-        req.user = request.user
-        return req
+        return DjangoJsonRequest(request)
 
     def handle_response(self, status_code, payload, headers):
         if isinstance(payload, dict):

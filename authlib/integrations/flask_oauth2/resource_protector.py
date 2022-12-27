@@ -9,8 +9,8 @@ from authlib.oauth2 import (
 )
 from authlib.oauth2.rfc6749 import (
     MissingAuthorizationError,
-    HttpRequest,
 )
+from .requests import FlaskJsonRequest
 from .signals import token_authenticated
 from .errors import raise_http_exception
 
@@ -66,13 +66,7 @@ class ResourceProtector(_ResourceProtector):
         :param scopes: a list of scope values
         :return: token object
         """
-        request = HttpRequest(
-            _req.method,
-            _req.full_path,
-            None,
-            _req.headers
-        )
-        request.req = _req
+        request = FlaskJsonRequest(_req)
         # backward compatible
         if isinstance(scopes, str):
             scopes = [scopes]

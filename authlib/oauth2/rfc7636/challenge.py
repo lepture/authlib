@@ -1,7 +1,11 @@
 import re
 import hashlib
 from authlib.common.encoding import to_bytes, to_unicode, urlsafe_b64encode
-from ..rfc6749.errors import InvalidRequestError, InvalidGrantError
+from ..rfc6749 import (
+    InvalidRequestError,
+    InvalidGrantError,
+    OAuth2Request,
+)
 
 
 CODE_VERIFIER_PATTERN = re.compile(r'^[a-zA-Z0-9\-._~]{43,128}$')
@@ -63,7 +67,7 @@ class CodeChallenge(object):
         )
 
     def validate_code_challenge(self, grant):
-        request = grant.request
+        request: OAuth2Request = grant.request
         challenge = request.data.get('code_challenge')
         method = request.data.get('code_challenge_method')
         if not challenge and not method:
@@ -76,14 +80,14 @@ class CodeChallenge(object):
             raise InvalidRequestError('Unsupported "code_challenge_method"')
 
     def validate_code_verifier(self, grant):
-        request = grant.request
+        request: OAuth2Request = grant.request
         verifier = request.form.get('code_verifier')
 
         # public client MUST verify code challenge
         if self.required and request.auth_method == 'none' and not verifier:
             raise InvalidRequestError('Missing "code_verifier"')
 
-        authorization_code = request.credential
+        authorization_code = request.authorization_code
         challenge = self.get_authorization_code_challenge(authorization_code)
 
         # ignore, it is the normal RFC6749 authorization_code request

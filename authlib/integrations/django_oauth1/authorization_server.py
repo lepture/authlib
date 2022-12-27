@@ -10,7 +10,6 @@ from django.core.cache import cache
 from django.conf import settings
 from django.http import HttpResponse
 from .nonce import exists_nonce_in_cache
-from ..django_helpers import create_oauth_request
 
 log = logging.getLogger(__name__)
 
@@ -61,7 +60,12 @@ class BaseServer(_AuthorizationServer):
         return req
 
     def create_oauth1_request(self, request):
-        return create_oauth_request(request, OAuth1Request)
+        if request.method == 'POST':
+            body = request.POST.dict()
+        else:
+            body = None
+        url = request.build_absolute_uri()
+        return OAuth1Request(request.method, url, body, request.headers)
 
     def handle_response(self, status_code, payload, headers):
         resp = HttpResponse(url_encode(payload), status=status_code)

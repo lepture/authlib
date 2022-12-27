@@ -1,14 +1,13 @@
 from werkzeug.utils import import_string
 from flask import Response, json
+from flask import request as flask_req
 from authlib.oauth2 import (
-    OAuth2Request,
-    HttpRequest,
     AuthorizationServer as _AuthorizationServer,
 )
 from authlib.oauth2.rfc6750 import BearerTokenGenerator
 from authlib.common.security import generate_token
+from .requests import FlaskOAuth2Request, FlaskJsonRequest
 from .signals import client_authenticated, token_revoked
-from ..flask_helpers import create_oauth_request
 
 
 class AuthorizationServer(_AuthorizationServer):
@@ -70,10 +69,10 @@ class AuthorizationServer(_AuthorizationServer):
             return uris.get(error.error)
 
     def create_oauth2_request(self, request):
-        return create_oauth_request(request, OAuth2Request)
+        return FlaskOAuth2Request(flask_req)
 
     def create_json_request(self, request):
-        return create_oauth_request(request, HttpRequest, True)
+        return FlaskJsonRequest(flask_req)
 
     def handle_response(self, status_code, payload, headers):
         if isinstance(payload, dict):

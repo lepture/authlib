@@ -9,8 +9,8 @@
     https://tools.ietf.org/html/rfc6749
 """
 
-from .requests import OAuth2Request
-from .wrappers import OAuth2Token, HttpRequest
+from .requests import OAuth2Request, JsonRequest
+from .wrappers import OAuth2Token
 from .errors import (
     OAuth2Error,
     AccessDeniedError,
@@ -48,7 +48,8 @@ from .grants import (
 from .util import scope_to_list, list_to_scope
 
 __all__ = [
-    'OAuth2Request', 'OAuth2Token', 'HttpRequest',
+    'OAuth2Token',
+    'OAuth2Request', 'JsonRequest',
     'OAuth2Error',
     'AccessDeniedError',
     'MissingAuthorizationError',
