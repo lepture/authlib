@@ -33,14 +33,25 @@ class FlaskAppMixin(object):
         else:
             raise RuntimeError('Missing state value')
 
-    def authorize_redirect(self, redirect_uri=None, **kwargs):
+    def get_from_state_data(self, state, key):
+        data = self.framework.get_state_data(session, state)
+        if not data:
+            raise OAuthError(description='Missing "request_token" in temporary data')
+        return data.get(key)
+
+    def get_state_extras(self, state):
+        return self.get_from_state_data(state, "extras")
+
+    def authorize_redirect(self, redirect_uri=None, _state_extras=None, **kwargs):
         """Create a HTTP Redirect for Authorization Endpoint.
 
         :param redirect_uri: Callback or redirect URI for authorization.
-        :param kwargs: Extra parameters to include.
+        :param _state_extras: Extra parameters to be included in the state data (e.g. redirect_url).
+        :param kwargs: Extra parameters to include in the authorization URL.
         :return: A HTTP redirect response.
         """
         rv = self.create_authorization_url(redirect_uri, **kwargs)
+        rv.update(extras=_state_extras)
         self.save_authorize_data(redirect_uri=redirect_uri, **rv)
         return redirect(rv['url'])
 

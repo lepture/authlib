@@ -238,6 +238,44 @@ class FlaskOAuthTest(TestCase):
             with mock.patch('requests.sessions.Session.send'):
                 self.assertRaises(OAuthError, client.authorize_access_token)
 
+    def test_oauth2_authorize_with_extra_params(self):
+        app = Flask(__name__)
+        app.secret_key = '!'
+        oauth = OAuth(app)
+        client = oauth.register(
+            'dev',
+            client_id='dev',
+            client_secret='dev',
+            api_base_url='https://i.b/api',
+            access_token_url='https://i.b/token',
+            authorize_url='https://i.b/authorize'
+        )
+        with app.test_request_context():
+            extra_params = {'param1': 1, 'param2': 2}
+            state_extras = {'referer_url': 'https://referer.com'}
+            resp = client.authorize_redirect('https://b.com/bar', _state_extras=state_extras, **extra_params)
+            self.assertEqual(resp.status_code, 302)
+            url = resp.headers.get('Location')
+            self.assertIn('param1=1', url)
+            self.assertIn('param2=2', url)
+            self.assertNotIn('_state_extras', url)
+
+            state = dict(url_decode(urlparse.urlparse(url).query))['state']
+            self.assertIsNotNone(state)
+            data = session[f'_state_dev_{state}']
+
+        with app.test_request_context(path=f'/?code=a&state={state}'):
+            # session is cleared in tests
+            session[f'_state_dev_{state}'] = data
+            with mock.patch('requests.sessions.Session.send') as send:
+                extras = client.get_state_extras(state)
+                self.assertEqual(extras, state_extras)
+                send.return_value = mock_send_value(get_bearer_token())
+                client.authorize_access_token()
+                # state data is cleared by authorize_access_token
+                self.assertRaises(OAuthError, client.get_state_extras, state)
+
+
     def test_oauth2_authorize_via_custom_client(self):
         class CustomRemoteApp(FlaskOAuth2App):
             OAUTH_APP_CONFIG = {'authorize_url': 'https://i.b/custom'}
