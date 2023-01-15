@@ -154,6 +154,14 @@ class JWSTest(unittest.TestCase):
         self.assertEqual(header[0]['alg'], 'HS256')
         self.assertNotIn('signature', data)
 
+    def test_serialize_json_empty_payload(self):
+        jws = JsonWebSignature()
+        protected = {'alg': 'HS256'}
+        header = {'protected': protected, 'header': {'kid': 'a'}}
+        s = jws.serialize_json(header, b'', 'secret')
+        data = jws.deserialize_json(s, 'secret')
+        self.assertEqual(data['payload'], b'')
+
     def test_fail_deserialize_json(self):
         jws = JsonWebSignature()
         self.assertRaises(errors.DecodeError, jws.deserialize_json, None, '')
