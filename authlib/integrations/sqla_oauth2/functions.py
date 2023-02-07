@@ -98,10 +98,4 @@ def create_bearer_token_validator(session, token_model):
             q = session.query(token_model)
             return q.filter_by(access_token=token_string).first()
 
-        def request_invalid(self, request):
-            return False
-
-        def token_revoked(self, token):
-            return token.revoked
-
     return _BearerTokenValidator
