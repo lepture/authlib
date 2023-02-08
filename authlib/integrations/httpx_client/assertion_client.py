@@ -1,4 +1,5 @@
-from httpx import AsyncClient, Client, Response, USE_CLIENT_DEFAULT
+import httpx
+from httpx import Response, USE_CLIENT_DEFAULT
 from authlib.oauth2.rfc7521 import AssertionClient as _AssertionClient
 from authlib.oauth2.rfc7523 import JWTBearerGrant
 from .utils import extract_client_kwargs
@@ -8,7 +9,7 @@ from ..base_client import OAuthError
 __all__ = ['AsyncAssertionClient']
 
 
-class AsyncAssertionClient(_AssertionClient, AsyncClient):
+class AsyncAssertionClient(_AssertionClient, httpx.AsyncClient):
     token_auth_class = OAuth2Auth
     oauth_error_class = OAuthError
     JWT_BEARER_GRANT_TYPE = JWTBearerGrant.GRANT_TYPE
@@ -21,7 +22,7 @@ class AsyncAssertionClient(_AssertionClient, AsyncClient):
                  claims=None, token_placement='header', scope=None, **kwargs):
 
         client_kwargs = extract_client_kwargs(kwargs)
-        AsyncClient.__init__(self, **client_kwargs)
+        httpx.AsyncClient.__init__(self, **client_kwargs)
 
         _AssertionClient.__init__(
             self, session=None,
@@ -47,7 +48,7 @@ class AsyncAssertionClient(_AssertionClient, AsyncClient):
         return self.parse_response_token(resp)
 
 
-class AssertionClient(_AssertionClient, Client):
+class AssertionClient(_AssertionClient, httpx.Client):
     token_auth_class = OAuth2Auth
     oauth_error_class = OAuthError
     JWT_BEARER_GRANT_TYPE = JWTBearerGrant.GRANT_TYPE
@@ -60,7 +61,7 @@ class AssertionClient(_AssertionClient, Client):
                  claims=None, token_placement='header', scope=None, **kwargs):
 
         client_kwargs = extract_client_kwargs(kwargs)
-        Client.__init__(self, **client_kwargs)
+        httpx.Client.__init__(self, **client_kwargs)
 
         _AssertionClient.__init__(
             self, session=self,
