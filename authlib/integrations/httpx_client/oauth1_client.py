@@ -1,5 +1,6 @@
 import typing
-from httpx import AsyncClient, Auth, Client, Request, Response
+import httpx
+from httpx import Auth, Request, Response
 from authlib.oauth1 import (
     SIGNATURE_HMAC_SHA1,
     SIGNATURE_TYPE_HEADER,
@@ -22,7 +23,7 @@ class OAuth1Auth(Auth, ClientAuth):
         yield build_request(url=url, headers=headers, body=body, initial_request=request)
 
 
-class AsyncOAuth1Client(_OAuth1Client, AsyncClient):
+class AsyncOAuth1Client(_OAuth1Client, httpx.AsyncClient):
     auth_class = OAuth1Auth
 
     def __init__(self, client_id, client_secret=None,
@@ -33,7 +34,7 @@ class AsyncOAuth1Client(_OAuth1Client, AsyncClient):
                  force_include_body=False, **kwargs):
 
         _client_kwargs = extract_client_kwargs(kwargs)
-        AsyncClient.__init__(self, **_client_kwargs)
+        httpx.AsyncClient.__init__(self, **_client_kwargs)
 
         _OAuth1Client.__init__(
             self, None,
@@ -75,7 +76,7 @@ class AsyncOAuth1Client(_OAuth1Client, AsyncClient):
         raise OAuthError(error_type, error_description)
 
 
-class OAuth1Client(_OAuth1Client, Client):
+class OAuth1Client(_OAuth1Client, httpx.Client):
     auth_class = OAuth1Auth
 
     def __init__(self, client_id, client_secret=None,
@@ -86,7 +87,7 @@ class OAuth1Client(_OAuth1Client, Client):
                  force_include_body=False, **kwargs):
 
         _client_kwargs = extract_client_kwargs(kwargs)
-        Client.__init__(self, **_client_kwargs)
+        httpx.Client.__init__(self, **_client_kwargs)
 
         _OAuth1Client.__init__(
             self, self,

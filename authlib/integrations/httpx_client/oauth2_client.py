@@ -1,7 +1,8 @@
 import typing
 from contextlib import asynccontextmanager
 
-from httpx import AsyncClient, Auth, Client, Request, Response, USE_CLIENT_DEFAULT
+import httpx
+from httpx import Auth, Request, Response, USE_CLIENT_DEFAULT
 from anyio import Lock  # Import after httpx so import errors refer to httpx
 from authlib.common.urls import url_decode
 from authlib.oauth2.client import OAuth2Client as _OAuth2Client
@@ -45,7 +46,7 @@ class OAuth2ClientAuth(Auth, ClientAuth):
         yield build_request(url=url, headers=headers, body=body, initial_request=request)
 
 
-class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
+class AsyncOAuth2Client(_OAuth2Client, httpx.AsyncClient):
     SESSION_REQUEST_PARAMS = HTTPX_CLIENT_KWARGS
 
     client_auth_class = OAuth2ClientAuth
@@ -61,7 +62,7 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
 
         # extract httpx.Client kwargs
         client_kwargs = self._extract_session_request_params(kwargs)
-        AsyncClient.__init__(self, **client_kwargs)
+        httpx.AsyncClient.__init__(self, **client_kwargs)
 
         # We use a Lock to synchronize coroutines to prevent
         # multiple concurrent attempts to refresh the same token
@@ -160,7 +161,7 @@ class AsyncOAuth2Client(_OAuth2Client, AsyncClient):
             headers=headers, auth=auth, **kwargs)
 
 
-class OAuth2Client(_OAuth2Client, Client):
+class OAuth2Client(_OAuth2Client, httpx.Client):
     SESSION_REQUEST_PARAMS = HTTPX_CLIENT_KWARGS
 
     client_auth_class = OAuth2ClientAuth
@@ -176,7 +177,7 @@ class OAuth2Client(_OAuth2Client, Client):
 
         # extract httpx.Client kwargs
         client_kwargs = self._extract_session_request_params(kwargs)
-        Client.__init__(self, **client_kwargs)
+        httpx.Client.__init__(self, **client_kwargs)
 
         _OAuth2Client.__init__(
             self, session=self,
