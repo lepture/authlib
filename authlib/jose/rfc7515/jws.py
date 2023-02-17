@@ -168,7 +168,7 @@ class JsonWebSignature(object):
         obj = ensure_dict(obj, 'JWS')
 
         payload_segment = obj.get('payload')
-        if not payload_segment:
+        if payload_segment is None:
             raise DecodeError('Missing "payload" value')
 
         payload_segment = to_bytes(payload_segment)
