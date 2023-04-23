@@ -50,6 +50,13 @@ class OAuth2ParametersTest(unittest.TestCase):
             rv,
             {'access_token': 'a', 'token_type': 'bearer', 'state': 'c'}
         )
+    
+    def test_prepare_grant_uri(self):
+        grant_uri = parameters.prepare_grant_uri('https://i.b/authorize', 'dev', 'code', max_age=0)
+        self.assertEqual(
+            grant_uri,
+            "https://i.b/authorize?response_type=code&client_id=dev&max_age=0"
+        )
 
 
 class OAuth2UtilTest(unittest.TestCase):
