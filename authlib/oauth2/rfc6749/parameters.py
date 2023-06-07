@@ -60,7 +60,7 @@ def prepare_grant_uri(uri, client_id, response_type, redirect_uri=None,
         params.append(('state', state))
 
     for k in kwargs:
-        if kwargs[k]:
+        if kwargs[k] is not None:
             params.append((to_unicode(k), kwargs[k]))
 
     return add_params_to_uri(uri, params)
