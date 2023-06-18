@@ -41,7 +41,7 @@ class ClientSecretJWT(object):
             client_id=auth.client_id,
             token_endpoint=token_endpoint,
             claims=self.claims,
-            headers=self.headers,
+            header=self.headers,
             alg=self.alg,
         )
 
@@ -89,5 +89,6 @@ class PrivateKeyJWT(ClientSecretJWT):
             client_id=auth.client_id,
             token_endpoint=token_endpoint,
             claims=self.claims,
+            header=self.headers,
             alg=self.alg,
         )
