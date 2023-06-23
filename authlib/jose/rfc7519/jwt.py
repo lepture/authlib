@@ -70,7 +70,7 @@ class JsonWebToken(object):
 
     def decode(self, s, key, claims_cls=None,
                claims_options=None, claims_params=None):
-        """Decode the JWS with the given key. This is similar with
+        """Decode the JWT with the given key. This is similar with
         :meth:`verify`, except that it will raise BadSignatureError when
         signature doesn't match.
 
