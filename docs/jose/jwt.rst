@@ -3,6 +3,13 @@
 JSON Web Token (JWT)
 ====================
 
+.. important::
+
+    We are splitting the ``jose`` module into a separated package. You may be
+    interested in joserfc_.
+
+.. _joserfc: https://jose.authlib.org/en/latest/guide/jwt/
+
 .. module:: authlib.jose
     :noindex:
 

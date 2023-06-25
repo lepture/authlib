@@ -6,5 +6,8 @@ SQLAlchemy
 requests
 httpx>=0.18.2
 starlette
-Sphinx==4.3.0
-sphinx-typlog-theme==0.8.0
+
+sphinx==6.2.1
+sphinx-design==0.4.1
+sphinx-copybutton==0.5.2
+shibuya
