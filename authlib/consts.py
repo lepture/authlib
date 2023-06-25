@@ -1,5 +1,5 @@
 name = 'Authlib'
-version = '1.2.0'
+version = '1.2.1'
 author = 'Hsiaoming Yang <me@lepture.com>'
 homepage = 'https://authlib.org/'
 default_user_agent = '{}/{} (+{})'.format(name, version, homepage)

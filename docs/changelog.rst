@@ -6,9 +6,14 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
-Version x.x.x
+Version 1.2.1
 -------------
 
+**Released on Jun 25, 2023**
+
+- Apply headers in ``ClientSecretJWT.sign`` method, via :PR:`552`
+- Allow falsy but non-None grant uri params, via :PR:`544`
+- Fixed ``authorize_redirect`` for Starlette v0.26.0, via :PR:`533`
 - Removed ``has_client_secret`` method and documentation, via :PR:`513`
 - Removed ``request_invalid`` and ``token_revoked`` remaining occurences
   and documentation. :PR:`514`
