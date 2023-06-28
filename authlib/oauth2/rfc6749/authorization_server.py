@@ -246,7 +246,9 @@ class AuthorizationServer(object):
             it is None.
         :returns: Response
         """
-        request = self.create_oauth2_request(request)
+        if not isinstance(request, OAuth2Request):
+            request = self.create_oauth2_request(request)
+
         try:
             grant = self.get_authorization_grant(request)
         except UnsupportedResponseTypeError as error:
