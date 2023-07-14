@@ -1,5 +1,5 @@
 from authlib.consts import default_json_headers
-from authlib.jose import JsonWebToken, JoseError
+from authlib.jose import JoseError
 from ..rfc7591.claims import ClientMetadataClaims
 from ..rfc6749 import scope_to_list
 from ..rfc6749 import AccessDeniedError
@@ -7,8 +7,6 @@ from ..rfc6749 import InvalidClientError
 from ..rfc6749 import InvalidRequestError
 from ..rfc6749 import UnauthorizedClientError
 from ..rfc7591 import InvalidClientMetadataError
-from ..rfc7591 import InvalidSoftwareStatementError
-from ..rfc7591 import UnapprovedSoftwareStatementError
 
 
 class ClientConfigurationEndpoint(object):

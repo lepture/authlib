@@ -3,7 +3,7 @@ import base64
 import hashlib
 from authlib.common.security import generate_token
 from authlib.common.urls import extract_params
-from authlib.common.encoding import to_native, to_bytes, to_unicode
+from authlib.common.encoding import to_native
 from .wrapper import OAuth1Request
 from .signature import (
     SIGNATURE_HMAC_SHA1,
