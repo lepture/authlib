@@ -15,7 +15,7 @@ data structures.
     We are splitting the ``jose`` module into a separated package. You may be
     interested in joserfc_.
 
-.. _joserfc: https://jose.authlib.org/en/latest/guide/jws/
+.. _joserfc: https://jose.authlib.org/en/dev/guide/jws/
 
 
 There are two types of JWS Serializations:

@@ -8,7 +8,7 @@ JSON Web Key (JWK)
     We are splitting the ``jose`` module into a separated package. You may be
     interested in joserfc_.
 
-.. _joserfc: https://jose.authlib.org/en/latest/guide/jwk/
+.. _joserfc: https://jose.authlib.org/en/dev/guide/jwk/
 
 .. module:: authlib.jose
     :noindex:
