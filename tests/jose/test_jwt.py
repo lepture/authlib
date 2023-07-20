@@ -147,6 +147,40 @@ class JWTTest(unittest.TestCase):
             claims.validate, 123
         )
 
+    def test_validate_iat_issued_in_future(self):
+        in_future = datetime.datetime.utcnow() + datetime.timedelta(seconds=10)
+        id_token = jwt.encode({'alg': 'HS256'}, {'iat': in_future}, 'k')
+        claims = jwt.decode(id_token, 'k')
+        with self.assertRaises(errors.InvalidTokenError) as error_ctx:
+            claims.validate()
+        self.assertEqual(
+            str(error_ctx.exception),
+            'invalid_token: The token is not valid as it was issued in the future'
+        )
+
+    def test_validate_iat_issued_in_future_with_insufficient_leeway(self):
+        in_future = datetime.datetime.utcnow() + datetime.timedelta(seconds=10)
+        id_token = jwt.encode({'alg': 'HS256'}, {'iat': in_future}, 'k')
+        claims = jwt.decode(id_token, 'k')
+        with self.assertRaises(errors.InvalidTokenError) as error_ctx:
+            claims.validate(leeway=5)
+        self.assertEqual(
+            str(error_ctx.exception),
+            'invalid_token: The token is not valid as it was issued in the future'
+        )
+
+    def test_validate_iat_issued_in_future_with_sufficient_leeway(self):
+        in_future = datetime.datetime.utcnow() + datetime.timedelta(seconds=10)
+        id_token = jwt.encode({'alg': 'HS256'}, {'iat': in_future}, 'k')
+        claims = jwt.decode(id_token, 'k')
+        claims.validate(leeway=20)
+
+    def test_validate_iat_issued_in_past(self):
+        in_future = datetime.datetime.utcnow() - datetime.timedelta(seconds=10)
+        id_token = jwt.encode({'alg': 'HS256'}, {'iat': in_future}, 'k')
+        claims = jwt.decode(id_token, 'k')
+        claims.validate()
+
     def test_validate_iat(self):
         id_token = jwt.encode({'alg': 'HS256'}, {'iat': 'invalid'}, 'k')
         claims = jwt.decode(id_token, 'k')
