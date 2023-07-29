@@ -196,14 +196,19 @@ class JWTClaims(BaseClaims):
 
     def validate_iat(self, now, leeway):
         """The "iat" (issued at) claim identifies the time at which the JWT was
-        issued.  This claim can be used to determine the age of the JWT.  Its
-        value MUST be a number containing a NumericDate value.  Use of this
-        claim is OPTIONAL.
+        issued.  This claim can be used to determine the age of the JWT.
+        Implementers MAY provide for some small leeway, usually no more
+        than a few minutes, to account for clock skew. Its value MUST be a
+        number containing a NumericDate value.  Use of this claim is OPTIONAL.
         """
         if 'iat' in self:
             iat = self['iat']
             if not _validate_numeric_time(iat):
                 raise InvalidClaimError('iat')
+            if iat > (now + leeway):
+                raise InvalidTokenError(
+                    description='The token is not valid as it was issued in the future'
+                )
 
     def validate_jti(self):
         """The "jti" (JWT ID) claim provides a unique identifier for the JWT.
