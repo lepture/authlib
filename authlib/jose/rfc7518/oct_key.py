@@ -13,7 +13,7 @@ class OctKey(Key):
     REQUIRED_JSON_FIELDS = ['k']
 
     def __init__(self, raw_key=None, options=None):
-        super(OctKey, self).__init__(options)
+        super().__init__(options)
         self.raw_key = raw_key
 
     @property

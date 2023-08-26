@@ -10,7 +10,7 @@ class OAuth(BaseOAuth):
     framework_integration_cls = FlaskIntegration
 
     def __init__(self, app=None, cache=None, fetch_token=None, update_token=None):
-        super(OAuth, self).__init__(
+        super().__init__(
             cache=cache, fetch_token=fetch_token, update_token=update_token)
         self.app = app
         if app:
@@ -35,7 +35,7 @@ class OAuth(BaseOAuth):
     def create_client(self, name):
         if not self.app:
             raise RuntimeError('OAuth is not init with Flask app.')
-        return super(OAuth, self).create_client(name)
+        return super().create_client(name)
 
     def register(self, name, overwrite=False, **kwargs):
         self._registry[name] = (overwrite, kwargs)

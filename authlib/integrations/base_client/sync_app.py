@@ -12,7 +12,7 @@ from .errors import (
 log = logging.getLogger(__name__)
 
 
-class BaseApp(object):
+class BaseApp:
     client_cls = None
     OAUTH_APP_CONFIG = None
 
@@ -89,7 +89,7 @@ class _RequestMixin:
         return session.request(method, url, **kwargs)
 
 
-class OAuth1Base(object):
+class OAuth1Base:
     client_cls = None
 
     def __init__(
@@ -144,7 +144,7 @@ class OAuth1Mixin(_RequestMixin, OAuth1Base):
             client.redirect_uri = redirect_uri
             params = self.request_token_params or {}
             request_token = client.fetch_request_token(self.request_token_url, **params)
-            log.debug('Fetch request token: {!r}'.format(request_token))
+            log.debug(f'Fetch request token: {request_token!r}')
             url = client.create_authorization_url(self.authorize_url, **kwargs)
             state = request_token['oauth_token']
         return {'url': url, 'request_token': request_token, 'state': state}
@@ -169,7 +169,7 @@ class OAuth1Mixin(_RequestMixin, OAuth1Base):
         return token
 
 
-class OAuth2Base(object):
+class OAuth2Base:
     client_cls = None
 
     def __init__(
@@ -251,7 +251,7 @@ class OAuth2Base(object):
                 code_verifier = generate_token(48)
                 kwargs['code_verifier'] = code_verifier
             rv['code_verifier'] = code_verifier
-            log.debug('Using code_verifier: {!r}'.format(code_verifier))
+            log.debug(f'Using code_verifier: {code_verifier!r}')
 
         scope = kwargs.get('scope', client.scope)
         if scope and 'openid' in scope.split():

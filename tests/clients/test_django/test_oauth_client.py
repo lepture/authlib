@@ -110,7 +110,7 @@ class DjangoOAuthTest(TestCase):
 
         with mock.patch('requests.sessions.Session.send') as send:
             send.return_value = mock_send_value(get_bearer_token())
-            request2 = self.factory.get('/authorize?state={}'.format(state))
+            request2 = self.factory.get(f'/authorize?state={state}')
             request2.session = request.session
 
             token = client.authorize_access_token(request2)
@@ -156,11 +156,11 @@ class DjangoOAuthTest(TestCase):
         verifier = state_data['code_verifier']
 
         def fake_send(sess, req, **kwargs):
-            self.assertIn('code_verifier={}'.format(verifier), req.body)
+            self.assertIn(f'code_verifier={verifier}', req.body)
             return mock_send_value(get_bearer_token())
 
         with mock.patch('requests.sessions.Session.send', fake_send):
-            request2 = self.factory.get('/authorize?state={}'.format(state))
+            request2 = self.factory.get(f'/authorize?state={state}')
             request2.session = request.session
             token = client.authorize_access_token(request2)
             self.assertEqual(token['access_token'], 'a')
@@ -192,7 +192,7 @@ class DjangoOAuthTest(TestCase):
         with mock.patch('requests.sessions.Session.send') as send:
             send.return_value = mock_send_value(get_bearer_token())
 
-            request2 = self.factory.get('/authorize?state={}'.format(state))
+            request2 = self.factory.get(f'/authorize?state={state}')
             request2.session = request.session
 
             token = client.authorize_access_token(request2)
@@ -230,7 +230,7 @@ class DjangoOAuthTest(TestCase):
         with mock.patch('requests.sessions.Session.send') as send:
             send.return_value = mock_send_value(token)
 
-            request2 = self.factory.get('/authorize?state={}&code=foo'.format(state))
+            request2 = self.factory.get(f'/authorize?state={state}&code=foo')
             request2.session = request.session
 
             token = client.authorize_access_token(request2)

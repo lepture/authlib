@@ -6,7 +6,7 @@ _version = werkzeug.__version__.split('.')[0]
 if _version in ('0', '1'):
     class _HTTPException(HTTPException):
         def __init__(self, code, body, headers, response=None):
-            super(_HTTPException, self).__init__(None, response)
+            super().__init__(None, response)
             self.code = code
 
             self.body = body
@@ -20,7 +20,7 @@ if _version in ('0', '1'):
 else:
     class _HTTPException(HTTPException):
         def __init__(self, code, body, headers, response=None):
-            super(_HTTPException, self).__init__(None, response)
+            super().__init__(None, response)
             self.code = code
 
             self.body = body

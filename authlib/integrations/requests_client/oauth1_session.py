@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from requests import Session
 from requests.auth import AuthBase
 from authlib.oauth1 import (

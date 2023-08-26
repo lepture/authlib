@@ -36,7 +36,7 @@ class InvalidTokenError(OAuth2Error):
 
     def __init__(self, description=None, uri=None, status_code=None,
                  state=None, realm=None, **extra_attributes):
-        super(InvalidTokenError, self).__init__(
+        super().__init__(
             description, uri, status_code, state)
         self.realm = realm
         self.extra_attributes = extra_attributes
@@ -50,7 +50,7 @@ class InvalidTokenError(OAuth2Error):
 
         https://tools.ietf.org/html/rfc6750#section-3
         """
-        headers = super(InvalidTokenError, self).get_headers()
+        headers = super().get_headers()
 
         extras = []
         if self.realm:

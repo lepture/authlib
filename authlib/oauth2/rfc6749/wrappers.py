@@ -8,7 +8,7 @@ class OAuth2Token(dict):
         elif params.get('expires_in'):
             params['expires_at'] = int(time.time()) + \
                                    int(params['expires_in'])
-        super(OAuth2Token, self).__init__(params)
+        super().__init__(params)
 
     def is_expired(self):
         expires_at = self.get('expires_at')

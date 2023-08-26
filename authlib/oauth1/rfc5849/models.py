@@ -1,5 +1,4 @@
-
-class ClientMixin(object):
+class ClientMixin:
     def get_default_redirect_uri(self):
         """A method to get client default redirect_uri. For instance, the
         database table for client has a column called ``default_redirect_uri``::
@@ -30,7 +29,7 @@ class ClientMixin(object):
         raise NotImplementedError()
 
 
-class TokenCredentialMixin(object):
+class TokenCredentialMixin:
     def get_oauth_token(self):
         """A method to get the value of ``oauth_token``. For instance, the
         database table has a column called ``oauth_token``::

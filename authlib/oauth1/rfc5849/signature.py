@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     authlib.oauth1.rfc5849.signature
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -234,7 +233,7 @@ def normalize_parameters(params):
     # 3.  The name of each parameter is concatenated to its corresponding
     #     value using an "=" character (ASCII code 61) as a separator, even
     #     if the value is empty.
-    parameter_parts = ['{0}={1}'.format(k, v) for k, v in key_values]
+    parameter_parts = [f'{k}={v}' for k, v in key_values]
 
     # 4.  The sorted name/value pairs are concatenated together into a
     #     single string by using an "&" character (ASCII code 38) as

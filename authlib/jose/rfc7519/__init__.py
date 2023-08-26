@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     authlib.jose.rfc7519
     ~~~~~~~~~~~~~~~~~~~~

@@ -13,7 +13,7 @@ from authlib.common.security import is_secure_transport
 
 class OAuth1Error(AuthlibHTTPError):
     def __init__(self, description=None, uri=None, status_code=None):
-        super(OAuth1Error, self).__init__(None, description, uri, status_code)
+        super().__init__(None, description, uri, status_code)
 
     def get_headers(self):
         """Get a list of headers."""
@@ -51,7 +51,7 @@ class MissingRequiredParameterError(OAuth1Error):
 
     def __init__(self, key):
         description = f'missing "{key}" in parameters'
-        super(MissingRequiredParameterError, self).__init__(description=description)
+        super().__init__(description=description)
 
 
 class DuplicatedOAuthProtocolParameterError(OAuth1Error):

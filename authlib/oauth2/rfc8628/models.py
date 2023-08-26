@@ -1,7 +1,7 @@
 import time
 
 
-class DeviceCredentialMixin(object):
+class DeviceCredentialMixin:
     def get_client_id(self):
         raise NotImplementedError()
 

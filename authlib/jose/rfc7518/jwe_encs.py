@@ -25,7 +25,7 @@ class CBCHS2EncAlgorithm(JWEEncAlgorithm):
     IV_SIZE = 128
 
     def __init__(self, key_size, hash_type):
-        self.name = 'A{}CBC-HS{}'.format(key_size, hash_type)
+        self.name = f'A{key_size}CBC-HS{hash_type}'
         tpl = 'AES_{}_CBC_HMAC_SHA_{} authenticated encryption algorithm'
         self.description = tpl.format(key_size, hash_type)
 
@@ -35,7 +35,7 @@ class CBCHS2EncAlgorithm(JWEEncAlgorithm):
         self.key_len = key_size // 8
 
         self.CEK_SIZE = key_size * 2
-        self.hash_alg = getattr(hashlib, 'sha{}'.format(hash_type))
+        self.hash_alg = getattr(hashlib, f'sha{hash_type}')
 
     def _hmac(self, ciphertext, aad, iv, key):
         al = encode_int(len(aad) * 8, 64)
@@ -96,8 +96,8 @@ class GCMEncAlgorithm(JWEEncAlgorithm):
     IV_SIZE = 96
 
     def __init__(self, key_size):
-        self.name = 'A{}GCM'.format(key_size)
-        self.description = 'AES GCM using {}-bit key'.format(key_size)
+        self.name = f'A{key_size}GCM'
+        self.description = f'AES GCM using {key_size}-bit key'
         self.key_size = key_size
         self.CEK_SIZE = key_size
 

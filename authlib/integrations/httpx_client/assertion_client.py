@@ -38,7 +38,7 @@ class AsyncAssertionClient(_AssertionClient, httpx.AsyncClient):
                 await self.refresh_token()
 
             auth = self.token_auth
-        return await super(AsyncAssertionClient, self).request(
+        return await super().request(
             method, url, auth=auth, **kwargs)
 
     async def _refresh_token(self, data):
@@ -77,5 +77,5 @@ class AssertionClient(_AssertionClient, httpx.Client):
                 self.refresh_token()
 
             auth = self.token_auth
-        return super(AssertionClient, self).request(
+        return super().request(
             method, url, auth=auth, **kwargs)

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from authlib.common.urls import (
     url_decode,
     add_params_to_uri,
@@ -12,7 +11,7 @@ from .rfc5849 import (
 )
 
 
-class OAuth1Client(object):
+class OAuth1Client:
     auth_class = ClientAuth
 
     def __init__(self, session, client_id, client_secret=None,
@@ -71,7 +70,7 @@ class OAuth1Client(object):
             if 'oauth_verifier' in token:
                 self.auth.verifier = token['oauth_verifier']
         else:
-            message = 'oauth_token is missing: {!r}'.format(token)
+            message = f'oauth_token is missing: {token!r}'
             self.handle_error('missing_token', message)
 
     def create_authorization_url(self, url, request_token=None, **kwargs):
@@ -170,4 +169,4 @@ class OAuth1Client(object):
 
     @staticmethod
     def handle_error(error_type, error_description):
-        raise ValueError('{}: {}'.format(error_type, error_description))
+        raise ValueError(f'{error_type}: {error_description}')

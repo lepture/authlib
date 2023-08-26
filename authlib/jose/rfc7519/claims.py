@@ -38,7 +38,7 @@ class BaseClaims(dict):
     REGISTERED_CLAIMS = []
 
     def __init__(self, payload, header, options=None, params=None):
-        super(BaseClaims, self).__init__(payload)
+        super().__init__(payload)
         self.header = header
         self.options = options or {}
         self.params = params or {}

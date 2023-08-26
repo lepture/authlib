@@ -1,4 +1,3 @@
-#: coding: utf-8
 from authlib.consts import default_json_headers
 
 
@@ -20,11 +19,11 @@ class AuthlibBaseError(Exception):
         if uri is not None:
             self.uri = uri
 
-        message = '{}: {}'.format(self.error, self.description)
-        super(AuthlibBaseError, self).__init__(message)
+        message = f'{self.error}: {self.description}'
+        super().__init__(message)
 
     def __repr__(self):
-        return '<{} "{}">'.format(self.__class__.__name__, self.error)
+        return f'<{self.__class__.__name__} "{self.error}">'
 
 
 class AuthlibHTTPError(AuthlibBaseError):
@@ -33,7 +32,7 @@ class AuthlibHTTPError(AuthlibBaseError):
 
     def __init__(self, error=None, description=None, uri=None,
                  status_code=None):
-        super(AuthlibHTTPError, self).__init__(error, description, uri)
+        super().__init__(error, description, uri)
         if status_code is not None:
             self.status_code = status_code
 

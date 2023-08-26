@@ -335,7 +335,7 @@ class AuthorizationServerMetadata(dict):
     def validate(self):
         """Validate all server metadata value."""
         for key in self.REGISTRY_KEYS:
-            object.__getattribute__(self, 'validate_{}'.format(key))()
+            object.__getattribute__(self, f'validate_{key}')()
 
     def __getattr__(self, key):
         try:
@@ -349,20 +349,20 @@ class AuthorizationServerMetadata(dict):
 def _validate_alg_values(data, key, auth_methods_supported):
     value = data.get(key)
     if value and not isinstance(value, list):
-        raise ValueError('"{}" MUST be JSON array'.format(key))
+        raise ValueError(f'"{key}" MUST be JSON array')
 
     auth_methods = set(auth_methods_supported)
     jwt_auth_methods = {'private_key_jwt', 'client_secret_jwt'}
     if auth_methods & jwt_auth_methods:
         if not value:
-            raise ValueError('"{}" is required'.format(key))
+            raise ValueError(f'"{key}" is required')
 
     if value and 'none' in value:
         raise ValueError(
-            'the value "none" MUST NOT be used in "{}"'.format(key))
+            f'the value "none" MUST NOT be used in "{key}"')
 
 
 def validate_array_value(metadata, key):
     values = metadata.get(key)
     if values is not None and not isinstance(values, list):
-        raise ValueError('"{}" MUST be JSON array'.format(key))
+        raise ValueError(f'"{key}" MUST be JSON array')

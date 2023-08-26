@@ -3,7 +3,7 @@ from authlib.common.encoding import to_native
 from authlib.jose import jwt
 
 
-class JWTBearerTokenGenerator(object):
+class JWTBearerTokenGenerator:
     """A JSON Web Token formatted bearer token generator for jwt-bearer grant type.
     This token generator can be registered into authorization server::
 

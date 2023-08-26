@@ -19,7 +19,7 @@ class ECDH1PUAlgorithm(JWEAlgorithmWithTagAwareKeyAgreement):
             self.name = 'ECDH-1PU'
             self.description = 'ECDH-1PU in the Direct Key Agreement mode'
         else:
-            self.name = 'ECDH-1PU+A{}KW'.format(key_size)
+            self.name = f'ECDH-1PU+A{key_size}KW'
             self.description = (
                 'ECDH-1PU using Concat KDF and CEK wrapped '
                 'with A{}KW').format(key_size)

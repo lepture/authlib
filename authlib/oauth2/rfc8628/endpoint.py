@@ -3,7 +3,7 @@ from authlib.common.security import generate_token
 from authlib.common.urls import add_params_to_uri
 
 
-class DeviceAuthorizationEndpoint(object):
+class DeviceAuthorizationEndpoint:
     """This OAuth 2.0 [RFC6749] protocol extension enables OAuth clients to
     request user authorization from applications on devices that have
     limited input capabilities or lack a suitable browser.  Such devices

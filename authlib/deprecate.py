@@ -10,7 +10,7 @@ warnings.simplefilter('always', AuthlibDeprecationWarning)
 
 def deprecate(message, version=None, link_uid=None, link_file=None):
     if version:
-        message += '\nIt will be compatible before version {}.'.format(version)
+        message += f'\nIt will be compatible before version {version}.'
     if link_uid and link_file:
-        message += '\nRead more <https://git.io/{}#file-{}-md>'.format(link_uid, link_file)
+        message += f'\nRead more <https://git.io/{link_uid}#file-{link_file}-md>'
     warnings.warn(AuthlibDeprecationWarning(message), stacklevel=2)

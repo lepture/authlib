@@ -19,7 +19,7 @@ class PasswordGrant(_PasswordGrant):
 
 class PasswordTest(TestCase):
     def create_server(self):
-        server = super(PasswordTest, self).create_server()
+        server = super().create_server()
         server.register_grant(PasswordGrant)
         return server
 

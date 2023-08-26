@@ -1,8 +1,8 @@
 import authlib
 
-project = u'Authlib'
-copyright = u'&copy; 2017, Hsiaoming Ltd'
-author = u'Hsiaoming Yang'
+project = 'Authlib'
+copyright = '&copy; 2017, Hsiaoming Ltd'
+author = 'Hsiaoming Yang'
 version = authlib.__version__
 release = version
 

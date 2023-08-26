@@ -29,7 +29,7 @@ class JWTBearerTokenValidator(BearerTokenValidator):
     token_cls = JWTBearerToken
 
     def __init__(self, public_key, issuer=None, realm=None, **extra_attributes):
-        super(JWTBearerTokenValidator, self).__init__(realm, **extra_attributes)
+        super().__init__(realm, **extra_attributes)
         self.public_key = public_key
         claims_options = {
             'exp': {'essential': True},

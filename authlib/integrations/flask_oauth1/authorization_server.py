@@ -159,11 +159,11 @@ class AuthorizationServer(_AuthorizationServer):
         return req
 
     def create_authorization_response(self, request=None, grant_user=None):
-        return super(AuthorizationServer, self)\
+        return super()\
             .create_authorization_response(request, grant_user)
 
     def create_token_response(self, request=None):
-        return super(AuthorizationServer, self).create_token_response(request)
+        return super().create_token_response(request)
 
     def create_oauth1_request(self, request):
         if request is None:

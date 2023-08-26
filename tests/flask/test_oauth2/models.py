@@ -52,7 +52,7 @@ class Token(db.Model, OAuth2TokenMixin):
         return not self.refresh_token_revoked_at
 
 
-class CodeGrantMixin(object):
+class CodeGrantMixin:
     def query_authorization_code(self, code, client):
         item = AuthorizationCode.query.filter_by(
             code=code, client_id=client.client_id).first()

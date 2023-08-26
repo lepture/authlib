@@ -48,7 +48,7 @@ class OpenIDProviderMetadata(AuthorizationServerMetadata):
         jwks_uri = self.get('jwks_uri')
         if jwks_uri is None:
             raise ValueError('"jwks_uri" is required')
-        return super(OpenIDProviderMetadata, self).validate_jwks_uri()
+        return super().validate_jwks_uri()
 
     def validate_acr_values_supported(self):
         """OPTIONAL. JSON array containing a list of the Authentication
@@ -280,4 +280,4 @@ def _validate_boolean_value(metadata, key):
     if key not in metadata:
         return
     if metadata[key] not in (True, False):
-        raise ValueError('"{}" MUST be boolean'.format(key))
+        raise ValueError(f'"{key}" MUST be boolean')

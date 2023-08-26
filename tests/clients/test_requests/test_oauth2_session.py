@@ -57,7 +57,7 @@ class OAuth2SessionTest(TestCase):
         token = 'Bearer ' + self.token['access_token']
 
         def verifier(r, **kwargs):
-            auth_header = r.headers.get(str('Authorization'), None)
+            auth_header = r.headers.get('Authorization', None)
             self.assertEqual(auth_header, token)
             resp = mock.MagicMock()
             return resp
@@ -493,7 +493,7 @@ class OAuth2SessionTest(TestCase):
         token = 'Bearer ' + self.token['access_token']
 
         def verifier(r, **kwargs):
-            auth_header = r.headers.get(str('Authorization'), None)
+            auth_header = r.headers.get('Authorization', None)
             self.assertEqual(auth_header, token)
             resp = mock.MagicMock()
             return resp

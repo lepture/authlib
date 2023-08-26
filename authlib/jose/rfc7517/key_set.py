@@ -1,7 +1,7 @@
 from authlib.common.encoding import json_dumps
 
 
-class KeySet(object):
+class KeySet:
     """This class represents a JSON Web Key Set."""
 
     def __init__(self, keys):

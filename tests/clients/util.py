@@ -10,7 +10,7 @@ ROOT = os.path.abspath(os.path.dirname(__file__))
 
 def read_key_file(name):
     file_path = os.path.join(ROOT, 'keys', name)
-    with open(file_path, 'r') as f:
+    with open(file_path) as f:
         if name.endswith('.json'):
             return json.load(f)
         return f.read()

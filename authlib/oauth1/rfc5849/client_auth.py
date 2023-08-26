@@ -29,7 +29,7 @@ CONTENT_TYPE_FORM_URLENCODED = 'application/x-www-form-urlencoded'
 CONTENT_TYPE_MULTI_PART = 'multipart/form-data'
 
 
-class ClientAuth(object):
+class ClientAuth:
     SIGNATURE_METHODS = {
         SIGNATURE_HMAC_SHA1: sign_hmac_sha1,
         SIGNATURE_RSA_SHA1: sign_rsa_sha1,

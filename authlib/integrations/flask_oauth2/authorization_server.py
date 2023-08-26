@@ -39,7 +39,7 @@ class AuthorizationServer(_AuthorizationServer):
     """
 
     def __init__(self, app=None, query_client=None, save_token=None):
-        super(AuthorizationServer, self).__init__()
+        super().__init__()
         self._query_client = query_client
         self._save_token = save_token
         self._error_uris = None

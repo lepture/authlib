@@ -13,7 +13,7 @@ from ..rfc7516 import JsonWebEncryption
 from ..rfc7517 import KeySet, Key
 
 
-class JsonWebToken(object):
+class JsonWebToken:
     SENSITIVE_NAMES = ('password', 'token', 'secret', 'secret_key')
     # Thanks to sentry SensitiveDataFilter
     SENSITIVE_VALUES = re.compile(r'|'.join([

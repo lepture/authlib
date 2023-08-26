@@ -14,7 +14,7 @@ from .errors import (
 )
 
 
-class ClientRegistrationEndpoint(object):
+class ClientRegistrationEndpoint:
     """The client registration endpoint is an OAuth 2.0 endpoint designed to
     allow a client to be registered with the authorization server.
     """

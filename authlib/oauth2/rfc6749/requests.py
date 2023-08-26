@@ -3,7 +3,7 @@ from authlib.common.urls import urlparse, url_decode
 from .errors import InsecureTransportError
 
 
-class OAuth2Request(object):
+class OAuth2Request:
     def __init__(self, method: str, uri: str, body=None, headers=None):
         InsecureTransportError.check(uri)
         #: HTTP method
@@ -72,7 +72,7 @@ class OAuth2Request(object):
         return self.data.get('state')
 
 
-class JsonRequest(object):
+class JsonRequest:
     def __init__(self, method, uri, body=None, headers=None):
         self.method = method
         self.uri = uri

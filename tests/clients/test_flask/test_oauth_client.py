@@ -320,7 +320,7 @@ class FlaskOAuthTest(TestCase):
             self.assertIn(f'code_verifier={verifier}', req.body)
             return mock_send_value(get_bearer_token())
 
-        path = '/?code=a&state={}'.format(state)
+        path = f'/?code=a&state={state}'
         with app.test_request_context(path=path):
             # session is cleared in tests
             session[f'_state_dev_{state}'] = data
@@ -365,7 +365,7 @@ class FlaskOAuthTest(TestCase):
             alg='HS256', iss='https://i.b',
             aud='dev', exp=3600, nonce=query_data['nonce'],
         )
-        path = '/?code=a&state={}'.format(state)
+        path = f'/?code=a&state={state}'
         with app.test_request_context(path=path):
             session[f'_state_dev_{state}'] = session_data
             with mock.patch('requests.sessions.Session.send') as send:

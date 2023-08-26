@@ -9,7 +9,7 @@ ENDPOINT_NAME = RevocationEndpoint.ENDPOINT_NAME
 
 class RevocationEndpointTest(TestCase):
     def create_server(self):
-        server = super(RevocationEndpointTest, self).create_server()
+        server = super().create_server()
         server.register_endpoint(RevocationEndpoint)
         return server
 

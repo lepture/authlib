@@ -18,7 +18,7 @@ from authlib.jose.errors import (
 from .models import JWSHeader, JWSObject
 
 
-class JsonWebSignature(object):
+class JsonWebSignature:
 
     #: Registered Header Parameter Names defined by Section 4.1
     REGISTERED_HEADER_PARAMETER_NAMES = frozenset([
@@ -38,7 +38,7 @@ class JsonWebSignature(object):
     def register_algorithm(cls, algorithm):
         if not algorithm or algorithm.algorithm_type != 'JWS':
             raise ValueError(
-                'Invalid algorithm for JWS, {!r}'.format(algorithm))
+                f'Invalid algorithm for JWS, {algorithm!r}')
         cls.ALGORITHMS_REGISTRY[algorithm.name] = algorithm
 
     def serialize_compact(self, protected, payload, key):

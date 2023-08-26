@@ -6,7 +6,7 @@ from ..base_client import (
 )
 
 
-class DjangoAppMixin(object):
+class DjangoAppMixin:
     def save_authorize_data(self, request, **kwargs):
         state = kwargs.pop('state', None)
         if state:

@@ -15,7 +15,7 @@ OAUTH_CLIENT_PARAMS = (
 )
 
 
-class BaseOAuth(object):
+class BaseOAuth:
     """Registry for oauth clients.
 
     Create an instance for registry::

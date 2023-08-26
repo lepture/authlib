@@ -95,7 +95,7 @@ class OKPKey(AsymmetricKey):
     @classmethod
     def generate_key(cls, crv='Ed25519', options=None, is_private=False) -> 'OKPKey':
         if crv not in PRIVATE_KEYS_MAP:
-            raise ValueError('Invalid crv value: "{}"'.format(crv))
+            raise ValueError(f'Invalid crv value: "{crv}"')
         private_key_cls = PRIVATE_KEYS_MAP[crv]
         raw_key = private_key_cls.generate()
         if not is_private:

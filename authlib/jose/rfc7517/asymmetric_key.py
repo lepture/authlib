@@ -16,7 +16,7 @@ class AsymmetricKey(Key):
     SSH_PUBLIC_PREFIX = b''
 
     def __init__(self, private_key=None, public_key=None, options=None):
-        super(AsymmetricKey, self).__init__(options)
+        super().__init__(options)
         self.private_key = private_key
         self.public_key = public_key
 
@@ -122,7 +122,7 @@ class AsymmetricKey(Key):
         elif encoding == 'DER':
             encoding = Encoding.DER
         else:
-            raise ValueError('Invalid encoding: {!r}'.format(encoding))
+            raise ValueError(f'Invalid encoding: {encoding!r}')
 
         raw_key = self.as_key(is_private)
         if is_private:

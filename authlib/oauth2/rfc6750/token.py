@@ -1,4 +1,4 @@
-class BearerTokenGenerator(object):
+class BearerTokenGenerator:
     """Bearer token generator which can create the payload for token response
     by OAuth 2 server. A typical token response would be:
 

@@ -10,7 +10,7 @@ from .util import scope_to_list
 from .errors import MissingAuthorizationError, UnsupportedTokenTypeError
 
 
-class TokenValidator(object):
+class TokenValidator:
     """Base token validator class. Subclass this validator to register
     into ResourceProtector instance.
     """
@@ -81,7 +81,7 @@ class TokenValidator(object):
         raise NotImplementedError()
 
 
-class ResourceProtector(object):
+class ResourceProtector:
     def __init__(self):
         self._token_validators = {}
         self._default_realm = None

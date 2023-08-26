@@ -3,7 +3,7 @@ from .key_set import KeySet
 from ._cryptography_key import load_pem_key
 
 
-class JsonWebKey(object):
+class JsonWebKey:
     JWK_KEY_CLS = {}
 
     @classmethod

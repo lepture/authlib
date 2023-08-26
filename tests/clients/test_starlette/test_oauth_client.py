@@ -174,7 +174,7 @@ async def test_oauth2_authorize_code_challenge():
     req_scope.update(
         {
             'path': '/',
-            'query_string': 'code=a&state={}'.format(state).encode(),
+            'query_string': f'code=a&state={state}'.encode(),
             'session': req.session,
         }
     )

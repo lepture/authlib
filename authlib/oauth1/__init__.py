@@ -1,5 +1,3 @@
-# coding: utf-8
-
 from .rfc5849 import (
     OAuth1Request,
     ClientAuth,

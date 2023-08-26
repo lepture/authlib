@@ -6,6 +6,8 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+- End support for python 3.7
+
 Version 1.2.1
 -------------
 

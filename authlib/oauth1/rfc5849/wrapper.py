@@ -14,7 +14,7 @@ from .errors import (
 from .util import unescape
 
 
-class OAuth1Request(object):
+class OAuth1Request:
     def __init__(self, method, uri, body=None, headers=None):
         InsecureTransportError.check(uri)
         self.method = method

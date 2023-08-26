@@ -6,9 +6,9 @@ from .rfc6750 import add_bearer_token
 
 
 def encode_client_secret_basic(client, method, uri, headers, body):
-    text = '{}:{}'.format(client.client_id, client.client_secret)
+    text = f'{client.client_id}:{client.client_secret}'
     auth = to_native(base64.b64encode(to_bytes(text, 'latin1')))
-    headers['Authorization'] = 'Basic {}'.format(auth)
+    headers['Authorization'] = f'Basic {auth}'
     return uri, headers, body
 
 
@@ -32,7 +32,7 @@ def encode_none(client, method, uri, headers, body):
     return uri, headers, body
 
 
-class ClientAuth(object):
+class ClientAuth:
     """Attaches OAuth Client Information to HTTP requests.
 
     :param client_id: Client ID, which you get from client registration.
@@ -66,7 +66,7 @@ class ClientAuth(object):
         return self.auth_method(self, method, uri, headers, body)
 
 
-class TokenAuth(object):
+class TokenAuth:
     """Attach token information to HTTP requests.
 
     :param token: A dict or OAuth2Token instance of an OAuth 2.0 token

@@ -2,7 +2,7 @@ from authlib.jose import jwt, JsonWebToken, JsonWebKey
 from authlib.oidc.core import UserInfo, CodeIDToken, ImplicitIDToken
 
 
-class OpenIDMixin(object):
+class OpenIDMixin:
     def fetch_jwk_set(self, force=False):
         metadata = self.load_server_metadata()
         jwk_set = metadata.get('jwks')
