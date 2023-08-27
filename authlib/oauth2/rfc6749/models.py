@@ -7,7 +7,7 @@
 from authlib.deprecate import deprecate
 
 
-class ClientMixin(object):
+class ClientMixin:
     """Implementation of OAuth 2 Client described in `Section 2`_ with
     some methods to help validation. A client has at least these information:
 
@@ -146,7 +146,7 @@ class ClientMixin(object):
         raise NotImplementedError()
 
 
-class AuthorizationCodeMixin(object):
+class AuthorizationCodeMixin:
     def get_redirect_uri(self):
         """A method to get authorization code's ``redirect_uri``.
         For instance, the database table for authorization code has a
@@ -171,7 +171,7 @@ class AuthorizationCodeMixin(object):
         raise NotImplementedError()
 
 
-class TokenMixin(object):
+class TokenMixin:
     def check_client(self, client):
         """A method to check if this token is issued to the given client.
         For instance, ``client_id`` is saved on token table::

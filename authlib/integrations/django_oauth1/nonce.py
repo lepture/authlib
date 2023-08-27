@@ -6,9 +6,9 @@ def exists_nonce_in_cache(nonce, request, timeout):
     timestamp = request.timestamp
     client_id = request.client_id
     token = request.token
-    key = '{}{}-{}-{}'.format(key_prefix, nonce, timestamp, client_id)
+    key = f'{key_prefix}{nonce}-{timestamp}-{client_id}'
     if token:
-        key = '{}-{}'.format(key, token)
+        key = f'{key}-{token}'
 
     rv = bool(cache.get(key))
     cache.set(key, 1, timeout=timeout)

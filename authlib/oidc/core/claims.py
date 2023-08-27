@@ -173,7 +173,7 @@ class ImplicitIDToken(IDToken):
         access_token = self.params.get('access_token')
         if access_token and 'at_hash' not in self:
             raise MissingClaimError('at_hash')
-        super(ImplicitIDToken, self).validate_at_hash()
+        super().validate_at_hash()
 
 
 class HybridIDToken(ImplicitIDToken):
@@ -181,7 +181,7 @@ class HybridIDToken(ImplicitIDToken):
     REGISTERED_CLAIMS = _REGISTERED_CLAIMS + ['c_hash']
 
     def validate(self, now=None, leeway=0):
-        super(HybridIDToken, self).validate(now=now, leeway=leeway)
+        super().validate(now=now, leeway=leeway)
         self.validate_c_hash()
 
     def validate_c_hash(self):

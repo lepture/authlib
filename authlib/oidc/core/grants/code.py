@@ -20,7 +20,7 @@ from .util import (
 log = logging.getLogger(__name__)
 
 
-class OpenIDToken(object):
+class OpenIDToken:
     def get_jwt_config(self, grant):  # pragma: no cover
         """Get the JWT configuration for OpenIDCode extension. The JWT
         configuration will be used to generate ``id_token``. Developers

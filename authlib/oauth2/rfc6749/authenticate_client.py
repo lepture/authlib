@@ -24,7 +24,7 @@ log = logging.getLogger(__name__)
 __all__ = ['ClientAuthentication']
 
 
-class ClientAuthentication(object):
+class ClientAuthentication:
     def __init__(self, query_client):
         self.query_client = query_client
         self._methods = {

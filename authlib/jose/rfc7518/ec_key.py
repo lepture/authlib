@@ -91,7 +91,7 @@ class ECKey(AsymmetricKey):
     @classmethod
     def generate_key(cls, crv='P-256', options=None, is_private=False) -> 'ECKey':
         if crv not in cls.DSS_CURVES:
-            raise ValueError('Invalid crv value: "{}"'.format(crv))
+            raise ValueError(f'Invalid crv value: "{crv}"')
         raw_key = ec.generate_private_key(
             curve=cls.DSS_CURVES[crv](),
             backend=default_backend(),

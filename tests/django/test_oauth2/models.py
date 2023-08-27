@@ -124,7 +124,7 @@ class OAuth2Code(Model, AuthorizationCodeMixin):
         return self.auth_time
 
 
-class CodeGrantMixin(object):
+class CodeGrantMixin:
     def query_authorization_code(self, code, client):
         try:
             item = OAuth2Code.objects.get(code=code, client_id=client.client_id)

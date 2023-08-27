@@ -28,7 +28,7 @@ def compare_s256_code_challenge(code_verifier, code_challenge):
     return create_s256_code_challenge(code_verifier) == code_challenge
 
 
-class CodeChallenge(object):
+class CodeChallenge:
     """CodeChallenge extension to Authorization Code Grant. It is used to
     improve the security of Authorization Code flow for public clients by
     sending extra "code_challenge" and "code_verifier" to the authorization
@@ -108,7 +108,7 @@ class CodeChallenge(object):
 
         func = self.CODE_CHALLENGE_METHODS.get(method)
         if not func:
-            raise RuntimeError('No verify method for "{}"'.format(method))
+            raise RuntimeError(f'No verify method for "{method}"')
 
         # If the values are not equal, an error response indicating
         # "invalid_grant" MUST be returned.

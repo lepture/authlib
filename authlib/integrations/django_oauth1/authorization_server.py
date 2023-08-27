@@ -76,7 +76,7 @@ class BaseServer(_AuthorizationServer):
 
 class CacheAuthorizationServer(BaseServer):
     def __init__(self, client_model, token_model, token_generator=None):
-        super(CacheAuthorizationServer, self).__init__(
+        super().__init__(
             client_model, token_model, token_generator)
         self._temporary_expires_in = self._config.get(
             'temporary_credential_expires_in', 86400)

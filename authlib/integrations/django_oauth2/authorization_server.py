@@ -26,7 +26,7 @@ class AuthorizationServer(_AuthorizationServer):
         self.client_model = client_model
         self.token_model = token_model
         scopes_supported = self.config.get('scopes_supported')
-        super(AuthorizationServer, self).__init__(scopes_supported=scopes_supported)
+        super().__init__(scopes_supported=scopes_supported)
         # add default token generator
         self.register_token_generator('default', self.create_bearer_token_generator())
 

@@ -20,7 +20,7 @@ from authlib.jose.errors import (
 )
 
 
-class JsonWebEncryption(object):
+class JsonWebEncryption:
     #: Registered Header Parameter Names defined by Section 4.1
     REGISTERED_HEADER_PARAMETER_NAMES = frozenset([
         'alg', 'enc', 'zip',
@@ -42,7 +42,7 @@ class JsonWebEncryption(object):
         """Register an algorithm for ``alg`` or ``enc`` or ``zip`` of JWE."""
         if not algorithm or algorithm.algorithm_type != 'JWE':
             raise ValueError(
-                'Invalid algorithm for JWE, {!r}'.format(algorithm))
+                f'Invalid algorithm for JWE, {algorithm!r}')
 
         if algorithm.algorithm_location == 'alg':
             cls.ALG_REGISTRY[algorithm.name] = algorithm

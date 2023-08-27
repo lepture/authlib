@@ -6,7 +6,7 @@ from .models import User, Client
 
 class ImplicitTest(TestCase):
     def create_server(self):
-        server = super(ImplicitTest, self).create_server()
+        server = super().create_server()
         server.register_grant(grants.ImplicitGrant)
         return server
 

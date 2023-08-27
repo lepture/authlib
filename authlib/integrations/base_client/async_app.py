@@ -36,7 +36,7 @@ class AsyncOAuth1Mixin(OAuth1Base):
             if self.request_token_params:
                 params.update(self.request_token_params)
             request_token = await client.fetch_request_token(self.request_token_url, **params)
-            log.debug('Fetch request token: {!r}'.format(request_token))
+            log.debug(f'Fetch request token: {request_token!r}')
             url = client.create_authorization_url(self.authorize_url, **kwargs)
             state = request_token['oauth_token']
         return {'url': url, 'request_token': request_token, 'state': state}

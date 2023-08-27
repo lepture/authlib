@@ -18,7 +18,7 @@ from .errors import (
 )
 
 
-class BaseServer(object):
+class BaseServer:
     SIGNATURE_METHODS = {
         SIGNATURE_HMAC_SHA1: verify_hmac_sha1,
         SIGNATURE_RSA_SHA1: verify_rsa_sha1,

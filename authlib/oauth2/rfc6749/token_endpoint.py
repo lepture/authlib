@@ -1,4 +1,4 @@
-class TokenEndpoint(object):
+class TokenEndpoint:
     #: Endpoint name to be registered
     ENDPOINT_NAME = None
     #: Supported token types

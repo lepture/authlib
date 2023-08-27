@@ -3,7 +3,7 @@ from ..requests import OAuth2Request
 from ..errors import InvalidRequestError
 
 
-class BaseGrant(object):
+class BaseGrant:
     #: Allowed client auth methods for token endpoint
     TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic']
 
@@ -93,7 +93,7 @@ class BaseGrant(object):
             hook(self, *args, **kwargs)
 
 
-class TokenEndpointMixin(object):
+class TokenEndpointMixin:
     #: Allowed HTTP methods of this token endpoint
     TOKEN_ENDPOINT_HTTP_METHODS = ['POST']
 
@@ -112,7 +112,7 @@ class TokenEndpointMixin(object):
         raise NotImplementedError()
 
 
-class AuthorizationEndpointMixin(object):
+class AuthorizationEndpointMixin:
     RESPONSE_TYPES = set()
     ERROR_RESPONSE_FRAGMENT = False
 

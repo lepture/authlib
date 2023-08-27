@@ -19,6 +19,6 @@ class TestCase(_TestCase):
         return AuthorizationServer(Client, OAuth2Token)
 
     def create_basic_auth(self, username, password):
-        text = '{}:{}'.format(username, password)
+        text = f'{username}:{password}'
         auth = to_unicode(base64.b64encode(to_bytes(text)))
         return 'Basic ' + auth

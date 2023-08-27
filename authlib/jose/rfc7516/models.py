@@ -2,7 +2,7 @@ import os
 from abc import ABCMeta
 
 
-class JWEAlgorithmBase(object, metaclass=ABCMeta):
+class JWEAlgorithmBase(metaclass=ABCMeta):
     """Base interface for all JWE algorithms.
     """
     EXTRA_HEADERS = None
@@ -47,7 +47,7 @@ class JWEAlgorithmWithTagAwareKeyAgreement(JWEAlgorithmBase, metaclass=ABCMeta):
         raise NotImplementedError
 
 
-class JWEEncAlgorithm(object):
+class JWEEncAlgorithm:
     name = None
     description = None
     algorithm_type = 'JWE'
@@ -90,7 +90,7 @@ class JWEEncAlgorithm(object):
         raise NotImplementedError
 
 
-class JWEZipAlgorithm(object):
+class JWEZipAlgorithm:
     name = None
     description = None
     algorithm_type = 'JWE'
@@ -114,7 +114,7 @@ class JWESharedHeader(dict):
             obj.update(protected)
         if unprotected:
             obj.update(unprotected)
-        super(JWESharedHeader, self).__init__(obj)
+        super().__init__(obj)
         self.protected = protected if protected else {}
         self.unprotected = unprotected if unprotected else {}
 
@@ -142,7 +142,7 @@ class JWEHeader(dict):
             obj.update(unprotected)
         if header:
             obj.update(header)
-        super(JWEHeader, self).__init__(obj)
+        super().__init__(obj)
         self.protected = protected if protected else {}
         self.unprotected = unprotected if unprotected else {}
         self.header = header if header else {}

@@ -204,7 +204,7 @@ class OpenIDProviderMetadataTest(unittest.TestCase):
         if required:
             with self.assertRaises(ValueError) as cm:
                 _validate(metadata)
-            self.assertEqual('"{}" is required'.format(key), str(cm.exception))
+            self.assertEqual(f'"{key}" is required', str(cm.exception))
         else:
             _validate(metadata)
 
@@ -223,6 +223,6 @@ class OpenIDProviderMetadataTest(unittest.TestCase):
         with self.assertRaises(ValueError) as cm:
             getattr(metadata, 'validate_' + key)()
         self.assertEqual(
-            '"{}" contains invalid values'.format(key),
+            f'"{key}" contains invalid values',
             str(cm.exception)
         )

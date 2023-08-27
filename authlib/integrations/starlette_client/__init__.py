@@ -11,7 +11,7 @@ class OAuth(BaseOAuth):
     framework_integration_cls = StarletteIntegration
 
     def __init__(self, config=None, cache=None, fetch_token=None, update_token=None):
-        super(OAuth, self).__init__(
+        super().__init__(
             cache=cache, fetch_token=fetch_token, update_token=update_token)
         self.config = config
 

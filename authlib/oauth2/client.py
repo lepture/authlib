@@ -17,7 +17,7 @@ DEFAULT_HEADERS = {
 }
 
 
-class OAuth2Client(object):
+class OAuth2Client:
     """Construct a new OAuth 2 protocol client.
 
     :param session: Requests session object to communicate with

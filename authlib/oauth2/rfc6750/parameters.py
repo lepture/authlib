@@ -17,7 +17,7 @@ def add_to_headers(token, headers=None):
     Authorization: Bearer h480djs93hd8
     """
     headers = headers or {}
-    headers['Authorization'] = 'Bearer {}'.format(token)
+    headers['Authorization'] = f'Bearer {token}'
     return headers
 
 

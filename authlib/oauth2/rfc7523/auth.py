@@ -3,7 +3,7 @@ from .assertion import client_secret_jwt_sign, private_key_jwt_sign
 from .client import ASSERTION_TYPE
 
 
-class ClientSecretJWT(object):
+class ClientSecretJWT:
     """Authentication method for OAuth 2.0 Client. This authentication
     method is called ``client_secret_jwt``, which is using ``client_id``
     and ``client_secret`` constructed with JWT to identify a client.

@@ -26,7 +26,7 @@ class OAuth2Auth(AuthBase, TokenAuth):
             req.url, req.headers, req.body = self.prepare(
                 req.url, req.headers, req.body)
         except KeyError as error:
-            description = 'Unsupported token_type: {}'.format(str(error))
+            description = f'Unsupported token_type: {str(error)}'
             raise UnsupportedTokenTypeError(description=description)
         return req
 
@@ -106,5 +106,5 @@ class OAuth2Session(OAuth2Client, Session):
             if not self.token:
                 raise MissingTokenError()
             auth = self.token_auth
-        return super(OAuth2Session, self).request(
+        return super().request(
             method, url, auth=auth, **kwargs)

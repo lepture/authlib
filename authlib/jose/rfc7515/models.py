@@ -1,4 +1,4 @@
-class JWSAlgorithm(object):
+class JWSAlgorithm:
     """Interface for JWS algorithm. JWA specification (RFC7518) SHOULD
     implement the algorithms for JWS with this base implementation.
     """
@@ -52,7 +52,7 @@ class JWSHeader(dict):
             obj.update(protected)
         if header:
             obj.update(header)
-        super(JWSHeader, self).__init__(obj)
+        super().__init__(obj)
         self.protected = protected
         self.header = header
 
@@ -66,7 +66,7 @@ class JWSHeader(dict):
 class JWSObject(dict):
     """A dict instance to represent a JWS object."""
     def __init__(self, header, payload, type='compact'):
-        super(JWSObject, self).__init__(
+        super().__init__(
             header=header,
             payload=payload,
         )

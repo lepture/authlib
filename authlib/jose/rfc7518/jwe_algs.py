@@ -85,8 +85,8 @@ class RSAAlgorithm(JWEAlgorithm):
 
 class AESAlgorithm(JWEAlgorithm):
     def __init__(self, key_size):
-        self.name = 'A{}KW'.format(key_size)
-        self.description = 'AES Key Wrap using {}-bit key'.format(key_size)
+        self.name = f'A{key_size}KW'
+        self.description = f'AES Key Wrap using {key_size}-bit key'
         self.key_size = key_size
 
     def prepare_key(self, raw_data):
@@ -99,7 +99,7 @@ class AESAlgorithm(JWEAlgorithm):
     def _check_key(self, key):
         if len(key) * 8 != self.key_size:
             raise ValueError(
-                'A key of size {} bits is required.'.format(self.key_size))
+                f'A key of size {self.key_size} bits is required.')
 
     def wrap_cek(self, cek, key):
         op_key = key.get_op_key('wrapKey')
@@ -127,8 +127,8 @@ class AESGCMAlgorithm(JWEAlgorithm):
     EXTRA_HEADERS = frozenset(['iv', 'tag'])
 
     def __init__(self, key_size):
-        self.name = 'A{}GCMKW'.format(key_size)
-        self.description = 'Key wrapping with AES GCM using {}-bit key'.format(key_size)
+        self.name = f'A{key_size}GCMKW'
+        self.description = f'Key wrapping with AES GCM using {key_size}-bit key'
         self.key_size = key_size
 
     def prepare_key(self, raw_data):
@@ -141,7 +141,7 @@ class AESGCMAlgorithm(JWEAlgorithm):
     def _check_key(self, key):
         if len(key) * 8 != self.key_size:
             raise ValueError(
-                'A key of size {} bits is required.'.format(self.key_size))
+                f'A key of size {self.key_size} bits is required.')
 
     def wrap(self, enc_alg, headers, key, preset=None):
         if preset and 'cek' in preset:
@@ -201,7 +201,7 @@ class ECDHESAlgorithm(JWEAlgorithm):
             self.name = 'ECDH-ES'
             self.description = 'ECDH-ES in the Direct Key Agreement mode'
         else:
-            self.name = 'ECDH-ES+A{}KW'.format(key_size)
+            self.name = f'ECDH-ES+A{key_size}KW'
             self.description = (
                 'ECDH-ES using Concat KDF and CEK wrapped '
                 'with A{}KW').format(key_size)

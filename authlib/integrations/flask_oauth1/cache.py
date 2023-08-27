@@ -58,9 +58,9 @@ def create_exists_nonce_func(cache, key_prefix='nonce:', expires=86400):
     :param expires: Expire time for nonce
     """
     def exists_nonce(nonce, timestamp, client_id, oauth_token):
-        key = '{}{}-{}-{}'.format(key_prefix, nonce, timestamp, client_id)
+        key = f'{key_prefix}{nonce}-{timestamp}-{client_id}'
         if oauth_token:
-            key = '{}-{}'.format(key, oauth_token)
+            key = f'{key}-{oauth_token}'
         rv = cache.has(key)
         cache.set(key, 1, timeout=expires)
         return rv

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
     authlib.jose.rfc7518
     ~~~~~~~~~~~~~~~~~~~~
@@ -50,9 +49,9 @@ class HMACAlgorithm(JWSAlgorithm):
     SHA512 = hashlib.sha512
 
     def __init__(self, sha_type):
-        self.name = 'HS{}'.format(sha_type)
-        self.description = 'HMAC using SHA-{}'.format(sha_type)
-        self.hash_alg = getattr(self, 'SHA{}'.format(sha_type))
+        self.name = f'HS{sha_type}'
+        self.description = f'HMAC using SHA-{sha_type}'
+        self.hash_alg = getattr(self, f'SHA{sha_type}')
 
     def prepare_key(self, raw_data):
         return OctKey.import_key(raw_data)
@@ -80,9 +79,9 @@ class RSAAlgorithm(JWSAlgorithm):
     SHA512 = hashes.SHA512
 
     def __init__(self, sha_type):
-        self.name = 'RS{}'.format(sha_type)
-        self.description = 'RSASSA-PKCS1-v1_5 using SHA-{}'.format(sha_type)
-        self.hash_alg = getattr(self, 'SHA{}'.format(sha_type))
+        self.name = f'RS{sha_type}'
+        self.description = f'RSASSA-PKCS1-v1_5 using SHA-{sha_type}'
+        self.hash_alg = getattr(self, f'SHA{sha_type}')
         self.padding = padding.PKCS1v15()
 
     def prepare_key(self, raw_data):
@@ -116,7 +115,7 @@ class ECAlgorithm(JWSAlgorithm):
         self.name = name
         self.curve = curve
         self.description = f'ECDSA using {self.curve} and SHA-{sha_type}'
-        self.hash_alg = getattr(self, 'SHA{}'.format(sha_type))
+        self.hash_alg = getattr(self, f'SHA{sha_type}')
 
     def prepare_key(self, raw_data):
         key = ECKey.import_key(raw_data)
@@ -162,10 +161,10 @@ class RSAPSSAlgorithm(JWSAlgorithm):
     SHA512 = hashes.SHA512
 
     def __init__(self, sha_type):
-        self.name = 'PS{}'.format(sha_type)
+        self.name = f'PS{sha_type}'
         tpl = 'RSASSA-PSS using SHA-{} and MGF1 with SHA-{}'
         self.description = tpl.format(sha_type, sha_type)
-        self.hash_alg = getattr(self, 'SHA{}'.format(sha_type))
+        self.hash_alg = getattr(self, f'SHA{sha_type}')
 
     def prepare_key(self, raw_data):
         return RSAKey.import_key(raw_data)

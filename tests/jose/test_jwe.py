@@ -195,7 +195,7 @@ class JWETest(unittest.TestCase):
             'A128GCM', 'A192GCM', 'A256GCM'
         ]
         for s in sizes:
-            alg = 'A{}KW'.format(s)
+            alg = f'A{s}KW'
             key = os.urandom(s // 8)
             for enc in _enc_choices:
                 protected = {'alg': alg, 'enc': enc}
@@ -220,7 +220,7 @@ class JWETest(unittest.TestCase):
             'A128GCM', 'A192GCM', 'A256GCM'
         ]
         for s in sizes:
-            alg = 'A{}GCMKW'.format(s)
+            alg = f'A{s}GCMKW'
             key = os.urandom(s // 8)
             for enc in _enc_choices:
                 protected = {'alg': alg, 'enc': enc}

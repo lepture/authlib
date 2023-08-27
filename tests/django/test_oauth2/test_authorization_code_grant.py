@@ -24,7 +24,7 @@ class AuthorizationCodeGrant(CodeGrantMixin, grants.AuthorizationCodeGrant):
 
 class AuthorizationCodeTest(TestCase):
     def create_server(self):
-        server = super(AuthorizationCodeTest, self).create_server()
+        server = super().create_server()
         server.register_grant(AuthorizationCodeGrant)
         return server
 

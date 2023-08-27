@@ -5,7 +5,7 @@ except ImportError:
     import pickle
 
 
-class SimpleCache(object):
+class SimpleCache:
     """A SimpleCache for testing. Copied from Werkzeug."""
 
     def __init__(self, threshold=500, default_timeout=300):

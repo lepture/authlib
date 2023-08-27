@@ -42,5 +42,5 @@ class AssertionSession(AssertionClient, Session):
             kwargs.setdefault('timeout', self.default_timeout)
         if not withhold_token and auth is None:
             auth = self.token_auth
-        return super(AssertionSession, self).request(
+        return super().request(
             method, url, auth=auth, **kwargs)

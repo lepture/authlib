@@ -2,7 +2,7 @@ import json
 import time
 
 
-class FrameworkIntegration(object):
+class FrameworkIntegration:
     expires_in = 3600
 
     def __init__(self, name, cache=None):

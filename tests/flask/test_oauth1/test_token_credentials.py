@@ -155,7 +155,7 @@ class TokenCredentialsTest(TestCase):
         sig = signature.hmac_sha1_signature(
             base_string, 'secret', 'abc-secret')
         params.append(('oauth_signature', sig))
-        auth_param = ','.join(['{}="{}"'.format(k, v) for k, v in params])
+        auth_param = ','.join([f'{k}="{v}"' for k, v in params])
         auth_header = 'OAuth ' + auth_param
         headers = {'Authorization': auth_header}
 
@@ -190,7 +190,7 @@ class TokenCredentialsTest(TestCase):
         sig = signature.rsa_sha1_signature(
             base_string, read_file_path('rsa_private.pem'))
         params.append(('oauth_signature', sig))
-        auth_param = ','.join(['{}="{}"'.format(k, v) for k, v in params])
+        auth_param = ','.join([f'{k}="{v}"' for k, v in params])
         auth_header = 'OAuth ' + auth_param
         headers = {'Authorization': auth_header}
         rv = self.client.post(url, headers=headers)

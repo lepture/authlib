@@ -29,7 +29,7 @@ class RefreshTokenGrant(_RefreshTokenGrant):
 
 class RefreshTokenTest(TestCase):
     def create_server(self):
-        server = super(RefreshTokenTest, self).create_server()
+        server = super().create_server()
         server.register_grant(RefreshTokenGrant)
         return server
 

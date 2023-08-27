@@ -131,7 +131,7 @@ class AuthorizationTest(TestCase):
         sig = signature.hmac_sha1_signature(
             base_string, 'secret', 'abc-secret')
         params.append(('oauth_signature', sig))
-        auth_param = ','.join(['{}="{}"'.format(k, v) for k, v in params])
+        auth_param = ','.join([f'{k}="{v}"' for k, v in params])
         auth_header = 'OAuth ' + auth_param
 
         # case 1: success
@@ -170,7 +170,7 @@ class AuthorizationTest(TestCase):
         sig = signature.rsa_sha1_signature(
             base_string, read_file_path('rsa_private.pem'))
         params.append(('oauth_signature', sig))
-        auth_param = ','.join(['{}="{}"'.format(k, v) for k, v in params])
+        auth_param = ','.join([f'{k}="{v}"' for k, v in params])
         auth_header = 'OAuth ' + auth_param
 
         request = self.factory.post(url, HTTP_AUTHORIZATION=auth_header)

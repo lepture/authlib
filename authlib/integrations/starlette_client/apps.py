@@ -7,7 +7,7 @@ from ..base_client.async_openid import AsyncOpenIDMixin
 from ..httpx_client import AsyncOAuth1Client, AsyncOAuth2Client
 
 
-class StarletteAppMixin(object):
+class StarletteAppMixin:
     async def save_authorize_data(self, request, **kwargs):
         state = kwargs.pop('state', None)
         if state:

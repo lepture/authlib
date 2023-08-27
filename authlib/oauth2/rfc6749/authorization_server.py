@@ -9,7 +9,7 @@ from .errors import (
 from .util import scope_to_list
 
 
-class AuthorizationServer(object):
+class AuthorizationServer:
     """Authorization server that handles Authorization Endpoint and Token
     Endpoint.
 

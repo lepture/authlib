@@ -7,7 +7,7 @@ ASSERTION_TYPE = 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
 log = logging.getLogger(__name__)
 
 
-class JWTBearerClientAssertion(object):
+class JWTBearerClientAssertion:
     """Implementation of Using JWTs for Client Authentication, which is
     defined by RFC7523.
     """

@@ -4,7 +4,7 @@ from authlib.oidc.core import UserInfo, CodeIDToken, ImplicitIDToken
 __all__ = ['AsyncOpenIDMixin']
 
 
-class AsyncOpenIDMixin(object):
+class AsyncOpenIDMixin:
     async def fetch_jwk_set(self, force=False):
         metadata = await self.load_server_metadata()
         jwk_set = metadata.get('jwks')

@@ -9,7 +9,7 @@ from authlib.common.encoding import (
 from ..errors import InvalidUseError
 
 
-class Key(object):
+class Key:
     """This is the base class for a JSON Web Key."""
     kty = '_'
 
@@ -71,10 +71,10 @@ class Key(object):
         """
         key_ops = self.tokens.get('key_ops')
         if key_ops is not None and operation not in key_ops:
-            raise ValueError('Unsupported key_op "{}"'.format(operation))
+            raise ValueError(f'Unsupported key_op "{operation}"')
 
         if operation in self.PRIVATE_KEY_OPS and self.public_only:
-            raise ValueError('Invalid key_op "{}" for public key'.format(operation))
+            raise ValueError(f'Invalid key_op "{operation}" for public key')
 
         use = self.tokens.get('use')
         if use:
@@ -111,7 +111,7 @@ class Key(object):
     def check_required_fields(cls, data):
         for k in cls.REQUIRED_JSON_FIELDS:
             if k not in data:
-                raise ValueError('Missing required field: "{}"'.format(k))
+                raise ValueError(f'Missing required field: "{k}"')
 
     @classmethod
     def validate_raw_key(cls, key):

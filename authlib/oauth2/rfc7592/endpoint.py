@@ -9,7 +9,7 @@ from ..rfc6749 import UnauthorizedClientError
 from ..rfc7591 import InvalidClientMetadataError
 
 
-class ClientConfigurationEndpoint(object):
+class ClientConfigurationEndpoint:
     ENDPOINT_NAME = 'client_configuration'
 
     #: The claims validation class

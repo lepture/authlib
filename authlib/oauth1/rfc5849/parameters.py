@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 """
     authlib.spec.rfc5849.parameters
     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -38,7 +36,7 @@ def prepare_headers(oauth_params, headers=None, realm=None):
 
     # step 1, 2, 3 in Section 3.5.1
     header_parameters = ', '.join([
-        '{0}="{1}"'.format(escape(k), escape(v)) for k, v in oauth_params
+        f'{escape(k)}="{escape(v)}"' for k, v in oauth_params
         if k.startswith('oauth_')
     ])
 
@@ -48,10 +46,10 @@ def prepare_headers(oauth_params, headers=None, realm=None):
     # .. _`RFC2617 section 1.2`: https://tools.ietf.org/html/rfc2617#section-1.2
     if realm:
         # NOTE: realm should *not* be escaped
-        header_parameters = 'realm="{}", '.format(realm) + header_parameters
+        header_parameters = f'realm="{realm}", ' + header_parameters
 
     # the auth-scheme name set to "OAuth" (case insensitive).
-    headers['Authorization'] = 'OAuth {}'.format(header_parameters)
+    headers['Authorization'] = f'OAuth {header_parameters}'
     return headers
 
 

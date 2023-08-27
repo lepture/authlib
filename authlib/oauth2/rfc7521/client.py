@@ -2,7 +2,7 @@ from authlib.common.encoding import to_native
 from authlib.oauth2.base import OAuth2Error
 
 
-class AssertionClient(object):
+class AssertionClient:
     """Constructs a new Assertion Framework for OAuth 2.0 Authorization Grants
     per RFC7521_.
 

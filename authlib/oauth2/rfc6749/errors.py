@@ -86,14 +86,14 @@ class InvalidClientError(OAuth2Error):
     status_code = 400
 
     def get_headers(self):
-        headers = super(InvalidClientError, self).get_headers()
+        headers = super().get_headers()
         if self.status_code == 401:
             error_description = self.get_error_description()
             # safe escape
             error_description = error_description.replace('"', '|')
             extras = [
-                'error="{}"'.format(self.error),
-                'error_description="{}"'.format(error_description)
+                f'error="{self.error}"',
+                f'error_description="{error_description}"'
             ]
             headers.append(
                 ('WWW-Authenticate', 'Basic ' + ', '.join(extras))
@@ -128,7 +128,7 @@ class UnsupportedResponseTypeError(OAuth2Error):
     error = 'unsupported_response_type'
 
     def __init__(self, response_type):
-        super(UnsupportedResponseTypeError, self).__init__()
+        super().__init__()
         self.response_type = response_type
 
     def get_error_description(self):
@@ -144,7 +144,7 @@ class UnsupportedGrantTypeError(OAuth2Error):
     error = 'unsupported_grant_type'
 
     def __init__(self, grant_type):
-        super(UnsupportedGrantTypeError, self).__init__()
+        super().__init__()
         self.grant_type = grant_type
 
     def get_error_description(self):
@@ -180,21 +180,21 @@ class ForbiddenError(OAuth2Error):
     status_code = 401
 
     def __init__(self, auth_type=None, realm=None):
-        super(ForbiddenError, self).__init__()
+        super().__init__()
         self.auth_type = auth_type
         self.realm = realm
 
     def get_headers(self):
-        headers = super(ForbiddenError, self).get_headers()
+        headers = super().get_headers()
         if not self.auth_type:
             return headers
 
         extras = []
         if self.realm:
-            extras.append('realm="{}"'.format(self.realm))
-        extras.append('error="{}"'.format(self.error))
+            extras.append(f'realm="{self.realm}"')
+        extras.append(f'error="{self.error}"')
         error_description = self.description
-        extras.append('error_description="{}"'.format(error_description))
+        extras.append(f'error_description="{error_description}"')
         headers.append(
             ('WWW-Authenticate', f'{self.auth_type} ' + ', '.join(extras))
         )

@@ -11,7 +11,7 @@ def get_file_path(name):
 
 
 def read_file_path(name):
-    with open(get_file_path(name), 'r') as f:
+    with open(get_file_path(name)) as f:
         if name.endswith('.json'):
             return json.load(f)
         return f.read()
