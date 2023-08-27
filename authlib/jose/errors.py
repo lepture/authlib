@@ -82,6 +82,7 @@ class InvalidClaimError(JoseError):
     error = 'invalid_claim'
 
     def __init__(self, claim):
+        self.claim_name = claim
         description = f'Invalid claim "{claim}"'
         super().__init__(description=description)
 

@@ -15,7 +15,7 @@ from .signals import token_authenticated
 
 
 class ResourceProtector(_ResourceProtector):
-    def acquire_token(self, request, scopes=None):
+    def acquire_token(self, request, scopes=None, **kwargs):
         """A method to acquire current valid token with the given scope.
 
         :param request: Django HTTP request instance
@@ -23,18 +23,24 @@ class ResourceProtector(_ResourceProtector):
         :return: token object
         """
         req = DjangoJsonRequest(request)
-        if isinstance(scopes, str):
-            scopes = [scopes]
-        token = self.validate_request(scopes, req)
+        # backward compatibility
+        kwargs['scopes'] = scopes
+        for claim in kwargs:
+            if isinstance(kwargs[claim], str):
+                kwargs[claim] = [kwargs[claim]]
+        token = self.validate_request(request=req, **kwargs)
         token_authenticated.send(sender=self.__class__, token=token)
         return token
 
-    def __call__(self, scopes=None, optional=False):
+    def __call__(self, scopes=None, optional=False, **kwargs):
+        claims = kwargs
+        # backward compatibility
+        claims['scopes'] = scopes
         def wrapper(f):
             @functools.wraps(f)
             def decorated(request, *args, **kwargs):
                 try:
-                    token = self.acquire_token(request, scopes)
+                    token = self.acquire_token(request, **claims)
                     request.oauth_token = token
                 except MissingAuthorizationError as error:
                     if optional:

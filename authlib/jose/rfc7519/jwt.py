@@ -50,7 +50,7 @@ class JsonWebToken:
         :param check: check if sensitive data in payload
         :return: bytes
         """
-        header['typ'] = 'JWT'
+        header.setdefault('typ', 'JWT')
 
         for k in ['exp', 'iat', 'nbf']:
             # convert datetime into timestamp

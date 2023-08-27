@@ -179,16 +179,21 @@ class AuthorizationServer:
         if hasattr(grant_cls, 'check_token_endpoint'):
             self._token_grants.append((grant_cls, extensions))
 
-    def register_endpoint(self, endpoint_cls):
+    def register_endpoint(self, endpoint):
         """Add extra endpoint to authorization server. e.g.
         RevocationEndpoint::
 
             authorization_server.register_endpoint(RevocationEndpoint)
 
-        :param endpoint_cls: A endpoint class
+        :param endpoint_cls: A endpoint class or instance.
         """
-        endpoints = self._endpoints.setdefault(endpoint_cls.ENDPOINT_NAME, [])
-        endpoints.append(endpoint_cls(self))
+        if isinstance(endpoint, type):
+            endpoint = endpoint(self)
+        else:
+            endpoint.server = self
+
+        endpoints = self._endpoints.setdefault(endpoint.ENDPOINT_NAME, [])
+        endpoints.append(endpoint)
 
     def get_authorization_grant(self, request):
         """Find the authorization grant for current request.

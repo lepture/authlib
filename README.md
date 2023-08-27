@@ -52,6 +52,7 @@ Generic, spec-compliant implementation to build clients and providers:
   - [RFC7662: OAuth 2.0 Token Introspection](https://docs.authlib.org/en/latest/specs/rfc7662.html)
   - [RFC8414: OAuth 2.0 Authorization Server Metadata](https://docs.authlib.org/en/latest/specs/rfc8414.html)
   - [RFC8628: OAuth 2.0 Device Authorization Grant](https://docs.authlib.org/en/latest/specs/rfc8628.html)
+  - [RFC9068: JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens](https://docs.authlib.org/en/latest/specs/rfc9068.html)
 - [Javascript Object Signing and Encryption](https://docs.authlib.org/en/latest/jose/index.html)
   - [RFC7515: JSON Web Signature](https://docs.authlib.org/en/latest/jose/jws.html)
   - [RFC7516: JSON Web Encryption](https://docs.authlib.org/en/latest/jose/jwe.html)

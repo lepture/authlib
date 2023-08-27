@@ -27,16 +27,18 @@ class RevocationEndpoint(TokenEndpoint):
             OPTIONAL.  A hint about the type of the token submitted for
             revocation.
         """
+        self.check_params(request, client)
+        token = self.query_token(request.form['token'], request.form.get('token_type_hint'))
+        if token and token.check_client(client):
+            return token
+
+    def check_params(self, request, client):
         if 'token' not in request.form:
             raise InvalidRequestError()
 
         hint = request.form.get('token_type_hint')
         if hint and hint not in self.SUPPORTED_TOKEN_TYPES:
             raise UnsupportedTokenTypeError()
-
-        token = self.query_token(request.form['token'], hint)
-        if token and token.check_client(client):
-            return token
 
     def create_endpoint_response(self, request):
         """Validate revocation request and create the response for revocation.
