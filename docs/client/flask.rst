@@ -108,7 +108,7 @@ Routes for Authorization
 Unlike the examples in :ref:`frameworks_clients`, Flask does not pass a ``request``
 into routes. In this case, the routes for authorization should look like::
 
-    from flask import url_for, render_template
+    from flask import url_for, redirect
 
     @app.route('/login')
     def login():
