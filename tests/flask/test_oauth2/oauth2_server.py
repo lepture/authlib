@@ -36,7 +36,7 @@ def create_authorization_server(app, lazy=False):
         if request.method == 'GET':
             user_id = request.args.get('user_id')
             if user_id:
-                end_user = User.query.get(int(user_id))
+                end_user = db.session.get(User, int(user_id))
             else:
                 end_user = None
             try:
@@ -46,7 +46,7 @@ def create_authorization_server(app, lazy=False):
                 return url_encode(error.get_body())
         user_id = request.form.get('user_id')
         if user_id:
-            grant_user = User.query.get(int(user_id))
+            grant_user = db.session.get(User, int(user_id))
         else:
             grant_user = None
         return server.create_authorization_response(grant_user=grant_user)

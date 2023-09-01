@@ -17,7 +17,7 @@ class MyIntrospectionEndpoint(IntrospectionEndpoint):
         return query_token(token, token_type_hint)
 
     def introspect_token(self, token):
-        user = User.query.get(token.user_id)
+        user = db.session.get(User, token.user_id)
         return {
             "active": True,
             "client_id": token.client_id,

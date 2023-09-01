@@ -60,9 +60,9 @@ class DeviceCodeGrant(_DeviceCodeGrant):
 
     def query_user_grant(self, user_code):
         if user_code == 'code':
-            return User.query.get(1), True
+            return db.session.get(User, 1), True
         if user_code == 'denied':
-            return User.query.get(1), False
+            return db.session.get(User, 1), False
         return None
 
     def should_slow_down(self, credential):

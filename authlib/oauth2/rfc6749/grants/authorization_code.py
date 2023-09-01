@@ -339,7 +339,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         MUST implement this method in subclass, e.g.::
 
             def authenticate_user(self, authorization_code):
-                return User.query.get(authorization_code.user_id)
+                return User.get(authorization_code.user_id)
 
         :param authorization_code: AuthorizationCode object
         :return: user

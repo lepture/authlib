@@ -38,7 +38,7 @@ class AuthorizationCode(db.Model, OAuth2AuthorizationCodeMixin):
 
     @property
     def user(self):
-        return User.query.get(self.user_id)
+        return db.session.get(User, self.user_id)
 
 
 class Token(db.Model, OAuth2TokenMixin):
@@ -64,7 +64,7 @@ class CodeGrantMixin:
         db.session.commit()
 
     def authenticate_user(self, authorization_code):
-        return User.query.get(authorization_code.user_id)
+        return db.session.get(User, authorization_code.user_id)
 
 
 def save_authorization_code(code, request):

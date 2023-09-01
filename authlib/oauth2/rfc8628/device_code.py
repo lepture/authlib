@@ -150,7 +150,7 @@ class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
         Developers MUST implement it in subclass::
 
             def query_device_credential(self, device_code):
-                return DeviceCredential.query.get(device_code)
+                return DeviceCredential.get(device_code)
 
         :param device_code: a string represent the code.
         :return: DeviceCredential instance
@@ -168,7 +168,7 @@ class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
                     return None
 
                 user_id, allowed = data.split()
-                user = User.query.get(user_id)
+                user = User.get(user_id)
                 return user, bool(allowed)
 
         Note, user grant information is saved by verification endpoint.

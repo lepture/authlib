@@ -215,7 +215,7 @@ def create_authorization_server(app, use_cache=False, lazy=False):
                 return 'error'
         user_id = request.form.get('user_id')
         if user_id:
-            grant_user = User.query.get(int(user_id))
+            grant_user = db.session.get(User, int(user_id))
         else:
             grant_user = None
         try:
