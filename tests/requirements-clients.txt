@@ -6,4 +6,3 @@ cachelib
 werkzeug
 flask
 django
-pytest-asyncio
