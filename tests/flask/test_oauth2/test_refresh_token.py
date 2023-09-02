@@ -15,7 +15,7 @@ class RefreshTokenGrant(_RefreshTokenGrant):
             return item
 
     def authenticate_user(self, credential):
-        return User.query.get(credential.user_id)
+        return db.session.get(User, credential.user_id)
 
     def revoke_old_credential(self, credential):
         now = int(time.time())

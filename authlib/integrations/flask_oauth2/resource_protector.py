@@ -38,7 +38,7 @@ class ResourceProtector(_ResourceProtector):
         @app.route('/user')
         @require_oauth(['profile'])
         def user_profile():
-            user = User.query.get(current_token.user_id)
+            user = User.get(current_token.user_id)
             return jsonify(user.to_dict())
 
     """
@@ -77,7 +77,7 @@ class ResourceProtector(_ResourceProtector):
             @app.route('/api/user')
             def user_api():
                 with require_oauth.acquire('profile') as token:
-                    user = User.query.get(token.user_id)
+                    user = User.get(token.user_id)
                     return jsonify(user.to_dict())
         """
         try:

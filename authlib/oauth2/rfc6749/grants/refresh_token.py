@@ -158,7 +158,7 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
         implement this method in subclass::
 
             def authenticate_user(self, credential):
-                return User.query.get(credential.user_id)
+                return User.get(credential.user_id)
 
         :param refresh_token: Token object
         :return: user
