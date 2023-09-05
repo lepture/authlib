@@ -57,3 +57,7 @@ class AuthlibHTTPError(AuthlibBaseError):
         body = dict(self.get_body())
         headers = self.get_headers()
         return self.status_code, body, headers
+
+
+class ContinueIteration(AuthlibBaseError):
+    pass
