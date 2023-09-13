@@ -193,6 +193,10 @@ class OAuth2Client:
         if grant_type is None:
             grant_type = self.metadata.get('grant_type')
 
+        if grant_type is None:
+            grant_type = _guess_grant_type(kwargs)
+            self.metadata['grant_type'] = grant_type
+
         body = self._prepare_token_endpoint_body(body, grant_type, **kwargs)
 
         if auth is None:
@@ -401,9 +405,6 @@ class OAuth2Client:
             url, body, auth=auth, headers=headers, **session_kwargs)
 
     def _prepare_token_endpoint_body(self, body, grant_type, **kwargs):
-        if grant_type is None:
-            grant_type = _guess_grant_type(kwargs)
-
         if grant_type == 'authorization_code':
             if 'redirect_uri' not in kwargs:
                 kwargs['redirect_uri'] = self.redirect_uri
