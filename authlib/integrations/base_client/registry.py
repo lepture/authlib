@@ -88,11 +88,11 @@ class BaseOAuth:
 
     def remove_client(self, name):
         if name not in self._registry:
-            raise KeyError(f"Client {name} not found in registry.")
+            raise KeyError(f'Client {name} not found in registry.')
 
         if name not in self._clients:
-            raise KeyError(f"Client {name} not found in clients.")
-        
+            raise KeyError(f'Client {name} not found in clients.')
+
         del self._registry[name]
         del self._clients[name]
 
