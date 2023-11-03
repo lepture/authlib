@@ -85,12 +85,12 @@ class FlaskOAuth2App(FlaskAppMixin, OAuth2Mixin, OpenIDMixin, BaseApp):
                 raise OAuthError(error=error, description=description)
 
             params = {
-                'code': request.args['code'],
+                'code': request.args.get('code'),
                 'state': request.args.get('state'),
             }
         else:
             params = {
-                'code': request.form['code'],
+                'code': request.form.get('code'),
                 'state': request.form.get('state'),
             }
 
