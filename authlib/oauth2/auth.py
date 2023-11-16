@@ -1,4 +1,5 @@
 import base64
+from urllib.parse import quote
 from authlib.common.urls import add_params_to_qs, add_params_to_uri
 from authlib.common.encoding import to_bytes, to_native
 from .rfc6749 import OAuth2Token
@@ -6,7 +7,7 @@ from .rfc6750 import add_bearer_token
 
 
 def encode_client_secret_basic(client, method, uri, headers, body):
-    text = f'{client.client_id}:{client.client_secret}'
+    text = f'{quote(client.client_id)}:{quote(client.client_secret)}'
     auth = to_native(base64.b64encode(to_bytes(text, 'latin1')))
     headers['Authorization'] = f'Basic {auth}'
     return uri, headers, body
