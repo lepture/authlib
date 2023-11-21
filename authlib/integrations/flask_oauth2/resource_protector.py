@@ -54,17 +54,19 @@ class ResourceProtector(_ResourceProtector):
         headers = error.get_headers()
         raise_http_exception(status, body, headers)
 
-    def acquire_token(self, scopes=None):
+    def acquire_token(self, scopes=None, **kwargs):
         """A method to acquire current valid token with the given scope.
 
         :param scopes: a list of scope values
         :return: token object
         """
         request = FlaskJsonRequest(_req)
-        # backward compatible
-        if isinstance(scopes, str):
-            scopes = [scopes]
-        token = self.validate_request(scopes, request)
+        # backward compatibility
+        kwargs['scopes'] = scopes
+        for claim in kwargs:
+            if isinstance(kwargs[claim], str):
+                kwargs[claim] = [kwargs[claim]]
+        token = self.validate_request(request=request, **kwargs)
         token_authenticated.send(self, token=token)
         g.authlib_server_oauth2_token = token
         return token
@@ -85,12 +87,15 @@ class ResourceProtector(_ResourceProtector):
         except OAuth2Error as error:
             self.raise_error_response(error)
 
-    def __call__(self, scopes=None, optional=False):
+    def __call__(self, scopes=None, optional=False, **kwargs):
+        claims = kwargs
+        # backward compatibility
+        claims['scopes'] = scopes
         def wrapper(f):
             @functools.wraps(f)
             def decorated(*args, **kwargs):
                 try:
-                    self.acquire_token(scopes)
+                    self.acquire_token(**claims)
                 except MissingAuthorizationError as error:
                     if optional:
                         return f(*args, **kwargs)
