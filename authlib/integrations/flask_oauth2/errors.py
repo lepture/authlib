@@ -1,7 +1,9 @@
+import importlib
+
 import werkzeug
 from werkzeug.exceptions import HTTPException
 
-_version = werkzeug.__version__.split('.')[0]
+_version = importlib.metadata.version('werkzeug').split('.')[0]
 
 if _version in ('0', '1'):
     class _HTTPException(HTTPException):
