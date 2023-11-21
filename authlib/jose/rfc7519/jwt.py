@@ -167,9 +167,16 @@ def create_load_key(key):
         if isinstance(key, dict) and 'keys' in key:
             keys = key['keys']
             kid = header.get('kid')
-            for k in keys:
-                if k.get('kid') == kid:
-                    return k
+
+            if kid is not None:
+                # look for the requested key
+                for k in keys:
+                    if k.get('kid') == kid:
+                        return k
+            else:
+                # use the only key
+                if len(keys) == 1:
+                    return keys[0]
             raise ValueError('Invalid JSON Web Key Set')
         return key
 

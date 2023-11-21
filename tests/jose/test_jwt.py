@@ -249,6 +249,18 @@ class JWTTest(unittest.TestCase):
         claims = jwt.decode(data, pub_key)
         self.assertEqual(claims['name'], 'hi')
 
+    def test_use_jwks_single_kid(self):
+        """Test that jwks can be decoded if a kid for decoding is given
+        and encoded data has no kid and only one key is set."""
+        header = {'alg': 'RS256'}
+        payload = {'name': 'hi'}
+        private_key = read_file_path('jwks_single_private.json')
+        pub_key = read_file_path('jwks_single_public.json')
+        data = jwt.encode(header, payload, private_key)
+        self.assertEqual(data.count(b'.'), 2)
+        claims = jwt.decode(data, pub_key)
+        self.assertEqual(claims['name'], 'hi')
+
     def test_with_ec(self):
         payload = {'name': 'hi'}
         private_key = read_file_path('secp521r1-private.json')
