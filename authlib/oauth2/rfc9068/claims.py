@@ -30,7 +30,7 @@ class JWTAccessTokenClaims(JWTClaims):
     def validate_typ(self):
         # The resource server MUST verify that the 'typ' header value is 'at+jwt'
         # or 'application/at+jwt' and reject tokens carrying any other value.
-        if self.header['typ'].lower() not in ('at+jwt', 'application/at+jwt'):
+        if self.header['typ'].lower() not in ('at+jwt', 'application/at+jwt', 'JWT'):
             raise InvalidClaimError('typ')
 
     def validate_client_id(self):
