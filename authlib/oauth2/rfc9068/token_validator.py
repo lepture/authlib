@@ -140,7 +140,7 @@ class JWTBearerTokenValidator(BearerTokenValidator):
         # more considerations about the relationship between scope strings and resources
         # indicated by the 'aud' claim.
 
-        if self.scope_insufficient(token['scope'], scopes):
+        if self.scope_insufficient(token.get('scope', []), scopes):
             raise InsufficientScopeError()
 
         # Many authorization servers embed authorization attributes that go beyond the
