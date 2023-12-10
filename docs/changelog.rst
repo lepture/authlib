@@ -6,6 +6,21 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 1.3.0
+-------------
+
+- Restore ``AuthorizationServer.create_authorization_response`` behavior, via :PR:`558`
+- Include ``leeway`` in ``validate_iat()`` for JWT, via :PR:`565`
+- Fix ``encode_client_secret_basic``, via :PR:`594`
+- Use single key in JWK if JWS does not specify ``kid``, via :PR:`596`
+- Fix error when RFC9068 JWS has no scope field, via :PR:`598`
+
+**New features**:
+
+- RFC9068 implementation, via :PR:`586`, by @azmeuk.
+
+**Breaking changes**:
+
 - End support for python 3.7
 
 Version 1.2.1
@@ -106,127 +121,21 @@ Added ``ES256K`` algorithm for JWS and JWT.
 **Breaking Changes**: find how to solve the deprecate issues via https://git.io/JkY4f
 
 
-Version 0.15.5
---------------
-
-**Released on Oct 18, 2021.**
-
-- Make Authlib compatible with latest httpx
-- Make Authlib compatible with latest werkzeug
-- Allow customize RFC7523 ``alg`` value
-
-Version 0.15.4
---------------
-
-**Released on Jul 17, 2021.**
-
-- Security fix when JWT claims is None.
-
-
-Version 0.15.3
---------------
-
-**Released on Jan 15, 2021.**
-
-- Fixed `.authorize_access_token` for OAuth 1.0 services, via :issue:`308`.
-
-Version 0.15.2
---------------
-
-**Released on Oct 18, 2020.**
-
-- Fixed HTTPX authentication bug, via :issue:`283`.
-
-
-Version 0.15.1
---------------
-
-**Released on Oct 14, 2020.**
-
-- Backward compatible fix for using JWKs in JWT, via :issue:`280`.
-
-
-Version 0.15
-------------
-
-**Released on Oct 10, 2020.**
-
-This is the last release before v1.0. In this release, we added more RFCs
-implementations and did some refactors for JOSE:
-
-- RFC8037: CFRG Elliptic Curve Diffie-Hellman (ECDH) and Signatures in JSON Object Signing and Encryption (JOSE)
-- RFC7638: JSON Web Key (JWK) Thumbprint
-
-We also fixed bugs for integrations:
-
-- Fixed support for HTTPX>=0.14.3
-- Added OAuth clients of HTTPX back via :PR:`270`
-- Fixed parallel token refreshes for HTTPX async OAuth 2 client
-- Raise OAuthError when callback contains errors via :issue:`275`
-
-**Breaking Change**:
-
-1. The parameter ``algorithms`` in ``JsonWebSignature`` and ``JsonWebEncryption``
-are changed. Usually you don't have to care about it since you won't use it directly.
-2. Whole JSON Web Key is refactored, please check :ref:`jwk_guide`.
-
-Version 0.14.3
---------------
-
-**Released on May 18, 2020.**
-
-- Fix HTTPX integration via :PR:`232` and :PR:`233`.
-- Add "bearer" as default token type for OAuth 2 Client.
-- JWS and JWE don't validate private headers by default.
-- Remove ``none`` auth method for authorization code by default.
-- Allow usage of user provided ``code_verifier`` via :issue:`216`.
-- Add ``introspect_token`` method on OAuth 2 Client via :issue:`224`.
-
-
-Version 0.14.2
---------------
-
-**Released on May 6, 2020.**
-
-- Fix OAuth 1.0 client for starlette.
-- Allow leeway option in client parse ID token via :PR:`228`.
-- Fix OAuthToken when ``expires_at`` or ``expires_in`` is 0 via :PR:`227`.
-- Fix auto refresh token logic.
-- Load server metadata before request.
-
-
-Version 0.14.1
---------------
-
-**Released on Feb 12, 2020.**
-
-- Quick fix for legacy imports of Flask and Django clients
-
-
-Version 0.14
-------------
-
-**Released on Feb 11, 2020.**
-
-In this release, Authlib has introduced a new way to write framework integrations
-for clients.
-
-**Bug fixes** and enhancements in this release:
-
-- Fix HTTPX integrations due to HTTPX breaking changes
-- Fix ES algorithms for JWS
-- Allow user given ``nonce`` via :issue:`180`.
-- Fix OAuth errors ``get_headers`` leak.
-- Fix ``code_verifier`` via :issue:`165`.
-
-**Breaking Change**: drop sync OAuth clients of HTTPX.
-
-
 Old Versions
 ------------
 
 Find old changelog at https://github.com/lepture/authlib/releases
 
+- Version 0.15.5: Released on Oct 18, 2021
+- Version 0.15.4: Released on Jul 17, 2021
+- Version 0.15.3: Released on Jan 15, 2021
+- Version 0.15.2: Released on Oct 18, 2020
+- Version 0.15.1: Released on Oct 14, 2020
+- Version 0.15.0: Released on Oct 10, 2020
+- Version 0.14.3: Released on May 18, 2020
+- Version 0.14.2: Released on May 6, 2020
+- Version 0.14.1: Released on Feb 12, 2020
+- Version 0.14.0: Released on Feb 11, 2020
 - Version 0.13.0: Released on Nov 11, 2019
 - Version 0.12.0: Released on Sep 3, 2019
 - Version 0.11.0: Released on Apr 6, 2019
