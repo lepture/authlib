@@ -1,3 +1,49 @@
+[project]
+name = "Authlib"
+description = "The ultimate Python library in building OAuth and OpenID Connect servers and clients."
+authors = [{name = "Hsiaoming Yang", email="me@lepture.com"}]
+dependencies = [
+  "cryptography",
+]
+license = {text = "BSD-3-Clause"}
+requires-python = ">=3.8"
+dynamic = ["version"]
+readme = "README.rst"
+classifiers = [
+  "Development Status :: 5 - Production/Stable",
+  "Environment :: Console",
+  "Environment :: Web Environment",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: BSD License",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.8",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Topic :: Security",
+  "Topic :: Security :: Cryptography",
+  "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+  "Topic :: Internet :: WWW/HTTP :: WSGI :: Application",
+]
+
+[project.urls]
+Documentation = "https://docs.authlib.org/"
+Purchase = "https://authlib.org/plans"
+Issues = "https://github.com/lepture/authlib/issues"
+Source = "https://github.com/lepture/authlib"
+Donate = "https://github.com/sponsors/lepture"
+Blog = "https://blog.authlib.org/"
+
 [build-system]
 requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.dynamic]
+version = {attr = "authlib.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["authlib", "authlib.*"]
