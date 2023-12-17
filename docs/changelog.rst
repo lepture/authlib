@@ -9,11 +9,14 @@ Here you can see the full list of changes between each Authlib release.
 Version 1.3.0
 -------------
 
+**Released on Dec 17, 2023**
+
 - Restore ``AuthorizationServer.create_authorization_response`` behavior, via :PR:`558`
 - Include ``leeway`` in ``validate_iat()`` for JWT, via :PR:`565`
 - Fix ``encode_client_secret_basic``, via :PR:`594`
 - Use single key in JWK if JWS does not specify ``kid``, via :PR:`596`
 - Fix error when RFC9068 JWS has no scope field, via :PR:`598`
+- Get werkzeug version using importlib, via :PR:`591`
 
 **New features**:
 
