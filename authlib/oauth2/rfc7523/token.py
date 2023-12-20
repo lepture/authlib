@@ -73,7 +73,7 @@ class JWTBearerTokenGenerator:
         :param scope: current requested scope.
         :return: Token dict
         """
-        if not expires_in:
+        if expires_in is None:
             expires_in = self.DEFAULT_EXPIRES_IN
 
         token_data = self.get_token_data(grant_type, client, expires_in, user, scope)
