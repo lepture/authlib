@@ -253,14 +253,16 @@ class OAuth2Base:
             rv['code_verifier'] = code_verifier
             log.debug(f'Using code_verifier: {code_verifier!r}')
 
-        scope = kwargs.get('scope', client.scope)
-        if scope and 'openid' in scope.split():
-            # this is an OpenID Connect service
-            nonce = kwargs.get('nonce')
-            if not nonce:
-                nonce = generate_token(20)
-                kwargs['nonce'] = nonce
-            rv['nonce'] = nonce
+        scope = kwargs.get('scope', client.scope)       
+        if scope:
+            scope = scope if isinstance(scope, (list, tuple)) else scope.split()            
+            if "openid" in scope:
+                # this is an OpenID Connect service
+                nonce = kwargs.get('nonce')
+                if not nonce:
+                    nonce = generate_token(20)
+                    kwargs['nonce'] = nonce
+                rv['nonce'] = nonce
 
         url, state = client.create_authorization_url(
             authorization_endpoint, **kwargs)
