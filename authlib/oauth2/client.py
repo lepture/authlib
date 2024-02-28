@@ -223,7 +223,7 @@ class OAuth2Client:
         self.token = token
         return token
 
-    def refresh_token(self, url, refresh_token=None, body='',
+    def refresh_token(self, url=None, refresh_token=None, body='',
                       auth=None, headers=None, **kwargs):
         """Fetch a new access token using a refresh token.
 
@@ -247,6 +247,9 @@ class OAuth2Client:
         if headers is None:
             headers = DEFAULT_HEADERS.copy()
 
+        if url is None:
+            url = self.metadata.get('token_endpoint')
+
         for hook in self.compliance_hook['refresh_token_request']:
             url, headers, body = hook(url, headers, body)
 
@@ -257,7 +260,9 @@ class OAuth2Client:
             url, refresh_token=refresh_token, body=body, headers=headers,
             auth=auth, **session_kwargs)
 
-    def ensure_active_token(self, token):
+    def ensure_active_token(self, token=None):
+        if token is None:
+            token = self.token
         if not token.is_expired():
             return True
         refresh_token = token.get('refresh_token')
