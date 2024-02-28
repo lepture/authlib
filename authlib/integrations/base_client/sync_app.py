@@ -254,7 +254,12 @@ class OAuth2Base:
             log.debug(f'Using code_verifier: {code_verifier!r}')
 
         scope = kwargs.get('scope', client.scope)
-        if scope and 'openid' in scope.split():
+        scope = (
+            (scope if isinstance(scope, (list, tuple)) else scope.split())
+            if scope
+            else None
+        )
+        if scope and "openid" in scope:
             # this is an OpenID Connect service
             nonce = kwargs.get('nonce')
             if not nonce:
