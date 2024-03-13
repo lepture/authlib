@@ -295,6 +295,18 @@ class OAuth2SessionTest(TestCase):
 
         self.assertTrue(sess.token.is_expired)
 
+    def test_token_status2(self):
+        token = dict(access_token='a', token_type='bearer', expires_in=10)
+        sess = OAuth2Session('foo', token=token, leeway=15)
+
+        self.assertTrue(sess.token.is_expired(sess.leeway))
+
+    def test_token_status3(self):
+        token = dict(access_token='a', token_type='bearer', expires_in=10)
+        sess = OAuth2Session('foo', token=token, leeway=5)
+
+        self.assertFalse(sess.token.is_expired(sess.leeway))
+
     def test_token_expired(self):
         token = dict(access_token='a', token_type='bearer', expires_at=100)
         sess = OAuth2Session('foo', token=token)

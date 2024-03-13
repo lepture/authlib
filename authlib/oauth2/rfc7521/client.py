@@ -15,7 +15,7 @@ class AssertionClient:
 
     def __init__(self, session, token_endpoint, issuer, subject,
                  audience=None, grant_type=None, claims=None,
-                 token_placement='header', scope=None, **kwargs):
+                 token_placement='header', scope=None, leeway=60, **kwargs):
 
         self.session = session
 
@@ -38,6 +38,7 @@ class AssertionClient:
         if self.token_auth_class is not None:
             self.token_auth = self.token_auth_class(None, token_placement, self)
         self._kwargs = kwargs
+        self.leeway = leeway
 
     @property
     def token(self):

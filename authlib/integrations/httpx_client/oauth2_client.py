@@ -58,7 +58,7 @@ class AsyncOAuth2Client(_OAuth2Client, httpx.AsyncClient):
                  revocation_endpoint_auth_method=None,
                  scope=None, redirect_uri=None,
                  token=None, token_placement='header',
-                 update_token=None, **kwargs):
+                 update_token=None, leeway=60, **kwargs):
 
         # extract httpx.Client kwargs
         client_kwargs = self._extract_session_request_params(kwargs)
@@ -75,7 +75,7 @@ class AsyncOAuth2Client(_OAuth2Client, httpx.AsyncClient):
             revocation_endpoint_auth_method=revocation_endpoint_auth_method,
             scope=scope, redirect_uri=redirect_uri,
             token=token, token_placement=token_placement,
-            update_token=update_token, **kwargs
+            update_token=update_token, leeway=leeway, **kwargs
         )
 
     async def request(self, method, url, withhold_token=False, auth=USE_CLIENT_DEFAULT, **kwargs):
@@ -106,7 +106,7 @@ class AsyncOAuth2Client(_OAuth2Client, httpx.AsyncClient):
 
     async def ensure_active_token(self, token):
         async with self._token_refresh_lock:
-            if self.token.is_expired():
+            if self.token.is_expired(leeway=self.leeway):
                 refresh_token = token.get('refresh_token')
                 url = self.metadata.get('token_endpoint')
                 if refresh_token and url:

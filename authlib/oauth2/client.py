@@ -38,6 +38,9 @@ class OAuth2Client:
         values: "header", "body", "uri".
     :param update_token: A function for you to update token. It accept a
         :class:`OAuth2Token` as parameter.
+    :param leeway: Time window in seconds before the actual expiration of the
+        authentication token, that the token is considered expired and will
+        be refreshed.
     """
     client_auth_class = ClientAuth
     token_auth_class = TokenAuth
@@ -52,7 +55,8 @@ class OAuth2Client:
                  token_endpoint_auth_method=None,
                  revocation_endpoint_auth_method=None,
                  scope=None, state=None, redirect_uri=None, code_challenge_method=None,
-                 token=None, token_placement='header', update_token=None, **metadata):
+                 token=None, token_placement='header', update_token=None, leeway=60,
+                 **metadata):
 
         self.session = session
         self.client_id = client_id
@@ -96,6 +100,8 @@ class OAuth2Client:
             'introspect_token_request': set(),
         }
         self._auth_methods = {}
+
+        self.leeway = leeway
 
     def register_client_auth_method(self, auth):
         """Extend client authenticate for token endpoint.
@@ -263,7 +269,7 @@ class OAuth2Client:
     def ensure_active_token(self, token=None):
         if token is None:
             token = self.token
-        if not token.is_expired():
+        if not token.is_expired(leeway=self.leeway):
             return True
         refresh_token = token.get('refresh_token')
         url = self.metadata.get('token_endpoint')
