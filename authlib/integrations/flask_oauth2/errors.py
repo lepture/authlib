@@ -1,4 +1,4 @@
-import importlib
+import importlib.metadata
 
 import werkzeug
 from werkzeug.exceptions import HTTPException
