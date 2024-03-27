@@ -136,7 +136,10 @@ class ClientConfigurationEndpoint:
             response_types_supported = set(response_types_supported)
 
             def _validate_response_types(claims, value):
-                return response_types_supported.issuperset(set(value))
+                # If omitted, the default is that the client will use only the "code"
+                # response type.
+                response_types = set(value) if value else {"code"}
+                return response_types_supported.issuperset(response_types)
 
             options['response_types'] = {'validate': _validate_response_types}
 
