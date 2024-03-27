@@ -144,7 +144,10 @@ class ClientConfigurationEndpoint:
             grant_types_supported = set(grant_types_supported)
 
             def _validate_grant_types(claims, value):
-                return grant_types_supported.issuperset(set(value))
+                # If omitted, the default behavior is that the client will use only
+                # the "authorization_code" Grant Type.
+                grant_types = set(value) if value else {"authorization_code"}
+                return grant_types_supported.issuperset(grant_types)
 
             options['grant_types'] = {'validate': _validate_grant_types}
 
