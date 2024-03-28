@@ -163,6 +163,10 @@ class OpenIDCodeTest(BaseTestCase):
         rv = self.client.get('/oauth/authorize?' + query)
         self.assertEqual(rv.data, b'login')
 
+        query = url_encode(params + [('user_id', '1'), ('prompt', 'login')])
+        rv = self.client.get('/oauth/authorize?' + query)
+        self.assertEqual(rv.data, b'login')
+
 
 class RSAOpenIDCodeTest(BaseTestCase):
     def config_app(self):
