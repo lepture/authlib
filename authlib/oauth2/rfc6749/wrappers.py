@@ -10,12 +10,12 @@ class OAuth2Token(dict):
                                    int(params['expires_in'])
         super().__init__(params)
 
-    def is_expired(self, timedelta_seconds=60):
+    def is_expired(self, leeway=60):
         expires_at = self.get('expires_at')
         if not expires_at:
             return None
         # small timedelta to consider token as expired before it actually expires
-        expiration_threshold = expires_at - timedelta_seconds
+        expiration_threshold = expires_at - leeway
         return expiration_threshold < time.time()
 
     @classmethod
