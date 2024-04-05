@@ -9,6 +9,7 @@ from ..rfc6749 import (
 
 
 CODE_VERIFIER_PATTERN = re.compile(r'^[a-zA-Z0-9\-._~]{43,128}$')
+CODE_CHALLENGE_PATTERN = re.compile(r'^[a-zA-Z0-9\-._~]{43,128}$')
 
 
 def create_s256_code_challenge(code_verifier):
@@ -75,6 +76,9 @@ class CodeChallenge:
 
         if not challenge:
             raise InvalidRequestError('Missing "code_challenge"')
+
+        if not CODE_CHALLENGE_PATTERN.match(challenge):
+            raise InvalidRequestError('Invalid "code_challenge"')
 
         if method and method not in self.SUPPORTED_CODE_CHALLENGE_METHOD:
             raise InvalidRequestError('Unsupported "code_challenge_method"')
