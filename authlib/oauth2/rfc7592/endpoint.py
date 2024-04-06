@@ -136,7 +136,10 @@ class ClientConfigurationEndpoint:
             response_types_supported = set(response_types_supported)
 
             def _validate_response_types(claims, value):
-                return response_types_supported.issuperset(set(value))
+                # If omitted, the default is that the client will use only the "code"
+                # response type.
+                response_types = set(value) if value else {"code"}
+                return response_types_supported.issuperset(response_types)
 
             options['response_types'] = {'validate': _validate_response_types}
 
@@ -144,7 +147,10 @@ class ClientConfigurationEndpoint:
             grant_types_supported = set(grant_types_supported)
 
             def _validate_grant_types(claims, value):
-                return grant_types_supported.issuperset(set(value))
+                # If omitted, the default behavior is that the client will use only
+                # the "authorization_code" Grant Type.
+                grant_types = set(value) if value else {"authorization_code"}
+                return grant_types_supported.issuperset(grant_types)
 
             options['grant_types'] = {'validate': _validate_grant_types}
 

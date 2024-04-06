@@ -21,7 +21,7 @@ class ClientConfigurationEndpoint(_ClientConfigurationEndpoint):
             return Token.query.filter_by(access_token=access_token).first()
 
     def update_client(self, client, client_metadata, request):
-        client.set_client_metadata({**client.client_metadata, **client_metadata})
+        client.set_client_metadata(client_metadata)
         db.session.add(client)
         db.session.commit()
         return client
@@ -195,7 +195,7 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
         self.assertEqual(resp['client_id'], client.client_id)
         self.assertEqual(resp['client_name'], 'NewAuthlib')
         self.assertEqual(client.client_name, 'NewAuthlib')
-        self.assertEqual(client.scope, 'openid profile')
+        self.assertEqual(client.scope, '')
 
     def test_access_denied(self):
         user, client, token = self.prepare_data()
@@ -382,6 +382,16 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
         self.assertEqual(resp['client_name'], 'Authlib')
         self.assertEqual(resp['response_types'], ['code'])
 
+        # https://datatracker.ietf.org/doc/html/rfc7592#section-2.2
+        # If omitted, the default is that the client will use only the "code"
+        # response type.
+        body = {'client_id': 'client_id', 'client_name': 'Authlib'}
+        rv = self.client.put('/configure_client/client_id', json=body, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertIn('client_id', resp)
+        self.assertEqual(resp['client_name'], 'Authlib')
+        self.assertNotIn('response_types', resp)
+
         body = {
             'client_id': 'client_id',
             'response_types': ['code', 'token'],
@@ -406,6 +416,16 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
         self.assertEqual(resp['client_id'], 'client_id')
         self.assertEqual(resp['client_name'], 'Authlib')
         self.assertEqual(resp['grant_types'], ['password'])
+
+        # https://datatracker.ietf.org/doc/html/rfc7592#section-2.2
+        # If omitted, the default behavior is that the client will use only
+        # the "authorization_code" Grant Type.
+        body = {'client_id': 'client_id', 'client_name': 'Authlib'}
+        rv = self.client.put('/configure_client/client_id', json=body, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertIn('client_id', resp)
+        self.assertEqual(resp['client_name'], 'Authlib')
+        self.assertNotIn('grant_types', resp)
 
         body = {
             'client_id': 'client_id',
