@@ -181,7 +181,7 @@ Create an instance of OAuth1Auth with an access token::
 
     auth = OAuth1Auth(
         client_id='..',
-        client_secret=client_secret='..',
+        client_secret='..',
         token='oauth_token value',
         token_secret='oauth_token_secret value',
         ...
