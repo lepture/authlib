@@ -65,18 +65,23 @@ class CodeChallengeTest(TestCase):
 
     def test_has_code_challenge(self):
         self.prepare_data()
-        rv = self.client.get(self.authorize_url + '&code_challenge=abc')
+        rv = self.client.get(self.authorize_url + '&code_challenge=Zhs2POMonIVVHZteWfoU7cSXQSm0YjghikFGJSDI2_s')
         self.assertEqual(rv.data, b'ok')
+
+    def test_invalid_code_challenge(self):
+        self.prepare_data()
+        rv = self.client.get(self.authorize_url + '&code_challenge=abc&code_challenge_method=plain')
+        self.assertIn(b'Invalid', rv.data)
 
     def test_invalid_code_challenge_method(self):
         self.prepare_data()
-        suffix = '&code_challenge=abc&code_challenge_method=invalid'
+        suffix = '&code_challenge=Zhs2POMonIVVHZteWfoU7cSXQSm0YjghikFGJSDI2_s&code_challenge_method=invalid'
         rv = self.client.get(self.authorize_url + suffix)
         self.assertIn(b'Unsupported', rv.data)
 
     def test_supported_code_challenge_method(self):
         self.prepare_data()
-        suffix = '&code_challenge=abc&code_challenge_method=plain'
+        suffix = '&code_challenge=Zhs2POMonIVVHZteWfoU7cSXQSm0YjghikFGJSDI2_s&code_challenge_method=plain'
         rv = self.client.get(self.authorize_url + suffix)
         self.assertEqual(rv.data, b'ok')
 
@@ -101,7 +106,7 @@ class CodeChallengeTest(TestCase):
 
     def test_missing_code_verifier(self):
         self.prepare_data()
-        url = self.authorize_url + '&code_challenge=foo'
+        url = self.authorize_url + '&code_challenge=Zhs2POMonIVVHZteWfoU7cSXQSm0YjghikFGJSDI2_s'
         rv = self.client.post(url, data={'user_id': '1'})
         self.assertIn('code=', rv.location)
 
@@ -117,7 +122,7 @@ class CodeChallengeTest(TestCase):
 
     def test_trusted_client_missing_code_verifier(self):
         self.prepare_data('client_secret_basic')
-        url = self.authorize_url + '&code_challenge=foo'
+        url = self.authorize_url + '&code_challenge=Zhs2POMonIVVHZteWfoU7cSXQSm0YjghikFGJSDI2_s'
         rv = self.client.post(url, data={'user_id': '1'})
         self.assertIn('code=', rv.location)
 
@@ -133,7 +138,7 @@ class CodeChallengeTest(TestCase):
 
     def test_plain_code_challenge_invalid(self):
         self.prepare_data()
-        url = self.authorize_url + '&code_challenge=foo'
+        url = self.authorize_url + '&code_challenge=Zhs2POMonIVVHZteWfoU7cSXQSm0YjghikFGJSDI2_s'
         rv = self.client.post(url, data={'user_id': '1'})
         self.assertIn('code=', rv.location)
 
@@ -150,7 +155,7 @@ class CodeChallengeTest(TestCase):
 
     def test_plain_code_challenge_failed(self):
         self.prepare_data()
-        url = self.authorize_url + '&code_challenge=foo'
+        url = self.authorize_url + '&code_challenge=Zhs2POMonIVVHZteWfoU7cSXQSm0YjghikFGJSDI2_s'
         rv = self.client.post(url, data={'user_id': '1'})
         self.assertIn('code=', rv.location)
 
@@ -206,7 +211,7 @@ class CodeChallengeTest(TestCase):
 
     def test_not_implemented_code_challenge_method(self):
         self.prepare_data()
-        url = self.authorize_url + '&code_challenge=foo'
+        url = self.authorize_url + '&code_challenge=Zhs2POMonIVVHZteWfoU7cSXQSm0YjghikFGJSDI2_s'
         url += '&code_challenge_method=S128'
 
         rv = self.client.post(url, data={'user_id': '1'})
