@@ -20,7 +20,7 @@ class JWTIntrospectionEndpoint(IntrospectionEndpoint):
 
     ::
 
-        class MyJWTAccessTokenIntrospectionEndpoint(JWTRevocationEndpoint):
+        class MyJWTAccessTokenIntrospectionEndpoint(JWTIntrospectionEndpoint):
             def get_jwks(self):
                 ...
 
@@ -32,7 +32,7 @@ class JWTIntrospectionEndpoint(IntrospectionEndpoint):
                 issuer="https://authorization-server.example.org",
             )
         )
-        authorization_server.register_endpoint(MyRefreshTokenIntrospectionEndpoint)
+        authorization_server.register_endpoint(MyJWTAccessTokenIntrospectionEndpoint)
 
     '''
 
