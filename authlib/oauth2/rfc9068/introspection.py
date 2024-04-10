@@ -32,7 +32,6 @@ class JWTIntrospectionEndpoint(IntrospectionEndpoint):
                 issuer="https://authorization-server.example.org",
             )
         )
-        authorization_server.register_endpoint(MyJWTAccessTokenIntrospectionEndpoint)
 
     '''
 
