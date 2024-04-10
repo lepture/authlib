@@ -20,18 +20,21 @@ class JWTIntrospectionEndpoint(IntrospectionEndpoint):
 
     ::
 
-        class MyJWTAccessTokenIntrospectionEndpoint(JWTRevocationEndpoint):
+        class MyJWTAccessTokenIntrospectionEndpoint(JWTIntrospectionEndpoint):
             def get_jwks(self):
                 ...
 
             def get_username(self, user_id):
                 ...
 
+        # endpoint dedicated to JWT access token introspection
         authorization_server.register_endpoint(
             MyJWTAccessTokenIntrospectionEndpoint(
                 issuer="https://authorization-server.example.org",
             )
         )
+
+        # another endpoint dedicated to refresh token introspection
         authorization_server.register_endpoint(MyRefreshTokenIntrospectionEndpoint)
 
     '''

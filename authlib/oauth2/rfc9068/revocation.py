@@ -25,11 +25,14 @@ class JWTRevocationEndpoint(RevocationEndpoint):
             def get_jwks(self):
                 ...
 
+        # endpoint dedicated to JWT access token revokation
         authorization_server.register_endpoint(
             MyJWTAccessTokenRevocationEndpoint(
                 issuer="https://authorization-server.example.org",
             )
         )
+
+        # another endpoint dedicated to refresh token revokation
         authorization_server.register_endpoint(MyRefreshTokenRevocationEndpoint)
 
     .. _RFC7009: https://tools.ietf.org/html/rfc7009
