@@ -210,6 +210,13 @@ class AuthorizationCodeTest(TestCase):
         self.assertIn('access_token', resp)
         self.assertIn('refresh_token', resp)
 
+    def test_invalid_multiple_request_parameters(self):
+        self.prepare_data()
+        url = self.authorize_url + '&scope=profile&state=bar&redirect_uri=https%3A%2F%2Fa.b&response_type=code'
+        rv = self.client.get(url)
+        self.assertIn(b'invalid_request', rv.data)
+        self.assertIn(b'Multiple+%22response_type%22+in+request.', rv.data)
+
     def test_client_secret_post(self):
         self.app.config.update({'OAUTH2_REFRESH_TOKEN_GENERATOR': True})
         self.prepare_data(
