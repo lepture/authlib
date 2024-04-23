@@ -1,5 +1,5 @@
 from authlib.consts import default_json_headers
-from ..rfc6749 import TokenEndpoint
+from ..rfc6749 import TokenEndpoint, InvalidGrantError
 from ..rfc6749 import (
     InvalidRequestError,
     UnsupportedTokenTypeError,
@@ -29,8 +29,9 @@ class RevocationEndpoint(TokenEndpoint):
         """
         self.check_params(request, client)
         token = self.query_token(request.form['token'], request.form.get('token_type_hint'))
-        if token and token.check_client(client):
-            return token
+        if token and not token.check_client(client):
+            raise InvalidGrantError()
+        return token
 
     def check_params(self, request, client):
         if 'token' not in request.form:
