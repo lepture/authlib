@@ -147,7 +147,7 @@ class AuthorizationEndpointMixin:
         datalist = request.datalist
         parameters = ["response_type", "client_id", "redirect_uri", "scope", "state"]
         for param in parameters:
-            if len(datalist[param]) > 1:
+            if len(datalist.get(param, [])) > 1:
                 raise InvalidRequestError(f'Multiple "{param}" in request.', state=request.state)
 
     def validate_consent_request(self):
