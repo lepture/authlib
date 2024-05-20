@@ -120,3 +120,29 @@ class RevokeTokenTest(TestCase):
             'token': 'a1',
         }, headers=headers)
         self.assertEqual(rv.status_code, 200)
+
+    def test_revoke_token_bound_to_client(self):
+        self.prepare_data()
+        self.create_token()
+
+        client2 = Client(
+            user_id=1,
+            client_id='revoke-client-2',
+            client_secret='revoke-secret-2',
+        )
+        client2.set_client_metadata({
+            'scope': 'profile',
+            'redirect_uris': ['http://localhost/authorized'],
+        })
+        db.session.add(client2)
+        db.session.commit()
+
+        headers = self.create_basic_header(
+            'revoke-client-2', 'revoke-secret-2'
+        )
+        rv = self.client.post('/oauth/revoke', data={
+            'token': 'a1',
+        }, headers=headers)
+        self.assertEqual(rv.status_code, 400)
+        resp = json.loads(rv.data)
+        self.assertEqual(resp['error'], 'invalid_grant')
