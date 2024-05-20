@@ -68,6 +68,14 @@ class AuthorizationCodeTest(TestCase):
             request
         )
 
+        url = '/authorize?response_type=code&client_id=client&scope=profile&state=bar&redirect_uri=https%3A%2F%2Fa.b&response_type=code'
+        request = self.factory.get(url)
+        self.assertRaises(
+            errors.InvalidRequestError,
+            server.get_consent_grant,
+            request
+        )
+
     def test_get_consent_grant_redirect_uri(self):
         server = self.create_server()
         self.prepare_data()

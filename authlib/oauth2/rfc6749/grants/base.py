@@ -1,4 +1,5 @@
 from authlib.consts import default_json_headers
+from authlib.common.urls import urlparse
 from ..requests import OAuth2Request
 from ..errors import InvalidRequestError
 
@@ -135,6 +136,19 @@ class AuthorizationEndpointMixin:
                     'Missing "redirect_uri" in request.',
                     state=request.state)
             return redirect_uri
+
+    @staticmethod
+    def validate_no_multiple_request_parameter(request: OAuth2Request):
+        """For the Authorization Endpoint, request and response parameters MUST NOT be included
+        more than once. Per `Section 3.1`_.
+
+        .. _`Section 3.1`: https://tools.ietf.org/html/rfc6749#section-3.1
+        """
+        datalist = request.datalist
+        parameters = ["response_type", "client_id", "redirect_uri", "scope", "state"]
+        for param in parameters:
+            if len(datalist.get(param, [])) > 1:
+                raise InvalidRequestError(f'Multiple "{param}" in request.', state=request.state)
 
     def validate_consent_request(self):
         redirect_uri = self.validate_authorization_request()

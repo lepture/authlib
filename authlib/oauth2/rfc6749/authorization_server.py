@@ -214,6 +214,7 @@ class AuthorizationServer:
         request.user = end_user
 
         grant = self.get_authorization_grant(request)
+        grant.validate_no_multiple_request_parameter(request)
         grant.validate_consent_request()
         return grant
 

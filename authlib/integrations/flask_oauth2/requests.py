@@ -1,3 +1,6 @@
+from collections import defaultdict
+from functools import cached_property
+
 from flask.wrappers import Request
 from authlib.oauth2.rfc6749 import OAuth2Request, JsonRequest
 
@@ -18,6 +21,13 @@ class FlaskOAuth2Request(OAuth2Request):
     @property
     def data(self):
         return self._request.values
+
+    @cached_property
+    def datalist(self):
+        values = defaultdict(list)
+        for k in self.data:
+            values[k].extend(self.data.getlist(k))
+        return values
 
 
 class FlaskJsonRequest(JsonRequest):
