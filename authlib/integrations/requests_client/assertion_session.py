@@ -7,7 +7,7 @@ from .utils import update_session_configure
 
 class AssertionAuth(OAuth2Auth):
     def ensure_active_token(self):
-        if not self.token or self.token.is_expired() and self.client:
+        if self.client and (not self.token or self.token.is_expired(self.client.leeway)):
             return self.client.refresh_token()
 
 
@@ -25,7 +25,8 @@ class AssertionSession(AssertionClient, Session):
     DEFAULT_GRANT_TYPE = JWT_BEARER_GRANT_TYPE
 
     def __init__(self, token_endpoint, issuer, subject, audience=None, grant_type=None,
-                 claims=None, token_placement='header', scope=None, default_timeout=None, **kwargs):
+                 claims=None, token_placement='header', scope=None, default_timeout=None,
+                 leeway=60, **kwargs):
         Session.__init__(self)
         self.default_timeout = default_timeout
         update_session_configure(self, kwargs)
@@ -33,7 +34,7 @@ class AssertionSession(AssertionClient, Session):
             self, session=self,
             token_endpoint=token_endpoint, issuer=issuer, subject=subject,
             audience=audience, grant_type=grant_type, claims=claims,
-            token_placement=token_placement, scope=scope, **kwargs
+            token_placement=token_placement, scope=scope, leeway=leeway, **kwargs
         )
 
     def request(self, method, url, withhold_token=False, auth=None, **kwargs):

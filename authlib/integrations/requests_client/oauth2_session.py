@@ -64,6 +64,9 @@ class OAuth2Session(OAuth2Client, Session):
         values: "header", "body", "uri".
     :param update_token: A function for you to update token. It accept a
         :class:`OAuth2Token` as parameter.
+    :param leeway: Time window in seconds before the actual expiration of the
+        authentication token, that the token is considered expired and will
+        be refreshed.
     :param default_timeout: If settled, every requests will have a default timeout.
     """
     client_auth_class = OAuth2ClientAuth
@@ -79,7 +82,7 @@ class OAuth2Session(OAuth2Client, Session):
                  revocation_endpoint_auth_method=None,
                  scope=None, state=None, redirect_uri=None,
                  token=None, token_placement='header',
-                 update_token=None, default_timeout=None, **kwargs):
+                 update_token=None, leeway=60, default_timeout=None, **kwargs):
         Session.__init__(self)
         self.default_timeout = default_timeout
         update_session_configure(self, kwargs)
@@ -91,7 +94,7 @@ class OAuth2Session(OAuth2Client, Session):
             revocation_endpoint_auth_method=revocation_endpoint_auth_method,
             scope=scope, state=state, redirect_uri=redirect_uri,
             token=token, token_placement=token_placement,
-            update_token=update_token, **kwargs
+            update_token=update_token, leeway=leeway, **kwargs
         )
 
     def fetch_access_token(self, url=None, **kwargs):
