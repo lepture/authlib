@@ -76,7 +76,7 @@ class OAuth2Request:
 
     @property
     def grant_type(self) -> str:
-        return self.form.get('grant_type')
+        return self.data.get('grant_type')
 
     @property
     def redirect_uri(self):
