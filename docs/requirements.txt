@@ -7,7 +7,7 @@ requests
 httpx>=0.18.2
 starlette
 
-sphinx==6.2.1
-sphinx-design==0.4.1
-sphinx-copybutton==0.5.2
+sphinx
+sphinx-design
+sphinx-copybutton
 shibuya

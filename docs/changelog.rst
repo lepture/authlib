@@ -6,6 +6,14 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 1.3.1
+-------------
+
+**Released on June 4, 2024**
+
+- Prevent ``OctKey`` to import ssh and PEM strings.
+
+
 Version 1.3.0
 -------------
 
