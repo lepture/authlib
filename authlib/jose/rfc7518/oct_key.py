@@ -6,6 +6,16 @@ from authlib.common.security import generate_token
 from ..rfc7517 import Key
 
 
+POSSIBLE_UNSAFE_KEYS = (
+    b"-----BEGIN ",
+    b"---- BEGIN ",
+    b"ssh-rsa ",
+    b"ssh-dss ",
+    b"ssh-ed25519 ",
+    b"ecdsa-sha2-",
+)
+
+
 class OctKey(Key):
     """Key class of the ``oct`` key type."""
 
@@ -65,6 +75,11 @@ class OctKey(Key):
             key._dict_data = raw
         else:
             raw_key = to_bytes(raw)
+
+            # security check
+            if raw_key.startswith(POSSIBLE_UNSAFE_KEYS):
+                raise ValueError("This key may not be safe to import")
+
             key = cls(raw_key=raw_key, options=options)
         return key
 
