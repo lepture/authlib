@@ -35,15 +35,10 @@ intersphinx_mapping = {
 }
 html_favicon = '_static/icon.svg'
 html_theme_options = {
-    'og_image_url': 'https://authlib.org/logo.png',
+    "accent_color": "blue",
+    "og_image_url": 'https://authlib.org/logo.png',
     "light_logo": "_static/light-logo.svg",
     "dark_logo": "_static/dark-logo.svg",
-    "light_css_variables": {
-        "--sy-rc-theme": "62,127,203",
-    },
-    "dark_css_variables": {
-        "--sy-rc-theme": "102,173,255",
-    },
     "twitter_site": "authlib",
     "twitter_creator": "lepture",
     "twitter_url": "https://twitter.com/authlib",
