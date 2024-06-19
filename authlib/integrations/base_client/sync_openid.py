@@ -33,15 +33,8 @@ class OpenIDMixin:
         """Return an instance of UserInfo from token's ``id_token``."""
         if 'id_token' not in token:
             return None
-
-        def load_key(header, _):
-            jwk_set = JsonWebKey.import_key_set(self.fetch_jwk_set())
-            try:
-                return jwk_set.find_by_kid(header.get('kid'))
-            except ValueError:
-                # re-try with new jwk set
-                jwk_set = JsonWebKey.import_key_set(self.fetch_jwk_set(force=True))
-                return jwk_set.find_by_kid(header.get('kid'))
+        
+        load_key = self.create_load_key()
 
         claims_params = dict(
             nonce=nonce,
@@ -75,3 +68,15 @@ class OpenIDMixin:
 
         claims.validate(leeway=leeway)
         return UserInfo(claims)
+
+    def create_load_key(self):
+        def load_key(header, _):
+            jwk_set = JsonWebKey.import_key_set(self.fetch_jwk_set())
+            try:
+                return jwk_set.find_by_kid(header.get('kid'))
+            except ValueError:
+                # re-try with new jwk set
+                jwk_set = JsonWebKey.import_key_set(self.fetch_jwk_set(force=True))
+                return jwk_set.find_by_kid(header.get('kid'))
+
+        return load_key
