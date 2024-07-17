@@ -40,9 +40,9 @@ class StarletteIntegration(FrameworkIntegration):
             await self.cache.set(key, json.dumps({'data': data}), self.expires_in)
         elif session is not None:
             # clear old state data to avoid session size growing
-            for key in list(session.keys()):
-                if key.startswith(key_prefix):
-                    session.pop(key)
+            for old_key in list(session.keys()):
+                if old_key.startswith(key_prefix):
+                    session.pop(old_key)
             now = time.time()
             session[key] = {'data': data, 'exp': now + self.expires_in}
 
