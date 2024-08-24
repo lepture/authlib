@@ -6,6 +6,13 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 1.3.2
+-------------
+
+- Prevent ever-growing session size for OAuth clients.
+- Revert ``quote`` client id and secret.
+- ``unquote`` basic auth header for authorization server.
+
 Version 1.3.1
 -------------
 
