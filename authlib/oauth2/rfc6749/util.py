@@ -1,5 +1,6 @@
 import base64
 import binascii
+from urllib.parse import unquote
 from authlib.common.encoding import to_unicode
 
 
@@ -36,5 +37,5 @@ def extract_basic_authorization(headers):
         return None, None
     if ':' in query:
         username, password = query.split(':', 1)
-        return username, password
+        return unquote(username), unquote(password)
     return query, None
