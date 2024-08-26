@@ -6,7 +6,7 @@ permissions:
 on:
   push:
     tags:
-      - "1.*"
+      - "v1.*"
 
 env:
   FORCE_COLOR: '1'
