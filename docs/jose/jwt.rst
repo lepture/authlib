@@ -157,7 +157,7 @@ Use dynamic keys
 When ``.encode`` and ``.decode`` a token, there is a ``key`` parameter to use.
 This ``key`` can be the bytes of your PEM key, a JWK set, and a function.
 
-There ara cases that you don't know which key to use to ``.decode`` the token.
+There are cases that you don't know which key to use to ``.decode`` the token.
 For instance, you have a JWK set::
 
     jwks = {
