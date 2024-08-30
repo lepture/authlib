@@ -2,6 +2,7 @@ name: Release to PyPI
 
 permissions:
   contents: write
+  id-token: write
 
 on:
   push:
@@ -53,6 +54,3 @@ jobs:
 
     - name: Push build artifacts to PyPI
       uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        skip-existing: true
-        password: ${{ secrets.PYPI_API_TOKEN }}
