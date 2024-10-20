@@ -49,31 +49,51 @@ def create_resource_protector(app, validator):
     @require_oauth()
     def protected():
         user = db.session.get(User, current_token['sub'])
-        return jsonify(id=user.id, username=user.username, token=current_token)
+        return jsonify(
+            id=user.id,
+            username=user.username,
+            token=current_token._get_current_object(),
+        )
 
     @app.route('/protected-by-scope')
     @require_oauth('profile')
     def protected_by_scope():
         user = db.session.get(User, current_token['sub'])
-        return jsonify(id=user.id, username=user.username, token=current_token)
+        return jsonify(
+            id=user.id,
+            username=user.username,
+            token=current_token._get_current_object(),
+        )
 
     @app.route('/protected-by-groups')
     @require_oauth(groups=['admins'])
     def protected_by_groups():
         user = db.session.get(User, current_token['sub'])
-        return jsonify(id=user.id, username=user.username, token=current_token)
+        return jsonify(
+            id=user.id,
+            username=user.username,
+            token=current_token._get_current_object(),
+        )
 
     @app.route('/protected-by-roles')
     @require_oauth(roles=['student'])
     def protected_by_roles():
         user = db.session.get(User, current_token['sub'])
-        return jsonify(id=user.id, username=user.username, token=current_token)
+        return jsonify(
+            id=user.id,
+            username=user.username,
+            token=current_token._get_current_object(),
+        )
 
     @app.route('/protected-by-entitlements')
     @require_oauth(entitlements=['captain'])
     def protected_by_entitlements():
         user = db.session.get(User, current_token['sub'])
-        return jsonify(id=user.id, username=user.username, token=current_token)
+        return jsonify(
+            id=user.id,
+            username=user.username,
+            token=current_token._get_current_object(),
+        )
 
     return require_oauth
 
