@@ -6,6 +6,14 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Unreleased
+----------
+
+- Fix ``id_token`` decoding when kid is null. :pr:`659`
+- Stop support for Python 3.8. :pr:`682`
+- Support for Python 3.13. :pr:`682`
+- Force login if the ``prompt`` parameter value is ``login``. :pr:`637`
+
 Version 1.3.2
 -------------
 
