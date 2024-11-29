@@ -16,9 +16,12 @@ class JWTBearerClientAssertion:
     #: Name of the client authentication method
     CLIENT_AUTH_METHOD = 'client_assertion_jwt'
 
-    def __init__(self, token_url, validate_jti=True):
+    def __init__(self, token_url, validate_jti=True, leeway=60):
         self.token_url = token_url
         self._validate_jti = validate_jti
+        # A small allowance of time, typically no more than a few minutes, to account for clock
+        # skew. The default is 60 seconds.
+        self.leeway = leeway
 
     def __call__(self, query_client, request):
         data = request.form
@@ -61,7 +64,7 @@ class JWTBearerClientAssertion:
                 assertion, resolve_key,
                 claims_options=self.create_claims_options()
             )
-            claims.validate()
+            claims.validate(self.leeway)
         except JoseError as e:
             log.debug('Assertion Error: %r', e)
             raise InvalidClientError()
