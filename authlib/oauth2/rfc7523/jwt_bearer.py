@@ -49,7 +49,7 @@ class JWTBearerGrant(BaseGrant, TokenEndpointMixin):
             claims = jwt.decode(
                 assertion, self.resolve_public_key,
                 claims_options=self.CLAIMS_OPTIONS)
-            claims.validate(self.LEEWAY)
+            claims.validate(leeway=self.LEEWAY)
         except JoseError as e:
             log.debug('Assertion Error: %r', e)
             raise InvalidGrantError(description=e.description)
