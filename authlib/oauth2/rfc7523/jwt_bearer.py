@@ -24,8 +24,8 @@ class JWTBearerGrant(BaseGrant, TokenEndpointMixin):
         'exp': {'essential': True},
     }
 
-    # A small allowance of time, typically no more than a few minutes, to account for clock skew.
-    # The default is 60 seconds.
+    # A small allowance of time, typically no more than a few minutes,
+    # to account for clock skew. The default is 60 seconds.
     LEEWAY = 60
 
     @staticmethod
