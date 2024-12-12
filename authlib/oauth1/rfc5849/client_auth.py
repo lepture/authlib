@@ -7,6 +7,7 @@ from authlib.common.encoding import to_native
 from .wrapper import OAuth1Request
 from .signature import (
     SIGNATURE_HMAC_SHA1,
+    SIGNATURE_HMAC_SHA256,
     SIGNATURE_PLAINTEXT,
     SIGNATURE_RSA_SHA1,
     SIGNATURE_TYPE_HEADER,
@@ -15,6 +16,7 @@ from .signature import (
 )
 from .signature import (
     sign_hmac_sha1,
+    sign_hmac_sha256,
     sign_rsa_sha1,
     sign_plaintext
 )
@@ -32,6 +34,7 @@ CONTENT_TYPE_MULTI_PART = 'multipart/form-data'
 class ClientAuth:
     SIGNATURE_METHODS = {
         SIGNATURE_HMAC_SHA1: sign_hmac_sha1,
+        SIGNATURE_HMAC_SHA256: sign_hmac_sha256,
         SIGNATURE_RSA_SHA1: sign_rsa_sha1,
         SIGNATURE_PLAINTEXT: sign_plaintext,
     }

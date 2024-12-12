@@ -4,6 +4,7 @@ from .assertion_session import AssertionSession
 from ..base_client import OAuthError
 from authlib.oauth1 import (
     SIGNATURE_HMAC_SHA1,
+    SIGNATURE_HMAC_SHA256,
     SIGNATURE_RSA_SHA1,
     SIGNATURE_PLAINTEXT,
     SIGNATURE_TYPE_HEADER,
@@ -15,7 +16,7 @@ from authlib.oauth1 import (
 __all__ = [
     'OAuthError',
     'OAuth1Session', 'OAuth1Auth',
-    'SIGNATURE_HMAC_SHA1', 'SIGNATURE_RSA_SHA1', 'SIGNATURE_PLAINTEXT',
+    'SIGNATURE_HMAC_SHA1', 'SIGNATURE_HMAC_SHA256', 'SIGNATURE_RSA_SHA1', 'SIGNATURE_PLAINTEXT',
     'SIGNATURE_TYPE_HEADER', 'SIGNATURE_TYPE_QUERY', 'SIGNATURE_TYPE_BODY',
     'OAuth2Session', 'OAuth2Auth',
     'AssertionSession',
