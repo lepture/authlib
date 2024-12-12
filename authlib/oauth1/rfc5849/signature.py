@@ -296,18 +296,16 @@ def hmac_sha1_signature(base_string, client_secret, token_secret):
 
 
 def hmac_sha256_signature(base_string, client_secret, token_secret):
-    """Generate signature via HMAC-SHA1 method, per `Section 3.4.2`_.
+    """Generate signature via HMAC-SHA256 method
 
-    The "HMAC-SHA1" signature method uses the HMAC-SHA1 signature
-    algorithm as defined in `RFC2104`_::
+    The "HMAC-SHA256" signature method uses the HMAC-SHA256 signature
+    algorithm::
 
-        digest = HMAC-SHA1 (key, text)
+        digest = HMAC-SHA256 (key, text)
 
-    .. _`RFC2104`: https://tools.ietf.org/html/rfc2104
-    .. _`Section 3.4.2`: https://tools.ietf.org/html/rfc5849#section-3.4.2
     """
 
-    # The HMAC-SHA1 function variables are used in following way:
+    # The HMAC-SHA256 function variables are used in following way:
 
     # text is set to the value of the signature base string from
     # `Section 3.4.1.1`_.
