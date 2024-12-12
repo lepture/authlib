@@ -14,6 +14,7 @@ from authlib.common.encoding import to_unicode, to_bytes
 from .util import escape, unescape
 
 SIGNATURE_HMAC_SHA1 = "HMAC-SHA1"
+SIGNATURE_HMAC_SHA256 = "HMAC-SHA256"
 SIGNATURE_RSA_SHA1 = "RSA-SHA1"
 SIGNATURE_PLAINTEXT = "PLAINTEXT"
 
@@ -294,6 +295,52 @@ def hmac_sha1_signature(base_string, client_secret, token_secret):
     return to_unicode(sig)
 
 
+def hmac_sha256_signature(base_string, client_secret, token_secret):
+    """Generate signature via HMAC-SHA1 method, per `Section 3.4.2`_.
+
+    The "HMAC-SHA1" signature method uses the HMAC-SHA1 signature
+    algorithm as defined in `RFC2104`_::
+
+        digest = HMAC-SHA1 (key, text)
+
+    .. _`RFC2104`: https://tools.ietf.org/html/rfc2104
+    .. _`Section 3.4.2`: https://tools.ietf.org/html/rfc5849#section-3.4.2
+    """
+
+    # The HMAC-SHA1 function variables are used in following way:
+
+    # text is set to the value of the signature base string from
+    # `Section 3.4.1.1`_.
+    #
+    # .. _`Section 3.4.1.1`: https://tools.ietf.org/html/rfc5849#section-3.4.1.1
+    text = base_string
+
+    # key is set to the concatenated values of:
+    # 1.  The client shared-secret, after being encoded (`Section 3.6`_).
+    #
+    # .. _`Section 3.6`: https://tools.ietf.org/html/rfc5849#section-3.6
+    key = escape(client_secret or '')
+
+    # 2.  An "&" character (ASCII code 38), which MUST be included
+    #     even when either secret is empty.
+    key += '&'
+
+    # 3.  The token shared-secret, after being encoded (`Section 3.6`_).
+    #
+    # .. _`Section 3.6`: https://tools.ietf.org/html/rfc5849#section-3.6
+    key += escape(token_secret or '')
+
+    signature = hmac.new(to_bytes(key), to_bytes(text), hashlib.sha256)
+
+    # digest  is used to set the value of the "oauth_signature" protocol
+    #         parameter, after the result octet string is base64-encoded
+    #         per `RFC2045, Section 6.8`.
+    #
+    # .. _`RFC2045, Section 6.8`: https://tools.ietf.org/html/rfc2045#section-6.8
+    sig = binascii.b2a_base64(signature.digest())[:-1]
+    return to_unicode(sig)
+
+
 def rsa_sha1_signature(base_string, rsa_private_key):
     """Generate signature via RSA-SHA1 method, per `Section 3.4.3`_.
 
@@ -350,6 +397,13 @@ def sign_hmac_sha1(client, request):
     """Sign a HMAC-SHA1 signature."""
     base_string = generate_signature_base_string(request)
     return hmac_sha1_signature(
+        base_string, client.client_secret, client.token_secret)
+
+
+def sign_hmac_sha256(client, request):
+    """Sign a HMAC-SHA1 signature."""
+    base_string = generate_signature_base_string(request)
+    return hmac_sha256_signature(
         base_string, client.client_secret, client.token_secret)
 
 

@@ -11,6 +11,7 @@ from .wrapper import OAuth1Request
 from .client_auth import ClientAuth
 from .signature import (
     SIGNATURE_HMAC_SHA1,
+    SIGNATURE_HMAC_SHA256,
     SIGNATURE_RSA_SHA1,
     SIGNATURE_PLAINTEXT,
     SIGNATURE_TYPE_HEADER,
@@ -30,6 +31,7 @@ __all__ = [
     'OAuth1Request',
     'ClientAuth',
     'SIGNATURE_HMAC_SHA1',
+    'SIGNATURE_HMAC_SHA256',
     'SIGNATURE_RSA_SHA1',
     'SIGNATURE_PLAINTEXT',
     'SIGNATURE_TYPE_HEADER',
