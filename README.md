@@ -10,6 +10,7 @@
 <a href="https://pypi.org/project/Authlib/"><img src="https://badgen.net/pypi/v/authlib" alt="PyPI Version"></a>
 <a href="https://codeclimate.com/github/lepture/authlib/maintainability"><img src="https://badgen.net/codeclimate/maintainability/lepture/authlib?icon=codeclimate" alt="Maintainability" /></a>
 <a href="https://twitter.com/intent/follow?screen_name=authlib"><img src="https://img.shields.io/twitter/follow/authlib.svg?maxAge=3600&style=social&logo=twitter&label=Follow" alt="Follow Twitter"></a>
+<a href="https://gurubase.io/g/authlib"><img src="https://img.shields.io/badge/Gurubase-Ask%20Authlib%20Guru-006BFF" alt="Gurubase"></a>
 
 The ultimate Python library in building OAuth and OpenID Connect servers.
 JWS, JWK, JWA, JWT are included.
