@@ -64,7 +64,7 @@ class JWTBearerClientAssertion:
             claims.validate()
         except JoseError as e:
             log.debug('Assertion Error: %r', e)
-            raise InvalidClientError()
+            raise InvalidClientError(description=e.description)
         return claims
 
     def authenticate_client(self, client):
