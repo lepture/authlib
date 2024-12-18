@@ -98,8 +98,45 @@ system. When initializing ``OAuth``, you can pass an ``cache`` instance::
 
 A ``cache`` instance MUST have methods:
 
+- ``.delete(key)``
 - ``.get(key)``
 - ``.set(key, value, expires=None)``
+
+An example of a ``cache`` instance can be:
+
+.. code-block:: python
+
+    from flask import Flask
+
+    class OAuthCache:
+
+        def __init__(self, app: Flask) -> None:
+            """Initialize the AuthCache."""
+            self.app = app
+
+        def delete(self, key: str) -> None:
+            """
+            Delete a cache entry.
+    
+            :param key: Unique identifier for the cache entry.
+            """
+
+        def get(self, key: str) -> str | None:
+            """
+            Retrieve a value from the cache.
+    
+            :param key: Unique identifier for the cache entry.
+            :return: Retrieved value or None if not found or expired.
+            """
+
+        def set(self, key: str, value: str, expires: int | None = None) -> None:
+            """
+            Set a value in the cache with optional expiration.
+    
+            :param key: Unique identifier for the cache entry.
+            :param value: Value to be stored.
+            :param expires: Expiration time in seconds. Defaults to None (no expiration).
+            """
 
 
 Routes for Authorization
