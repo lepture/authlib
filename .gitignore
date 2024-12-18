@@ -12,6 +12,7 @@ parts
 .installed.cfg
 docs/_build
 htmlcov/
+.venv/
 venv/
 .tox
 .coverage*
