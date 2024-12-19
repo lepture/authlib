@@ -22,6 +22,11 @@ class AsyncAssertionClient(_AssertionClient, httpx.AsyncClient):
                  claims=None, token_placement='header', scope=None, **kwargs):
 
         client_kwargs = extract_client_kwargs(kwargs)
+        # app keyword was dropped!
+        app_value = client_kwargs.pop('app', None)
+        if app_value is not None:
+            client_kwargs['transport'] = httpx.ASGITransport(app=app_value)
+
         httpx.AsyncClient.__init__(self, **client_kwargs)
 
         _AssertionClient.__init__(
@@ -61,6 +66,11 @@ class AssertionClient(_AssertionClient, httpx.Client):
                  claims=None, token_placement='header', scope=None, **kwargs):
 
         client_kwargs = extract_client_kwargs(kwargs)
+        # app keyword was dropped!
+        app_value = client_kwargs.pop('app', None)
+        if app_value is not None:
+            client_kwargs['transport'] = httpx.WSGITransport(app=app_value)
+
         httpx.Client.__init__(self, **client_kwargs)
 
         _AssertionClient.__init__(
