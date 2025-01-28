@@ -103,3 +103,7 @@ class TokenAuth:
             uri, headers, body = hook(uri, headers, body)
 
         return uri, headers, body
+
+    def __del__(self):
+        del self.client
+        del self.hooks

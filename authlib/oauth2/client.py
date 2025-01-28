@@ -438,6 +438,9 @@ class OAuth2Client:
             url, data=dict(url_decode(body)),
             headers=headers, auth=auth, **kwargs)
 
+    def __del__(self):
+        del self.session
+
 
 def _guess_grant_type(kwargs):
     if 'code' in kwargs:
