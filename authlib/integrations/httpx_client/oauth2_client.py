@@ -62,11 +62,6 @@ class AsyncOAuth2Client(_OAuth2Client, httpx.AsyncClient):
 
         # extract httpx.Client kwargs
         client_kwargs = self._extract_session_request_params(kwargs)
-        # app keyword was dropped!
-        app_value = client_kwargs.pop('app', None)
-        if app_value is not None:
-            client_kwargs['transport'] = httpx.ASGITransport(app=app_value)
-
         httpx.AsyncClient.__init__(self, **client_kwargs)
 
         # We use a Lock to synchronize coroutines to prevent

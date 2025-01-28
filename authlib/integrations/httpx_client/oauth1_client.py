@@ -34,11 +34,6 @@ class AsyncOAuth1Client(_OAuth1Client, httpx.AsyncClient):
                  force_include_body=False, **kwargs):
 
         _client_kwargs = extract_client_kwargs(kwargs)
-        # app keyword was dropped!
-        app_value = _client_kwargs.pop('app', None)
-        if app_value is not None:
-            _client_kwargs['transport'] = httpx.ASGITransport(app=app_value)
-
         httpx.AsyncClient.__init__(self, **_client_kwargs)
 
         _OAuth1Client.__init__(
