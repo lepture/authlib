@@ -172,4 +172,5 @@ class OAuth1Client:
         raise ValueError(f'{error_type}: {error_description}')
 
     def __del__(self):
-        del self.session
+        if self.session:
+            del self.session

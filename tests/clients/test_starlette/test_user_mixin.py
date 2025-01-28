@@ -1,4 +1,5 @@
 import pytest
+from httpx import ASGITransport
 from starlette.requests import Request
 from authlib.integrations.starlette_client import OAuth
 from authlib.jose import JsonWebKey
@@ -16,9 +17,9 @@ async def run_fetch_userinfo(payload):
     async def fetch_token(request):
         return get_bearer_token()
 
-    app = AsyncPathMapDispatch({
+    transport = ASGITransport(AsyncPathMapDispatch({
         '/userinfo': {'body': payload}
-    })
+    }))
 
     client = oauth.register(
         'dev',
@@ -27,7 +28,7 @@ async def run_fetch_userinfo(payload):
         fetch_token=fetch_token,
         userinfo_endpoint='https://i.b/userinfo',
         client_kwargs={
-            'app': app,
+            'transport': transport,
         }
     )
 
@@ -110,9 +111,9 @@ async def test_force_fetch_jwks_uri():
     )
     token['id_token'] = id_token
 
-    app = AsyncPathMapDispatch({
+    transport = ASGITransport(AsyncPathMapDispatch({
         '/jwks': {'body': read_key_file('jwks_public.json')}
-    })
+    }))
 
     oauth = OAuth()
     client = oauth.register(
@@ -123,7 +124,7 @@ async def test_force_fetch_jwks_uri():
         jwks_uri='https://i.b/jwks',
         issuer='https://i.b',
         client_kwargs={
-            'app': app,
+            'transport': transport,
         }
     )
     user = await client.parse_id_token(token, nonce='n')
