@@ -1,4 +1,5 @@
 import pytest
+from httpx import ASGITransport
 from starlette.config import Config
 from starlette.requests import Request
 from authlib.common.urls import urlparse, url_decode
@@ -40,10 +41,10 @@ def test_register_with_overwrite():
 @pytest.mark.asyncio
 async def test_oauth1_authorize():
     oauth = OAuth()
-    app = AsyncPathMapDispatch({
+    transport = ASGITransport(AsyncPathMapDispatch({
         '/request-token': {'body': 'oauth_token=foo&oauth_verifier=baz'},
         '/token': {'body': 'oauth_token=a&oauth_token_secret=b'},
-    })
+    }))
     client = oauth.register(
         'dev',
         client_id='dev',
@@ -53,7 +54,7 @@ async def test_oauth1_authorize():
         access_token_url='https://i.b/token',
         authorize_url='https://i.b/authorize',
         client_kwargs={
-            'app': app,
+            'transport': transport,
         }
     )
 
@@ -72,9 +73,9 @@ async def test_oauth1_authorize():
 @pytest.mark.asyncio
 async def test_oauth2_authorize():
     oauth = OAuth()
-    app = AsyncPathMapDispatch({
+    transport = ASGITransport(AsyncPathMapDispatch({
         '/token': {'body': get_bearer_token()}
-    })
+    }))
     client = oauth.register(
         'dev',
         client_id='dev',
@@ -83,7 +84,7 @@ async def test_oauth2_authorize():
         access_token_url='https://i.b/token',
         authorize_url='https://i.b/authorize',
         client_kwargs={
-            'app': app,
+            'transport': transport,
         }
     )
 
@@ -112,9 +113,9 @@ async def test_oauth2_authorize():
 @pytest.mark.asyncio
 async def test_oauth2_authorize_access_denied():
     oauth = OAuth()
-    app = AsyncPathMapDispatch({
+    transport = ASGITransport(AsyncPathMapDispatch({
         '/token': {'body': get_bearer_token()}
-    })
+    }))
     client = oauth.register(
         'dev',
         client_id='dev',
@@ -123,7 +124,7 @@ async def test_oauth2_authorize_access_denied():
         access_token_url='https://i.b/token',
         authorize_url='https://i.b/authorize',
         client_kwargs={
-            'app': app,
+            'transport': transport,
         }
     )
 
@@ -139,9 +140,9 @@ async def test_oauth2_authorize_access_denied():
 
 @pytest.mark.asyncio
 async def test_oauth2_authorize_code_challenge():
-    app = AsyncPathMapDispatch({
+    transport = ASGITransport(AsyncPathMapDispatch({
         '/token': {'body': get_bearer_token()}
-    })
+    }))
     oauth = OAuth()
     client = oauth.register(
         'dev',
@@ -151,7 +152,7 @@ async def test_oauth2_authorize_code_challenge():
         authorize_url='https://i.b/authorize',
         client_kwargs={
             'code_challenge_method': 'S256',
-            'app': app,
+            'transport': transport,
         },
     )
 
@@ -189,9 +190,9 @@ async def test_with_fetch_token_in_register():
     async def fetch_token(request):
         return {'access_token': 'dev', 'token_type': 'bearer'}
 
-    app = AsyncPathMapDispatch({
+    transport = ASGITransport(AsyncPathMapDispatch({
         '/user': {'body': {'sub': '123'}}
-    })
+    }))
     oauth = OAuth()
     client = oauth.register(
         'dev',
@@ -202,7 +203,7 @@ async def test_with_fetch_token_in_register():
         authorize_url='https://i.b/authorize',
         fetch_token=fetch_token,
         client_kwargs={
-            'app': app,
+            'transport': transport,
         }
     )
 
@@ -217,9 +218,9 @@ async def test_with_fetch_token_in_oauth():
     async def fetch_token(name, request):
         return {'access_token': 'dev', 'token_type': 'bearer'}
 
-    app = AsyncPathMapDispatch({
+    transport = ASGITransport(AsyncPathMapDispatch({
         '/user': {'body': {'sub': '123'}}
-    })
+    }))
     oauth = OAuth(fetch_token=fetch_token)
     client = oauth.register(
         'dev',
@@ -229,7 +230,7 @@ async def test_with_fetch_token_in_oauth():
         access_token_url='https://i.b/token',
         authorize_url='https://i.b/authorize',
         client_kwargs={
-            'app': app,
+            'transport': transport,
         }
     )
 
@@ -242,9 +243,9 @@ async def test_with_fetch_token_in_oauth():
 @pytest.mark.asyncio
 async def test_request_withhold_token():
     oauth = OAuth()
-    app = AsyncPathMapDispatch({
+    transport = ASGITransport(AsyncPathMapDispatch({
         '/user': {'body': {'sub': '123'}}
-    })
+    }))
     client = oauth.register(
         "dev",
         client_id="dev",
@@ -253,7 +254,7 @@ async def test_request_withhold_token():
         access_token_url="https://i.b/token",
         authorize_url="https://i.b/authorize",
         client_kwargs={
-            'app': app,
+            'transport': transport,
         }
     )
     req_scope = {'type': 'http', 'session': {}}
@@ -281,11 +282,11 @@ async def test_oauth2_authorize_no_url():
 @pytest.mark.asyncio
 async def test_oauth2_authorize_with_metadata():
     oauth = OAuth()
-    app = AsyncPathMapDispatch({
+    transport = ASGITransport(AsyncPathMapDispatch({
         '/.well-known/openid-configuration': {'body': {
             'authorization_endpoint': 'https://i.b/authorize'
         }}
-    })
+    }))
     client = oauth.register(
         'dev',
         client_id='dev',
@@ -294,7 +295,7 @@ async def test_oauth2_authorize_with_metadata():
         access_token_url='https://i.b/token',
         server_metadata_url='https://i.b/.well-known/openid-configuration',
         client_kwargs={
-            'app': app,
+            'transport': transport,
         }
     )
     req_scope = {'type': 'http', 'session': {}}

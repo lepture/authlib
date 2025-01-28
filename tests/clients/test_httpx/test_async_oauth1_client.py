@@ -1,4 +1,5 @@
 import pytest
+from httpx import ASGITransport
 from authlib.integrations.httpx_client import (
     OAuthError,
     AsyncOAuth1Client,
@@ -19,8 +20,8 @@ async def test_fetch_request_token_via_header():
         assert 'oauth_consumer_key="id"' in auth_header
         assert 'oauth_signature=' in auth_header
 
-    app = AsyncMockDispatch(request_token, assert_func=assert_func)
-    async with AsyncOAuth1Client('id', 'secret', app=app) as client:
+    transport = ASGITransport(AsyncMockDispatch(request_token, assert_func=assert_func))
+    async with AsyncOAuth1Client('id', 'secret', transport=transport) as client:
         response = await client.fetch_request_token(oauth_url)
 
     assert response == request_token
@@ -38,11 +39,11 @@ async def test_fetch_request_token_via_body():
         assert b'oauth_consumer_key=id' in content
         assert b'&oauth_signature=' in content
 
-    mock_response = AsyncMockDispatch(request_token, assert_func=assert_func)
+    transport = ASGITransport(AsyncMockDispatch(request_token, assert_func=assert_func))
 
     async with AsyncOAuth1Client(
         'id', 'secret', signature_type=SIGNATURE_TYPE_BODY,
-        app=mock_response,
+        transport=transport,
     ) as client:
         response = await client.fetch_request_token(oauth_url)
 
@@ -61,11 +62,11 @@ async def test_fetch_request_token_via_query():
         assert 'oauth_consumer_key=id' in url
         assert '&oauth_signature=' in url
 
-    mock_response = AsyncMockDispatch(request_token, assert_func=assert_func)
+    transport = ASGITransport(AsyncMockDispatch(request_token, assert_func=assert_func))
 
     async with AsyncOAuth1Client(
         'id', 'secret', signature_type=SIGNATURE_TYPE_QUERY,
-        app=mock_response,
+        transport=transport,
     ) as client:
         response = await client.fetch_request_token(oauth_url)
 
@@ -83,10 +84,10 @@ async def test_fetch_access_token():
         assert 'oauth_consumer_key="id"' in auth_header
         assert 'oauth_signature=' in auth_header
 
-    mock_response = AsyncMockDispatch(request_token, assert_func=assert_func)
+    transport = ASGITransport(AsyncMockDispatch(request_token, assert_func=assert_func))
     async with AsyncOAuth1Client(
         'id', 'secret', token='foo', token_secret='bar',
-        app=mock_response,
+        transport=transport,
     ) as client:
         with pytest.raises(OAuthError):
             await client.fetch_access_token(oauth_url)
@@ -98,10 +99,10 @@ async def test_fetch_access_token():
 
 @pytest.mark.asyncio
 async def test_get_via_header():
-    mock_response = AsyncMockDispatch(b'hello')
+    transport = ASGITransport(AsyncMockDispatch(b'hello'))
     async with AsyncOAuth1Client(
         'id', 'secret', token='foo', token_secret='bar',
-        app=mock_response,
+        transport=transport,
     ) as client:
         response = await client.get('https://example.com/')
 
@@ -121,11 +122,11 @@ async def test_get_via_body():
         assert b'oauth_consumer_key=id' in content
         assert b'oauth_signature=' in content
 
-    mock_response = AsyncMockDispatch(b'hello', assert_func=assert_func)
+    transport = ASGITransport(AsyncMockDispatch(b'hello', assert_func=assert_func))
     async with AsyncOAuth1Client(
         'id', 'secret', token='foo', token_secret='bar',
         signature_type=SIGNATURE_TYPE_BODY,
-        app=mock_response,
+        transport=transport,
     ) as client:
         response = await client.post('https://example.com/')
 
@@ -138,11 +139,11 @@ async def test_get_via_body():
 
 @pytest.mark.asyncio
 async def test_get_via_query():
-    mock_response = AsyncMockDispatch(b'hello')
+    transport = ASGITransport(AsyncMockDispatch(b'hello'))
     async with AsyncOAuth1Client(
         'id', 'secret', token='foo', token_secret='bar',
         signature_type=SIGNATURE_TYPE_QUERY,
-        app=mock_response,
+        transport=transport,
     ) as client:
         response = await client.get('https://example.com/')
 

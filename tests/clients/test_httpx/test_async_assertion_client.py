@@ -1,5 +1,6 @@
 import time
 import pytest
+from httpx import ASGITransport
 from authlib.integrations.httpx_client import AsyncAssertionClient
 from ..asgi_helper import AsyncMockDispatch
 
@@ -28,7 +29,7 @@ async def test_refresh_token():
         audience='foo',
         alg='HS256',
         key='secret',
-        app=AsyncMockDispatch(default_token, assert_func=verifier)
+        transport=ASGITransport(AsyncMockDispatch(default_token, assert_func=verifier)),
     ) as client:
         await client.get('https://i.b')
 
@@ -45,7 +46,7 @@ async def test_refresh_token():
         key='secret',
         scope='email',
         claims={'test_mode': 'true'},
-        app=AsyncMockDispatch(default_token, assert_func=verifier)
+        transport=ASGITransport(AsyncMockDispatch(default_token, assert_func=verifier)),
     ) as client:
         await client.get('https://i.b')
         await client.get('https://i.b')
@@ -59,7 +60,7 @@ async def test_without_alg():
         subject='foo',
         audience='foo',
         key='secret',
-        app=AsyncMockDispatch()
+        transport=ASGITransport(AsyncMockDispatch()),
     ) as client:
         with pytest.raises(ValueError):
             await client.get('https://i.b')
