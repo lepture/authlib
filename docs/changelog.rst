@@ -6,6 +6,14 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 1.4.1
+-------------
+
+**Released on Jan 28, 2025**
+
+- Improve garbage collection on OAuth clients. :issue:`698`
+- Fix client parameters for httpx. :issue:`694`
+
 Version 1.4.0
 -------------
 
