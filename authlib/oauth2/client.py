@@ -299,6 +299,8 @@ class OAuth2Client:
 
         .. _`RFC7009`: https://tools.ietf.org/html/rfc7009
         """
+        if auth is None:
+            auth = self.client_auth(self.revocation_endpoint_auth_method)
         return self._handle_token_hint(
             'revoke_token_request', url,
             token=token, token_type_hint=token_type_hint,
@@ -320,6 +322,8 @@ class OAuth2Client:
 
         .. _`RFC7662`: https://tools.ietf.org/html/rfc7662
         """
+        if auth is None:
+            auth = self.client_auth(self.token_endpoint_auth_method)
         return self._handle_token_hint(
             'introspect_token_request', url,
             token=token, token_type_hint=token_type_hint,
