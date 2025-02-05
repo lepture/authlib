@@ -2,6 +2,7 @@ import time
 import pytest
 from unittest import mock
 from copy import deepcopy
+from httpx import WSGITransport
 from authlib.common.security import generate_token
 from authlib.common.urls import url_encode
 from authlib.integrations.httpx_client import (
@@ -45,12 +46,12 @@ def assert_token_in_uri(request):
     ]
 )
 def test_add_token_get_request(assert_func, token_placement):
-    mock_response = MockDispatch({'a': 'a'}, assert_func=assert_func)
+    transport = WSGITransport(MockDispatch({'a': 'a'}, assert_func=assert_func))
     with OAuth2Client(
             'foo',
             token=default_token,
             token_placement=token_placement,
-            app=mock_response
+            transport=transport
     ) as client:
         resp = client.get('https://i.b')
 
@@ -67,12 +68,12 @@ def test_add_token_get_request(assert_func, token_placement):
     ]
 )
 def test_add_token_to_streaming_request(assert_func, token_placement):
-    mock_response = MockDispatch({'a': 'a'}, assert_func=assert_func)
+    transport = WSGITransport(MockDispatch({'a': 'a'}, assert_func=assert_func))
     with OAuth2Client(
             'foo',
             token=default_token,
             token_placement=token_placement,
-            app=mock_response
+            transport=transport
     ) as client:
         with client.stream("GET", 'https://i.b') as stream:
             stream.read()
@@ -125,21 +126,21 @@ def test_fetch_token_post():
         assert content.get('client_id') == 'foo'
         assert content.get('grant_type') == 'authorization_code'
 
-    mock_response = MockDispatch(default_token, assert_func=assert_func)
-    with OAuth2Client('foo', app=mock_response) as client:
+    transport = WSGITransport(MockDispatch(default_token, assert_func=assert_func))
+    with OAuth2Client('foo', transport=transport) as client:
         token = client.fetch_token(url, authorization_response='https://i.b/?code=v')
         assert token == default_token
 
     with OAuth2Client(
             'foo',
             token_endpoint_auth_method='none',
-            app=mock_response
+            transport=transport
     ) as client:
         token = client.fetch_token(url, code='v')
         assert token == default_token
 
-    mock_response = MockDispatch({'error': 'invalid_request'})
-    with OAuth2Client('foo', app=mock_response) as client:
+    transport = WSGITransport(MockDispatch({'error': 'invalid_request'}))
+    with OAuth2Client('foo', transport=transport) as client:
         with pytest.raises(OAuthError):
             client.fetch_token(url)
 
@@ -153,8 +154,8 @@ def test_fetch_token_get():
         assert 'client_id=' in url
         assert 'grant_type=authorization_code' in url
 
-    mock_response = MockDispatch(default_token, assert_func=assert_func)
-    with OAuth2Client('foo', app=mock_response) as client:
+    transport = WSGITransport(MockDispatch(default_token, assert_func=assert_func))
+    with OAuth2Client('foo', transport=transport) as client:
         authorization_response = 'https://i.b/?code=v'
         token = client.fetch_token(
             url, authorization_response=authorization_response, method='GET')
@@ -163,7 +164,7 @@ def test_fetch_token_get():
     with OAuth2Client(
             'foo',
             token_endpoint_auth_method='none',
-            app=mock_response
+            transport=transport
     ) as client:
         token = client.fetch_token(url, code='v', method='GET')
         assert token == default_token
@@ -182,11 +183,11 @@ def test_token_auth_method_client_secret_post():
         assert content.get('client_secret') == 'bar'
         assert content.get('grant_type') == 'authorization_code'
 
-    mock_response = MockDispatch(default_token, assert_func=assert_func)
+    transport = WSGITransport(MockDispatch(default_token, assert_func=assert_func))
     with OAuth2Client(
             'foo', 'bar',
             token_endpoint_auth_method='client_secret_post',
-            app=mock_response
+            transport=transport
     ) as client:
         token = client.fetch_token(url, code='v')
 
@@ -201,8 +202,8 @@ def test_access_token_response_hook():
         return resp
 
     access_token_response_hook = mock.Mock(side_effect=_access_token_response_hook)
-    app = MockDispatch(default_token)
-    with OAuth2Client('foo', token=default_token, app=app) as sess:
+    transport = WSGITransport(MockDispatch(default_token))
+    with OAuth2Client('foo', token=default_token, transport=transport) as sess:
         sess.register_compliance_hook(
             'access_token_response',
             access_token_response_hook
@@ -220,8 +221,8 @@ def test_password_grant_type():
         assert content.get('scope') == 'profile'
         assert content.get('grant_type') == 'password'
 
-    app = MockDispatch(default_token, assert_func=assert_func)
-    with OAuth2Client('foo', scope='profile', app=app) as sess:
+    transport = WSGITransport(MockDispatch(default_token, assert_func=assert_func))
+    with OAuth2Client('foo', scope='profile', transport=transport) as sess:
         token = sess.fetch_token(url, username='v', password='v')
         assert token == default_token
 
@@ -238,8 +239,8 @@ def test_client_credentials_type():
         assert content.get('scope') == 'profile'
         assert content.get('grant_type') == 'client_credentials'
 
-    app = MockDispatch(default_token, assert_func=assert_func)
-    with OAuth2Client('foo', scope='profile', app=app) as sess:
+    transport = WSGITransport(MockDispatch(default_token, assert_func=assert_func))
+    with OAuth2Client('foo', scope='profile', transport=transport) as sess:
         token = sess.fetch_token(url)
         assert token == default_token
 
@@ -255,9 +256,9 @@ def test_cleans_previous_token_before_fetching_new_one():
     new_token['expires_at'] = now + 3600
     url = 'https://example.com/token'
 
-    app = MockDispatch(new_token)
+    transport = WSGITransport(MockDispatch(new_token))
     with mock.patch('time.time', lambda: now):
-        with OAuth2Client('foo', token=default_token, app=app) as sess:
+        with OAuth2Client('foo', token=default_token, transport=transport) as sess:
             assert sess.fetch_token(url) == new_token
 
 
@@ -280,10 +281,10 @@ def test_auto_refresh_token():
         token_type='bearer', expires_at=100
     )
 
-    app = MockDispatch(default_token)
+    transport = WSGITransport(MockDispatch(default_token))
     with OAuth2Client(
             'foo', token=old_token, token_endpoint='https://i.b/token',
-            update_token=update_token, app=app
+            update_token=update_token, transport=transport
     ) as sess:
         sess.get('https://i.b/user')
         assert update_token.called is True
@@ -295,7 +296,7 @@ def test_auto_refresh_token():
     )
     with OAuth2Client(
             'foo', token=old_token, token_endpoint='https://i.b/token',
-            update_token=update_token, app=app
+            update_token=update_token, transport=transport
     ) as sess:
         with pytest.raises(OAuthError):
             sess.get('https://i.b/user')
@@ -315,13 +316,13 @@ def test_auto_refresh_token2():
         expires_at=100
     )
 
-    app = MockDispatch(default_token)
+    transport = WSGITransport(MockDispatch(default_token))
 
     with OAuth2Client(
             'foo', token=old_token,
             token_endpoint='https://i.b/token',
             grant_type='client_credentials',
-            app=app,
+            transport=transport,
     ) as client:
         client.get('https://i.b/user')
         assert update_token.called is False
@@ -329,7 +330,7 @@ def test_auto_refresh_token2():
     with OAuth2Client(
             'foo', token=old_token, token_endpoint='https://i.b/token',
             update_token=update_token, grant_type='client_credentials',
-            app=app,
+            transport=transport,
     ) as client:
         client.get('https://i.b/user')
         assert update_token.called is True
@@ -348,12 +349,12 @@ def test_auto_refresh_token3():
         expires_at=100
     )
 
-    app = MockDispatch(default_token)
+    transport = WSGITransport(MockDispatch(default_token))
 
     with OAuth2Client(
             'foo', token=old_token, token_endpoint='https://i.b/token',
             update_token=update_token, grant_type='client_credentials',
-            app=app,
+            transport=transport,
     ) as client:
         client.post('https://i.b/user', json={'foo': 'bar'})
         assert update_token.called is True
@@ -361,9 +362,9 @@ def test_auto_refresh_token3():
 
 def test_revoke_token():
     answer = {'status': 'ok'}
-    app = MockDispatch(answer)
+    transport = WSGITransport(MockDispatch(answer))
 
-    with OAuth2Client('a', app=app) as sess:
+    with OAuth2Client('a', transport=transport) as sess:
         resp = sess.revoke_token('https://i.b/token', 'hi')
         assert resp.json() == answer
 
@@ -375,6 +376,7 @@ def test_revoke_token():
 
 
 def test_request_without_token():
-    with OAuth2Client('a', app=MockDispatch()) as client:
+    transport = WSGITransport(MockDispatch())
+    with OAuth2Client('a', transport=transport) as client:
         with pytest.raises(OAuthError):
             client.get('https://i.b/token')

@@ -170,3 +170,7 @@ class OAuth1Client:
     @staticmethod
     def handle_error(error_type, error_description):
         raise ValueError(f'{error_type}: {error_description}')
+
+    def __del__(self):
+        if self.session:
+            del self.session

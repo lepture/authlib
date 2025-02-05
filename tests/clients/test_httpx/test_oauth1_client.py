@@ -1,4 +1,5 @@
 import pytest
+from httpx import WSGITransport
 from authlib.integrations.httpx_client import (
     OAuthError,
     OAuth1Client,
@@ -18,8 +19,8 @@ def test_fetch_request_token_via_header():
         assert 'oauth_consumer_key="id"' in auth_header
         assert 'oauth_signature=' in auth_header
 
-    app = MockDispatch(request_token, assert_func=assert_func)
-    with OAuth1Client('id', 'secret', app=app) as client:
+    transport = WSGITransport(MockDispatch(request_token, assert_func=assert_func))
+    with OAuth1Client('id', 'secret', transport=transport) as client:
         response = client.fetch_request_token(oauth_url)
 
     assert response == request_token
@@ -36,11 +37,11 @@ def test_fetch_request_token_via_body():
         assert content.get('oauth_consumer_key') == 'id'
         assert 'oauth_signature' in content
 
-    mock_response = MockDispatch(request_token, assert_func=assert_func)
+    transport = WSGITransport(MockDispatch(request_token, assert_func=assert_func))
 
     with OAuth1Client(
         'id', 'secret', signature_type=SIGNATURE_TYPE_BODY,
-        app=mock_response,
+        transport=transport,
     ) as client:
         response = client.fetch_request_token(oauth_url)
 
@@ -58,11 +59,11 @@ def test_fetch_request_token_via_query():
         assert 'oauth_consumer_key=id' in url
         assert '&oauth_signature=' in url
 
-    mock_response = MockDispatch(request_token, assert_func=assert_func)
+    transport = WSGITransport(MockDispatch(request_token, assert_func=assert_func))
 
     with OAuth1Client(
         'id', 'secret', signature_type=SIGNATURE_TYPE_QUERY,
-        app=mock_response,
+        transport=transport,
     ) as client:
         response = client.fetch_request_token(oauth_url)
 
@@ -79,10 +80,10 @@ def test_fetch_access_token():
         assert 'oauth_consumer_key="id"' in auth_header
         assert 'oauth_signature=' in auth_header
 
-    mock_response = MockDispatch(request_token, assert_func=assert_func)
+    transport = WSGITransport(MockDispatch(request_token, assert_func=assert_func))
     with OAuth1Client(
         'id', 'secret', token='foo', token_secret='bar',
-        app=mock_response,
+        transport=transport,
     ) as client:
         with pytest.raises(OAuthError):
             client.fetch_access_token(oauth_url)
@@ -93,10 +94,10 @@ def test_fetch_access_token():
 
 
 def test_get_via_header():
-    mock_response = MockDispatch(b'hello')
+    transport = WSGITransport(MockDispatch(b'hello'))
     with OAuth1Client(
         'id', 'secret', token='foo', token_secret='bar',
-        app=mock_response,
+        transport=transport,
     ) as client:
         response = client.get('https://example.com/')
 
@@ -115,11 +116,11 @@ def test_get_via_body():
         assert content.get('oauth_consumer_key') == 'id'
         assert 'oauth_signature' in content
 
-    mock_response = MockDispatch(b'hello', assert_func=assert_func)
+    transport = WSGITransport(MockDispatch(b'hello', assert_func=assert_func))
     with OAuth1Client(
         'id', 'secret', token='foo', token_secret='bar',
         signature_type=SIGNATURE_TYPE_BODY,
-        app=mock_response,
+        transport=transport,
     ) as client:
         response = client.post('https://example.com/')
 
@@ -131,11 +132,11 @@ def test_get_via_body():
 
 
 def test_get_via_query():
-    mock_response = MockDispatch(b'hello')
+    transport = WSGITransport(MockDispatch(b'hello'))
     with OAuth1Client(
         'id', 'secret', token='foo', token_secret='bar',
         signature_type=SIGNATURE_TYPE_QUERY,
-        app=mock_response,
+        transport=transport,
     ) as client:
         response = client.get('https://example.com/')
 

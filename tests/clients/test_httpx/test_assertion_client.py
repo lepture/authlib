@@ -1,5 +1,6 @@
 import time
 import pytest
+from httpx import WSGITransport
 from authlib.integrations.httpx_client import AssertionClient
 from ..wsgi_helper import MockDispatch
 
@@ -26,7 +27,7 @@ def test_refresh_token():
         audience='foo',
         alg='HS256',
         key='secret',
-        app=MockDispatch(default_token, assert_func=verifier)
+        transport=WSGITransport(MockDispatch(default_token, assert_func=verifier)),
     ) as client:
         client.get('https://i.b')
 
@@ -43,7 +44,7 @@ def test_refresh_token():
         key='secret',
         scope='email',
         claims={'test_mode': 'true'},
-        app=MockDispatch(default_token, assert_func=verifier)
+        transport=WSGITransport(MockDispatch(default_token, assert_func=verifier)),
     ) as client:
         client.get('https://i.b')
         client.get('https://i.b')
@@ -56,7 +57,7 @@ def test_without_alg():
         subject='foo',
         audience='foo',
         key='secret',
-        app=MockDispatch(default_token)
+        transport=WSGITransport(MockDispatch(default_token)),
     ) as client:
         with pytest.raises(ValueError):
             client.get('https://i.b')

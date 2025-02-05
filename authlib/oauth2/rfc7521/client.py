@@ -90,3 +90,7 @@ class AssertionClient:
             'POST', self.token_endpoint, data=data, withhold_token=True)
 
         return self.parse_response_token(resp)
+
+    def __del__(self):
+        if self.session:
+            del self.session

@@ -6,17 +6,39 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
-Unreleased
-----------
+Version 1.x.x
+-------------
+
+**Unreleased**
+
+- Implement server-side :rfc:`RFC9207 <9207>`. :issue:`700`
+
+Version 1.4.1
+-------------
+
+**Released on Jan 28, 2025**
+
+- Improve garbage collection on OAuth clients. :issue:`698`
+- Fix client parameters for httpx. :issue:`694`
+
+Version 1.4.0
+-------------
+
+**Released on Dec 20, 2024**
 
 - Fix ``id_token`` decoding when kid is null. :pr:`659`
-- Stop support for Python 3.8. :pr:`682`
 - Support for Python 3.13. :pr:`682`
 - Force login if the ``prompt`` parameter value is ``login``. :pr:`637`
-- Implement server-side :rfc:`RFC9207 <9207>`. :issue:`700`
+- Support for httpx 0.28, :pr:`695`
+
+**Breaking changes**:
+
+- Stop support for Python 3.8. :pr:`682`
 
 Version 1.3.2
 -------------
+
+**Released on Aug 30 2024**
 
 - Prevent ever-growing session size for OAuth clients.
 - Revert ``quote`` client id and secret.
