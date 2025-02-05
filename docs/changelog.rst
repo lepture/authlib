@@ -13,6 +13,7 @@ Unreleased
 - Stop support for Python 3.8. :pr:`682`
 - Support for Python 3.13. :pr:`682`
 - Force login if the ``prompt`` parameter value is ``login``. :pr:`637`
+- Implement server-side :rfc:`RFC9207 <9207>`. :issue:`700`
 
 Version 1.3.2
 -------------

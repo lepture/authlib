@@ -1,0 +1,17 @@
+.. _specs/rfc9207:
+
+RFC9207: OAuth 2.0 Authorization Server Issuer Identification
+=============================================================
+
+This section contains the generic implementation of :rfc:`RFC9207 <9207>`.
+
+In summary, RFC9207 advise to return an ``iss`` parameter in authorization code responses.
+This can simply be done by implementing the :meth:`~authlib.oauth2.rfc6749.grants.AuthorizationCodeGrant.get_issuer` method in the :class:`~authlib.oauth2.rfc6749.grants.AuthorizationCodeGrant` class::
+
+    from authlib.oauth2.rfc6749 import grants
+
+    class AuthorizationCodeGrant(grants.AuthorizationCodeGrant):
+        ...
+
+        def get_issuer(self):
+            return "https://auth.example.org"

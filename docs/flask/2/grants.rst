@@ -58,6 +58,9 @@ Implement this grant by subclassing :class:`AuthorizationCodeGrant`::
         def authenticate_user(self, authorization_code):
             return User.query.get(authorization_code.user_id)
 
+        def get_issuer(self):
+            return "https://auth.example.org"
+
     # register it to grant endpoint
     server.register_grant(AuthorizationCodeGrant)
 
