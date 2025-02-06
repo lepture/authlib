@@ -60,7 +60,7 @@ class RFC9207AuthorizationCodeTest(TestCase):
         db.session.commit()
 
     def test_rfc9207_enabled_success(self):
-        """Check that when ``get_issuer`` is implemented,
+        """Check that when RFC9207 is implemented,
         the authorization response has an ``iss`` parameter."""
 
         self.prepare_data(rfc9207=True)
@@ -69,7 +69,7 @@ class RFC9207AuthorizationCodeTest(TestCase):
         self.assertIn('iss=https%3A%2F%2Fauth.test', rv.location)
 
     def test_rfc9207_disabled_success_no_iss(self):
-        """Check that when ``get_issuer`` is not implemented,
+        """Check that when RFC9207 is not implemented,
         the authorization response contains no ``iss`` parameter."""
 
         self.prepare_data(rfc9207=False)
@@ -78,7 +78,7 @@ class RFC9207AuthorizationCodeTest(TestCase):
         self.assertNotIn('iss=', rv.location)
 
     def test_rfc9207_enabled_error(self):
-        """Check that when ``get_issuer`` is implemented,
+        """Check that when RFC9207 is implemented,
         the authorization response has an ``iss`` parameter,
         even when an error is returned."""
 
@@ -88,7 +88,7 @@ class RFC9207AuthorizationCodeTest(TestCase):
         self.assertIn('iss=https%3A%2F%2Fauth.test', rv.location)
 
     def test_rfc9207_disbled_error_no_iss(self):
-        """Check that when ``get_issuer`` is not implemented,
+        """Check that when RFC9207 is not implemented,
         the authorization response contains no ``iss`` parameter,
         even when an error is returned."""
 
