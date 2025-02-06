@@ -16,24 +16,18 @@ class AuthorizationCodeGrant(CodeGrantMixin, _AuthorizationCodeGrant):
         return save_authorization_code(code, request)
 
 
-class RFC9207AuthorizationCodeGrant(AuthorizationCodeGrant):
-    def get_issuer(self) -> str:
-        return "https://auth.test"
-
-
 class AuthorizationCodeTest(TestCase):
     LAZY_INIT = False
+
+    def register_grant(self, server):
+        server.register_grant(AuthorizationCodeGrant)
 
     def prepare_data(
             self, is_confidential=True,
             response_type='code', grant_type='authorization_code',
-            token_endpoint_auth_method='client_secret_basic', rfc9207=False):
+            token_endpoint_auth_method='client_secret_basic'):
         server = create_authorization_server(self.app, self.LAZY_INIT)
-        if not rfc9207:
-            server.register_grant(AuthorizationCodeGrant)
-        else:
-            server.register_grant(RFC9207AuthorizationCodeGrant)
-
+        self.register_grant(server)
         self.server = server
 
         user = User(username='foo')
@@ -265,42 +259,3 @@ class AuthorizationCodeTest(TestCase):
         resp = json.loads(rv.data)
         self.assertIn('access_token', resp)
         self.assertIn('c-authorization_code.1.', resp['access_token'])
-
-    def test_rfc9207_enabled_success(self):
-        """Check that when ``get_issuer`` is implemented,
-        the authorization response has an ``iss`` parameter."""
-
-        self.prepare_data(rfc9207=True)
-        url = self.authorize_url + '&state=bar'
-        rv = self.client.post(url, data={'user_id': '1'})
-        self.assertIn('iss=https%3A%2F%2Fauth.test', rv.location)
-
-    def test_rfc9207_disabled_success_no_iss(self):
-        """Check that when ``get_issuer`` is not implemented,
-        the authorization response contains no ``iss`` parameter."""
-
-        self.prepare_data(rfc9207=False)
-        url = self.authorize_url + '&state=bar'
-        rv = self.client.post(url, data={'user_id': '1'})
-        self.assertNotIn('iss=', rv.location)
-
-    def test_rfc9207_enabled_error(self):
-        """Check that when ``get_issuer`` is implemented,
-        the authorization response has an ``iss`` parameter,
-        even when an error is returned."""
-
-        self.prepare_data(rfc9207=True)
-        rv = self.client.post(self.authorize_url)
-        self.assertIn('error=access_denied', rv.location)
-        self.assertIn('iss=https%3A%2F%2Fauth.test', rv.location)
-
-    def test_rfc9207_disbled_error_no_iss(self):
-        """Check that when ``get_issuer`` is not implemented,
-        the authorization response contains no ``iss`` parameter,
-        even when an error is returned."""
-
-        self.prepare_data(rfc9207=False)
-        rv = self.client.post(self.authorize_url)
-        self.assertIn('error=access_denied', rv.location)
-        self.assertNotIn('iss=', rv.location)
-

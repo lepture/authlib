@@ -147,11 +147,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         :returns: (status_code, body, headers)
         """
         if not grant_user:
-            raise AccessDeniedError(
-                state=self.request.state,
-                redirect_uri=redirect_uri,
-                issuer=self.get_issuer(),
-            )
+            raise AccessDeniedError(state=self.request.state, redirect_uri=redirect_uri)
 
         self.request.user = grant_user
 
@@ -161,10 +157,6 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         params = [('code', code)]
         if self.request.state:
             params.append(('state', self.request.state))
-
-        if issuer := self.get_issuer():
-            params.append(('iss', issuer))
-
         uri = add_params_to_uri(redirect_uri, params)
         headers = [('Location', uri)]
         return 302, '', headers
@@ -218,27 +210,25 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         log.debug('Validate token request of %r', client)
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError(
-                f'The client is not authorized to use "grant_type={self.GRANT_TYPE}"',
-                issuer=self.get_issuer(),
-            )
+                f'The client is not authorized to use "grant_type={self.GRANT_TYPE}"')
 
         code = self.request.form.get('code')
         if code is None:
-            raise InvalidRequestError('Missing "code" in request.', issuer=self.get_issuer())
+            raise InvalidRequestError('Missing "code" in request.')
 
         # ensure that the authorization code was issued to the authenticated
         # confidential client, or if the client is public, ensure that the
         # code was issued to "client_id" in the request
         authorization_code = self.query_authorization_code(code, client)
         if not authorization_code:
-            raise InvalidGrantError('Invalid "code" in request.', issuer=self.get_issuer())
+            raise InvalidGrantError('Invalid "code" in request.')
 
         # validate redirect_uri parameter
         log.debug('Validate token redirect_uri of %r', client)
         redirect_uri = self.request.redirect_uri
         original_redirect_uri = authorization_code.get_redirect_uri()
         if original_redirect_uri and redirect_uri != original_redirect_uri:
-            raise InvalidGrantError('Invalid "redirect_uri" in request.', issuer=self.get_issuer())
+            raise InvalidGrantError('Invalid "redirect_uri" in request.')
 
         # save for create_token_response
         self.request.client = client
@@ -278,7 +268,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
 
         user = self.authenticate_user(authorization_code)
         if not user:
-            raise InvalidGrantError('There is no "user" for this code.', issuer=self.get_issuer())
+            raise InvalidGrantError('There is no "user" for this code.')
         self.request.user = user
 
         scope = authorization_code.get_scope()
@@ -356,29 +346,18 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         """
         raise NotImplementedError()
 
-    def get_issuer(self) -> str | None:
-        """Return the issuer URL.
-
-        Developers MAY implemnt this method if they want to support :rfc:`RFC9207 <9207>`::
-
-            def get_issuer() -> str:
-                return "https://auth.example.org"
-        """
-        return None
-
 
 def validate_code_authorization_request(grant):
     request = grant.request
     client_id = request.client_id
-    issuer = grant.get_issuer() if hasattr(grant, "get_issuer") else None
     log.debug('Validate authorization request of %r', client_id)
 
     if client_id is None:
-        raise InvalidClientError(state=request.state, issuer=issuer)
+        raise InvalidClientError(state=request.state)
 
     client = grant.server.query_client(client_id)
     if not client:
-        raise InvalidClientError(state=request.state, issuer=issuer)
+        raise InvalidClientError(state=request.state)
 
     redirect_uri = grant.validate_authorization_redirect_uri(request, client)
     response_type = request.response_type
@@ -386,8 +365,7 @@ def validate_code_authorization_request(grant):
         raise UnauthorizedClientError(
             f'The client is not authorized to use "response_type={response_type}"',
             state=grant.request.state,
-            redirect_uri=redirect_uri, issuer=issuer,
-
+            redirect_uri=redirect_uri,
         )
 
     try:
@@ -396,6 +374,5 @@ def validate_code_authorization_request(grant):
         grant.execute_hook('after_validate_authorization_request')
     except OAuth2Error as error:
         error.redirect_uri = redirect_uri
-        error.issuer = issuer
         raise error
     return redirect_uri

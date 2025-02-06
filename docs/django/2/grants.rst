@@ -89,9 +89,6 @@ grant type. Here is how::
         def authenticate_user(self, authorization_code):
             return authorization_code.user
 
-        def get_issuer(self):
-            return "https://auth.example.org"
-
     # register it to grant endpoint
     server.register_grant(AuthorizationCodeGrant)
 
