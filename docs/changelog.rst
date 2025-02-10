@@ -6,6 +6,13 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 1.x.x
+-------------
+
+**Unreleased**
+
+- ``generate_id_token`` can take a ``kid`` parmaeter. :pr:`702`
+
 Version 1.4.1
 -------------
 
