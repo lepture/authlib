@@ -19,11 +19,11 @@ class IssuerParameter:
             new_location = add_params_to_uri(response.location, {"iss": self.get_issuer()})
             response.location += new_location
 
-    def get_issuer() -> Optional[str]:
+    def get_issuer(self) -> Optional[str]:
         """Return the issuer URL.
         Developers MAY implement this method if they want to support :rfc:`RFC9207 <9207>`::
 
-            def get_issuer() -> str:
+            def get_issuer(self) -> str:
                 return "https://auth.example.org"
         """
         return None
