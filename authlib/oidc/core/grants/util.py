@@ -59,11 +59,15 @@ def validate_nonce(request, exists_nonce, required=False):
 
 def generate_id_token(
         token, user_info, key, iss, aud, alg='RS256', exp=3600,
-        nonce=None, auth_time=None, code=None):
+        nonce=None, auth_time=None, code=None, kid=None):
 
     now = int(time.time())
     if auth_time is None:
         auth_time = now
+
+    header = {'alg': alg}
+    if kid:
+        header["kid"] = kid
 
     payload = {
         'iss': iss,
@@ -83,7 +87,7 @@ def generate_id_token(
         payload['at_hash'] = to_native(create_half_hash(access_token, alg))
 
     payload.update(user_info)
-    return to_native(jwt.encode({'alg': alg}, payload, key))
+    return to_native(jwt.encode(header, payload, key))
 
 
 def create_response_mode_response(redirect_uri, params, response_mode):
