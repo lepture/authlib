@@ -295,9 +295,12 @@ class AuthorizationServer:
         try:
             redirect_uri = grant.validate_authorization_request()
             args = grant.create_authorization_response(redirect_uri, grant_user)
-            return self.handle_response(*args)
+            response = self.handle_response(*args)
         except OAuth2Error as error:
-            return self.handle_error_response(request, error)
+            response = self.handle_error_response(request, error)
+
+        grant.execute_hook("after_authorization_response", response)
+        return response
 
     def create_token_response(self, request=None):
         """Validate token request and create token response.

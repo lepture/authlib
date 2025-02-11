@@ -24,6 +24,7 @@ class BaseGrant:
         self.server = server
         self._hooks = {
             "after_validate_authorization_request": set(),
+            "after_authorization_response": set(),
             "after_validate_consent_request": set(),
             "after_validate_token_request": set(),
             "process_token": set(),
