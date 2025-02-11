@@ -11,6 +11,7 @@ Version 1.x.x
 
 **Unreleased**
 
+- Implement server-side :rfc:`RFC9207 <9207>`. :issue:`700`
 - ``generate_id_token`` can take a ``kid`` parmaeter. :pr:`702`
 
 Version 1.4.1
