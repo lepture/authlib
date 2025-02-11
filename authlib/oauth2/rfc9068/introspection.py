@@ -92,7 +92,6 @@ class JWTIntrospectionEndpoint(IntrospectionEndpoint):
                 raise ContinueIteration()
             raise InvalidTokenError()
 
-
         payload = {
             'active': True,
             'token_type': 'Bearer',

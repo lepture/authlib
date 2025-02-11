@@ -1,6 +1,5 @@
 import importlib.metadata
 
-import werkzeug
 from werkzeug.exceptions import HTTPException
 
 _version = importlib.metadata.version('werkzeug').split('.')[0]

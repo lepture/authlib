@@ -77,7 +77,10 @@ class AuthorizationServer:
         If you register a generator for a certain grant type, that generator will only works
         for the given grant type::
 
-            authorization_server.register_token_generator('client_credentials', generate_bearer_token)
+            authorization_server.register_token_generator(
+                'client_credentials',
+                generate_bearer_token,
+            )
 
         :param grant_type: string name of the grant type
         :param func: a function to generate token

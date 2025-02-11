@@ -44,8 +44,8 @@ class OAuth2Request:
 
     @property
     def datalist(self) -> DefaultDict[str, list]:
-        """ Return all the data in query parameters and the body of the request as a dictionary with all the values
-        in lists. """
+        """ Return all the data in query parameters and the body of the request as a dictionary
+        with all the values in lists."""
         if self._parsed_query is None:
             self._parsed_query = url_decode(urlparse.urlparse(self.uri).query)
         values = defaultdict(list)

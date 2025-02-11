@@ -14,4 +14,5 @@ def register_jwe_draft(cls):
     if XC20PEncAlgorithm is not None:
         cls.register_algorithm(XC20PEncAlgorithm(256))  # XC20P
 
+
 __all__ = ['register_jwe_draft']

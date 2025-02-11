@@ -9,7 +9,12 @@
 """
 
 from .jwe import JsonWebEncryption
-from .models import JWEAlgorithm, JWEAlgorithmWithTagAwareKeyAgreement, JWEEncAlgorithm, JWEZipAlgorithm
+from .models import (
+    JWEAlgorithm,
+    JWEAlgorithmWithTagAwareKeyAgreement,
+    JWEEncAlgorithm,
+    JWEZipAlgorithm,
+)
 
 
 __all__ = [

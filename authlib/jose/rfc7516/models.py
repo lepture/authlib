@@ -21,7 +21,8 @@ class JWEAlgorithmBase(metaclass=ABCMeta):
 
 class JWEAlgorithm(JWEAlgorithmBase, metaclass=ABCMeta):
     """Interface for JWE algorithm conforming to RFC7518.
-    JWA specification (RFC7518) SHOULD implement the algorithms for JWE with this base implementation.
+    JWA specification (RFC7518) SHOULD implement the algorithms for JWE
+    with this base implementation.
     """
     def wrap(self, enc_alg, headers, key, preset=None):
         raise NotImplementedError
@@ -31,7 +32,8 @@ class JWEAlgorithm(JWEAlgorithmBase, metaclass=ABCMeta):
 
 
 class JWEAlgorithmWithTagAwareKeyAgreement(JWEAlgorithmBase, metaclass=ABCMeta):
-    """Interface for JWE algorithm with tag-aware key agreement (in key agreement with key wrapping mode).
+    """Interface for JWE algorithm with tag-aware key agreement (in key agreement
+    with key wrapping mode).
     ECDH-1PU is an example of such an algorithm.
     """
     def generate_keys_and_prepare_headers(self, enc_alg, key, sender_key, preset=None):
@@ -132,7 +134,8 @@ class JWESharedHeader(dict):
 class JWEHeader(dict):
     """Header object for JWE.
 
-    Combines protected header, shared unprotected header and specific recipient's unprotected header together.
+    Combines protected header, shared unprotected header
+    and specific recipient's unprotected header together.
     """
     def __init__(self, protected, unprotected, header):
         obj = {}

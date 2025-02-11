@@ -36,6 +36,7 @@ class ResourceProtector(_ResourceProtector):
         claims = kwargs
         # backward compatibility
         claims['scopes'] = scopes
+
         def wrapper(f):
             @functools.wraps(f)
             def decorated(request, *args, **kwargs):

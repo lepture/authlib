@@ -102,6 +102,8 @@ class FlaskOAuth2App(FlaskAppMixin, OAuth2Mixin, OpenIDMixin, BaseApp):
         self.token = token
 
         if 'id_token' in token and 'nonce' in state_data:
-            userinfo = self.parse_id_token(token, nonce=state_data['nonce'], claims_options=claims_options)
+            userinfo = self.parse_id_token(
+                token, nonce=state_data['nonce'], claims_options=claims_options
+            )
             token['userinfo'] = userinfo
         return token

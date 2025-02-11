@@ -4,7 +4,11 @@ from copy import deepcopy
 from authlib.common.encoding import (
     to_bytes, urlsafe_b64encode, json_b64encode, to_unicode
 )
-from authlib.jose.rfc7516.models import JWEAlgorithmWithTagAwareKeyAgreement, JWESharedHeader, JWEHeader
+from authlib.jose.rfc7516.models import (
+    JWEAlgorithmWithTagAwareKeyAgreement,
+    JWESharedHeader,
+    JWEHeader,
+)
 from authlib.jose.util import (
     extract_header,
     extract_segment, ensure_dict,
@@ -16,7 +20,9 @@ from authlib.jose.errors import (
     MissingEncryptionAlgorithmError,
     UnsupportedEncryptionAlgorithmError,
     UnsupportedCompressionAlgorithmError,
-    InvalidHeaderParameterNameError, InvalidAlgorithmForMultipleRecipientsMode, KeyMismatchError,
+    InvalidHeaderParameterNameError,
+    InvalidAlgorithmForMultipleRecipientsMode,
+    KeyMismatchError,
 )
 
 
@@ -90,12 +96,17 @@ class JsonWebEncryption:
         # self._post_validate_header(protected, algorithm)
 
         # step 2: Generate a random Content Encryption Key (CEK)
-        # use enc_alg.generate_cek() in scope of upcoming .wrap or .generate_keys_and_prepare_headers call
+        # use enc_alg.generate_cek() in scope of upcoming .wrap
+        # or .generate_keys_and_prepare_headers call
 
         # step 3: Encrypt the CEK with the recipient's public key
-        if isinstance(alg, JWEAlgorithmWithTagAwareKeyAgreement) and alg.key_size is not None:
-            # For a JWE algorithm with tag-aware key agreement in case key agreement with key wrapping mode is used:
-            # Defer key agreement with key wrapping until authentication tag is computed
+        if (
+            isinstance(alg, JWEAlgorithmWithTagAwareKeyAgreement) and alg.key_size is not None
+        ):
+            # For a JWE algorithm with tag-aware key agreement in case key agreement
+            # with key wrapping mode is used:
+            # Defer key agreement with key wrapping until
+            # authentication tag is computed
             prep = alg.generate_keys_and_prepare_headers(enc, key, sender_key)
             epk = prep['epk']
             cek = prep['cek']
@@ -129,10 +140,15 @@ class JsonWebEncryption:
         # step 7: perform encryption
         ciphertext, tag = enc.encrypt(msg, aad, iv, cek)
 
-        if isinstance(alg, JWEAlgorithmWithTagAwareKeyAgreement) and alg.key_size is not None:
-            # For a JWE algorithm with tag-aware key agreement in case key agreement with key wrapping mode is used:
+        if (
+            isinstance(alg, JWEAlgorithmWithTagAwareKeyAgreement) and alg.key_size is not None
+        ):
+            # For a JWE algorithm with tag-aware key agreement in case key agreement
+            # with key wrapping mode is used:
             # Perform key agreement with key wrapping deferred at step 3
-            wrapped = alg.agree_upon_key_and_wrap_cek(enc, protected, key, sender_key, epk, cek, tag)
+            wrapped = alg.agree_upon_key_and_wrap_cek(
+                enc, protected, key, sender_key, epk, cek, tag
+            )
             ek = wrapped['ek']
 
         # step 8: build resulting message
@@ -144,7 +160,7 @@ class JsonWebEncryption:
             urlsafe_b64encode(tag)
         ])
 
-    def serialize_json(self, header_obj, payload, keys, sender_key=None):
+    def serialize_json(self, header_obj, payload, keys, sender_key=None):  # noqa: C901
         """Generate a JWE JSON Serialization (in fully general syntax).
 
         The JWE JSON Serialization represents encrypted content as a JSON
@@ -293,7 +309,8 @@ class JsonWebEncryption:
         # self._post_validate_header(protected, algorithm)
 
         # step 2: Generate a random Content Encryption Key (CEK)
-        # use enc_alg.generate_cek() in scope of upcoming .wrap or .generate_keys_and_prepare_headers call
+        # use enc_alg.generate_cek() in scope of upcoming .wrap
+        # or .generate_keys_and_prepare_headers call
 
         # step 3: Encrypt the CEK with the recipient's public key
         preset = alg.generate_preset(enc, keys[0])
@@ -306,8 +323,11 @@ class JsonWebEncryption:
         if 'header' in preset:
             shared_header.update_protected(preset['header'])
 
-        if isinstance(alg, JWEAlgorithmWithTagAwareKeyAgreement) and alg.key_size is not None:
-            # For a JWE algorithm with tag-aware key agreement in case key agreement with key wrapping mode is used:
+        if (
+            isinstance(alg, JWEAlgorithmWithTagAwareKeyAgreement) and alg.key_size is not None
+        ):
+            # For a JWE algorithm with tag-aware key agreement in case key agreement
+            # with key wrapping mode is used:
             # Defer key agreement with key wrapping until authentication tag is computed
             epks = []
             for i in range(len(keys)):
@@ -342,7 +362,7 @@ class JsonWebEncryption:
         # parameter be ASCII(Encoded Protected Header || '.' || BASE64URL(JWE AAD)).
         aad = json_b64encode(shared_header.protected) if shared_header.protected else b''
         if jwe_aad is not None:
-           aad += b'.' + urlsafe_b64encode(jwe_aad)
+            aad += b'.' + urlsafe_b64encode(jwe_aad)
         aad = to_bytes(aad, 'ascii')
 
         # step 6: compress message if required
@@ -355,10 +375,13 @@ class JsonWebEncryption:
         ciphertext, tag = enc.encrypt(msg, aad, iv, cek)
 
         if isinstance(alg, JWEAlgorithmWithTagAwareKeyAgreement) and alg.key_size is not None:
-            # For a JWE algorithm with tag-aware key agreement in case key agreement with key wrapping mode is used:
+            # For a JWE algorithm with tag-aware key agreement in case key agreement
+            # with key wrapping mode is used:
             # Perform key agreement with key wrapping deferred at step 3
             for i in range(len(keys)):
-                wrapped = alg.agree_upon_key_and_wrap_cek(enc, shared_header, keys[i], sender_key, epks[i], cek, tag)
+                wrapped = alg.agree_upon_key_and_wrap_cek(
+                    enc, shared_header, keys[i], sender_key, epks[i], cek, tag
+                )
                 recipients[i]['encrypted_key'] = wrapped['ek']
 
         # step 8: build resulting message
@@ -477,7 +500,7 @@ class JsonWebEncryption:
             payload = decode(payload)
         return {'header': protected, 'payload': payload}
 
-    def deserialize_json(self, obj, key, decode=None, sender_key=None):
+    def deserialize_json(self, obj, key, decode=None, sender_key=None):  # noqa: C901
         """Extract JWE JSON Serialization.
 
         :param obj: JWE JSON Serialization as dict or str
@@ -590,7 +613,7 @@ class JsonWebEncryption:
 
         aad = to_bytes(obj.get('protected', ''))
         if 'aad' in obj:
-           aad += b'.' + to_bytes(obj['aad'])
+            aad += b'.' + to_bytes(obj['aad'])
         aad = to_bytes(aad, 'ascii')
 
         msg = enc.decrypt(ciphertext, aad, iv, tag, cek)
@@ -690,12 +713,16 @@ class JsonWebEncryption:
     def _validate_sender_key(self, sender_key, alg):
         if isinstance(alg, JWEAlgorithmWithTagAwareKeyAgreement):
             if sender_key is None:
-                raise ValueError("{} algorithm requires sender_key but passed sender_key value is None"
-                                 .format(alg.name))
+                raise ValueError(
+                    "{} algorithm requires sender_key but passed sender_key value is None"
+                    .format(alg.name)
+                )
         else:
             if sender_key is not None:
-                raise ValueError("{} algorithm does not use sender_key but passed sender_key value is not None"
-                                 .format(alg.name))
+                raise ValueError(
+                    "{} algorithm does not use sender_key but passed sender_key value is not None"
+                    .format(alg.name)
+                )
 
     def _validate_private_headers(self, header, alg):
         # only validate private headers when developers set

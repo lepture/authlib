@@ -75,7 +75,9 @@ class ECDH1PUAlgorithm(JWEAlgorithmWithTagAwareKeyAgreement):
         )
         return ckdf.derive(shared_key)
 
-    def deliver_at_sender(self, sender_static_key, sender_ephemeral_key, recipient_pubkey, headers, bit_size, tag):
+    def deliver_at_sender(
+        self, sender_static_key, sender_ephemeral_key, recipient_pubkey, headers, bit_size, tag
+    ):
         shared_key_s = sender_static_key.exchange_shared_key(recipient_pubkey)
         shared_key_e = sender_ephemeral_key.exchange_shared_key(recipient_pubkey)
         shared_key = self.compute_shared_key(shared_key_e, shared_key_s)
@@ -84,7 +86,9 @@ class ECDH1PUAlgorithm(JWEAlgorithmWithTagAwareKeyAgreement):
 
         return self.compute_derived_key(shared_key, fixed_info, bit_size)
 
-    def deliver_at_recipient(self, recipient_key, sender_static_pubkey, sender_ephemeral_pubkey, headers, bit_size, tag):
+    def deliver_at_recipient(
+        self, recipient_key, sender_static_pubkey, sender_ephemeral_pubkey, headers, bit_size, tag
+    ):
         shared_key_s = recipient_key.exchange_shared_key(sender_static_pubkey)
         shared_key_e = recipient_key.exchange_shared_key(sender_ephemeral_pubkey)
         shared_key = self.compute_shared_key(shared_key_e, shared_key_s)

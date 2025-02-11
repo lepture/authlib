@@ -23,7 +23,8 @@ class KeySet:
         :return: Key instance
         :raise: ValueError
         """
-        # Proposed fix, feel free to do something else but the idea is that we take the only key of the set if no kid is specified
+        # Proposed fix, feel free to do something else but the idea is that we take the only key
+        # of the set if no kid is specified
         if kid is None and len(self.keys) == 1:
             return self.keys[0]
         for k in self.keys:

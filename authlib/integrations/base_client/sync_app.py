@@ -320,7 +320,6 @@ class OAuth2Mixin(_RequestMixin, OAuth2Base):
         if self.authorize_params:
             kwargs.update(self.authorize_params)
 
-
         with self._get_oauth_client(**metadata) as client:
             if redirect_uri is not None:
                 client.redirect_uri = redirect_uri

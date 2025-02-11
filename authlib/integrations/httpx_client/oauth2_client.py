@@ -101,7 +101,8 @@ class AsyncOAuth2Client(_OAuth2Client, httpx.AsyncClient):
             auth = self.token_auth
 
         async with super().stream(
-            method, url, auth=auth, **kwargs) as resp:
+            method, url, auth=auth, **kwargs
+        ) as resp:
             yield resp
 
     async def ensure_active_token(self, token):

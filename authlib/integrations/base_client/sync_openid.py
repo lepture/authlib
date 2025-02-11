@@ -33,7 +33,7 @@ class OpenIDMixin:
         """Return an instance of UserInfo from token's ``id_token``."""
         if 'id_token' not in token:
             return None
-        
+
         load_key = self.create_load_key()
 
         claims_params = dict(

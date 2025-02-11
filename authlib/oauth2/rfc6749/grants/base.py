@@ -1,5 +1,4 @@
 from authlib.consts import default_json_headers
-from authlib.common.urls import urlparse
 from ..requests import OAuth2Request
 from ..errors import InvalidRequestError
 
