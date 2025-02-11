@@ -49,3 +49,21 @@ version = {attr = "authlib.__version__"}
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["authlib", "authlib.*"]
+
+[tool.pytest]
+asyncio_mode = "auto"
+python_files = "test*.py"
+norecursedirs = ["authlib", "build", "dist", "docs", "htmlcov"]
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "except ImportError",
+    "def __repr__",
+    "raise NotImplementedError",
+    "raise DeprecationWarning",
+    "deprecate",
+]
