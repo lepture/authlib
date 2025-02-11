@@ -67,3 +67,9 @@ exclude_lines = [
     "raise DeprecationWarning",
     "deprecate",
 ]
+
+[tool.check-manifest]
+ignore = ["tox.ini"]
+
+[tool.distutils.bdist_wheel]
+universal = true
