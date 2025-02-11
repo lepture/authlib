@@ -1,13 +1,16 @@
-from werkzeug.utils import import_string
-from flask import Response, json
+from flask import Response
+from flask import json
 from flask import request as flask_req
-from authlib.oauth2 import (
-    AuthorizationServer as _AuthorizationServer,
-)
-from authlib.oauth2.rfc6750 import BearerTokenGenerator
+from werkzeug.utils import import_string
+
 from authlib.common.security import generate_token
-from .requests import FlaskOAuth2Request, FlaskJsonRequest
-from .signals import client_authenticated, token_revoked
+from authlib.oauth2 import AuthorizationServer as _AuthorizationServer
+from authlib.oauth2.rfc6750 import BearerTokenGenerator
+
+from .requests import FlaskJsonRequest
+from .requests import FlaskOAuth2Request
+from .signals import client_authenticated
+from .signals import token_revoked
 
 
 class AuthorizationServer(_AuthorizationServer):
@@ -18,19 +21,17 @@ class AuthorizationServer(_AuthorizationServer):
         def query_client(client_id):
             return Client.query.filter_by(client_id=client_id).first()
 
+
         def save_token(token, request):
             if request.user:
                 user_id = request.user.id
             else:
                 user_id = None
             client = request.client
-            tok = Token(
-                client_id=client.client_id,
-                user_id=user.id,
-                **token
-            )
+            tok = Token(client_id=client.client_id, user_id=user.id, **token)
             db.session.add(tok)
             db.session.commit()
+
 
         server = AuthorizationServer(app, query_client, save_token)
         # or initialize lazily
@@ -53,9 +54,11 @@ class AuthorizationServer(_AuthorizationServer):
         if save_token is not None:
             self._save_token = save_token
 
-        self.register_token_generator('default', self.create_bearer_token_generator(app.config))
-        self.scopes_supported = app.config.get('OAUTH2_SCOPES_SUPPORTED')
-        self._error_uris = app.config.get('OAUTH2_ERROR_URIS')
+        self.register_token_generator(
+            "default", self.create_bearer_token_generator(app.config)
+        )
+        self.scopes_supported = app.config.get("OAUTH2_SCOPES_SUPPORTED")
+        self._error_uris = app.config.get("OAUTH2_ERROR_URIS")
 
     def query_client(self, client_id):
         return self._query_client(client_id)
@@ -80,9 +83,9 @@ class AuthorizationServer(_AuthorizationServer):
         return Response(payload, status=status_code, headers=headers)
 
     def send_signal(self, name, *args, **kwargs):
-        if name == 'after_authenticate_client':
+        if name == "after_authenticate_client":
             client_authenticated.send(self, *args, **kwargs)
-        elif name == 'after_revoke_token':
+        elif name == "after_revoke_token":
             token_revoked.send(self, *args, **kwargs)
 
     def create_bearer_token_generator(self, config):
@@ -101,34 +104,33 @@ class AuthorizationServer(_AuthorizationServer):
 
         Here are some examples of the token generator::
 
-            OAUTH2_ACCESS_TOKEN_GENERATOR = 'your_project.generators.gen_token'
+            OAUTH2_ACCESS_TOKEN_GENERATOR = "your_project.generators.gen_token"
 
             # and in module `your_project.generators`, you can define:
+
 
             def gen_token(client, grant_type, user, scope):
                 # generate token according to these parameters
                 token = create_random_token()
-                return f'{client.id}-{user.id}-{token}'
+                return f"{client.id}-{user.id}-{token}"
 
         Here is an example of ``OAUTH2_TOKEN_EXPIRES_IN``::
 
             OAUTH2_TOKEN_EXPIRES_IN = {
-                'authorization_code': 864000,
-                'urn:ietf:params:oauth:grant-type:jwt-bearer': 3600,
+                "authorization_code": 864000,
+                "urn:ietf:params:oauth:grant-type:jwt-bearer": 3600,
             }
         """
-        conf = config.get('OAUTH2_ACCESS_TOKEN_GENERATOR', True)
+        conf = config.get("OAUTH2_ACCESS_TOKEN_GENERATOR", True)
         access_token_generator = create_token_generator(conf, 42)
 
-        conf = config.get('OAUTH2_REFRESH_TOKEN_GENERATOR', False)
+        conf = config.get("OAUTH2_REFRESH_TOKEN_GENERATOR", False)
         refresh_token_generator = create_token_generator(conf, 48)
 
-        expires_conf = config.get('OAUTH2_TOKEN_EXPIRES_IN')
+        expires_conf = config.get("OAUTH2_TOKEN_EXPIRES_IN")
         expires_generator = create_token_expires_in_generator(expires_conf)
         return BearerTokenGenerator(
-            access_token_generator,
-            refresh_token_generator,
-            expires_generator
+            access_token_generator, refresh_token_generator, expires_generator
         )
 
 
@@ -154,6 +156,8 @@ def create_token_generator(token_generator_conf, length=42):
     if isinstance(token_generator_conf, str):
         return import_string(token_generator_conf)
     elif token_generator_conf is True:
+
         def token_generator(*args, **kwargs):
             return generate_token(length)
+
         return token_generator

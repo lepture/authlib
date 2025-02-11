@@ -1,18 +1,18 @@
 import functools
 from contextlib import contextmanager
-from flask import g, json
+
+from flask import g
+from flask import json
 from flask import request as _req
 from werkzeug.local import LocalProxy
-from authlib.oauth2 import (
-    OAuth2Error,
-    ResourceProtector as _ResourceProtector
-)
-from authlib.oauth2.rfc6749 import (
-    MissingAuthorizationError,
-)
+
+from authlib.oauth2 import OAuth2Error
+from authlib.oauth2 import ResourceProtector as _ResourceProtector
+from authlib.oauth2.rfc6749 import MissingAuthorizationError
+
+from .errors import raise_http_exception
 from .requests import FlaskJsonRequest
 from .signals import token_authenticated
-from .errors import raise_http_exception
 
 
 class ResourceProtector(_ResourceProtector):
@@ -27,21 +27,25 @@ class ResourceProtector(_ResourceProtector):
         from authlib.oauth2.rfc6750 import BearerTokenValidator
         from project.models import Token
 
+
         class MyBearerTokenValidator(BearerTokenValidator):
             def authenticate_token(self, token_string):
                 return Token.query.filter_by(access_token=token_string).first()
+
 
         require_oauth.register_token_validator(MyBearerTokenValidator())
 
         # protect resource with require_oauth
 
-        @app.route('/user')
-        @require_oauth(['profile'])
+
+        @app.route("/user")
+        @require_oauth(["profile"])
         def user_profile():
             user = User.get(current_token.user_id)
             return jsonify(user.to_dict())
 
     """
+
     def raise_error_response(self, error):
         """Raise HTTPException for OAuth2Error. Developers can re-implement
         this method to customize the error response.
@@ -62,7 +66,7 @@ class ResourceProtector(_ResourceProtector):
         """
         request = FlaskJsonRequest(_req)
         # backward compatibility
-        kwargs['scopes'] = scopes
+        kwargs["scopes"] = scopes
         for claim in kwargs:
             if isinstance(kwargs[claim], str):
                 kwargs[claim] = [kwargs[claim]]
@@ -76,9 +80,9 @@ class ResourceProtector(_ResourceProtector):
         """The with statement of ``require_oauth``. Instead of using a
         decorator, you can use a with statement instead::
 
-            @app.route('/api/user')
+            @app.route("/api/user")
             def user_api():
-                with require_oauth.acquire('profile') as token:
+                with require_oauth.acquire("profile") as token:
                     user = User.get(token.user_id)
                     return jsonify(user.to_dict())
         """
@@ -90,7 +94,7 @@ class ResourceProtector(_ResourceProtector):
     def __call__(self, scopes=None, optional=False, **kwargs):
         claims = kwargs
         # backward compatibility
-        claims['scopes'] = scopes
+        claims["scopes"] = scopes
 
         def wrapper(f):
             @functools.wraps(f)
@@ -104,12 +108,14 @@ class ResourceProtector(_ResourceProtector):
                 except OAuth2Error as error:
                     self.raise_error_response(error)
                 return f(*args, **kwargs)
+
             return decorated
+
         return wrapper
 
 
 def _get_current_token():
-    return g.get('authlib_server_oauth2_token')
+    return g.get("authlib_server_oauth2_token")
 
 
 current_token = LocalProxy(_get_current_token)

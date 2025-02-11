@@ -1,10 +1,10 @@
-from authlib.common.encoding import (
-    to_bytes, to_unicode,
-    urlsafe_b64encode, urlsafe_b64decode,
-)
+from authlib.common.encoding import to_bytes
+from authlib.common.encoding import to_unicode
+from authlib.common.encoding import urlsafe_b64decode
+from authlib.common.encoding import urlsafe_b64encode
 from authlib.common.security import generate_token
-from ..rfc7517 import Key
 
+from ..rfc7517 import Key
 
 POSSIBLE_UNSAFE_KEYS = (
     b"-----BEGIN ",
@@ -19,8 +19,8 @@ POSSIBLE_UNSAFE_KEYS = (
 class OctKey(Key):
     """Key class of the ``oct`` key type."""
 
-    kty = 'oct'
-    REQUIRED_JSON_FIELDS = ['k']
+    kty = "oct"
+    REQUIRED_JSON_FIELDS = ["k"]
 
     def __init__(self, raw_key=None, options=None):
         super().__init__(options)
@@ -43,16 +43,16 @@ class OctKey(Key):
         return self.raw_key
 
     def load_raw_key(self):
-        self.raw_key = urlsafe_b64decode(to_bytes(self.tokens['k']))
+        self.raw_key = urlsafe_b64decode(to_bytes(self.tokens["k"]))
 
     def load_dict_key(self):
         k = to_unicode(urlsafe_b64encode(self.raw_key))
-        self._dict_data = {'kty': self.kty, 'k': k}
+        self._dict_data = {"kty": self.kty, "k": k}
 
     def as_dict(self, is_private=False, **params):
         tokens = self.tokens
-        if 'kid' not in tokens:
-            tokens['kid'] = self.thumbprint()
+        if "kid" not in tokens:
+            tokens["kid"] = self.thumbprint()
 
         tokens.update(params)
         return tokens
@@ -87,9 +87,9 @@ class OctKey(Key):
     def generate_key(cls, key_size=256, options=None, is_private=True):
         """Generate a ``OctKey`` with the given bit size."""
         if not is_private:
-            raise ValueError('oct key can not be generated as public')
+            raise ValueError("oct key can not be generated as public")
 
         if key_size % 8 != 0:
-            raise ValueError('Invalid bit size for oct key')
+            raise ValueError("Invalid bit size for oct key")
 
         return cls.import_key(generate_token(key_size // 8), options)

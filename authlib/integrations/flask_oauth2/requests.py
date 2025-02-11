@@ -2,7 +2,9 @@ from collections import defaultdict
 from functools import cached_property
 
 from flask.wrappers import Request
-from authlib.oauth2.rfc6749 import OAuth2Request, JsonRequest
+
+from authlib.oauth2.rfc6749 import JsonRequest
+from authlib.oauth2.rfc6749 import OAuth2Request
 
 
 class FlaskOAuth2Request(OAuth2Request):

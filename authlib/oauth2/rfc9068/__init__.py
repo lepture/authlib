@@ -4,8 +4,8 @@ from .token import JWTBearerTokenGenerator
 from .token_validator import JWTBearerTokenValidator
 
 __all__ = [
-    'JWTBearerTokenGenerator',
-    'JWTBearerTokenValidator',
-    'JWTIntrospectionEndpoint',
-    'JWTRevocationEndpoint',
+    "JWTBearerTokenGenerator",
+    "JWTBearerTokenValidator",
+    "JWTIntrospectionEndpoint",
+    "JWTRevocationEndpoint",
 ]

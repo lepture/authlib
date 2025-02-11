@@ -1,12 +1,12 @@
 from authlib.common.errors import ContinueIteration
+
 from .authenticate_client import ClientAuthentication
-from .requests import OAuth2Request, JsonRequest
-from .errors import (
-    OAuth2Error,
-    InvalidScopeError,
-    UnsupportedResponseTypeError,
-    UnsupportedGrantTypeError,
-)
+from .errors import InvalidScopeError
+from .errors import OAuth2Error
+from .errors import UnsupportedGrantTypeError
+from .errors import UnsupportedResponseTypeError
+from .requests import JsonRequest
+from .requests import OAuth2Request
 from .util import scope_to_list
 
 
@@ -16,6 +16,7 @@ class AuthorizationServer:
 
     :param scopes_supported: A list of supported scopes by this authorization server.
     """
+
     def __init__(self, scopes_supported=None):
         self.scopes_supported = scopes_supported
         self._token_generators = {}
@@ -35,8 +36,15 @@ class AuthorizationServer:
         """Define function to save the generated token into database."""
         raise NotImplementedError()
 
-    def generate_token(self, grant_type, client, user=None, scope=None,
-                       expires_in=None, include_refresh_token=True):
+    def generate_token(
+        self,
+        grant_type,
+        client,
+        user=None,
+        scope=None,
+        expires_in=None,
+        include_refresh_token=True,
+    ):
         """Generate the token dict.
 
         :param grant_type: current requested grant_type.
@@ -51,34 +59,48 @@ class AuthorizationServer:
         func = self._token_generators.get(grant_type)
         if not func:
             # default generator for all grant types
-            func = self._token_generators.get('default')
+            func = self._token_generators.get("default")
         if not func:
-            raise RuntimeError('No configured token generator')
+            raise RuntimeError("No configured token generator")
 
         return func(
-            grant_type=grant_type, client=client, user=user, scope=scope,
-            expires_in=expires_in, include_refresh_token=include_refresh_token)
+            grant_type=grant_type,
+            client=client,
+            user=user,
+            scope=scope,
+            expires_in=expires_in,
+            include_refresh_token=include_refresh_token,
+        )
 
     def register_token_generator(self, grant_type, func):
         """Register a function as token generator for the given ``grant_type``.
         Developers MUST register a default token generator with a special
         ``grant_type=default``::
 
-            def generate_bearer_token(grant_type, client, user=None, scope=None,
-                                      expires_in=None, include_refresh_token=True):
-                token = {'token_type': 'Bearer', 'access_token': ...}
+            def generate_bearer_token(
+                grant_type,
+                client,
+                user=None,
+                scope=None,
+                expires_in=None,
+                include_refresh_token=True,
+            ):
+                token = {"token_type": "Bearer", "access_token": ...}
                 if include_refresh_token:
-                    token['refresh_token'] = ...
+                    token["refresh_token"] = ...
                 ...
                 return token
 
-            authorization_server.register_token_generator('default', generate_bearer_token)
+
+            authorization_server.register_token_generator(
+                "default", generate_bearer_token
+            )
 
         If you register a generator for a certain grant type, that generator will only works
         for the given grant type::
 
             authorization_server.register_token_generator(
-                'client_credentials',
+                "client_credentials",
                 generate_bearer_token,
             )
 
@@ -87,7 +109,7 @@ class AuthorizationServer:
         """
         self._token_generators[grant_type] = func
 
-    def authenticate_client(self, request, methods, endpoint='token'):
+    def authenticate_client(self, request, methods, endpoint="token"):
         """Authenticate client via HTTP request information with the given
         methods, such as ``client_secret_basic``, ``client_secret_post``.
         """
@@ -109,13 +131,15 @@ class AuthorizationServer:
         an example for this method::
 
             def authenticate_client_via_custom(query_client, request):
-                client_id = request.headers['X-Client-Id']
+                client_id = request.headers["X-Client-Id"]
                 client = query_client(client_id)
                 do_some_validation(client)
                 return client
 
+
             authorization_server.register_client_auth_method(
-                'custom', authenticate_client_via_custom)
+                "custom", authenticate_client_via_custom
+            )
         """
         if self._client_auth is None and self.query_client:
             self._client_auth = ClientAuthentication(self.query_client)
@@ -177,9 +201,9 @@ class AuthorizationServer:
         :param grant_cls: a grant class.
         :param extensions: extensions for the grant class.
         """
-        if hasattr(grant_cls, 'check_authorization_endpoint'):
+        if hasattr(grant_cls, "check_authorization_endpoint"):
             self._authorization_grants.append((grant_cls, extensions))
-        if hasattr(grant_cls, 'check_token_endpoint'):
+        if hasattr(grant_cls, "check_token_endpoint"):
             self._token_grants.append((grant_cls, extensions))
 
     def register_endpoint(self, endpoint):
@@ -204,7 +228,7 @@ class AuthorizationServer:
         :param request: OAuth2Request instance.
         :return: grant instance
         """
-        for (grant_cls, extensions) in self._authorization_grants:
+        for grant_cls, extensions in self._authorization_grants:
             if grant_cls.check_authorization_endpoint(request):
                 return _create_grant(grant_cls, extensions, request, self)
         raise UnsupportedResponseTypeError(request.response_type)
@@ -227,7 +251,7 @@ class AuthorizationServer:
         :param request: OAuth2Request instance.
         :return: grant instance
         """
-        for (grant_cls, extensions) in self._token_grants:
+        for grant_cls, extensions in self._token_grants:
             if grant_cls.check_token_endpoint(request):
                 return _create_grant(grant_cls, extensions, request, self)
         raise UnsupportedGrantTypeError(request.grant_type)

@@ -1,8 +1,9 @@
 from collections import defaultdict
-from typing import DefaultDict
 
 from authlib.common.encoding import json_loads
-from authlib.common.urls import urlparse, url_decode
+from authlib.common.urls import url_decode
+from authlib.common.urls import urlparse
+
 from .errors import InsecureTransportError
 
 
@@ -43,9 +44,10 @@ class OAuth2Request:
         return data
 
     @property
-    def datalist(self) -> DefaultDict[str, list]:
-        """ Return all the data in query parameters and the body of the request as a dictionary
-        with all the values in lists."""
+    def datalist(self) -> defaultdict[str, list]:
+        """Return all the data in query parameters and the body of the request as a dictionary
+        with all the values in lists.
+        """
         if self._parsed_query is None:
             self._parsed_query = url_decode(urlparse.urlparse(self.uri).query)
         values = defaultdict(list)
@@ -64,31 +66,31 @@ class OAuth2Request:
 
         :return: string
         """
-        return self.data.get('client_id')
+        return self.data.get("client_id")
 
     @property
     def response_type(self) -> str:
-        rt = self.data.get('response_type')
-        if rt and ' ' in rt:
+        rt = self.data.get("response_type")
+        if rt and " " in rt:
             # sort multiple response types
-            return ' '.join(sorted(rt.split()))
+            return " ".join(sorted(rt.split()))
         return rt
 
     @property
     def grant_type(self) -> str:
-        return self.form.get('grant_type')
+        return self.form.get("grant_type")
 
     @property
     def redirect_uri(self):
-        return self.data.get('redirect_uri')
+        return self.data.get("redirect_uri")
 
     @property
     def scope(self) -> str:
-        return self.data.get('scope')
+        return self.data.get("scope")
 
     @property
     def state(self):
-        return self.data.get('state')
+        return self.data.get("state")
 
 
 class JsonRequest:
