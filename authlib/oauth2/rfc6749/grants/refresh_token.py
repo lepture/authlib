@@ -1,22 +1,22 @@
-"""
-    authlib.oauth2.rfc6749.grants.refresh_token
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+"""authlib.oauth2.rfc6749.grants.refresh_token.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    A special grant endpoint for refresh_token grant_type. Refreshing an
-    Access Token per `Section 6`_.
+A special grant endpoint for refresh_token grant_type. Refreshing an
+Access Token per `Section 6`_.
 
-    .. _`Section 6`: https://tools.ietf.org/html/rfc6749#section-6
+.. _`Section 6`: https://tools.ietf.org/html/rfc6749#section-6
 """
 
 import logging
-from .base import BaseGrant, TokenEndpointMixin
+
+from ..errors import InvalidGrantError
+from ..errors import InvalidRequestError
+from ..errors import InvalidScopeError
+from ..errors import UnauthorizedClientError
 from ..util import scope_to_list
-from ..errors import (
-    InvalidRequestError,
-    InvalidScopeError,
-    InvalidGrantError,
-    UnauthorizedClientError,
-)
+from .base import BaseGrant
+from .base import TokenEndpointMixin
+
 log = logging.getLogger(__name__)
 
 
@@ -26,7 +26,8 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
 
     .. _`Section 6`: https://tools.ietf.org/html/rfc6749#section-6
     """
-    GRANT_TYPE = 'refresh_token'
+
+    GRANT_TYPE = "refresh_token"
 
     #: The authorization server MAY issue a new refresh token
     INCLUDE_NEW_REFRESH_TOKEN = False
@@ -36,7 +37,7 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
         # client that was issued client credentials (or with other
         # authentication requirements)
         client = self.authenticate_token_endpoint_client()
-        log.debug('Validate token request of %r', client)
+        log.debug("Validate token request of %r", client)
 
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError()
@@ -44,7 +45,7 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
         return client
 
     def _validate_request_token(self, client):
-        refresh_token = self.request.form.get('refresh_token')
+        refresh_token = self.request.form.get("refresh_token")
         if refresh_token is None:
             raise InvalidRequestError('Missing "refresh_token" in request.')
 
@@ -119,11 +120,11 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
 
         client = self.request.client
         token = self.issue_token(user, refresh_token)
-        log.debug('Issue token %r to %r', token, client)
+        log.debug("Issue token %r to %r", token, client)
 
         self.request.user = user
         self.save_token(token)
-        self.execute_hook('process_token', token=token)
+        self.execute_hook("process_token", token=token)
         self.revoke_old_credential(refresh_token)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 

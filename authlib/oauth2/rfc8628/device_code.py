@@ -1,18 +1,16 @@
 import logging
-from ..rfc6749.errors import (
-    InvalidRequestError,
-    UnauthorizedClientError,
-    AccessDeniedError,
-)
-from ..rfc6749 import BaseGrant, TokenEndpointMixin
-from .errors import (
-    AuthorizationPendingError,
-    ExpiredTokenError,
-    SlowDownError,
-)
+
+from ..rfc6749 import BaseGrant
+from ..rfc6749 import TokenEndpointMixin
+from ..rfc6749.errors import AccessDeniedError
+from ..rfc6749.errors import InvalidRequestError
+from ..rfc6749.errors import UnauthorizedClientError
+from .errors import AuthorizationPendingError
+from .errors import ExpiredTokenError
+from .errors import SlowDownError
 
 log = logging.getLogger(__name__)
-DEVICE_CODE_GRANT_TYPE = 'urn:ietf:params:oauth:grant-type:device_code'
+DEVICE_CODE_GRANT_TYPE = "urn:ietf:params:oauth:grant-type:device_code"
 
 
 class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
@@ -59,8 +57,9 @@ class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
         granted access, an error if they are denied access, or an
         indication that the client should continue to poll.
     """
+
     GRANT_TYPE = DEVICE_CODE_GRANT_TYPE
-    TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic', 'client_secret_post', 'none']
+    TOKEN_ENDPOINT_AUTH_METHODS = ["client_secret_basic", "client_secret_post", "none"]
 
     def validate_token_request(self):
         """After displaying instructions to the user, the client creates an
@@ -90,7 +89,7 @@ class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
             &device_code=GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS
             &client_id=1406020730
         """
-        device_code = self.request.data.get('device_code')
+        device_code = self.request.data.get("device_code")
         if not device_code:
             raise InvalidRequestError('Missing "device_code" in payload')
 
@@ -120,11 +119,11 @@ class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
         token = self.generate_token(
             user=self.request.user,
             scope=scope,
-            include_refresh_token=client.check_grant_type('refresh_token'),
+            include_refresh_token=client.check_grant_type("refresh_token"),
         )
-        log.debug('Issue token %r to %r', token, client)
+        log.debug("Issue token %r to %r", token, client)
         self.save_token(token)
-        self.execute_hook('process_token', token=token)
+        self.execute_hook("process_token", token=token)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def validate_device_credential(self, credential):
@@ -163,7 +162,7 @@ class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
 
             def query_user_grant(self, user_code):
                 # e.g. we saved user grant info in redis
-                data = redis.get('oauth_user_grant:' + user_code)
+                data = redis.get("oauth_user_grant:" + user_code)
                 if not data:
                     return None
 

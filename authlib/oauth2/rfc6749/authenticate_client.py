@@ -1,36 +1,36 @@
-"""
-    authlib.oauth2.rfc6749.authenticate_client
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+"""authlib.oauth2.rfc6749.authenticate_client.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Registry of client authentication methods, with 3 built-in methods:
+Registry of client authentication methods, with 3 built-in methods:
 
-    1. client_secret_basic
-    2. client_secret_post
-    3. none
+1. client_secret_basic
+2. client_secret_post
+3. none
 
-    The "client_secret_basic" method is used a lot in examples of `RFC6749`_,
-    but the concept of naming are introduced in `RFC7591`_.
+The "client_secret_basic" method is used a lot in examples of `RFC6749`_,
+but the concept of naming are introduced in `RFC7591`_.
 
-    .. _`RFC6749`: https://tools.ietf.org/html/rfc6749
-    .. _`RFC7591`: https://tools.ietf.org/html/rfc7591
+.. _`RFC6749`: https://tools.ietf.org/html/rfc6749
+.. _`RFC7591`: https://tools.ietf.org/html/rfc7591
 """
 
 import logging
+
 from .errors import InvalidClientError
 from .util import extract_basic_authorization
 
 log = logging.getLogger(__name__)
 
-__all__ = ['ClientAuthentication']
+__all__ = ["ClientAuthentication"]
 
 
 class ClientAuthentication:
     def __init__(self, query_client):
         self.query_client = query_client
         self._methods = {
-            'none': authenticate_none,
-            'client_secret_basic': authenticate_client_secret_basic,
-            'client_secret_post': authenticate_client_secret_post,
+            "none": authenticate_none,
+            "client_secret_basic": authenticate_client_secret_basic,
+            "client_secret_post": authenticate_client_secret_post,
         }
 
     def register(self, method, func):
@@ -44,11 +44,11 @@ class ClientAuthentication:
                 request.auth_method = method
                 return client
 
-        if 'client_secret_basic' in methods:
+        if "client_secret_basic" in methods:
             raise InvalidClientError(state=request.state, status_code=401)
         raise InvalidClientError(state=request.state)
 
-    def __call__(self, request, methods, endpoint='token'):
+    def __call__(self, request, methods, endpoint="token"):
         return self.authenticate(request, methods, endpoint)
 
 
@@ -70,8 +70,8 @@ def authenticate_client_secret_post(query_client, request):
     uses POST parameters for authentication.
     """
     data = request.form
-    client_id = data.get('client_id')
-    client_secret = data.get('client_secret')
+    client_id = data.get("client_id")
+    client_secret = data.get("client_secret")
     if client_id and client_secret:
         client = _validate_client(query_client, client_id, request.state)
         if client.check_client_secret(client_secret):
@@ -85,7 +85,7 @@ def authenticate_none(query_client, request):
     does not have a client secret.
     """
     client_id = request.client_id
-    if client_id and not request.data.get('client_secret'):
+    if client_id and not request.data.get("client_secret"):
         client = _validate_client(query_client, client_id, request.state)
         log.debug(f'Authenticate {client_id} via "none" success')
         return client

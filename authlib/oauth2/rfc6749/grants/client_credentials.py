@@ -1,6 +1,8 @@
 import logging
-from .base import BaseGrant, TokenEndpointMixin
+
 from ..errors import UnauthorizedClientError
+from .base import BaseGrant
+from .base import TokenEndpointMixin
 
 log = logging.getLogger(__name__)
 
@@ -25,7 +27,8 @@ class ClientCredentialsGrant(BaseGrant, TokenEndpointMixin):
 
     https://tools.ietf.org/html/rfc6749#section-4.4
     """
-    GRANT_TYPE = 'client_credentials'
+
+    GRANT_TYPE = "client_credentials"
 
     def validate_token_request(self):
         """The client makes a request to the token endpoint by adding the
@@ -58,11 +61,10 @@ class ClientCredentialsGrant(BaseGrant, TokenEndpointMixin):
 
         The authorization server MUST authenticate the client.
         """
-
         # ignore validate for grant_type, since it is validated by
         # check_token_endpoint
         client = self.authenticate_token_endpoint_client()
-        log.debug('Validate token request of %r', client)
+        log.debug("Validate token request of %r", client)
 
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError()
@@ -95,8 +97,10 @@ class ClientCredentialsGrant(BaseGrant, TokenEndpointMixin):
 
         :returns: (status_code, body, headers)
         """
-        token = self.generate_token(scope=self.request.scope, include_refresh_token=False)
-        log.debug('Issue token %r to %r', token, self.client)
+        token = self.generate_token(
+            scope=self.request.scope, include_refresh_token=False
+        )
+        log.debug("Issue token %r to %r", token, self.client)
         self.save_token(token)
-        self.execute_hook('process_token', self, token=token)
+        self.execute_hook("process_token", self, token=token)
         return 200, token, self.TOKEN_RESPONSE_HEADER
