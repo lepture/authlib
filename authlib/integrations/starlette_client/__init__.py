@@ -1,8 +1,8 @@
-# flake8: noqa
-
-from ..base_client import BaseOAuth, OAuthError
+from ..base_client import BaseOAuth
+from ..base_client import OAuthError
+from .apps import StarletteOAuth1App
+from .apps import StarletteOAuth2App
 from .integration import StarletteIntegration
-from .apps import StarletteOAuth1App, StarletteOAuth2App
 
 
 class OAuth(BaseOAuth):
@@ -12,11 +12,15 @@ class OAuth(BaseOAuth):
 
     def __init__(self, config=None, cache=None, fetch_token=None, update_token=None):
         super().__init__(
-            cache=cache, fetch_token=fetch_token, update_token=update_token)
+            cache=cache, fetch_token=fetch_token, update_token=update_token
+        )
         self.config = config
 
 
 __all__ = [
-    'OAuth', 'OAuthError',
-    'StarletteIntegration', 'StarletteOAuth1App', 'StarletteOAuth2App',
+    "OAuth",
+    "OAuthError",
+    "StarletteIntegration",
+    "StarletteOAuth1App",
+    "StarletteOAuth2App",
 ]

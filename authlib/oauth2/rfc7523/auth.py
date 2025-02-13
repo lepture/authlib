@@ -1,5 +1,7 @@
 from authlib.common.urls import add_params_to_qs
-from .assertion import client_secret_jwt_sign, private_key_jwt_sign
+
+from .assertion import client_secret_jwt_sign
+from .assertion import private_key_jwt_sign
 from .client import ASSERTION_TYPE
 
 
@@ -12,10 +14,11 @@ class ClientSecretJWT:
 
         from authlib.integrations.requests_client import OAuth2Session
 
-        token_endpoint = 'https://example.com/oauth/token'
+        token_endpoint = "https://example.com/oauth/token"
         session = OAuth2Session(
-            'your-client-id', 'your-client-secret',
-            token_endpoint_auth_method='client_secret_jwt'
+            "your-client-id",
+            "your-client-secret",
+            token_endpoint_auth_method="client_secret_jwt",
         )
         session.register_client_auth_method(ClientSecretJWT(token_endpoint))
         session.fetch_token(token_endpoint)
@@ -25,8 +28,9 @@ class ClientSecretJWT:
     :param headers: Extra JWT headers
     :param alg: ``alg`` value, default is HS256
     """
-    name = 'client_secret_jwt'
-    alg = 'HS256'
+
+    name = "client_secret_jwt"
+    alg = "HS256"
 
     def __init__(self, token_endpoint=None, claims=None, headers=None, alg=None):
         self.token_endpoint = token_endpoint
@@ -51,10 +55,13 @@ class ClientSecretJWT:
             token_endpoint = uri
 
         client_assertion = self.sign(auth, token_endpoint)
-        body = add_params_to_qs(body or '', [
-            ('client_assertion_type', ASSERTION_TYPE),
-            ('client_assertion', client_assertion)
-        ])
+        body = add_params_to_qs(
+            body or "",
+            [
+                ("client_assertion_type", ASSERTION_TYPE),
+                ("client_assertion", client_assertion),
+            ],
+        )
         return uri, headers, body
 
 
@@ -67,10 +74,11 @@ class PrivateKeyJWT(ClientSecretJWT):
 
         from authlib.integrations.requests_client import OAuth2Session
 
-        token_endpoint = 'https://example.com/oauth/token'
+        token_endpoint = "https://example.com/oauth/token"
         session = OAuth2Session(
-            'your-client-id', 'your-client-private-key',
-            token_endpoint_auth_method='private_key_jwt'
+            "your-client-id",
+            "your-client-private-key",
+            token_endpoint_auth_method="private_key_jwt",
         )
         session.register_client_auth_method(PrivateKeyJWT(token_endpoint))
         session.fetch_token(token_endpoint)
@@ -80,8 +88,9 @@ class PrivateKeyJWT(ClientSecretJWT):
     :param headers: Extra JWT headers
     :param alg: ``alg`` value, default is RS256
     """
-    name = 'private_key_jwt'
-    alg = 'RS256'
+
+    name = "private_key_jwt"
+    alg = "RS256"
 
     def sign(self, auth, token_endpoint):
         return private_key_jwt_sign(

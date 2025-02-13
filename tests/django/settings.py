@@ -1,4 +1,4 @@
-SECRET_KEY = 'django-secret'
+SECRET_KEY = "django-secret"
 
 DATABASES = {
     "default": {
@@ -7,24 +7,22 @@ DATABASES = {
     }
 }
 
-MIDDLEWARE = [
-    'django.contrib.sessions.middleware.SessionMiddleware'
-]
+MIDDLEWARE = ["django.contrib.sessions.middleware.SessionMiddleware"]
 
-SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_ENGINE = "django.contrib.sessions.backends.cache"
 
 CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'unique-snowflake',
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
     }
 }
 
-INSTALLED_APPS=[
-    'django.contrib.contenttypes',
-    'django.contrib.auth',
-    'tests.django.test_oauth1',
-    'tests.django.test_oauth2',
+INSTALLED_APPS = [
+    "django.contrib.contenttypes",
+    "django.contrib.auth",
+    "tests.django.test_oauth1",
+    "tests.django.test_oauth2",
 ]
 
 USE_TZ = True

@@ -1,6 +1,6 @@
-from authlib.consts import default_json_headers
 from authlib.common.security import generate_token
 from authlib.common.urls import add_params_to_uri
+from authlib.consts import default_json_headers
 
 
 class DeviceAuthorizationEndpoint:
@@ -44,11 +44,11 @@ class DeviceAuthorizationEndpoint:
         code and provides the end-user verification URI.
     """
 
-    ENDPOINT_NAME = 'device_authorization'
-    CLIENT_AUTH_METHODS = ['client_secret_basic', 'client_secret_post', 'none']
+    ENDPOINT_NAME = "device_authorization"
+    CLIENT_AUTH_METHODS = ["client_secret_basic", "client_secret_post", "none"]
 
     #: customize "user_code" type, string or digital
-    USER_CODE_TYPE = 'string'
+    USER_CODE_TYPE = "string"
 
     #: The lifetime in seconds of the "device_code" and "user_code"
     EXPIRES_IN = 1800
@@ -84,10 +84,11 @@ class DeviceAuthorizationEndpoint:
 
             class MyDeviceAuthorizationEndpoint(DeviceAuthorizationEndpoint):
                 # only support ``client_secret_basic`` auth method
-                CLIENT_AUTH_METHODS = ['client_secret_basic']
+                CLIENT_AUTH_METHODS = ["client_secret_basic"]
         """
         client = self.server.authenticate_client(
-            request, self.CLIENT_AUTH_METHODS, self.ENDPOINT_NAME)
+            request, self.CLIENT_AUTH_METHODS, self.ENDPOINT_NAME
+        )
         request.client = client
         return client
 
@@ -101,15 +102,16 @@ class DeviceAuthorizationEndpoint:
         user_code = self.generate_user_code()
         verification_uri = self.get_verification_uri()
         verification_uri_complete = add_params_to_uri(
-            verification_uri, [('user_code', user_code)])
+            verification_uri, [("user_code", user_code)]
+        )
 
         data = {
-            'device_code': device_code,
-            'user_code': user_code,
-            'verification_uri': verification_uri,
-            'verification_uri_complete': verification_uri_complete,
-            'expires_in': self.EXPIRES_IN,
-            'interval': self.INTERVAL,
+            "device_code": device_code,
+            "user_code": user_code,
+            "verification_uri": verification_uri,
+            "verification_uri_complete": verification_uri_complete,
+            "expires_in": self.EXPIRES_IN,
+            "interval": self.INTERVAL,
         }
 
         self.save_device_credential(request.client_id, request.scope, data)
@@ -121,7 +123,7 @@ class DeviceAuthorizationEndpoint:
         Developers can rewrite this  method to create their own ``user_code``.
         """
         # https://tools.ietf.org/html/rfc8628#section-6.1
-        if self.USER_CODE_TYPE == 'digital':
+        if self.USER_CODE_TYPE == "digital":
             return create_digital_user_code()
         return create_string_user_code()
 
@@ -137,7 +139,7 @@ class DeviceAuthorizationEndpoint:
         Developers MUST implement this method in subclass::
 
             def get_verification_uri(self):
-                return 'https://your-company.com/active'
+                return "https://your-company.com/active"
         """
         raise NotImplementedError()
 
@@ -146,25 +148,23 @@ class DeviceAuthorizationEndpoint:
         implement this method in subclass::
 
             def save_device_credential(self, client_id, scope, data):
-                item = DeviceCredential(
-                    client_id=client_id,
-                    scope=scope,
-                    **data
-                )
+                item = DeviceCredential(client_id=client_id, scope=scope, **data)
                 item.save()
         """
         raise NotImplementedError()
 
 
 def create_string_user_code():
-    base = 'BCDFGHJKLMNPQRSTVWXZ'
-    return '-'.join([generate_token(4, base), generate_token(4, base)])
+    base = "BCDFGHJKLMNPQRSTVWXZ"
+    return "-".join([generate_token(4, base), generate_token(4, base)])
 
 
 def create_digital_user_code():
-    base = '0123456789'
-    return '-'.join([
-        generate_token(3, base),
-        generate_token(3, base),
-        generate_token(3, base),
-    ])
+    base = "0123456789"
+    return "-".join(
+        [
+            generate_token(3, base),
+            generate_token(3, base),
+            generate_token(3, base),
+        ]
+    )

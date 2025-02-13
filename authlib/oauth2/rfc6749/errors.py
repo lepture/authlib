@@ -1,53 +1,62 @@
+"""authlib.oauth2.rfc6749.errors.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Implementation for OAuth 2 Error Response. A basic error has
+parameters:
+
+Error:
+REQUIRED.  A single ASCII [USASCII] error code.
+
+error_description
+OPTIONAL.  Human-readable ASCII [USASCII] text providing
+additional information, used to assist the client developer in
+understanding the error that occurred.
+
+error_uri
+OPTIONAL.  A URI identifying a human-readable web page with
+information about the error, used to provide the client
+developer with additional information about the error.
+Values for the "error_uri" parameter MUST conform to the
+URI-reference syntax and thus MUST NOT include characters
+outside the set %x21 / %x23-5B / %x5D-7E.
+
+state
+REQUIRED if a "state" parameter was present in the client
+authorization request.  The exact value received from the
+client.
+
+https://tools.ietf.org/html/rfc6749#section-5.2
+
+:copyright: (c) 2017 by Hsiaoming Yang.
+
 """
-    authlib.oauth2.rfc6749.errors
-    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-    Implementation for OAuth 2 Error Response. A basic error has
-    parameters:
-
-    error
-         REQUIRED.  A single ASCII [USASCII] error code.
-
-    error_description
-         OPTIONAL.  Human-readable ASCII [USASCII] text providing
-         additional information, used to assist the client developer in
-         understanding the error that occurred.
-
-    error_uri
-         OPTIONAL.  A URI identifying a human-readable web page with
-         information about the error, used to provide the client
-         developer with additional information about the error.
-         Values for the "error_uri" parameter MUST conform to the
-         URI-reference syntax and thus MUST NOT include characters
-         outside the set %x21 / %x23-5B / %x5D-7E.
-
-    state
-         REQUIRED if a "state" parameter was present in the client
-         authorization request.  The exact value received from the
-         client.
-
-    https://tools.ietf.org/html/rfc6749#section-5.2
-
-    :copyright: (c) 2017 by Hsiaoming Yang.
-"""
-from authlib.oauth2.base import OAuth2Error
 from authlib.common.security import is_secure_transport
+from authlib.oauth2.base import OAuth2Error
 
 __all__ = [
-    'OAuth2Error',
-    'InsecureTransportError', 'InvalidRequestError',
-    'InvalidClientError', 'UnauthorizedClientError', 'InvalidGrantError',
-    'UnsupportedResponseTypeError', 'UnsupportedGrantTypeError',
-    'InvalidScopeError', 'AccessDeniedError',
-    'MissingAuthorizationError', 'UnsupportedTokenTypeError',
-    'MissingCodeException', 'MissingTokenException',
-    'MissingTokenTypeException', 'MismatchingStateException',
+    "OAuth2Error",
+    "InsecureTransportError",
+    "InvalidRequestError",
+    "InvalidClientError",
+    "UnauthorizedClientError",
+    "InvalidGrantError",
+    "UnsupportedResponseTypeError",
+    "UnsupportedGrantTypeError",
+    "InvalidScopeError",
+    "AccessDeniedError",
+    "MissingAuthorizationError",
+    "UnsupportedTokenTypeError",
+    "MissingCodeException",
+    "MissingTokenException",
+    "MissingTokenTypeException",
+    "MismatchingStateException",
 ]
 
 
 class InsecureTransportError(OAuth2Error):
-    error = 'insecure_transport'
-    description = 'OAuth 2 MUST utilize https.'
+    error = "insecure_transport"
+    description = "OAuth 2 MUST utilize https."
 
     @classmethod
     def check(cls, uri):
@@ -65,7 +74,8 @@ class InvalidRequestError(OAuth2Error):
 
     https://tools.ietf.org/html/rfc6749#section-5.2
     """
-    error = 'invalid_request'
+
+    error = "invalid_request"
 
 
 class InvalidClientError(OAuth2Error):
@@ -82,7 +92,8 @@ class InvalidClientError(OAuth2Error):
 
     https://tools.ietf.org/html/rfc6749#section-5.2
     """
-    error = 'invalid_client'
+
+    error = "invalid_client"
     status_code = 400
 
     def get_headers(self):
@@ -90,14 +101,12 @@ class InvalidClientError(OAuth2Error):
         if self.status_code == 401:
             error_description = self.get_error_description()
             # safe escape
-            error_description = error_description.replace('"', '|')
+            error_description = error_description.replace('"', "|")
             extras = [
                 f'error="{self.error}"',
-                f'error_description="{error_description}"'
+                f'error_description="{error_description}"',
             ]
-            headers.append(
-                ('WWW-Authenticate', 'Basic ' + ', '.join(extras))
-            )
+            headers.append(("WWW-Authenticate", "Basic " + ", ".join(extras)))
         return headers
 
 
@@ -110,29 +119,33 @@ class InvalidGrantError(OAuth2Error):
 
     https://tools.ietf.org/html/rfc6749#section-5.2
     """
-    error = 'invalid_grant'
+
+    error = "invalid_grant"
 
 
 class UnauthorizedClientError(OAuth2Error):
-    """ The authenticated client is not authorized to use this
+    """The authenticated client is not authorized to use this
     authorization grant type.
 
     https://tools.ietf.org/html/rfc6749#section-5.2
     """
-    error = 'unauthorized_client'
+
+    error = "unauthorized_client"
 
 
 class UnsupportedResponseTypeError(OAuth2Error):
     """The authorization server does not support obtaining
-    an access token using this method."""
-    error = 'unsupported_response_type'
+    an access token using this method.
+    """
+
+    error = "unsupported_response_type"
 
     def __init__(self, response_type):
         super().__init__()
         self.response_type = response_type
 
     def get_error_description(self):
-        return f'response_type={self.response_type} is not supported'
+        return f"response_type={self.response_type} is not supported"
 
 
 class UnsupportedGrantTypeError(OAuth2Error):
@@ -141,14 +154,15 @@ class UnsupportedGrantTypeError(OAuth2Error):
 
     https://tools.ietf.org/html/rfc6749#section-5.2
     """
-    error = 'unsupported_grant_type'
+
+    error = "unsupported_grant_type"
 
     def __init__(self, grant_type):
         super().__init__()
         self.grant_type = grant_type
 
     def get_error_description(self):
-        return f'grant_type={self.grant_type} is not supported'
+        return f"grant_type={self.grant_type} is not supported"
 
 
 class InvalidScopeError(OAuth2Error):
@@ -157,8 +171,9 @@ class InvalidScopeError(OAuth2Error):
 
     https://tools.ietf.org/html/rfc6749#section-5.2
     """
-    error = 'invalid_scope'
-    description = 'The requested scope is invalid, unknown, or malformed.'
+
+    error = "invalid_scope"
+    description = "The requested scope is invalid, unknown, or malformed."
 
 
 class AccessDeniedError(OAuth2Error):
@@ -169,8 +184,9 @@ class AccessDeniedError(OAuth2Error):
 
     .. _`Section 4.1.2.1`: https://tools.ietf.org/html/rfc6749#section-4.1.2.1
     """
-    error = 'access_denied'
-    description = 'The resource owner or authorization server denied the request'
+
+    error = "access_denied"
+    description = "The resource owner or authorization server denied the request"
 
 
 # -- below are extended errors -- #
@@ -195,39 +211,37 @@ class ForbiddenError(OAuth2Error):
         extras.append(f'error="{self.error}"')
         error_description = self.description
         extras.append(f'error_description="{error_description}"')
-        headers.append(
-            ('WWW-Authenticate', f'{self.auth_type} ' + ', '.join(extras))
-        )
+        headers.append(("WWW-Authenticate", f"{self.auth_type} " + ", ".join(extras)))
         return headers
 
 
 class MissingAuthorizationError(ForbiddenError):
-    error = 'missing_authorization'
+    error = "missing_authorization"
     description = 'Missing "Authorization" in headers.'
 
 
 class UnsupportedTokenTypeError(ForbiddenError):
-    error = 'unsupported_token_type'
+    error = "unsupported_token_type"
 
 
 # -- exceptions for clients -- #
 
 
 class MissingCodeException(OAuth2Error):
-    error = 'missing_code'
+    error = "missing_code"
     description = 'Missing "code" in response.'
 
 
 class MissingTokenException(OAuth2Error):
-    error = 'missing_token'
+    error = "missing_token"
     description = 'Missing "access_token" in response.'
 
 
 class MissingTokenTypeException(OAuth2Error):
-    error = 'missing_token_type'
+    error = "missing_token_type"
     description = 'Missing "token_type" in response.'
 
 
 class MismatchingStateException(OAuth2Error):
-    error = 'mismatching_state'
-    description = 'CSRF Warning! State not equal in request and response.'
+    error = "mismatching_state"
+    description = "CSRF Warning! State not equal in request and response."

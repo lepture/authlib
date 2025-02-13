@@ -1,24 +1,27 @@
+import binascii
 import os
 import time
-import binascii
-from authlib.consts import default_json_headers
+
 from authlib.common.security import generate_token
-from authlib.jose import JsonWebToken, JoseError
-from ..rfc6749 import AccessDeniedError, InvalidRequestError
+from authlib.consts import default_json_headers
+from authlib.jose import JoseError
+from authlib.jose import JsonWebToken
+
+from ..rfc6749 import AccessDeniedError
+from ..rfc6749 import InvalidRequestError
 from ..rfc6749 import scope_to_list
 from .claims import ClientMetadataClaims
-from .errors import (
-    InvalidClientMetadataError,
-    UnapprovedSoftwareStatementError,
-    InvalidSoftwareStatementError,
-)
+from .errors import InvalidClientMetadataError
+from .errors import InvalidSoftwareStatementError
+from .errors import UnapprovedSoftwareStatementError
 
 
 class ClientRegistrationEndpoint:
     """The client registration endpoint is an OAuth 2.0 endpoint designed to
     allow a client to be registered with the authorization server.
     """
-    ENDPOINT_NAME = 'client_registration'
+
+    ENDPOINT_NAME = "client_registration"
 
     #: The claims validation class
     claims_class = ClientMetadataClaims
@@ -56,7 +59,7 @@ class ClientRegistrationEndpoint:
             raise InvalidRequestError()
 
         json_data = request.data.copy()
-        software_statement = json_data.pop('software_statement', None)
+        software_statement = json_data.pop("software_statement", None)
         if software_statement and self.software_statement_alg_values_supported:
             data = self.extract_software_statement(software_statement, request)
             json_data.update(data)
@@ -66,7 +69,7 @@ class ClientRegistrationEndpoint:
         try:
             claims.validate()
         except JoseError as error:
-            raise InvalidClientMetadataError(error.description)
+            raise InvalidClientMetadataError(error.description) from error
         return claims.get_registered_claims()
 
     def extract_software_statement(self, software_statement, request):
@@ -79,8 +82,8 @@ class ClientRegistrationEndpoint:
             claims = jwt.decode(software_statement, key)
             # there is no need to validate claims
             return claims
-        except JoseError:
-            raise InvalidSoftwareStatementError()
+        except JoseError as exc:
+            raise InvalidSoftwareStatementError() from exc
 
     def get_claims_options(self):
         """Generate claims options validation from Authorization Server metadata."""
@@ -88,10 +91,10 @@ class ClientRegistrationEndpoint:
         if not metadata:
             return {}
 
-        scopes_supported = metadata.get('scopes_supported')
-        response_types_supported = metadata.get('response_types_supported')
-        grant_types_supported = metadata.get('grant_types_supported')
-        auth_methods_supported = metadata.get('token_endpoint_auth_methods_supported')
+        scopes_supported = metadata.get("scopes_supported")
+        response_types_supported = metadata.get("response_types_supported")
+        grant_types_supported = metadata.get("grant_types_supported")
+        auth_methods_supported = metadata.get("token_endpoint_auth_methods_supported")
         options = {}
         if scopes_supported is not None:
             scopes_supported = set(scopes_supported)
@@ -102,7 +105,7 @@ class ClientRegistrationEndpoint:
                 scopes = set(scope_to_list(value))
                 return scopes_supported.issuperset(scopes)
 
-            options['scope'] = {'validate': _validate_scope}
+            options["scope"] = {"validate": _validate_scope}
 
         if response_types_supported is not None:
             response_types_supported = set(response_types_supported)
@@ -113,7 +116,7 @@ class ClientRegistrationEndpoint:
                 response_types = set(value) if value else {"code"}
                 return response_types_supported.issuperset(response_types)
 
-            options['response_types'] = {'validate': _validate_response_types}
+            options["response_types"] = {"validate": _validate_response_types}
 
         if grant_types_supported is not None:
             grant_types_supported = set(grant_types_supported)
@@ -124,10 +127,10 @@ class ClientRegistrationEndpoint:
                 grant_types = set(value) if value else {"authorization_code"}
                 return grant_types_supported.issuperset(grant_types)
 
-            options['grant_types'] = {'validate': _validate_grant_types}
+            options["grant_types"] = {"validate": _validate_grant_types}
 
         if auth_methods_supported is not None:
-            options['token_endpoint_auth_method'] = {'values': auth_methods_supported}
+            options["token_endpoint_auth_method"] = {"values": auth_methods_supported}
 
         return options
 
@@ -147,7 +150,8 @@ class ClientRegistrationEndpoint:
     def generate_client_registration_info(self, client, request):
         """Generate ```registration_client_uri`` and ``registration_access_token``
         for RFC7592. This method returns ``None`` by default. Developers MAY rewrite
-        this method to return registration information."""
+        this method to return registration information.
+        """
         return None
 
     def create_endpoint_request(self, request):
@@ -163,7 +167,7 @@ class ClientRegistrationEndpoint:
         """Generate ``client_secret`` value. Developers MAY rewrite this method
         to use their own way to generate ``client_secret``.
         """
-        return binascii.hexlify(os.urandom(24)).decode('ascii')
+        return binascii.hexlify(os.urandom(24)).decode("ascii")
 
     def get_server_metadata(self):
         """Return server metadata which includes supported grant types,
@@ -176,7 +180,7 @@ class ClientRegistrationEndpoint:
         Developers MUST implement this method in subclass::
 
             def authenticate_token(self, request):
-                auth = request.headers.get('Authorization')
+                auth = request.headers.get("Authorization")
                 return get_token_by_auth(auth)
 
         :return: token instance

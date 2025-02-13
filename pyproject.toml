@@ -6,7 +6,7 @@ dependencies = [
   "cryptography",
 ]
 license = {text = "BSD-3-Clause"}
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dynamic = ["version"]
 readme = "README.rst"
 classifiers = [
@@ -18,11 +18,11 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
   "Topic :: Security",
@@ -49,3 +49,46 @@ version = {attr = "authlib.__version__"}
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["authlib", "authlib.*"]
+
+[tool.ruff.lint]
+select = [
+    "B", # flake8-bugbear
+    "E", # pycodestyle
+    "F", # pyflakes
+    "I", # isort
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501", # line-too-long
+    "E722", # bare-except
+]
+
+[tool.ruff.lint.isort]
+force-single-line = true
+
+[tool.ruff.format]
+docstring-code-format = true
+
+[tool.pytest]
+asyncio_mode = "auto"
+python_files = "test*.py"
+norecursedirs = ["authlib", "build", "dist", "docs", "htmlcov"]
+
+[tool.coverage.run]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "except ImportError",
+    "def __repr__",
+    "raise NotImplementedError",
+    "raise DeprecationWarning",
+    "deprecate",
+]
+
+[tool.check-manifest]
+ignore = ["tox.ini"]
+
+[tool.distutils.bdist_wheel]
+universal = true
