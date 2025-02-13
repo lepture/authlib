@@ -6,15 +6,14 @@
 
 <a href="https://github.com/sponsors/lepture"><img src="https://badgen.net/badge/support/authlib/ff69b4?icon=patreon" /></a>
 <a href="https://github.com/lepture/authlib/actions"><img src="https://github.com/lepture/authlib/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://codecov.io/gh/lepture/authlib?branch=master"><img src="https://badgen.net/codecov/c/github/lepture/authlib" alt="Coverage Status"></a>
+<a href="https://codecov.io/gh/lepture/authlib" > <img src="https://codecov.io/gh/lepture/authlib/graph/badge.svg?token=BQKzPoql9j"/></a>
 <a href="https://pypi.org/project/Authlib/"><img src="https://badgen.net/pypi/v/authlib" alt="PyPI Version"></a>
 <a href="https://codeclimate.com/github/lepture/authlib/maintainability"><img src="https://badgen.net/codeclimate/maintainability/lepture/authlib?icon=codeclimate" alt="Maintainability" /></a>
-<a href="https://twitter.com/intent/follow?screen_name=authlib"><img src="https://img.shields.io/twitter/follow/authlib.svg?maxAge=3600&style=social&logo=twitter&label=Follow" alt="Follow Twitter"></a>
 
 The ultimate Python library in building OAuth and OpenID Connect servers.
 JWS, JWK, JWA, JWT are included.
 
-Authlib is compatible with Python3.6+.
+Authlib is compatible with Python3.9+.
 
 **[Migrating from `authlib.jose` to `joserfc`](https://jose.authlib.org/en/dev/migrations/authlib/)**
 
@@ -22,12 +21,11 @@ Authlib is compatible with Python3.6+.
 
 <table>
 <tr>
-<td><img align="middle" width="48" src="https://avatars.githubusercontent.com/u/105941848?s=200&v=4"></td>
-<td>Kraken is the world's leading customer & culture platform for energy, water & broadband. Licensing enquiries at <a href="https://kraken.tech/">Kraken.tech</a>.
-</td>
+<td><img align="middle" width="48" src="https://avatars.githubusercontent.com/u/70178963?v=4"></td>
+<td>If you want to quickly add secure token-based authentication to Python projects, feel free to check Auth0's Python SDK and free plan at <a href="https://auth0.com/overview?utm_source=GHsponsor&utm_medium=GHsponsor&utm_campaign=authlib&utm_content=auth">auth0.com/overview</a>.</td>
 </tr>
 <tr>
-<td><img align="middle" width="48" src="https://typlog.com/assets/icon-black.svg"></td>
+<td><img align="middle" width="48" src="https://typlog.com/assets/icon-white.svg"></td>
 <td>A blogging and podcast hosting platform with minimal design but powerful features. Host your blog and Podcast with <a href="https://typlog.com/">Typlog.com</a>.
 </td>
 </tr>
@@ -53,6 +51,7 @@ Generic, spec-compliant implementation to build clients and providers:
   - [RFC8414: OAuth 2.0 Authorization Server Metadata](https://docs.authlib.org/en/latest/specs/rfc8414.html)
   - [RFC8628: OAuth 2.0 Device Authorization Grant](https://docs.authlib.org/en/latest/specs/rfc8628.html)
   - [RFC9068: JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens](https://docs.authlib.org/en/latest/specs/rfc9068.html)
+  - [RFC9207: OAuth 2.0 Authorization Server Issuer Identification](https://docs.authlib.org/en/latest/specs/rfc9207.html)
 - [Javascript Object Signing and Encryption](https://docs.authlib.org/en/latest/jose/index.html)
   - [RFC7515: JSON Web Signature](https://docs.authlib.org/en/latest/jose/jws.html)
   - [RFC7516: JSON Web Encryption](https://docs.authlib.org/en/latest/jose/jwe.html)

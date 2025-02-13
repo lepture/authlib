@@ -3,9 +3,16 @@ from authlib.common.urls import add_params_to_uri
 
 
 class OAuth2Error(AuthlibHTTPError):
-    def __init__(self, description=None, uri=None,
-                 status_code=None, state=None,
-                 redirect_uri=None, redirect_fragment=False, error=None):
+    def __init__(
+        self,
+        description=None,
+        uri=None,
+        status_code=None,
+        state=None,
+        redirect_uri=None,
+        redirect_fragment=False,
+        error=None,
+    ):
         super().__init__(error, description, uri, status_code)
         self.state = state
         self.redirect_uri = redirect_uri
@@ -15,12 +22,12 @@ class OAuth2Error(AuthlibHTTPError):
         """Get a list of body."""
         error = super().get_body()
         if self.state:
-            error.append(('state', self.state))
+            error.append(("state", self.state))
         return error
 
     def __call__(self, uri=None):
         if self.redirect_uri:
             params = self.get_body()
             loc = add_params_to_uri(self.redirect_uri, params, self.redirect_fragment)
-            return 302, '', [('Location', loc)]
+            return 302, "", [("Location", loc)]
         return super().__call__(uri=uri)

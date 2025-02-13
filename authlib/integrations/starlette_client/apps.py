@@ -1,15 +1,18 @@
 from starlette.datastructures import URL
 from starlette.responses import RedirectResponse
-from ..base_client import OAuthError
+
 from ..base_client import BaseApp
-from ..base_client.async_app import AsyncOAuth1Mixin, AsyncOAuth2Mixin
+from ..base_client import OAuthError
+from ..base_client.async_app import AsyncOAuth1Mixin
+from ..base_client.async_app import AsyncOAuth2Mixin
 from ..base_client.async_openid import AsyncOpenIDMixin
-from ..httpx_client import AsyncOAuth1Client, AsyncOAuth2Client
+from ..httpx_client import AsyncOAuth1Client
+from ..httpx_client import AsyncOAuth2Client
 
 
 class StarletteAppMixin:
     async def save_authorize_data(self, request, **kwargs):
-        state = kwargs.pop('state', None)
+        state = kwargs.pop("state", None)
         if state:
             if self.framework.cache:
                 session = None
@@ -17,7 +20,7 @@ class StarletteAppMixin:
                 session = request.session
             await self.framework.set_state_data(session, state, kwargs)
         else:
-            raise RuntimeError('Missing state value')
+            raise RuntimeError("Missing state value")
 
     async def authorize_redirect(self, request, redirect_uri=None, extra_state=None, **kwargs):
         """Create a HTTP Redirect for Authorization Endpoint.
@@ -28,7 +31,6 @@ class StarletteAppMixin:
         :param kwargs: Extra parameters to include.
         :return: A HTTP redirect response.
         """
-
         # Handle Starlette >= 0.26.0 where redirect_uri may now be a URL and not a string
         if redirect_uri and isinstance(redirect_uri, URL):
             redirect_uri = str(redirect_uri)
@@ -36,7 +38,7 @@ class StarletteAppMixin:
         if extra_state is not None:
             rv['extra_state'] = extra_state
         await self.save_authorize_data(request, redirect_uri=redirect_uri, **rv)
-        return RedirectResponse(rv['url'], status_code=302)
+        return RedirectResponse(rv["url"], status_code=302)
 
 
 class StarletteOAuth1App(StarletteAppMixin, AsyncOAuth1Mixin, BaseApp):
@@ -44,7 +46,7 @@ class StarletteOAuth1App(StarletteAppMixin, AsyncOAuth1Mixin, BaseApp):
 
     async def authorize_access_token(self, request, **kwargs):
         params = dict(request.query_params)
-        state = params.get('oauth_token')
+        state = params.get("oauth_token")
         if not state:
             raise OAuthError(description='Missing "oauth_token" parameter')
 
@@ -52,24 +54,26 @@ class StarletteOAuth1App(StarletteAppMixin, AsyncOAuth1Mixin, BaseApp):
         if not data:
             raise OAuthError(description='Missing "request_token" in temporary data')
 
-        params['request_token'] = data['request_token']
+        params["request_token"] = data["request_token"]
         params.update(kwargs)
         await self.framework.clear_state_data(request.session, state)
         return await self.fetch_access_token(**params)
 
 
-class StarletteOAuth2App(StarletteAppMixin, AsyncOAuth2Mixin, AsyncOpenIDMixin, BaseApp):
+class StarletteOAuth2App(
+    StarletteAppMixin, AsyncOAuth2Mixin, AsyncOpenIDMixin, BaseApp
+):
     client_cls = AsyncOAuth2Client
 
     async def authorize_access_token(self, request, **kwargs):
-        error = request.query_params.get('error')
+        error = request.query_params.get("error")
         if error:
-            description = request.query_params.get('error_description')
+            description = request.query_params.get("error_description")
             raise OAuthError(error=error, description=description)
 
         params = {
-            'code': request.query_params.get('code'),
-            'state': request.query_params.get('state'),
+            "code": request.query_params.get("code"),
+            "state": request.query_params.get("state"),
         }
 
         if self.framework.cache:
@@ -77,17 +81,19 @@ class StarletteOAuth2App(StarletteAppMixin, AsyncOAuth2Mixin, AsyncOpenIDMixin, 
         else:
             session = request.session
 
-        claims_options = kwargs.pop('claims_options', None)
-        state_data = await self.framework.get_state_data(session, params.get('state'))
-        await self.framework.clear_state_data(session, params.get('state'))
+        claims_options = kwargs.pop("claims_options", None)
+        state_data = await self.framework.get_state_data(session, params.get("state"))
+        await self.framework.clear_state_data(session, params.get("state"))
         params = self._format_state_params(state_data, params)
         token = await self.fetch_access_token(**params, **kwargs)
 
-        if 'id_token' in token and 'nonce' in state_data:
-            userinfo = await self.parse_id_token(token, nonce=state_data['nonce'], claims_options=claims_options)
-            token['userinfo'] = userinfo
+        if "id_token" in token and "nonce" in state_data:
+            userinfo = await self.parse_id_token(
+                token, nonce=state_data["nonce"], claims_options=claims_options
+            )
+            token["userinfo"] = userinfo
 
-        if 'extra_state' in state_data:
-            token['extra_state'] = state_data['extra_state']
+        if "extra_state" in state_data:
+            token["extra_state"] = state_data["extra_state"]
 
         return token

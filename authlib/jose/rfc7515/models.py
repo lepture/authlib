@@ -2,10 +2,11 @@ class JWSAlgorithm:
     """Interface for JWS algorithm. JWA specification (RFC7518) SHOULD
     implement the algorithms for JWS with this base implementation.
     """
+
     name = None
     description = None
-    algorithm_type = 'JWS'
-    algorithm_location = 'alg'
+    algorithm_type = "JWS"
+    algorithm_location = "alg"
 
     def prepare_key(self, raw_data):
         """Prepare key for signing and verifying signature."""
@@ -35,8 +36,8 @@ class JWSHeader(dict):
     """Header object for JWS. It combine the protected header and unprotected
     header together. JWSHeader itself is a dict of the combined dict. e.g.
 
-        >>> protected = {'alg': 'HS256'}
-        >>> header = {'kid': 'a'}
+        >>> protected = {"alg": "HS256"}
+        >>> header = {"kid": "a"}
         >>> jws_header = JWSHeader(protected, header)
         >>> print(jws_header)
         {'alg': 'HS256', 'kid': 'a'}
@@ -46,6 +47,7 @@ class JWSHeader(dict):
     :param protected: dict of protected header
     :param header: dict of unprotected header
     """
+
     def __init__(self, protected, header):
         obj = {}
         if protected:
@@ -60,12 +62,13 @@ class JWSHeader(dict):
     def from_dict(cls, obj):
         if isinstance(obj, cls):
             return obj
-        return cls(obj.get('protected'), obj.get('header'))
+        return cls(obj.get("protected"), obj.get("header"))
 
 
 class JWSObject(dict):
     """A dict instance to represent a JWS object."""
-    def __init__(self, header, payload, type='compact'):
+
+    def __init__(self, header, payload, type="compact"):
         super().__init__(
             header=header,
             payload=payload,
@@ -77,5 +80,5 @@ class JWSObject(dict):
     @property
     def headers(self):
         """Alias of ``header`` for JSON typed JWS."""
-        if self.type == 'json':
-            return self['header']
+        if self.type == "json":
+            return self["header"]

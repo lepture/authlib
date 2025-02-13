@@ -1,6 +1,4 @@
-from authlib.oauth2.rfc6749 import (
-    AuthorizationCodeMixin as _AuthorizationCodeMixin
-)
+from authlib.oauth2.rfc6749 import AuthorizationCodeMixin as _AuthorizationCodeMixin
 
 
 class AuthorizationCodeMixin(_AuthorizationCodeMixin):

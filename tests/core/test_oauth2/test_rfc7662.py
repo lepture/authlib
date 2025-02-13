@@ -1,4 +1,5 @@
 import unittest
+
 from authlib.oauth2.rfc7662 import IntrospectionToken
 
 
@@ -8,18 +9,18 @@ class IntrospectionTokenTest(unittest.TestCase):
         self.assertIsNone(token.client_id)
         self.assertIsNone(token.get_client_id())
 
-        token = IntrospectionToken({'client_id': 'foo'})
-        self.assertEqual(token.client_id, 'foo')
-        self.assertEqual(token.get_client_id(), 'foo')
+        token = IntrospectionToken({"client_id": "foo"})
+        self.assertEqual(token.client_id, "foo")
+        self.assertEqual(token.get_client_id(), "foo")
 
     def test_scope(self):
         token = IntrospectionToken()
         self.assertIsNone(token.scope)
         self.assertIsNone(token.get_scope())
 
-        token = IntrospectionToken({'scope': 'foo'})
-        self.assertEqual(token.scope, 'foo')
-        self.assertEqual(token.get_scope(), 'foo')
+        token = IntrospectionToken({"scope": "foo"})
+        self.assertEqual(token.scope, "foo")
+        self.assertEqual(token.get_scope(), "foo")
 
     def test_expires_in(self):
         token = IntrospectionToken()
@@ -30,7 +31,7 @@ class IntrospectionTokenTest(unittest.TestCase):
         self.assertIsNone(token.exp)
         self.assertEqual(token.get_expires_at(), 0)
 
-        token = IntrospectionToken({'exp': 3600})
+        token = IntrospectionToken({"exp": 3600})
         self.assertEqual(token.exp, 3600)
         self.assertEqual(token.get_expires_at(), 3600)
 

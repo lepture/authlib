@@ -1,4 +1,5 @@
-from livereload import Server, shell
+from livereload import Server
+from livereload import shell
 
 app = Server()
 # app.watch("src", shell("make build-docs"), delay=2)
