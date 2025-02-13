@@ -50,6 +50,25 @@ version = {attr = "authlib.__version__"}
 where = ["."]
 include = ["authlib", "authlib.*"]
 
+[tool.ruff.lint]
+select = [
+    "B", # flake8-bugbear
+    "E", # pycodestyle
+    "F", # pyflakes
+    "I", # isort
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501", # line-too-long
+    "E722", # bare-except
+]
+
+[tool.ruff.lint.isort]
+force-single-line = true
+
+[tool.ruff.format]
+docstring-code-format = true
+
 [tool.pytest]
 asyncio_mode = "auto"
 python_files = "test*.py"

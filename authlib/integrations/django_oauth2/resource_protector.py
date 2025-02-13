@@ -1,15 +1,12 @@
 import functools
+
 from django.http import JsonResponse
-from authlib.oauth2 import (
-    OAuth2Error,
-    ResourceProtector as _ResourceProtector,
-)
-from authlib.oauth2.rfc6749 import (
-    MissingAuthorizationError,
-)
-from authlib.oauth2.rfc6750 import (
-    BearerTokenValidator as _BearerTokenValidator
-)
+
+from authlib.oauth2 import OAuth2Error
+from authlib.oauth2 import ResourceProtector as _ResourceProtector
+from authlib.oauth2.rfc6749 import MissingAuthorizationError
+from authlib.oauth2.rfc6750 import BearerTokenValidator as _BearerTokenValidator
+
 from .requests import DjangoJsonRequest
 from .signals import token_authenticated
 
@@ -24,7 +21,7 @@ class ResourceProtector(_ResourceProtector):
         """
         req = DjangoJsonRequest(request)
         # backward compatibility
-        kwargs['scopes'] = scopes
+        kwargs["scopes"] = scopes
         for claim in kwargs:
             if isinstance(kwargs[claim], str):
                 kwargs[claim] = [kwargs[claim]]
@@ -35,7 +32,8 @@ class ResourceProtector(_ResourceProtector):
     def __call__(self, scopes=None, optional=False, **kwargs):
         claims = kwargs
         # backward compatibility
-        claims['scopes'] = scopes
+        claims["scopes"] = scopes
+
         def wrapper(f):
             @functools.wraps(f)
             def decorated(request, *args, **kwargs):
@@ -50,7 +48,9 @@ class ResourceProtector(_ResourceProtector):
                 except OAuth2Error as error:
                     return return_error_response(error)
                 return f(request, *args, **kwargs)
+
             return decorated
+
         return wrapper
 
 

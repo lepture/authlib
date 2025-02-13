@@ -1,12 +1,12 @@
 from authlib.consts import default_json_headers
-from authlib.common.urls import urlparse
-from ..requests import OAuth2Request
+
 from ..errors import InvalidRequestError
+from ..requests import OAuth2Request
 
 
 class BaseGrant:
     #: Allowed client auth methods for token endpoint
-    TOKEN_ENDPOINT_AUTH_METHODS = ['client_secret_basic']
+    TOKEN_ENDPOINT_AUTH_METHODS = ["client_secret_basic"]
 
     #: Designed for which "grant_type"
     GRANT_TYPE = None
@@ -23,19 +23,25 @@ class BaseGrant:
         self.request = request
         self.server = server
         self._hooks = {
-            'after_validate_authorization_request': set(),
-            'after_authorization_response': set(),
-            'after_validate_consent_request': set(),
-            'after_validate_token_request': set(),
-            'process_token': set(),
+            "after_validate_authorization_request": set(),
+            "after_authorization_response": set(),
+            "after_validate_consent_request": set(),
+            "after_validate_token_request": set(),
+            "process_token": set(),
         }
 
     @property
     def client(self):
         return self.request.client
 
-    def generate_token(self, user=None, scope=None, grant_type=None,
-                       expires_in=None, include_refresh_token=True):
+    def generate_token(
+        self,
+        user=None,
+        scope=None,
+        grant_type=None,
+        expires_in=None,
+        include_refresh_token=True,
+    ):
         if grant_type is None:
             grant_type = self.GRANT_TYPE
         return self.server.generate_token(
@@ -68,10 +74,9 @@ class BaseGrant:
         :return: client
         """
         client = self.server.authenticate_client(
-            self.request, self.TOKEN_ENDPOINT_AUTH_METHODS)
-        self.server.send_signal(
-            'after_authenticate_client',
-            client=client, grant=self)
+            self.request, self.TOKEN_ENDPOINT_AUTH_METHODS
+        )
+        self.server.send_signal("after_authenticate_client", client=client, grant=self)
         return client
 
     def save_token(self, token):
@@ -86,8 +91,7 @@ class BaseGrant:
 
     def register_hook(self, hook_type, hook):
         if hook_type not in self._hooks:
-            raise ValueError('Hook type %s is not in %s.',
-                             hook_type, self._hooks)
+            raise ValueError("Hook type %s is not in %s.", hook_type, self._hooks)
         self._hooks[hook_type].add(hook)
 
     def execute_hook(self, hook_type, *args, **kwargs):
@@ -97,15 +101,17 @@ class BaseGrant:
 
 class TokenEndpointMixin:
     #: Allowed HTTP methods of this token endpoint
-    TOKEN_ENDPOINT_HTTP_METHODS = ['POST']
+    TOKEN_ENDPOINT_HTTP_METHODS = ["POST"]
 
     #: Designed for which "grant_type"
     GRANT_TYPE = None
 
     @classmethod
     def check_token_endpoint(cls, request: OAuth2Request):
-        return request.grant_type == cls.GRANT_TYPE and \
-               request.method in cls.TOKEN_ENDPOINT_HTTP_METHODS
+        return (
+            request.grant_type == cls.GRANT_TYPE
+            and request.method in cls.TOKEN_ENDPOINT_HTTP_METHODS
+        )
 
     def validate_token_request(self):
         raise NotImplementedError()
@@ -127,15 +133,16 @@ class AuthorizationEndpointMixin:
         if request.redirect_uri:
             if not client.check_redirect_uri(request.redirect_uri):
                 raise InvalidRequestError(
-                    f'Redirect URI {request.redirect_uri} is not supported by client.',
-                    state=request.state)
+                    f"Redirect URI {request.redirect_uri} is not supported by client.",
+                    state=request.state,
+                )
             return request.redirect_uri
         else:
             redirect_uri = client.get_default_redirect_uri()
             if not redirect_uri:
                 raise InvalidRequestError(
-                    'Missing "redirect_uri" in request.',
-                    state=request.state)
+                    'Missing "redirect_uri" in request.', state=request.state
+                )
             return redirect_uri
 
     @staticmethod
@@ -149,11 +156,13 @@ class AuthorizationEndpointMixin:
         parameters = ["response_type", "client_id", "redirect_uri", "scope", "state"]
         for param in parameters:
             if len(datalist.get(param, [])) > 1:
-                raise InvalidRequestError(f'Multiple "{param}" in request.', state=request.state)
+                raise InvalidRequestError(
+                    f'Multiple "{param}" in request.', state=request.state
+                )
 
     def validate_consent_request(self):
         redirect_uri = self.validate_authorization_request()
-        self.execute_hook('after_validate_consent_request', redirect_uri)
+        self.execute_hook("after_validate_consent_request", redirect_uri)
         self.redirect_uri = redirect_uri
 
     def validate_authorization_request(self):

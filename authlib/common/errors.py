@@ -7,7 +7,7 @@ class AuthlibBaseError(Exception):
     #: short-string error code
     error = None
     #: long-string to describe this error
-    description = ''
+    description = ""
     #: web page that describes this error
     uri = None
 
@@ -19,7 +19,7 @@ class AuthlibBaseError(Exception):
         if uri is not None:
             self.uri = uri
 
-        message = f'{self.error}: {self.description}'
+        message = f"{self.error}: {self.description}"
         super().__init__(message)
 
     def __repr__(self):
@@ -30,8 +30,7 @@ class AuthlibHTTPError(AuthlibBaseError):
     #: HTTP status code
     status_code = 400
 
-    def __init__(self, error=None, description=None, uri=None,
-                 status_code=None):
+    def __init__(self, error=None, description=None, uri=None, status_code=None):
         super().__init__(error, description, uri)
         if status_code is not None:
             self.status_code = status_code
@@ -40,13 +39,13 @@ class AuthlibHTTPError(AuthlibBaseError):
         return self.description
 
     def get_body(self):
-        error = [('error', self.error)]
+        error = [("error", self.error)]
 
         if self.description:
-            error.append(('error_description', self.description))
+            error.append(("error_description", self.description))
 
         if self.uri:
-            error.append(('error_uri', self.uri))
+            error.append(("error_uri", self.uri))
         return error
 
     def get_headers(self):
