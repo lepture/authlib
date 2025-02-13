@@ -26,6 +26,10 @@ class JWTBearerGrant(BaseGrant, TokenEndpointMixin):
         "exp": {"essential": True},
     }
 
+    # A small allowance of time, typically no more than a few minutes,
+    # to account for clock skew. The default is 60 seconds.
+    LEEWAY = 60
+
     @staticmethod
     def sign(
         key,
@@ -55,7 +59,7 @@ class JWTBearerGrant(BaseGrant, TokenEndpointMixin):
             claims = jwt.decode(
                 assertion, self.resolve_public_key, claims_options=self.CLAIMS_OPTIONS
             )
-            claims.validate()
+            claims.validate(leeway=self.LEEWAY)
         except JoseError as e:
             log.debug("Assertion Error: %r", e)
             raise InvalidGrantError(description=e.description) from e
