@@ -69,7 +69,7 @@ class JWTBearerClientAssertion:
             )
             claims.validate(leeway=self.leeway)
         except JoseError as e:
-            log.debug('Assertion Error: %r', e)
+            log.debug("Assertion Error: %r", e)
             raise InvalidClientError(description=e.description) from e
         return claims
 
