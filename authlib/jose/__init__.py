@@ -1,4 +1,4 @@
-"""authlib.jose.
+"""authlib.jose
 ~~~~~~~~~~~~
 
 JOSE implementation in Authlib. Tracking the status of JOSE specs at
