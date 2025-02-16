@@ -3,6 +3,8 @@ from authlib.jose import BaseClaims
 from authlib.jose import JsonWebKey
 from authlib.jose.errors import InvalidClaimError
 
+from ..rfc6749 import scope_to_list
+
 
 class ClientMetadataClaims(BaseClaims):
     # https://tools.ietf.org/html/rfc7591#section-2
@@ -217,3 +219,49 @@ class ClientMetadataClaims(BaseClaims):
             uri = self.get(key)
         if uri and not is_valid_url(uri):
             raise InvalidClaimError(key)
+
+    @classmethod
+    def get_claims_options(cls, metadata):
+        """Generate claims options validation from Authorization Server metadata."""
+        scopes_supported = metadata.get("scopes_supported")
+        response_types_supported = metadata.get("response_types_supported")
+        grant_types_supported = metadata.get("grant_types_supported")
+        auth_methods_supported = metadata.get("token_endpoint_auth_methods_supported")
+        options = {}
+        if scopes_supported is not None:
+            scopes_supported = set(scopes_supported)
+
+            def _validate_scope(claims, value):
+                if not value:
+                    return True
+                scopes = set(scope_to_list(value))
+                return scopes_supported.issuperset(scopes)
+
+            options["scope"] = {"validate": _validate_scope}
+
+        if response_types_supported is not None:
+            response_types_supported = set(response_types_supported)
+
+            def _validate_response_types(claims, value):
+                # If omitted, the default is that the client will use only the "code"
+                # response type.
+                response_types = set(value) if value else {"code"}
+                return response_types_supported.issuperset(response_types)
+
+            options["response_types"] = {"validate": _validate_response_types}
+
+        if grant_types_supported is not None:
+            grant_types_supported = set(grant_types_supported)
+
+            def _validate_grant_types(claims, value):
+                # If omitted, the default behavior is that the client will use only
+                # the "authorization_code" Grant Type.
+                grant_types = set(value) if value else {"authorization_code"}
+                return grant_types_supported.issuperset(grant_types)
+
+            options["grant_types"] = {"validate": _validate_grant_types}
+
+        if auth_methods_supported is not None:
+            options["token_endpoint_auth_method"] = {"values": auth_methods_supported}
+
+        return options

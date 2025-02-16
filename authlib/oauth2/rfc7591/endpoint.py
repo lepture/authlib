@@ -9,7 +9,6 @@ from authlib.jose import JsonWebToken
 
 from ..rfc6749 import AccessDeniedError
 from ..rfc6749 import InvalidRequestError
-from ..rfc6749 import scope_to_list
 from .claims import ClientMetadataClaims
 from .errors import InvalidClientMetadataError
 from .errors import InvalidSoftwareStatementError
@@ -23,15 +22,13 @@ class ClientRegistrationEndpoint:
 
     ENDPOINT_NAME = "client_registration"
 
-    #: The claims validation class
-    claims_class = ClientMetadataClaims
-
     #: Rewrite this value with a list to support ``software_statement``
     #: e.g. ``software_statement_alg_values_supported = ['RS256']``
     software_statement_alg_values_supported = None
 
-    def __init__(self, server):
+    def __init__(self, server=None, claims_classes=None):
         self.server = server
+        self.claims_classes = claims_classes or [ClientMetadataClaims]
 
     def __call__(self, request):
         return self.create_registration_response(request)
@@ -64,13 +61,22 @@ class ClientRegistrationEndpoint:
             data = self.extract_software_statement(software_statement, request)
             json_data.update(data)
 
-        options = self.get_claims_options()
-        claims = self.claims_class(json_data, {}, options, self.get_server_metadata())
-        try:
-            claims.validate()
-        except JoseError as error:
-            raise InvalidClientMetadataError(error.description) from error
-        return claims.get_registered_claims()
+        client_metadata = {}
+        server_metadata = self.get_server_metadata()
+        for claims_class in self.claims_classes:
+            options = (
+                claims_class.get_claims_options(server_metadata)
+                if server_metadata
+                else {}
+            )
+            claims = claims_class(json_data, {}, options, server_metadata)
+            try:
+                claims.validate()
+            except JoseError as error:
+                raise InvalidClientMetadataError(error.description) from error
+
+            client_metadata.update(**claims.get_registered_claims())
+        return client_metadata
 
     def extract_software_statement(self, software_statement, request):
         key = self.resolve_public_key(request)
@@ -84,55 +90,6 @@ class ClientRegistrationEndpoint:
             return claims
         except JoseError as exc:
             raise InvalidSoftwareStatementError() from exc
-
-    def get_claims_options(self):
-        """Generate claims options validation from Authorization Server metadata."""
-        metadata = self.get_server_metadata()
-        if not metadata:
-            return {}
-
-        scopes_supported = metadata.get("scopes_supported")
-        response_types_supported = metadata.get("response_types_supported")
-        grant_types_supported = metadata.get("grant_types_supported")
-        auth_methods_supported = metadata.get("token_endpoint_auth_methods_supported")
-        options = {}
-        if scopes_supported is not None:
-            scopes_supported = set(scopes_supported)
-
-            def _validate_scope(claims, value):
-                if not value:
-                    return True
-                scopes = set(scope_to_list(value))
-                return scopes_supported.issuperset(scopes)
-
-            options["scope"] = {"validate": _validate_scope}
-
-        if response_types_supported is not None:
-            response_types_supported = set(response_types_supported)
-
-            def _validate_response_types(claims, value):
-                # If omitted, the default is that the client will use only the "code"
-                # response type.
-                response_types = set(value) if value else {"code"}
-                return response_types_supported.issuperset(response_types)
-
-            options["response_types"] = {"validate": _validate_response_types}
-
-        if grant_types_supported is not None:
-            grant_types_supported = set(grant_types_supported)
-
-            def _validate_grant_types(claims, value):
-                # If omitted, the default behavior is that the client will use only
-                # the "authorization_code" Grant Type.
-                grant_types = set(value) if value else {"authorization_code"}
-                return grant_types_supported.issuperset(grant_types)
-
-            options["grant_types"] = {"validate": _validate_grant_types}
-
-        if auth_methods_supported is not None:
-            options["token_endpoint_auth_method"] = {"values": auth_methods_supported}
-
-        return options
 
     def generate_client_info(self):
         # https://tools.ietf.org/html/rfc7591#section-3.2.1
