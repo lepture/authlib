@@ -95,7 +95,9 @@ class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
 
         client = self.authenticate_token_endpoint_client()
         if not client.check_grant_type(self.GRANT_TYPE):
-            raise UnauthorizedClientError()
+            raise UnauthorizedClientError(
+                f'The client is not authorized to use "response_type={self.GRANT_TYPE}"',
+            )
 
         credential = self.query_device_credential(device_code)
         if not credential:
