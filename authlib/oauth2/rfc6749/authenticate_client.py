@@ -45,8 +45,15 @@ class ClientAuthentication:
                 return client
 
         if "client_secret_basic" in methods:
-            raise InvalidClientError(state=request.state, status_code=401)
-        raise InvalidClientError(state=request.state)
+            raise InvalidClientError(
+                state=request.state,
+                status_code=401,
+                description=f"The client cannot authenticate with methods: {methods}",
+            )
+        raise InvalidClientError(
+            state=request.state,
+            description=f"The client cannot authenticate with methods: {methods}",
+        )
 
     def __call__(self, request, methods, endpoint="token"):
         return self.authenticate(request, methods, endpoint)
@@ -94,10 +101,18 @@ def authenticate_none(query_client, request):
 
 def _validate_client(query_client, client_id, state=None, status_code=400):
     if client_id is None:
-        raise InvalidClientError(state=state, status_code=status_code)
+        raise InvalidClientError(
+            state=state,
+            status_code=status_code,
+            description="Missing 'client_id' parameter.",
+        )
 
     client = query_client(client_id)
     if not client:
-        raise InvalidClientError(state=state, status_code=status_code)
+        raise InvalidClientError(
+            state=state,
+            status_code=status_code,
+            description="The client does not exist on this server.",
+        )
 
     return client

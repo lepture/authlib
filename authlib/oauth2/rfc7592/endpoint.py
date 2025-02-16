@@ -37,12 +37,17 @@ class ClientConfigurationEndpoint:
             # with HTTP 401 Unauthorized and the registration access token used to
             # make this request SHOULD be immediately revoked.
             self.revoke_access_token(request, token)
-            raise InvalidClientError(status_code=401)
+            raise InvalidClientError(
+                status_code=401, description="The client does not exist on this server."
+            )
 
         if not self.check_permission(client, request):
             # If the client does not have permission to read its record, the server
             # MUST return an HTTP 403 Forbidden.
-            raise UnauthorizedClientError(status_code=403)
+            raise UnauthorizedClientError(
+                status_code=403,
+                description="The client does not have permission to read its record.",
+            )
 
         request.client = client
 

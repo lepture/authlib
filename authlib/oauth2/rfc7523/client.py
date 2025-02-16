@@ -76,7 +76,9 @@ class JWTBearerClientAssertion:
     def authenticate_client(self, client):
         if client.check_endpoint_auth_method(self.CLIENT_AUTH_METHOD, "token"):
             return client
-        raise InvalidClientError()
+        raise InvalidClientError(
+            description=f"The client cannot authenticate with method: {self.CLIENT_AUTH_METHOD}"
+        )
 
     def create_resolve_key_func(self, query_client, request):
         def resolve_key(headers, payload):
@@ -86,7 +88,9 @@ class JWTBearerClientAssertion:
             client_id = payload["sub"]
             client = query_client(client_id)
             if not client:
-                raise InvalidClientError()
+                raise InvalidClientError(
+                    description="The client does not exist on this server."
+                )
             request.client = client
             return self.resolve_client_public_key(client, headers)
 

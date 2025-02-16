@@ -109,7 +109,9 @@ class JWTBearerGrant(BaseGrant, TokenEndpointMixin):
         log.debug("Validate token request of %s", client)
 
         if not client.check_grant_type(self.GRANT_TYPE):
-            raise UnauthorizedClientError()
+            raise UnauthorizedClientError(
+                f'The client is not authorized to use "grant_type={self.GRANT_TYPE}"'
+            )
 
         self.request.client = client
         self.validate_requested_scope()
