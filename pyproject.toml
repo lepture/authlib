@@ -69,9 +69,9 @@ force-single-line = true
 [tool.ruff.format]
 docstring-code-format = true
 
-[tool.pytest]
+[tool.pytest.ini_options]
+asyncio_default_fixture_loop_scope = "function"
 asyncio_mode = "auto"
-python_files = "test*.py"
 norecursedirs = ["authlib", "build", "dist", "docs", "htmlcov"]
 
 [tool.coverage.run]
