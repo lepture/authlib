@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "Authlib"
 description = "The ultimate Python library in building OAuth and OpenID Connect servers and clients."
@@ -39,9 +43,43 @@ Source = "https://github.com/lepture/authlib"
 Donate = "https://github.com/sponsors/lepture"
 Blog = "https://blog.authlib.org/"
 
-[build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
+[dependency-groups]
+dev = [
+    "coverage",
+    "cryptography",
+    "pytest",
+    "pytest-asyncio",
+]
+
+clients = [
+    "anyio",
+    "cachelib",
+    "django",
+    "flask",
+    "httpx",
+    "requests",
+    "starlette",
+    # there is an incompatibility with asgiref, pypy and coverage,
+    # see https://github.com/django/asgiref/issues/393 for details
+    "asgiref==3.6.0 ; implementation_name == 'pypy' and python_version < '3.10'",
+]
+
+django = [
+    "django",
+    "pytest-django",
+    # there is an incompatibility with asgiref, pypy and coverage,
+    # see https://github.com/django/asgiref/issues/393 for details
+    "asgiref==3.6.0 ; implementation_name == 'pypy' and python_version < '3.10'",
+]
+
+flask = [
+    "Flask",
+    "Flask-SQLAlchemy",
+]
+
+jose = [
+    "pycryptodomex>=3.10,<4",
+]
 
 [tool.setuptools.dynamic]
 version = {attr = "authlib.__version__"}
