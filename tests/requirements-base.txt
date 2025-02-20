@@ -1,4 +1,0 @@
-cryptography
-pytest
-coverage
-pytest-asyncio
