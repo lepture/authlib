@@ -1,9 +1,11 @@
 from flask import json
 
 from authlib.jose import jwt
+from authlib.oauth2.rfc7591 import ClientMetadataClaims as OAuth2ClientMetadataClaims
 from authlib.oauth2.rfc7591 import (
     ClientRegistrationEndpoint as _ClientRegistrationEndpoint,
 )
+from authlib.oidc.registration import ClientMetadataClaims as OIDCClientMetadataClaims
 from tests.util import read_file_path
 
 from .models import Client
@@ -33,7 +35,7 @@ class ClientRegistrationEndpoint(_ClientRegistrationEndpoint):
         return client
 
 
-class ClientRegistrationTest(TestCase):
+class OAuthClientRegistrationTest(TestCase):
     def prepare_data(self, endpoint_cls=None, metadata=None):
         app = self.app
         server = create_authorization_server(app)
@@ -194,5 +196,461 @@ class ClientRegistrationTest(TestCase):
 
         body = {"token_endpoint_auth_method": "none", "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp["error"], "invalid_client_metadata")
+
+
+class OIDCClientRegistrationTest(TestCase):
+    def prepare_data(self, metadata=None):
+        self.headers = {"Authorization": "bearer abc"}
+        app = self.app
+        server = create_authorization_server(app)
+
+        class MyClientRegistration(ClientRegistrationEndpoint):
+            def get_server_metadata(self):
+                return metadata
+
+        server.register_endpoint(
+            MyClientRegistration(
+                claims_classes=[OAuth2ClientMetadataClaims, OIDCClientMetadataClaims]
+            )
+        )
+
+        @app.route("/create_client", methods=["POST"])
+        def create_client():
+            return server.create_endpoint_response("client_registration")
+
+        user = User(username="foo")
+        db.session.add(user)
+        db.session.commit()
+
+    def test_application_type(self):
+        self.prepare_data()
+
+        # Nominal case
+        body = {
+            "application_type": "web",
+            "client_name": "Authlib",
+        }
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertEqual(resp["application_type"], "web")
+
+        # Default case
+        # The default, if omitted, is that any algorithm supported by the OP and the RP MAY be used.
+        body = {
+            "client_name": "Authlib",
+        }
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertEqual(resp["application_type"], "web")
+
+        # Error case
+        body = {
+            "application_type": "invalid",
+            "client_name": "Authlib",
+        }
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp["error"], "invalid_client_metadata")
+
+    def test_token_endpoint_auth_signing_alg_supported(self):
+        metadata = {
+            "token_endpoint_auth_signing_alg_values_supported": ["RS256", "ES256"]
+        }
+        self.prepare_data(metadata)
+
+        # Nominal case
+        body = {
+            "token_endpoint_auth_signing_alg": "ES256",
+            "client_name": "Authlib",
+        }
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertEqual(resp["token_endpoint_auth_signing_alg"], "ES256")
+
+        # Default case
+        # The default, if omitted, is that any algorithm supported by the OP and the RP MAY be used.
+        body = {
+            "client_name": "Authlib",
+        }
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+
+        # Error case
+        body = {
+            "token_endpoint_auth_signing_alg": "RS512",
+            "client_name": "Authlib",
+        }
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp["error"], "invalid_client_metadata")
+
+    def test_subject_types_supported(self):
+        metadata = {"subject_types_supported": ["public", "pairwise"]}
+        self.prepare_data(metadata)
+
+        # Nominal case
+        body = {"subject_type": "public", "client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertEqual(resp["subject_type"], "public")
+
+        # Error case
+        body = {"subject_type": "invalid", "client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp["error"], "invalid_client_metadata")
+
+    def test_id_token_signing_alg_values_supported(self):
+        metadata = {"id_token_signing_alg_values_supported": ["RS256", "ES256"]}
+        self.prepare_data(metadata)
+
+        # Default
+        # The default, if omitted, is RS256.
+        body = {"client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertEqual(resp["id_token_signed_response_alg"], "RS256")
+
+        # Nominal case
+        body = {"id_token_signed_response_alg": "ES256", "client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertEqual(resp["id_token_signed_response_alg"], "ES256")
+
+        # Error case
+        body = {"id_token_signed_response_alg": "RS512", "client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp["error"], "invalid_client_metadata")
+
+    def test_id_token_encryption_alg_values_supported(self):
+        metadata = {"id_token_encryption_alg_values_supported": ["RS256", "ES256"]}
+        self.prepare_data(metadata)
+
+        # Default case
+        body = {"client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertNotIn("id_token_encrypted_response_enc", resp)
+
+        # If id_token_encrypted_response_alg is specified, the default
+        # id_token_encrypted_response_enc value is A128CBC-HS256.
+        body = {"id_token_encrypted_response_alg": "RS256", "client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertEqual(resp["id_token_encrypted_response_enc"], "A128CBC-HS256")
+
+        # Nominal case
+        body = {"id_token_encrypted_response_alg": "ES256", "client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertEqual(resp["id_token_encrypted_response_alg"], "ES256")
+
+        # Error case
+        body = {"id_token_encrypted_response_alg": "RS512", "client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp["error"], "invalid_client_metadata")
+
+    def test_id_token_encryption_enc_values_supported(self):
+        metadata = {
+            "id_token_encryption_enc_values_supported": ["A128CBC-HS256", "A256GCM"]
+        }
+        self.prepare_data(metadata)
+
+        # Nominal case
+        body = {
+            "id_token_encrypted_response_alg": "RS256",
+            "id_token_encrypted_response_enc": "A256GCM",
+            "client_name": "Authlib",
+        }
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertEqual(resp["id_token_encrypted_response_alg"], "RS256")
+        self.assertEqual(resp["id_token_encrypted_response_enc"], "A256GCM")
+
+        # Error case: missing id_token_encrypted_response_alg
+        body = {"id_token_encrypted_response_enc": "A256GCM", "client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp["error"], "invalid_client_metadata")
+
+        # Error case: alg not in server metadata
+        body = {"id_token_encrypted_response_enc": "A128GCM", "client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp["error"], "invalid_client_metadata")
+
+    def test_userinfo_signing_alg_values_supported(self):
+        metadata = {"userinfo_signing_alg_values_supported": ["RS256", "ES256"]}
+        self.prepare_data(metadata)
+
+        # Nominal case
+        body = {"userinfo_signed_response_alg": "ES256", "client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertEqual(resp["userinfo_signed_response_alg"], "ES256")
+
+        # Error case
+        body = {"userinfo_signed_response_alg": "RS512", "client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp["error"], "invalid_client_metadata")
+
+    def test_userinfo_encryption_alg_values_supported(self):
+        metadata = {"userinfo_encryption_alg_values_supported": ["RS256", "ES256"]}
+        self.prepare_data(metadata)
+
+        # Nominal case
+        body = {"userinfo_encrypted_response_alg": "ES256", "client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertEqual(resp["userinfo_encrypted_response_alg"], "ES256")
+
+        # Error case
+        body = {"userinfo_encrypted_response_alg": "RS512", "client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp["error"], "invalid_client_metadata")
+
+    def test_userinfo_encryption_enc_values_supported(self):
+        metadata = {
+            "userinfo_encryption_enc_values_supported": ["A128CBC-HS256", "A256GCM"]
+        }
+        self.prepare_data(metadata)
+
+        # Default case
+        body = {"client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertNotIn("userinfo_encrypted_response_enc", resp)
+
+        # If userinfo_encrypted_response_alg is specified, the default
+        # userinfo_encrypted_response_enc value is A128CBC-HS256.
+        body = {"userinfo_encrypted_response_alg": "RS256", "client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertEqual(resp["userinfo_encrypted_response_enc"], "A128CBC-HS256")
+
+        # Nominal case
+        body = {
+            "userinfo_encrypted_response_alg": "RS256",
+            "userinfo_encrypted_response_enc": "A256GCM",
+            "client_name": "Authlib",
+        }
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertEqual(resp["userinfo_encrypted_response_alg"], "RS256")
+        self.assertEqual(resp["userinfo_encrypted_response_enc"], "A256GCM")
+
+        # Error case: no userinfo_encrypted_response_alg
+        body = {"userinfo_encrypted_response_enc": "A256GCM", "client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp["error"], "invalid_client_metadata")
+
+        # Error case: alg not in server metadata
+        body = {"userinfo_encrypted_response_enc": "A128GCM", "client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp["error"], "invalid_client_metadata")
+
+    def test_acr_values_supported(self):
+        metadata = {
+            "acr_values_supported": [
+                "urn:mace:incommon:iap:silver",
+                "urn:mace:incommon:iap:bronze",
+            ],
+        }
+        self.prepare_data(metadata)
+
+        # Nominal case
+        body = {
+            "default_acr_values": ["urn:mace:incommon:iap:silver"],
+            "client_name": "Authlib",
+        }
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertEqual(resp["default_acr_values"], ["urn:mace:incommon:iap:silver"])
+
+        # Error case
+        body = {
+            "default_acr_values": [
+                "urn:mace:incommon:iap:silver",
+                "urn:mace:incommon:iap:gold",
+            ],
+            "client_name": "Authlib",
+        }
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp["error"], "invalid_client_metadata")
+
+    def test_request_object_signing_alg_values_supported(self):
+        metadata = {"request_object_signing_alg_values_supported": ["RS256", "ES256"]}
+        self.prepare_data(metadata)
+
+        # Nominal case
+        body = {"request_object_signing_alg": "ES256", "client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertEqual(resp["request_object_signing_alg"], "ES256")
+
+        # Error case
+        body = {"request_object_signing_alg": "RS512", "client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp["error"], "invalid_client_metadata")
+
+    def test_request_object_encryption_alg_values_supported(self):
+        metadata = {
+            "request_object_encryption_alg_values_supported": ["RS256", "ES256"]
+        }
+        self.prepare_data(metadata)
+
+        # Nominal case
+        body = {
+            "request_object_encryption_alg": "ES256",
+            "client_name": "Authlib",
+        }
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertEqual(resp["request_object_encryption_alg"], "ES256")
+
+        # Error case
+        body = {
+            "request_object_encryption_alg": "RS512",
+            "client_name": "Authlib",
+        }
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp["error"], "invalid_client_metadata")
+
+    def test_request_object_encryption_enc_values_supported(self):
+        metadata = {
+            "request_object_encryption_enc_values_supported": [
+                "A128CBC-HS256",
+                "A256GCM",
+            ]
+        }
+        self.prepare_data(metadata)
+
+        # Default case
+        body = {"client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertNotIn("request_object_encryption_enc", resp)
+
+        # If request_object_encryption_alg is specified, the default
+        # request_object_encryption_enc value is A128CBC-HS256.
+        body = {"request_object_encryption_alg": "RS256", "client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertEqual(resp["request_object_encryption_enc"], "A128CBC-HS256")
+
+        # Nominal case
+        body = {
+            "request_object_encryption_alg": "RS256",
+            "request_object_encryption_enc": "A256GCM",
+            "client_name": "Authlib",
+        }
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertEqual(resp["request_object_encryption_alg"], "RS256")
+        self.assertEqual(resp["request_object_encryption_enc"], "A256GCM")
+
+        # Error case: missing request_object_encryption_alg
+        body = {
+            "request_object_encryption_enc": "A256GCM",
+            "client_name": "Authlib",
+        }
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp["error"], "invalid_client_metadata")
+
+        # Error case: alg not in server metadata
+        body = {
+            "request_object_encryption_enc": "A128GCM",
+            "client_name": "Authlib",
+        }
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp["error"], "invalid_client_metadata")
+
+    def test_require_auth_time(self):
+        self.prepare_data()
+
+        # Default case
+        body = {
+            "client_name": "Authlib",
+        }
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertEqual(resp["require_auth_time"], False)
+
+        # Nominal case
+        body = {
+            "require_auth_time": True,
+            "client_name": "Authlib",
+        }
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertEqual(resp["require_auth_time"], True)
+
+        # Error case
+        body = {
+            "require_auth_time": "invalid",
+            "client_name": "Authlib",
+        }
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
         self.assertIn(resp["error"], "invalid_client_metadata")

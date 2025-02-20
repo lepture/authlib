@@ -65,6 +65,7 @@ Generic, spec-compliant implementation to build clients and providers:
 - [OpenID Connect 1.0](https://docs.authlib.org/en/latest/specs/oidc.html)
   - [x] OpenID Connect Core 1.0
   - [x] OpenID Connect Discovery 1.0
+  - [x] OpenID Connect Dynamic Client Registration 1.0
 
 Connect third party OAuth providers with Authlib built-in client integrations:
 

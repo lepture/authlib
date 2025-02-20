@@ -14,6 +14,7 @@ Version 1.x.x
 - Implement server-side :rfc:`RFC9207 <9207>`. :issue:`700`
 - ``generate_id_token`` can take a ``kid`` parameter. :pr:`702`
 - More detailed ``InvalidClientError``. :pr:`706`
+- OpenID Connect Dynamic Client Registration implementation. :pr:`707`
 
 Version 1.4.1
 -------------

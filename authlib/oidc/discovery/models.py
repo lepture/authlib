@@ -14,12 +14,12 @@ class OpenIDProviderMetadata(AuthorizationServerMetadata):
         "response_modes_supported",
         "grant_types_supported",
         "token_endpoint_auth_methods_supported",
-        "token_endpoint_auth_signing_alg_values_supported",
         "service_documentation",
         "ui_locales_supported",
         "op_policy_uri",
         "op_tos_uri",
         # added by OpenID
+        "token_endpoint_auth_signing_alg_values_supported",
         "acr_values_supported",
         "subject_types_supported",
         "id_token_signing_alg_values_supported",
