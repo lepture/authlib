@@ -11,7 +11,9 @@ Version 1.x.x
 
 **Unreleased**
 
-- Implement server-side :rfc:`RFC9207 <9207>`. :issue:`700`
+- Optional ``typ`` claim in JWT tokens. :pr:`696`
+- JWT validation leeway. :pr:`689`
+- Implement server-side :rfc:`RFC9207 <9207>`. :issue:`700` :pr:`701`
 - ``generate_id_token`` can take a ``kid`` parameter. :pr:`702`
 - More detailed ``InvalidClientError``. :pr:`706`
 - OpenID Connect Dynamic Client Registration implementation. :pr:`707`
