@@ -81,6 +81,13 @@ jose = [
     "pycryptodomex>=3.10,<4",
 ]
 
+docs = [
+    "shibuya",
+    "sphinx",
+    "sphinx-design",
+    "sphinx-copybutton",
+]
+
 [tool.setuptools.dynamic]
 version = {attr = "authlib.__version__"}
 
