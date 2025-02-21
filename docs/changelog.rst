@@ -11,6 +11,7 @@ Version 1.x.x
 
 **Unreleased**
 
+- Fix token introspection auth method for clients. :pr:`662`
 - Optional ``typ`` claim in JWT tokens. :pr:`696`
 - JWT validation leeway. :pr:`689`
 - Implement server-side :rfc:`RFC9207 <9207>`. :issue:`700` :pr:`701`
