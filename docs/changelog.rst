@@ -6,10 +6,10 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
-Version 1.x.x
+Version 1.5.0
 -------------
 
-**Unreleased**
+**Released on Feb 25, 2025**
 
 - Fix token introspection auth method for clients. :pr:`662`
 - Optional ``typ`` claim in JWT tokens. :pr:`696`
