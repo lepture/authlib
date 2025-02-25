@@ -1,8 +1,9 @@
+import secrets
+
 from authlib.common.encoding import to_bytes
 from authlib.common.encoding import to_unicode
 from authlib.common.encoding import urlsafe_b64decode
 from authlib.common.encoding import urlsafe_b64encode
-from authlib.common.security import generate_token
 
 from ..rfc7517 import Key
 
@@ -92,4 +93,4 @@ class OctKey(Key):
         if key_size % 8 != 0:
             raise ValueError("Invalid bit size for oct key")
 
-        return cls.import_key(generate_token(key_size // 8), options)
+        return cls.import_key(secrets.token_bytes(int(key_size / 8)), options)
