@@ -9,7 +9,7 @@ In summary, RFC9207 advise to return an ``iss`` parameter in authorization code 
 This can simply be done by implementing the :meth:`~authlib.oauth2.rfc9207.parameter.IssuerParameter.get_issuer` method in the :class:`~authlib.oauth2.rfc9207.parameter.IssuerParameter` class,
 and pass it as a :class:`~authlib.oauth2.rfc6749.grants.AuthorizationCodeGrant` extension::
 
-    from authlib.oauth2.rfc6749.parameter import IssuerParameter as _IssuerParameter
+    from authlib.oauth2.rfc9207.parameter import IssuerParameter as _IssuerParameter
 
     class IssuerParameter(_IssuerParameter):
         def get_issuer(self) -> str:
