@@ -9,7 +9,7 @@ Here you can see the full list of changes between each Authlib release.
 Version 1.5.1
 -------------
 
-**Unreleased**
+**Released on Feb 28, 2025**
 
 - Fix RFC9207 ``iss`` parameter. :pr:`715`
 
