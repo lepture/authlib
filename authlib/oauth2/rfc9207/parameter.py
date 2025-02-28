@@ -20,7 +20,7 @@ class IssuerParameter:
             new_location = add_params_to_uri(
                 response.location, {"iss": self.get_issuer()}
             )
-            response.location += new_location
+            response.location = new_location
 
     def get_issuer(self) -> Optional[str]:
         """Return the issuer URL.
