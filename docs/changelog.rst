@@ -6,6 +6,13 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 1.5.1
+-------------
+
+**Unreleased**
+
+- Fix RFC9207 ``iss`` parameter. :pr:`715`
+
 Version 1.5.0
 -------------
 
