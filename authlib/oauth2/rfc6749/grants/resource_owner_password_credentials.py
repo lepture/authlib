@@ -89,20 +89,20 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant, TokenEndpointMixin):
 
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError(
-                f'The client is not authorized to use "grant_type={self.GRANT_TYPE}"'
+                f"The client is not authorized to use 'grant_type={self.GRANT_TYPE}'"
             )
 
         params = self.request.form
         if "username" not in params:
-            raise InvalidRequestError('Missing "username" in request.')
+            raise InvalidRequestError("Missing 'username' in request.")
         if "password" not in params:
-            raise InvalidRequestError('Missing "password" in request.')
+            raise InvalidRequestError("Missing 'password' in request.")
 
         log.debug("Authenticate user of %r", params["username"])
         user = self.authenticate_user(params["username"], params["password"])
         if not user:
             raise InvalidRequestError(
-                'Invalid "username" or "password" in request.',
+                "Invalid 'username' or 'password' in request.",
             )
         self.request.client = client
         self.request.user = user

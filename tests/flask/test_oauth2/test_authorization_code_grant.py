@@ -255,7 +255,7 @@ class AuthorizationCodeTest(TestCase):
         )
         rv = self.client.get(url)
         self.assertIn(b"invalid_request", rv.data)
-        self.assertIn(b"Multiple+%22response_type%22+in+request.", rv.data)
+        self.assertIn(b"Multiple+%27response_type%27+in+request.", rv.data)
 
     def test_client_secret_post(self):
         self.app.config.update({"OAUTH2_REFRESH_TOKEN_GENERATOR": True})

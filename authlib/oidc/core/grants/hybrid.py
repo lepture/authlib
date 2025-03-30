@@ -51,7 +51,7 @@ class OpenIDHybridGrant(OpenIDImplicitGrant):
     def validate_authorization_request(self):
         if not is_openid_scope(self.request.scope):
             raise InvalidScopeError(
-                'Missing "openid" scope',
+                "Missing 'openid' scope",
                 redirect_uri=self.request.redirect_uri,
                 redirect_fragment=True,
             )

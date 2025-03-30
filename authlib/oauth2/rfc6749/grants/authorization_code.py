@@ -213,26 +213,26 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         log.debug("Validate token request of %r", client)
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError(
-                f'The client is not authorized to use "grant_type={self.GRANT_TYPE}"'
+                f"The client is not authorized to use 'grant_type={self.GRANT_TYPE}'"
             )
 
         code = self.request.form.get("code")
         if code is None:
-            raise InvalidRequestError('Missing "code" in request.')
+            raise InvalidRequestError("Missing 'code' in request.")
 
         # ensure that the authorization code was issued to the authenticated
         # confidential client, or if the client is public, ensure that the
         # code was issued to "client_id" in the request
         authorization_code = self.query_authorization_code(code, client)
         if not authorization_code:
-            raise InvalidGrantError('Invalid "code" in request.')
+            raise InvalidGrantError("Invalid 'code' in request.")
 
         # validate redirect_uri parameter
         log.debug("Validate token redirect_uri of %r", client)
         redirect_uri = self.request.redirect_uri
         original_redirect_uri = authorization_code.get_redirect_uri()
         if original_redirect_uri and redirect_uri != original_redirect_uri:
-            raise InvalidGrantError('Invalid "redirect_uri" in request.')
+            raise InvalidGrantError("Invalid 'redirect_uri' in request.")
 
         # save for create_token_response
         self.request.client = client
@@ -272,7 +272,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
 
         user = self.authenticate_user(authorization_code)
         if not user:
-            raise InvalidGrantError('There is no "user" for this code.')
+            raise InvalidGrantError("There is no 'user' for this code.")
         self.request.user = user
 
         scope = authorization_code.get_scope()
@@ -373,7 +373,7 @@ def validate_code_authorization_request(grant):
     response_type = request.response_type
     if not client.check_response_type(response_type):
         raise UnauthorizedClientError(
-            f'The client is not authorized to use "response_type={response_type}"',
+            f"The client is not authorized to use 'response_type={response_type}'",
             state=grant.request.state,
             redirect_uri=redirect_uri,
         )
