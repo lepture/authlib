@@ -217,7 +217,7 @@ class ClientMetadataClaims(BaseClaims):
     def _validate_uri(self, key, uri=None):
         if uri is None:
             uri = self.get(key)
-        if uri and not is_valid_url(uri):
+        if uri and not is_valid_url(uri, fragments_allowed=False):
             raise InvalidClaimError(key)
 
     @classmethod

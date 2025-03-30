@@ -654,3 +654,34 @@ class OIDCClientRegistrationTest(TestCase):
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
         self.assertIn(resp["error"], "invalid_client_metadata")
+
+    def test_redirect_uri(self):
+        """RFC6749 indicate that fragments are forbidden in redirect_uri.
+
+            The redirection endpoint URI MUST be an absolute URI as defined by
+            [RFC3986] Section 4.3.  [...]  The endpoint URI MUST NOT include a
+            fragment component.
+
+        https://www.rfc-editor.org/rfc/rfc6749#section-3.1.2
+        """
+        self.prepare_data()
+
+        # Nominal case
+        body = {
+            "redirect_uris": ["https://client.test"],
+            "client_name": "Authlib",
+        }
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertEqual(resp["redirect_uris"], ["https://client.test"])
+
+        # Error case
+        body = {
+            "redirect_uris": ["https://client.test#fragment"],
+            "client_name": "Authlib",
+        }
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp["error"], "invalid_client_metadata")
