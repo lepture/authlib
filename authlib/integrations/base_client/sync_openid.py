@@ -33,7 +33,7 @@ class OpenIDMixin:
         data = resp.json()
         return UserInfo(data)
 
-    def parse_id_token(self, token, nonce, claims_options=None, leeway=120):
+    def parse_id_token(self, token, nonce, claims_options=None, claims_cls=None, leeway=120):
         """Return an instance of UserInfo from token's ``id_token``."""
         if "id_token" not in token:
             return None
@@ -44,11 +44,13 @@ class OpenIDMixin:
             nonce=nonce,
             client_id=self.client_id,
         )
-        if "access_token" in token:
-            claims_params["access_token"] = token["access_token"]
-            claims_cls = CodeIDToken
-        else:
-            claims_cls = ImplicitIDToken
+
+        if claims_cls is None:
+            if "access_token" in token:
+                claims_params["access_token"] = token["access_token"]
+                claims_cls = CodeIDToken
+            else:
+                claims_cls = ImplicitIDToken
 
         metadata = self.load_server_metadata()
         if claims_options is None and "issuer" in metadata:
