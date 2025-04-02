@@ -41,7 +41,7 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
 
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError(
-                f'The client is not authorized to use "grant_type={self.GRANT_TYPE}"'
+                f"The client is not authorized to use 'grant_type={self.GRANT_TYPE}'"
             )
 
         return client
@@ -49,7 +49,7 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
     def _validate_request_token(self, client):
         refresh_token = self.request.form.get("refresh_token")
         if refresh_token is None:
-            raise InvalidRequestError('Missing "refresh_token" in request.')
+            raise InvalidRequestError("Missing 'refresh_token' in request.")
 
         token = self.authenticate_refresh_token(refresh_token)
         if not token or not token.check_client(client):
@@ -118,7 +118,7 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
         refresh_token = self.request.refresh_token
         user = self.authenticate_user(refresh_token)
         if not user:
-            raise InvalidRequestError('There is no "user" for this token.')
+            raise InvalidRequestError("There is no 'user' for this token.")
 
         client = self.request.client
         token = self.issue_token(user, refresh_token)

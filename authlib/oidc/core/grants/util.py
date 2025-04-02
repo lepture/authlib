@@ -36,7 +36,7 @@ def validate_request_prompt(grant, redirect_uri, redirect_fragment=False):
         # If this parameter contains none with any other value,
         # an error is returned
         raise InvalidRequestError(
-            'Invalid "prompt" parameter.',
+            "Invalid 'prompt' parameter.",
             redirect_uri=redirect_uri,
             redirect_fragment=redirect_fragment,
         )
@@ -53,7 +53,7 @@ def validate_nonce(request, exists_nonce, required=False):
     nonce = request.data.get("nonce")
     if not nonce:
         if required:
-            raise InvalidRequestError('Missing "nonce" in request.')
+            raise InvalidRequestError("Missing 'nonce' in request.")
         return True
 
     if exists_nonce(nonce, request):

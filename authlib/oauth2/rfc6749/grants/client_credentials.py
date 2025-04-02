@@ -68,7 +68,7 @@ class ClientCredentialsGrant(BaseGrant, TokenEndpointMixin):
 
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError(
-                f'The client is not authorized to use "grant_type={self.GRANT_TYPE}"'
+                f"The client is not authorized to use 'grant_type={self.GRANT_TYPE}'"
             )
 
         self.request.client = client

@@ -130,7 +130,7 @@ class ImplicitGrant(BaseGrant, AuthorizationEndpointMixin):
         response_type = self.request.response_type
         if not client.check_response_type(response_type):
             raise UnauthorizedClientError(
-                f'The client is not authorized to use "response_type={response_type}"',
+                f"The client is not authorized to use 'response_type={response_type}'",
                 state=self.request.state,
                 redirect_uri=redirect_uri,
                 redirect_fragment=True,

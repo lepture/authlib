@@ -6,10 +6,15 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
-Unreleased
-----------
 
+Version 1.5.2
+-------------
+
+**Unreleased**
+
+- Fix invalid characters in ``error_description``. :issue:`720`
 - Add ``claims_cls``` parameter for client's ``parse_id_token`` method.
+
 
 Version 1.5.1
 -------------

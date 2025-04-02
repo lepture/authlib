@@ -217,7 +217,7 @@ class ForbiddenError(OAuth2Error):
 
 class MissingAuthorizationError(ForbiddenError):
     error = "missing_authorization"
-    description = 'Missing "Authorization" in headers.'
+    description = "Missing 'Authorization' in headers."
 
 
 class UnsupportedTokenTypeError(ForbiddenError):
@@ -229,17 +229,17 @@ class UnsupportedTokenTypeError(ForbiddenError):
 
 class MissingCodeException(OAuth2Error):
     error = "missing_code"
-    description = 'Missing "code" in response.'
+    description = "Missing 'code' in response."
 
 
 class MissingTokenException(OAuth2Error):
     error = "missing_token"
-    description = 'Missing "access_token" in response.'
+    description = "Missing 'access_token' in response."
 
 
 class MissingTokenTypeException(OAuth2Error):
     error = "missing_token_type"
-    description = 'Missing "token_type" in response.'
+    description = "Missing 'token_type' in response."
 
 
 class MismatchingStateException(OAuth2Error):
