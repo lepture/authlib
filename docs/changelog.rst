@@ -10,7 +10,7 @@ Here you can see the full list of changes between each Authlib release.
 Version 1.5.2
 -------------
 
-**Unreleased**
+**Released on Apr 1, 2025**
 
 - Forbid fragments in ``redirect_uris``. :issue:`714`
 - Fix invalid characters in ``error_description``. :issue:`720`
