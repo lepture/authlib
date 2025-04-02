@@ -94,12 +94,6 @@ class OpenIDProviderMetadataTest(unittest.TestCase):
         self._call_validate_array(
             "request_object_signing_alg_values_supported", ["none", "RS256"]
         )
-        metadata = OpenIDProviderMetadata(
-            {"request_object_signing_alg_values_supported": ["RS512"]}
-        )
-        with self.assertRaises(ValueError) as cm:
-            metadata.validate_request_object_signing_alg_values_supported()
-        self.assertIn("SHOULD support none and RS256", str(cm.exception))
 
     def test_validate_request_object_encryption_alg_values_supported(self):
         self._call_validate_array(

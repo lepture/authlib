@@ -159,13 +159,6 @@ class OpenIDProviderMetadata(AuthorizationServerMetadata):
                 '"request_object_signing_alg_values_supported" MUST be JSON array'
             )
 
-        # Servers SHOULD support none and RS256
-        if "none" not in values or "RS256" not in values:
-            raise ValueError(
-                '"request_object_signing_alg_values_supported" '
-                "SHOULD support none and RS256"
-            )
-
     def validate_request_object_encryption_alg_values_supported(self):
         """OPTIONAL. JSON array containing a list of the JWE encryption
         algorithms (alg values) supported by the OP for Request Objects.
