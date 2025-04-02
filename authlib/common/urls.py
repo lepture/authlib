@@ -139,6 +139,8 @@ def extract_params(raw):
         return None
 
 
-def is_valid_url(url):
+def is_valid_url(url: str, fragments_allowed=True):
     parsed = urlparse.urlparse(url)
-    return parsed.scheme and parsed.hostname
+    return (
+        parsed.scheme and parsed.hostname and (fragments_allowed or not parsed.fragment)
+    )
