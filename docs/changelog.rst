@@ -6,6 +6,11 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Unreleased
+----------
+
+- Add ``claims_cls``` parameter for client's ``parse_id_token`` method.
+
 Version 1.5.1
 -------------
 
