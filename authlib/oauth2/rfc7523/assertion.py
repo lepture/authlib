@@ -21,7 +21,7 @@ def sign_jwt_bearer_assertion(
     if alg:
         header["alg"] = alg
     if "alg" not in header:
-        raise ValueError('Missing "alg" in header')
+        raise ValueError("Missing 'alg' in header")
 
     payload = {"iss": issuer, "aud": audience}
 

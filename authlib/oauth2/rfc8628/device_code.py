@@ -91,17 +91,17 @@ class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
         """
         device_code = self.request.data.get("device_code")
         if not device_code:
-            raise InvalidRequestError('Missing "device_code" in payload')
+            raise InvalidRequestError("Missing 'device_code' in payload")
 
         client = self.authenticate_token_endpoint_client()
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError(
-                f'The client is not authorized to use "response_type={self.GRANT_TYPE}"',
+                f"The client is not authorized to use 'response_type={self.GRANT_TYPE}'",
             )
 
         credential = self.query_device_credential(device_code)
         if not credential:
-            raise InvalidRequestError('Invalid "device_code" in payload')
+            raise InvalidRequestError("Invalid 'device_code' in payload")
 
         if credential.get_client_id() != client.get_client_id():
             raise UnauthorizedClientError()

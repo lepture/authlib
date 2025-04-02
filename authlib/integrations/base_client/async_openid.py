@@ -34,17 +34,18 @@ class AsyncOpenIDMixin:
         data = resp.json()
         return UserInfo(data)
 
-    async def parse_id_token(self, token, nonce, claims_options=None):
+    async def parse_id_token(self, token, nonce, claims_options=None, claims_cls=None, leeway=120):
         """Return an instance of UserInfo from token's ``id_token``."""
         claims_params = dict(
             nonce=nonce,
             client_id=self.client_id,
         )
-        if "access_token" in token:
-            claims_params["access_token"] = token["access_token"]
-            claims_cls = CodeIDToken
-        else:
-            claims_cls = ImplicitIDToken
+        if claims_cls is None:
+            if "access_token" in token:
+                claims_params["access_token"] = token["access_token"]
+                claims_cls = CodeIDToken
+            else:
+                claims_cls = ImplicitIDToken
 
         metadata = await self.load_server_metadata()
         if claims_options is None and "issuer" in metadata:
@@ -78,5 +79,5 @@ class AsyncOpenIDMixin:
         # https://github.com/lepture/authlib/issues/259
         if claims.get("nonce_supported") is False:
             claims.params["nonce"] = None
-        claims.validate(leeway=120)
+        claims.validate(leeway=leeway)
         return UserInfo(claims)

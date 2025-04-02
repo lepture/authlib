@@ -141,7 +141,7 @@ class AuthorizationEndpointMixin:
             redirect_uri = client.get_default_redirect_uri()
             if not redirect_uri:
                 raise InvalidRequestError(
-                    'Missing "redirect_uri" in request.', state=request.state
+                    "Missing 'redirect_uri' in request.", state=request.state
                 )
             return redirect_uri
 
@@ -157,7 +157,7 @@ class AuthorizationEndpointMixin:
         for param in parameters:
             if len(datalist.get(param, [])) > 1:
                 raise InvalidRequestError(
-                    f'Multiple "{param}" in request.', state=request.state
+                    f"Multiple '{param}' in request.", state=request.state
                 )
 
     def validate_consent_request(self):

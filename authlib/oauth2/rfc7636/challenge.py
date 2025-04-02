@@ -74,19 +74,19 @@ class CodeChallenge:
             return
 
         if not challenge:
-            raise InvalidRequestError('Missing "code_challenge"')
+            raise InvalidRequestError("Missing 'code_challenge'")
 
         if len(request.datalist.get("code_challenge", [])) > 1:
-            raise InvalidRequestError('Multiple "code_challenge" in request.')
+            raise InvalidRequestError("Multiple 'code_challenge' in request.")
 
         if not CODE_CHALLENGE_PATTERN.match(challenge):
-            raise InvalidRequestError('Invalid "code_challenge"')
+            raise InvalidRequestError("Invalid 'code_challenge'")
 
         if method and method not in self.SUPPORTED_CODE_CHALLENGE_METHOD:
-            raise InvalidRequestError('Unsupported "code_challenge_method"')
+            raise InvalidRequestError("Unsupported 'code_challenge_method'")
 
         if len(request.datalist.get("code_challenge_method", [])) > 1:
-            raise InvalidRequestError('Multiple "code_challenge_method" in request.')
+            raise InvalidRequestError("Multiple 'code_challenge_method' in request.")
 
     def validate_code_verifier(self, grant):
         request: OAuth2Request = grant.request
@@ -94,7 +94,7 @@ class CodeChallenge:
 
         # public client MUST verify code challenge
         if self.required and request.auth_method == "none" and not verifier:
-            raise InvalidRequestError('Missing "code_verifier"')
+            raise InvalidRequestError("Missing 'code_verifier'")
 
         authorization_code = request.authorization_code
         challenge = self.get_authorization_code_challenge(authorization_code)
@@ -105,10 +105,10 @@ class CodeChallenge:
 
         # challenge exists, code_verifier is required
         if not verifier:
-            raise InvalidRequestError('Missing "code_verifier"')
+            raise InvalidRequestError("Missing 'code_verifier'")
 
         if not CODE_VERIFIER_PATTERN.match(verifier):
-            raise InvalidRequestError('Invalid "code_verifier"')
+            raise InvalidRequestError("Invalid 'code_verifier'")
 
         # 4.6. Server Verifies code_verifier before Returning the Tokens
         method = self.get_authorization_code_challenge_method(authorization_code)
@@ -117,7 +117,7 @@ class CodeChallenge:
 
         func = self.CODE_CHALLENGE_METHODS.get(method)
         if not func:
-            raise RuntimeError(f'No verify method for "{method}"')
+            raise RuntimeError(f"No verify method for '{method}'")
 
         # If the values are not equal, an error response indicating
         # "invalid_grant" MUST be returned.

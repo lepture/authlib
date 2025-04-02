@@ -59,22 +59,22 @@ class KeyMismatchError(JoseError):
 
 class MissingEncryptionAlgorithmError(JoseError):
     error = "missing_encryption_algorithm"
-    description = 'Missing "enc" in header'
+    description = "Missing 'enc' in header"
 
 
 class UnsupportedEncryptionAlgorithmError(JoseError):
     error = "unsupported_encryption_algorithm"
-    description = 'Unsupported "enc" value in header'
+    description = "Unsupported 'enc' value in header"
 
 
 class UnsupportedCompressionAlgorithmError(JoseError):
     error = "unsupported_compression_algorithm"
-    description = 'Unsupported "zip" value in header'
+    description = "Unsupported 'zip' value in header"
 
 
 class InvalidUseError(JoseError):
     error = "invalid_use"
-    description = 'Key "use" is not valid for your usage'
+    description = "Key 'use' is not valid for your usage"
 
 
 class InvalidClaimError(JoseError):
@@ -82,7 +82,7 @@ class InvalidClaimError(JoseError):
 
     def __init__(self, claim):
         self.claim_name = claim
-        description = f'Invalid claim "{claim}"'
+        description = f"Invalid claim '{claim}'"
         super().__init__(description=description)
 
 
@@ -90,7 +90,7 @@ class MissingClaimError(JoseError):
     error = "missing_claim"
 
     def __init__(self, claim):
-        description = f'Missing "{claim}" claim'
+        description = f"Missing '{claim}' claim"
         super().__init__(description=description)
 
 
@@ -98,7 +98,7 @@ class InsecureClaimError(JoseError):
     error = "insecure_claim"
 
     def __init__(self, claim):
-        description = f'Insecure claim "{claim}"'
+        description = f"Insecure claim '{claim}'"
         super().__init__(description=description)
 
 

@@ -102,7 +102,7 @@ class JWTBearerGrant(BaseGrant, TokenEndpointMixin):
         """
         assertion = self.request.form.get("assertion")
         if not assertion:
-            raise InvalidRequestError('Missing "assertion" in request')
+            raise InvalidRequestError("Missing 'assertion' in request")
 
         claims = self.process_assertion_claims(assertion)
         client = self.resolve_issuer_client(claims["iss"])
@@ -110,7 +110,7 @@ class JWTBearerGrant(BaseGrant, TokenEndpointMixin):
 
         if not client.check_grant_type(self.GRANT_TYPE):
             raise UnauthorizedClientError(
-                f'The client is not authorized to use "grant_type={self.GRANT_TYPE}"'
+                f"The client is not authorized to use 'grant_type={self.GRANT_TYPE}'"
             )
 
         self.request.client = client
@@ -120,7 +120,7 @@ class JWTBearerGrant(BaseGrant, TokenEndpointMixin):
         if subject:
             user = self.authenticate_user(subject)
             if not user:
-                raise InvalidGrantError(description='Invalid "sub" value in assertion')
+                raise InvalidGrantError(description="Invalid 'sub' value in assertion")
 
             log.debug("Check client(%s) permission to User(%s)", client, user)
             if not self.has_granted_permission(client, user):
