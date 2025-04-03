@@ -34,7 +34,9 @@ class AsyncOpenIDMixin:
         data = resp.json()
         return UserInfo(data)
 
-    async def parse_id_token(self, token, nonce, claims_options=None, claims_cls=None, leeway=120):
+    async def parse_id_token(
+        self, token, nonce, claims_options=None, claims_cls=None, leeway=120
+    ):
         """Return an instance of UserInfo from token's ``id_token``."""
         claims_params = dict(
             nonce=nonce,
