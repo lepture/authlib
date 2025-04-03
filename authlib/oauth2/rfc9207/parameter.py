@@ -11,7 +11,7 @@ class IssuerParameter:
         )
 
     def add_issuer_parameter(self, hook_type: str, response):
-        if self.get_issuer():
+        if self.get_issuer() and response.location:
             # RFC9207 §2
             # In authorization responses to the client, including error responses,
             # an authorization server supporting this specification MUST indicate
