@@ -6,6 +6,12 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
+Version 1.5.3
+-------------
+
+**Unreleased**
+
+- Fix issue when :rfc:`RFC9207 <9207>` is enabled and the authorization endpoint response is not a redirection. :pr:`733`
 
 Version 1.5.2
 -------------
