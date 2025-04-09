@@ -47,8 +47,10 @@ Blog = "https://blog.authlib.org/"
 dev = [
     "coverage",
     "cryptography",
+    "pre-commit-uv>=4.1.4",
     "pytest",
     "pytest-asyncio",
+    "tox-uv >= 1.16.0",
 ]
 
 clients = [
