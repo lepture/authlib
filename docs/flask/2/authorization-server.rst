@@ -163,6 +163,7 @@ OAUTH2_ERROR_URIS                  A list of tuple for (``error``, ``error_uri``
 Now define an endpoint for authorization. This endpoint is used by
 ``authorization_code`` and ``implicit`` grants::
 
+    from authlib.oauth2 import OAuth2Error
     from flask import request, render_template
     from your_project.auth import current_user
 
@@ -172,7 +173,11 @@ Now define an endpoint for authorization. This endpoint is used by
         # It can be done with a redirection to the login page, or a login
         # form on this authorization page.
         if request.method == 'GET':
-            grant = server.get_consent_grant(end_user=current_user)
+            try:
+                grant = server.get_consent_grant(end_user=current_user)
+            except OAuth2Error:
+                return authorization.handle_error_response(request, error)
+
             client = grant.client
             scope = client.get_allowed_scope(grant.request.scope)
 
