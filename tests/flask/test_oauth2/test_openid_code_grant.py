@@ -51,10 +51,12 @@ class BaseTestCase(TestCase):
             }
         )
 
-    def prepare_data(self):
+    def prepare_data(self, require_nonce=False):
         self.config_app()
         server = create_authorization_server(self.app)
-        server.register_grant(AuthorizationCodeGrant, [OpenIDCode()])
+        server.register_grant(
+            AuthorizationCodeGrant, [OpenIDCode(require_nonce=require_nonce)]
+        )
 
         user = User(username="foo")
         db.session.add(user)
@@ -151,6 +153,23 @@ class OpenIDCodeTest(BaseTestCase):
         resp = json.loads(rv.data)
         self.assertIn("access_token", resp)
         self.assertNotIn("id_token", resp)
+
+    def test_require_nonce(self):
+        self.prepare_data(require_nonce=True)
+        rv = self.client.post(
+            "/oauth/authorize",
+            data={
+                "response_type": "code",
+                "client_id": "code-client",
+                "user_id": "1",
+                "state": "bar",
+                "scope": "openid profile",
+                "redirect_uri": "https://a.b",
+            },
+        )
+        params = dict(url_decode(urlparse.urlparse(rv.location).query))
+        self.assertEqual(params["error"], "invalid_request")
+        self.assertEqual(params["error_description"], "Missing 'nonce' in request.")
 
     def test_nonce_replay(self):
         self.prepare_data()
