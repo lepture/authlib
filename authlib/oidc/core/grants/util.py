@@ -70,6 +70,8 @@ def generate_id_token(
     exp=3600,
     nonce=None,
     auth_time=None,
+    acr=None,
+    amr=None,
     code=None,
     kid=None,
 ):
@@ -90,6 +92,12 @@ def generate_id_token(
     }
     if nonce:
         payload["nonce"] = nonce
+
+    if acr:
+        payload["acr"] = acr
+
+    if amr:
+        payload["amr"] = amr
 
     if code:
         payload["c_hash"] = to_native(create_half_hash(code, alg))
