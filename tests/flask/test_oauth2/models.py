@@ -74,6 +74,8 @@ def save_authorization_code(code, request):
         user_id=request.user.id,
         code_challenge=request.data.get("code_challenge"),
         code_challenge_method=request.data.get("code_challenge_method"),
+        acr="urn:mace:incommon:iap:silver",
+        amr="pwd otp",
     )
     db.session.add(auth_code)
     db.session.commit()
