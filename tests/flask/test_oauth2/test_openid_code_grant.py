@@ -1,3 +1,5 @@
+import time
+
 from flask import current_app
 from flask import json
 
@@ -25,6 +27,9 @@ from .oauth2_server import create_authorization_server
 class AuthorizationCodeGrant(CodeGrantMixin, _AuthorizationCodeGrant):
     def save_authorization_code(self, code, request):
         return save_authorization_code(code, request)
+
+    def get_auth_time(self) -> int:
+        return 1234
 
 
 class OpenIDCode(_OpenIDCode):
@@ -120,6 +125,9 @@ class OpenIDCodeTest(BaseTestCase):
             claims_options={"iss": {"value": "Authlib"}},
         )
         claims.validate()
+        assert claims["auth_time"] >= int(time.time())
+        assert claims["acr"] == "urn:mace:incommon:iap:silver"
+        assert claims["amr"] == ["pwd", "otp"]
 
     def test_pure_code_flow(self):
         self.prepare_data()
