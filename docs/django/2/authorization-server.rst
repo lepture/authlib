@@ -24,11 +24,6 @@ an example.
 Client
 ------
 
-.. versionchanged:: v1.0
-
-    ``check_token_endpoint_auth_method`` is deprecated, developers should
-    implement ``check_endpoint_auth_method`` instead.
-
 A client is an application making protected resource requests on behalf of the
 resource owner and with its authorization. It contains at least three
 information:
