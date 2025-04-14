@@ -175,11 +175,10 @@ Now define an endpoint for authorization. This endpoint is used by
         if request.method == 'GET':
             try:
                 grant = server.get_consent_grant(end_user=current_user)
-            except OAuth2Error:
+            except OAuth2Error as error:
                 return authorization.handle_error_response(request, error)
 
-            client = grant.client
-            scope = client.get_allowed_scope(grant.request.scope)
+            scope = grant.client.get_allowed_scope(grant.request.scope)
 
             # You may add a function to extract scope into a list of scopes
             # with rich information, e.g.
@@ -188,13 +187,14 @@ Now define an endpoint for authorization. This endpoint is used by
                 'authorize.html',
                 grant=grant,
                 user=current_user,
-                client=client,
                 scopes=scopes,
             )
+
         confirmed = request.form['confirm']
         if confirmed:
             # granted by resource owner
             return server.create_authorization_response(grant_user=current_user)
+
         # denied by resource owner
         return server.create_authorization_response(grant_user=None)
 
