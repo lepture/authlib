@@ -1,5 +1,6 @@
 import json
 
+import pytest
 from django.test import override_settings
 
 from authlib.common.urls import url_decode
@@ -56,20 +57,22 @@ class AuthorizationCodeTest(TestCase):
         server = self.create_server()
         url = "/authorize?response_type=code"
         request = self.factory.get(url)
-        self.assertRaises(errors.InvalidClientError, server.get_consent_grant, request)
+        with pytest.raises(errors.InvalidClientError):
+            server.get_consent_grant(request)
 
         url = "/authorize?response_type=code&client_id=client"
         request = self.factory.get(url)
-        self.assertRaises(errors.InvalidClientError, server.get_consent_grant, request)
+        with pytest.raises(errors.InvalidClientError):
+            server.get_consent_grant(request)
 
         self.prepare_data(response_type="")
-        self.assertRaises(
-            errors.UnauthorizedClientError, server.get_consent_grant, request
-        )
+        with pytest.raises(errors.UnauthorizedClientError):
+            server.get_consent_grant(request)
 
         url = "/authorize?response_type=code&client_id=client&scope=profile&state=bar&redirect_uri=https%3A%2F%2Fa.b&response_type=code"
         request = self.factory.get(url)
-        self.assertRaises(errors.InvalidRequestError, server.get_consent_grant, request)
+        with pytest.raises(errors.InvalidRequestError):
+            server.get_consent_grant(request)
 
     def test_get_consent_grant_redirect_uri(self):
         server = self.create_server()
@@ -78,12 +81,13 @@ class AuthorizationCodeTest(TestCase):
         base_url = "/authorize?response_type=code&client_id=client"
         url = base_url + "&redirect_uri=https%3A%2F%2Fa.c"
         request = self.factory.get(url)
-        self.assertRaises(errors.InvalidRequestError, server.get_consent_grant, request)
+        with pytest.raises(errors.InvalidRequestError):
+            server.get_consent_grant(request)
 
         url = base_url + "&redirect_uri=https%3A%2F%2Fa.b"
         request = self.factory.get(url)
         grant = server.get_consent_grant(request)
-        self.assertIsInstance(grant, AuthorizationCodeGrant)
+        assert isinstance(grant, AuthorizationCodeGrant)
 
     def test_get_consent_grant_scope(self):
         server = self.create_server()
@@ -93,7 +97,8 @@ class AuthorizationCodeTest(TestCase):
         base_url = "/authorize?response_type=code&client_id=client"
         url = base_url + "&scope=invalid"
         request = self.factory.get(url)
-        self.assertRaises(errors.InvalidScopeError, server.get_consent_grant, request)
+        with pytest.raises(errors.InvalidScopeError):
+            server.get_consent_grant(request)
 
     def test_create_authorization_response(self):
         server = self.create_server()
@@ -103,13 +108,13 @@ class AuthorizationCodeTest(TestCase):
         server.get_consent_grant(request)
 
         resp = server.create_authorization_response(request)
-        self.assertEqual(resp.status_code, 302)
-        self.assertIn("error=access_denied", resp["Location"])
+        assert resp.status_code == 302
+        assert "error=access_denied" in resp["Location"]
 
         grant_user = User.objects.get(username="foo")
         resp = server.create_authorization_response(request, grant_user=grant_user)
-        self.assertEqual(resp.status_code, 302)
-        self.assertIn("code=", resp["Location"])
+        assert resp.status_code == 302
+        assert "code=" in resp["Location"]
 
     def test_create_token_response_invalid(self):
         server = self.create_server()
@@ -120,9 +125,9 @@ class AuthorizationCodeTest(TestCase):
             "/oauth/token", data={"grant_type": "authorization_code"}
         )
         resp = server.create_token_response(request)
-        self.assertEqual(resp.status_code, 401)
+        assert resp.status_code == 401
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "invalid_client")
+        assert data["error"] == "invalid_client"
 
         auth_header = self.create_basic_auth("client", "secret")
 
@@ -133,9 +138,9 @@ class AuthorizationCodeTest(TestCase):
             HTTP_AUTHORIZATION=auth_header,
         )
         resp = server.create_token_response(request)
-        self.assertEqual(resp.status_code, 400)
+        assert resp.status_code == 400
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "invalid_request")
+        assert data["error"] == "invalid_request"
 
         # case: invalid code
         request = self.factory.post(
@@ -144,22 +149,22 @@ class AuthorizationCodeTest(TestCase):
             HTTP_AUTHORIZATION=auth_header,
         )
         resp = server.create_token_response(request)
-        self.assertEqual(resp.status_code, 400)
+        assert resp.status_code == 400
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "invalid_grant")
+        assert data["error"] == "invalid_grant"
 
     def test_create_token_response_success(self):
         self.prepare_data()
         data = self.get_token_response()
-        self.assertIn("access_token", data)
-        self.assertNotIn("refresh_token", data)
+        assert "access_token" in data
+        assert "refresh_token" not in data
 
     @override_settings(AUTHLIB_OAUTH2_PROVIDER={"refresh_token_generator": True})
     def test_create_token_response_with_refresh_token(self):
         self.prepare_data(grant_type="authorization_code\nrefresh_token")
         data = self.get_token_response()
-        self.assertIn("access_token", data)
-        self.assertIn("refresh_token", data)
+        assert "access_token" in data
+        assert "refresh_token" in data
 
     def get_token_response(self):
         server = self.create_server()
@@ -167,7 +172,7 @@ class AuthorizationCodeTest(TestCase):
         request = self.factory.post("/authorize", data=data)
         grant_user = User.objects.get(username="foo")
         resp = server.create_authorization_response(request, grant_user=grant_user)
-        self.assertEqual(resp.status_code, 302)
+        assert resp.status_code == 302
 
         params = dict(url_decode(urlparse.urlparse(resp["Location"]).query))
         code = params["code"]
@@ -178,6 +183,6 @@ class AuthorizationCodeTest(TestCase):
             HTTP_AUTHORIZATION=self.create_basic_auth("client", "secret"),
         )
         resp = server.create_token_response(request)
-        self.assertEqual(resp.status_code, 200)
+        assert resp.status_code == 200
         data = json.loads(resp.content)
         return data

@@ -419,27 +419,27 @@ class JWTAccessTokenResourceServerTest(TestCase):
 
         rv = self.client.get("/protected", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["username"], "foo")
+        assert resp["username"] == "foo"
 
     def test_missing_authorization(self):
         rv = self.client.get("/protected")
-        self.assertEqual(rv.status_code, 401)
+        assert rv.status_code == 401
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "missing_authorization")
+        assert resp["error"] == "missing_authorization"
 
     def test_unsupported_token_type(self):
         headers = {"Authorization": "invalid token"}
         rv = self.client.get("/protected", headers=headers)
-        self.assertEqual(rv.status_code, 401)
+        assert rv.status_code == 401
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "unsupported_token_type")
+        assert resp["error"] == "unsupported_token_type"
 
     def test_invalid_token(self):
         headers = {"Authorization": "Bearer invalid"}
         rv = self.client.get("/protected", headers=headers)
-        self.assertEqual(rv.status_code, 401)
+        assert rv.status_code == 401
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_token")
+        assert resp["error"] == "invalid_token"
 
     def test_typ(self):
         """The resource server MUST verify that the 'typ' header value is 'at+jwt' or
@@ -450,7 +450,7 @@ class JWTAccessTokenResourceServerTest(TestCase):
         headers = {"Authorization": f"Bearer {access_token}"}
         rv = self.client.get("/protected", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["username"], "foo")
+        assert resp["username"] == "foo"
 
         access_token = create_access_token(
             self.claims, self.jwks, typ="application/at+jwt"
@@ -459,14 +459,14 @@ class JWTAccessTokenResourceServerTest(TestCase):
         headers = {"Authorization": f"Bearer {access_token}"}
         rv = self.client.get("/protected", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["username"], "foo")
+        assert resp["username"] == "foo"
 
         access_token = create_access_token(self.claims, self.jwks, typ="invalid")
 
         headers = {"Authorization": f"Bearer {access_token}"}
         rv = self.client.get("/protected", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_token")
+        assert resp["error"] == "invalid_token"
 
     def test_missing_required_claims(self):
         required_claims = ["iss", "exp", "aud", "sub", "client_id", "iat", "jti"]
@@ -480,7 +480,7 @@ class JWTAccessTokenResourceServerTest(TestCase):
             headers = {"Authorization": f"Bearer {access_token}"}
             rv = self.client.get("/protected", headers=headers)
             resp = json.loads(rv.data)
-            self.assertEqual(resp["error"], "invalid_token")
+            assert resp["error"] == "invalid_token"
 
     def test_invalid_iss(self):
         """The issuer identifier for the authorization server (which is typically obtained
@@ -492,7 +492,7 @@ class JWTAccessTokenResourceServerTest(TestCase):
         headers = {"Authorization": f"Bearer {access_token}"}
         rv = self.client.get("/protected", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_token")
+        assert resp["error"] == "invalid_token"
 
     def test_invalid_aud(self):
         """The resource server MUST validate that the 'aud' claim contains a resource
@@ -506,7 +506,7 @@ class JWTAccessTokenResourceServerTest(TestCase):
         headers = {"Authorization": f"Bearer {access_token}"}
         rv = self.client.get("/protected", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_token")
+        assert resp["error"] == "invalid_token"
 
     def test_invalid_exp(self):
         """The current time MUST be before the time represented by the 'exp' claim.
@@ -519,7 +519,7 @@ class JWTAccessTokenResourceServerTest(TestCase):
         headers = {"Authorization": f"Bearer {access_token}"}
         rv = self.client.get("/protected", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_token")
+        assert resp["error"] == "invalid_token"
 
     def test_scope_restriction(self):
         """If an authorization request includes a scope parameter, the corresponding
@@ -535,11 +535,11 @@ class JWTAccessTokenResourceServerTest(TestCase):
         headers = {"Authorization": f"Bearer {access_token}"}
         rv = self.client.get("/protected", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["username"], "foo")
+        assert resp["username"] == "foo"
 
         rv = self.client.get("/protected-by-scope", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "insufficient_scope")
+        assert resp["error"] == "insufficient_scope"
 
     def test_entitlements_restriction(self):
         """Many authorization servers embed authorization attributes that go beyond the
@@ -562,11 +562,11 @@ class JWTAccessTokenResourceServerTest(TestCase):
             headers = {"Authorization": f"Bearer {access_token}"}
             rv = self.client.get("/protected", headers=headers)
             resp = json.loads(rv.data)
-            self.assertEqual(resp["username"], "foo")
+            assert resp["username"] == "foo"
 
             rv = self.client.get(f"/protected-by-{claim}", headers=headers)
             resp = json.loads(rv.data)
-            self.assertEqual(resp["error"], "invalid_token")
+            assert resp["error"] == "invalid_token"
 
     def test_extra_attributes(self):
         """Authorization servers MAY return arbitrary attributes not defined in any
@@ -580,7 +580,7 @@ class JWTAccessTokenResourceServerTest(TestCase):
         headers = {"Authorization": f"Bearer {access_token}"}
         rv = self.client.get("/protected", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["token"]["email"], "user@example.org")
+        assert resp["token"]["email"] == "user@example.org"
 
     def test_invalid_auth_time(self):
         self.claims["auth_time"] = "invalid-auth-time"
@@ -589,7 +589,7 @@ class JWTAccessTokenResourceServerTest(TestCase):
         headers = {"Authorization": f"Bearer {access_token}"}
         rv = self.client.get("/protected", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_token")
+        assert resp["error"] == "invalid_token"
 
     def test_invalid_amr(self):
         self.claims["amr"] = "invalid-amr"
@@ -598,7 +598,7 @@ class JWTAccessTokenResourceServerTest(TestCase):
         headers = {"Authorization": f"Bearer {access_token}"}
         rv = self.client.get("/protected", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_token")
+        assert resp["error"] == "invalid_token"
 
 
 class JWTAccessTokenIntrospectionTest(TestCase):
@@ -629,15 +629,15 @@ class JWTAccessTokenIntrospectionTest(TestCase):
         rv = self.client.post(
             "/oauth/introspect", data={"token": self.access_token}, headers=headers
         )
-        self.assertEqual(rv.status_code, 200)
+        assert rv.status_code == 200
         resp = json.loads(rv.data)
-        self.assertTrue(resp["active"])
-        self.assertEqual(resp["client_id"], self.oauth_client.client_id)
-        self.assertEqual(resp["token_type"], "Bearer")
-        self.assertEqual(resp["scope"], self.oauth_client.scope)
-        self.assertEqual(resp["sub"], self.user.id)
-        self.assertEqual(resp["aud"], [self.resource_server])
-        self.assertEqual(resp["iss"], self.issuer)
+        assert resp["active"]
+        assert resp["client_id"] == self.oauth_client.client_id
+        assert resp["token_type"] == "Bearer"
+        assert resp["scope"] == self.oauth_client.scope
+        assert resp["sub"] == self.user.id
+        assert resp["aud"] == [self.resource_server]
+        assert resp["iss"] == self.issuer
 
     def test_introspection_username(self):
         self.introspection_endpoint.get_username = lambda user_id: db.session.get(
@@ -650,10 +650,10 @@ class JWTAccessTokenIntrospectionTest(TestCase):
         rv = self.client.post(
             "/oauth/introspect", data={"token": self.access_token}, headers=headers
         )
-        self.assertEqual(rv.status_code, 200)
+        assert rv.status_code == 200
         resp = json.loads(rv.data)
-        self.assertTrue(resp["active"])
-        self.assertEqual(resp["username"], self.user.username)
+        assert resp["active"]
+        assert resp["username"] == self.user.username
 
     def test_non_access_token_skipped(self):
         class MyIntrospectionEndpoint(IntrospectionEndpoint):
@@ -672,9 +672,9 @@ class JWTAccessTokenIntrospectionTest(TestCase):
             },
             headers=headers,
         )
-        self.assertEqual(rv.status_code, 200)
+        assert rv.status_code == 200
         resp = json.loads(rv.data)
-        self.assertFalse(resp["active"])
+        assert not resp["active"]
 
     def test_access_token_non_jwt_skipped(self):
         class MyIntrospectionEndpoint(IntrospectionEndpoint):
@@ -692,9 +692,9 @@ class JWTAccessTokenIntrospectionTest(TestCase):
             },
             headers=headers,
         )
-        self.assertEqual(rv.status_code, 200)
+        assert rv.status_code == 200
         resp = json.loads(rv.data)
-        self.assertFalse(resp["active"])
+        assert not resp["active"]
 
     def test_permission_denied(self):
         self.introspection_endpoint.check_permission = lambda *args: False
@@ -705,9 +705,9 @@ class JWTAccessTokenIntrospectionTest(TestCase):
         rv = self.client.post(
             "/oauth/introspect", data={"token": self.access_token}, headers=headers
         )
-        self.assertEqual(rv.status_code, 200)
+        assert rv.status_code == 200
         resp = json.loads(rv.data)
-        self.assertFalse(resp["active"])
+        assert not resp["active"]
 
     def test_token_expired(self):
         self.claims["exp"] = time.time() - 3600
@@ -718,9 +718,9 @@ class JWTAccessTokenIntrospectionTest(TestCase):
         rv = self.client.post(
             "/oauth/introspect", data={"token": access_token}, headers=headers
         )
-        self.assertEqual(rv.status_code, 200)
+        assert rv.status_code == 200
         resp = json.loads(rv.data)
-        self.assertFalse(resp["active"])
+        assert not resp["active"]
 
     def test_introspection_different_issuer(self):
         class MyIntrospectionEndpoint(IntrospectionEndpoint):
@@ -737,9 +737,9 @@ class JWTAccessTokenIntrospectionTest(TestCase):
         rv = self.client.post(
             "/oauth/introspect", data={"token": access_token}, headers=headers
         )
-        self.assertEqual(rv.status_code, 200)
+        assert rv.status_code == 200
         resp = json.loads(rv.data)
-        self.assertFalse(resp["active"])
+        assert not resp["active"]
 
     def test_introspection_invalid_claim(self):
         self.claims["exp"] = "invalid"
@@ -750,9 +750,9 @@ class JWTAccessTokenIntrospectionTest(TestCase):
         rv = self.client.post(
             "/oauth/introspect", data={"token": access_token}, headers=headers
         )
-        self.assertEqual(rv.status_code, 401)
+        assert rv.status_code == 401
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_token")
+        assert resp["error"] == "invalid_token"
 
 
 class JWTAccessTokenRevocationTest(TestCase):
@@ -783,9 +783,9 @@ class JWTAccessTokenRevocationTest(TestCase):
         rv = self.client.post(
             "/oauth/revoke", data={"token": self.access_token}, headers=headers
         )
-        self.assertEqual(rv.status_code, 401)
+        assert rv.status_code == 401
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "unsupported_token_type")
+        assert resp["error"] == "unsupported_token_type"
 
     def test_non_access_token_skipped(self):
         class MyRevocationEndpoint(RevocationEndpoint):
@@ -804,9 +804,9 @@ class JWTAccessTokenRevocationTest(TestCase):
             },
             headers=headers,
         )
-        self.assertEqual(rv.status_code, 200)
+        assert rv.status_code == 200
         resp = json.loads(rv.data)
-        self.assertEqual(resp, {})
+        assert resp == {}
 
     def test_access_token_non_jwt_skipped(self):
         class MyRevocationEndpoint(RevocationEndpoint):
@@ -824,9 +824,9 @@ class JWTAccessTokenRevocationTest(TestCase):
             },
             headers=headers,
         )
-        self.assertEqual(rv.status_code, 200)
+        assert rv.status_code == 200
         resp = json.loads(rv.data)
-        self.assertEqual(resp, {})
+        assert resp == {}
 
     def test_revocation_different_issuer(self):
         self.claims["iss"] = "different-issuer"
@@ -838,6 +838,6 @@ class JWTAccessTokenRevocationTest(TestCase):
         rv = self.client.post(
             "/oauth/revoke", data={"token": access_token}, headers=headers
         )
-        self.assertEqual(rv.status_code, 401)
+        assert rv.status_code == 401
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "unsupported_token_type")
+        assert resp["error"] == "unsupported_token_type"

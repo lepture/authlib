@@ -105,31 +105,31 @@ class ClientConfigurationTestMixin(TestCase):
 class ClientConfigurationReadTest(ClientConfigurationTestMixin):
     def test_read_client(self):
         user, client, token = self.prepare_data()
-        self.assertEqual(client.client_name, "Authlib")
+        assert client.client_name == "Authlib"
         headers = {"Authorization": f"bearer {token.access_token}"}
         rv = self.client.get("/configure_client/client_id", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(rv.status_code, 200)
-        self.assertEqual(resp["client_id"], client.client_id)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(
-            resp["registration_client_uri"],
-            "http://localhost/configure_client/client_id",
+        assert rv.status_code == 200
+        assert resp["client_id"] == client.client_id
+        assert resp["client_name"] == "Authlib"
+        assert (
+            resp["registration_client_uri"]
+            == "http://localhost/configure_client/client_id"
         )
-        self.assertEqual(resp["registration_access_token"], token.access_token)
+        assert resp["registration_access_token"] == token.access_token
 
     def test_access_denied(self):
         user, client, token = self.prepare_data()
         rv = self.client.get("/configure_client/client_id")
         resp = json.loads(rv.data)
-        self.assertEqual(rv.status_code, 400)
-        self.assertEqual(resp["error"], "access_denied")
+        assert rv.status_code == 400
+        assert resp["error"] == "access_denied"
 
         headers = {"Authorization": "bearer invalid_token"}
         rv = self.client.get("/configure_client/client_id", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(rv.status_code, 400)
-        self.assertEqual(resp["error"], "access_denied")
+        assert rv.status_code == 400
+        assert resp["error"] == "access_denied"
 
         headers = {"Authorization": "bearer unauthorized_token"}
         rv = self.client.get(
@@ -138,8 +138,8 @@ class ClientConfigurationReadTest(ClientConfigurationTestMixin):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(rv.status_code, 400)
-        self.assertEqual(resp["error"], "access_denied")
+        assert rv.status_code == 400
+        assert resp["error"] == "access_denied"
 
     def test_invalid_client(self):
         # If the client does not exist on this server, the server MUST respond
@@ -150,8 +150,8 @@ class ClientConfigurationReadTest(ClientConfigurationTestMixin):
         headers = {"Authorization": f"bearer {token.access_token}"}
         rv = self.client.get("/configure_client/invalid_client_id", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(rv.status_code, 401)
-        self.assertEqual(resp["error"], "invalid_client")
+        assert rv.status_code == 401
+        assert resp["error"] == "invalid_client"
 
     def test_unauthorized_client(self):
         # If the client does not have permission to read its record, the server
@@ -170,8 +170,8 @@ class ClientConfigurationReadTest(ClientConfigurationTestMixin):
             "/configure_client/unauthorized_client_id", headers=headers
         )
         resp = json.loads(rv.data)
-        self.assertEqual(rv.status_code, 403)
-        self.assertEqual(resp["error"], "unauthorized_client")
+        assert rv.status_code == 403
+        assert resp["error"] == "unauthorized_client"
 
 
 class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
@@ -184,7 +184,7 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
         # value in the request just as any other value.
 
         user, client, token = self.prepare_data()
-        self.assertEqual(client.client_name, "Authlib")
+        assert client.client_name == "Authlib"
         headers = {"Authorization": f"bearer {token.access_token}"}
         body = {
             "client_id": client.client_id,
@@ -192,24 +192,24 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
         }
         rv = self.client.put("/configure_client/client_id", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(rv.status_code, 200)
-        self.assertEqual(resp["client_id"], client.client_id)
-        self.assertEqual(resp["client_name"], "NewAuthlib")
-        self.assertEqual(client.client_name, "NewAuthlib")
-        self.assertEqual(client.scope, "")
+        assert rv.status_code == 200
+        assert resp["client_id"] == client.client_id
+        assert resp["client_name"] == "NewAuthlib"
+        assert client.client_name == "NewAuthlib"
+        assert client.scope == ""
 
     def test_access_denied(self):
         user, client, token = self.prepare_data()
         rv = self.client.put("/configure_client/client_id", json={})
         resp = json.loads(rv.data)
-        self.assertEqual(rv.status_code, 400)
-        self.assertEqual(resp["error"], "access_denied")
+        assert rv.status_code == 400
+        assert resp["error"] == "access_denied"
 
         headers = {"Authorization": "bearer invalid_token"}
         rv = self.client.put("/configure_client/client_id", json={}, headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(rv.status_code, 400)
-        self.assertEqual(resp["error"], "access_denied")
+        assert rv.status_code == 400
+        assert resp["error"] == "access_denied"
 
         headers = {"Authorization": "bearer unauthorized_token"}
         rv = self.client.put(
@@ -218,8 +218,8 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(rv.status_code, 400)
-        self.assertEqual(resp["error"], "access_denied")
+        assert rv.status_code == 400
+        assert resp["error"] == "access_denied"
 
     def test_invalid_request(self):
         user, client, token = self.prepare_data()
@@ -228,8 +228,8 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
         # The client MUST include its 'client_id' field in the request...
         rv = self.client.put("/configure_client/client_id", json={}, headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(rv.status_code, 400)
-        self.assertEqual(resp["error"], "invalid_request")
+        assert rv.status_code == 400
+        assert resp["error"] == "invalid_request"
 
         # ... and it MUST be the same as its currently issued client identifier.
         rv = self.client.put(
@@ -238,8 +238,8 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(rv.status_code, 400)
-        self.assertEqual(resp["error"], "invalid_request")
+        assert rv.status_code == 400
+        assert resp["error"] == "invalid_request"
 
         # The updated client metadata fields request MUST NOT include the
         # 'registration_access_token', 'registration_client_uri',
@@ -253,8 +253,8 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(rv.status_code, 400)
-        self.assertEqual(resp["error"], "invalid_request")
+        assert rv.status_code == 400
+        assert resp["error"] == "invalid_request"
 
         # If the client includes the 'client_secret' field in the request,
         # the value of this field MUST match the currently issued client
@@ -265,8 +265,8 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(rv.status_code, 400)
-        self.assertEqual(resp["error"], "invalid_request")
+        assert rv.status_code == 400
+        assert resp["error"] == "invalid_request"
 
     def test_invalid_client(self):
         # If the client does not exist on this server, the server MUST respond
@@ -281,8 +281,8 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(rv.status_code, 401)
-        self.assertEqual(resp["error"], "invalid_client")
+        assert rv.status_code == 401
+        assert resp["error"] == "invalid_client"
 
     def test_unauthorized_client(self):
         # If the client does not have permission to read its record, the server
@@ -306,8 +306,8 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(rv.status_code, 403)
-        self.assertEqual(resp["error"], "unauthorized_client")
+        assert rv.status_code == 403
+        assert resp["error"] == "unauthorized_client"
 
     def test_invalid_metadata(self):
         metadata = {"token_endpoint_auth_methods_supported": ["client_secret_basic"]}
@@ -328,8 +328,8 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
         }
         rv = self.client.put("/configure_client/client_id", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(rv.status_code, 400)
-        self.assertEqual(resp["error"], "invalid_client_metadata")
+        assert rv.status_code == 400
+        assert resp["error"] == "invalid_client_metadata"
 
     def test_scopes_supported(self):
         metadata = {"scopes_supported": ["profile", "email"]}
@@ -343,9 +343,9 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
         }
         rv = self.client.put("/configure_client/client_id", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["client_id"], "client_id")
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["scope"], "profile email")
+        assert resp["client_id"] == "client_id"
+        assert resp["client_name"] == "Authlib"
+        assert resp["scope"] == "profile email"
 
         headers = {"Authorization": f"bearer {token.access_token}"}
         body = {
@@ -355,8 +355,8 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
         }
         rv = self.client.put("/configure_client/client_id", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["client_id"], "client_id")
-        self.assertEqual(resp["client_name"], "Authlib")
+        assert resp["client_id"] == "client_id"
+        assert resp["client_name"] == "Authlib"
 
         body = {
             "client_id": "client_id",
@@ -365,7 +365,7 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
         }
         rv = self.client.put("/configure_client/client_id", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
     def test_response_types_supported(self):
         metadata = {"response_types_supported": ["code"]}
@@ -379,9 +379,9 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
         }
         rv = self.client.put("/configure_client/client_id", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["client_id"], "client_id")
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["response_types"], ["code"])
+        assert resp["client_id"] == "client_id"
+        assert resp["client_name"] == "Authlib"
+        assert resp["response_types"] == ["code"]
 
         # https://datatracker.ietf.org/doc/html/rfc7592#section-2.2
         # If omitted, the default is that the client will use only the "code"
@@ -389,9 +389,9 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
         body = {"client_id": "client_id", "client_name": "Authlib"}
         rv = self.client.put("/configure_client/client_id", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertNotIn("response_types", resp)
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert "response_types" not in resp
 
         body = {
             "client_id": "client_id",
@@ -400,7 +400,7 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
         }
         rv = self.client.put("/configure_client/client_id", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
     def test_grant_types_supported(self):
         metadata = {"grant_types_supported": ["authorization_code", "password"]}
@@ -414,9 +414,9 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
         }
         rv = self.client.put("/configure_client/client_id", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["client_id"], "client_id")
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["grant_types"], ["password"])
+        assert resp["client_id"] == "client_id"
+        assert resp["client_name"] == "Authlib"
+        assert resp["grant_types"] == ["password"]
 
         # https://datatracker.ietf.org/doc/html/rfc7592#section-2.2
         # If omitted, the default behavior is that the client will use only
@@ -424,9 +424,9 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
         body = {"client_id": "client_id", "client_name": "Authlib"}
         rv = self.client.put("/configure_client/client_id", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertNotIn("grant_types", resp)
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert "grant_types" not in resp
 
         body = {
             "client_id": "client_id",
@@ -435,7 +435,7 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
         }
         rv = self.client.put("/configure_client/client_id", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
     def test_token_endpoint_auth_methods_supported(self):
         metadata = {"token_endpoint_auth_methods_supported": ["client_secret_basic"]}
@@ -449,9 +449,9 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
         }
         rv = self.client.put("/configure_client/client_id", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["client_id"], "client_id")
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["token_endpoint_auth_method"], "client_secret_basic")
+        assert resp["client_id"] == "client_id"
+        assert resp["client_name"] == "Authlib"
+        assert resp["token_endpoint_auth_method"] == "client_secret_basic"
 
         body = {
             "client_id": "client_id",
@@ -460,30 +460,30 @@ class ClientConfigurationUpdateTest(ClientConfigurationTestMixin):
         }
         rv = self.client.put("/configure_client/client_id", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
 
 class ClientConfigurationDeleteTest(ClientConfigurationTestMixin):
     def test_delete_client(self):
         user, client, token = self.prepare_data()
-        self.assertEqual(client.client_name, "Authlib")
+        assert client.client_name == "Authlib"
         headers = {"Authorization": f"bearer {token.access_token}"}
         rv = self.client.delete("/configure_client/client_id", headers=headers)
-        self.assertEqual(rv.status_code, 204)
-        self.assertFalse(rv.data)
+        assert rv.status_code == 204
+        assert not rv.data
 
     def test_access_denied(self):
         user, client, token = self.prepare_data()
         rv = self.client.delete("/configure_client/client_id")
         resp = json.loads(rv.data)
-        self.assertEqual(rv.status_code, 400)
-        self.assertEqual(resp["error"], "access_denied")
+        assert rv.status_code == 400
+        assert resp["error"] == "access_denied"
 
         headers = {"Authorization": "bearer invalid_token"}
         rv = self.client.delete("/configure_client/client_id", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(rv.status_code, 400)
-        self.assertEqual(resp["error"], "access_denied")
+        assert rv.status_code == 400
+        assert resp["error"] == "access_denied"
 
         headers = {"Authorization": "bearer unauthorized_token"}
         rv = self.client.delete(
@@ -492,8 +492,8 @@ class ClientConfigurationDeleteTest(ClientConfigurationTestMixin):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(rv.status_code, 400)
-        self.assertEqual(resp["error"], "access_denied")
+        assert rv.status_code == 400
+        assert resp["error"] == "access_denied"
 
     def test_invalid_client(self):
         # If the client does not exist on this server, the server MUST respond
@@ -504,8 +504,8 @@ class ClientConfigurationDeleteTest(ClientConfigurationTestMixin):
         headers = {"Authorization": f"bearer {token.access_token}"}
         rv = self.client.delete("/configure_client/invalid_client_id", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(rv.status_code, 401)
-        self.assertEqual(resp["error"], "invalid_client")
+        assert rv.status_code == 401
+        assert resp["error"] == "invalid_client"
 
     def test_unauthorized_client(self):
         # If the client does not have permission to read its record, the server
@@ -524,5 +524,5 @@ class ClientConfigurationDeleteTest(ClientConfigurationTestMixin):
             "/configure_client/unauthorized_client_id", headers=headers
         )
         resp = json.loads(rv.data)
-        self.assertEqual(rv.status_code, 403)
-        self.assertEqual(resp["error"], "unauthorized_client")
+        assert rv.status_code == 403
+        assert resp["error"] == "unauthorized_client"

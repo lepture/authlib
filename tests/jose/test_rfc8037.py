@@ -12,5 +12,5 @@ class EdDSATest(unittest.TestCase):
         s = jws.serialize({"alg": "EdDSA"}, "hello", private_key)
         data = jws.deserialize(s, public_key)
         header, payload = data["header"], data["payload"]
-        self.assertEqual(payload, b"hello")
-        self.assertEqual(header["alg"], "EdDSA")
+        assert payload == b"hello"
+        assert header["alg"] == "EdDSA"

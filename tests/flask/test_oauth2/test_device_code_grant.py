@@ -111,7 +111,7 @@ class DeviceCodeGrantTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_request")
+        assert resp["error"] == "invalid_request"
 
         rv = self.client.post(
             "/oauth/token",
@@ -122,7 +122,7 @@ class DeviceCodeGrantTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_request")
+        assert resp["error"] == "invalid_request"
 
     def test_unauthorized_client(self):
         self.create_server()
@@ -135,7 +135,7 @@ class DeviceCodeGrantTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_client")
+        assert resp["error"] == "invalid_client"
 
         self.prepare_data(grant_type="password")
         rv = self.client.post(
@@ -147,7 +147,7 @@ class DeviceCodeGrantTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "unauthorized_client")
+        assert resp["error"] == "unauthorized_client"
 
     def test_invalid_client(self):
         self.create_server()
@@ -161,7 +161,7 @@ class DeviceCodeGrantTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_client")
+        assert resp["error"] == "invalid_client"
 
     def test_expired_token(self):
         self.create_server()
@@ -175,7 +175,7 @@ class DeviceCodeGrantTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "expired_token")
+        assert resp["error"] == "expired_token"
 
     def test_denied_by_user(self):
         self.create_server()
@@ -189,7 +189,7 @@ class DeviceCodeGrantTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "access_denied")
+        assert resp["error"] == "access_denied"
 
     def test_authorization_pending(self):
         self.create_server()
@@ -203,7 +203,7 @@ class DeviceCodeGrantTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "authorization_pending")
+        assert resp["error"] == "authorization_pending"
 
     def test_get_access_token(self):
         self.create_server()
@@ -217,7 +217,7 @@ class DeviceCodeGrantTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
+        assert "access_token" in resp
 
 
 class DeviceAuthorizationEndpoint(_DeviceAuthorizationEndpoint):
@@ -244,9 +244,9 @@ class DeviceAuthorizationEndpointTest(TestCase):
     def test_missing_client_id(self):
         self.create_server()
         rv = self.client.post("/device_authorize", data={"scope": "profile"})
-        self.assertEqual(rv.status_code, 401)
+        assert rv.status_code == 401
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_client")
+        assert resp["error"] == "invalid_client"
 
     def test_create_authorization_response(self):
         self.create_server()
@@ -263,12 +263,12 @@ class DeviceAuthorizationEndpointTest(TestCase):
                 "client_id": "client",
             },
         )
-        self.assertEqual(rv.status_code, 200)
+        assert rv.status_code == 200
         resp = json.loads(rv.data)
-        self.assertIn("device_code", resp)
-        self.assertIn("user_code", resp)
-        self.assertEqual(resp["verification_uri"], "https://example.com/activate")
-        self.assertEqual(
-            resp["verification_uri_complete"],
-            "https://example.com/activate?user_code=" + resp["user_code"],
+        assert "device_code" in resp
+        assert "user_code" in resp
+        assert resp["verification_uri"] == "https://example.com/activate"
+        assert (
+            resp["verification_uri_complete"]
+            == "https://example.com/activate?user_code=" + resp["user_code"]
         )

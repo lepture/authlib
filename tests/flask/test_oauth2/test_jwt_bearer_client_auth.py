@@ -67,7 +67,7 @@ class ClientCredentialsTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_client")
+        assert resp["error"] == "invalid_client"
 
     def test_invalid_jwt(self):
         self.prepare_data(JWTBearerClientAssertion.CLIENT_AUTH_METHOD)
@@ -85,7 +85,7 @@ class ClientCredentialsTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_client")
+        assert resp["error"] == "invalid_client"
 
     def test_not_found_client(self):
         self.prepare_data(JWTBearerClientAssertion.CLIENT_AUTH_METHOD)
@@ -103,7 +103,7 @@ class ClientCredentialsTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_client")
+        assert resp["error"] == "invalid_client"
 
     def test_not_supported_auth_method(self):
         self.prepare_data("invalid")
@@ -120,7 +120,7 @@ class ClientCredentialsTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_client")
+        assert resp["error"] == "invalid_client"
 
     def test_client_secret_jwt(self):
         self.prepare_data(JWTBearerClientAssertion.CLIENT_AUTH_METHOD)
@@ -139,7 +139,7 @@ class ClientCredentialsTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
+        assert "access_token" in resp
 
     def test_private_key_jwt(self):
         self.prepare_data(JWTBearerClientAssertion.CLIENT_AUTH_METHOD)
@@ -157,7 +157,7 @@ class ClientCredentialsTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
+        assert "access_token" in resp
 
     def test_not_validate_jti(self):
         self.prepare_data(JWTBearerClientAssertion.CLIENT_AUTH_METHOD, False)
@@ -175,4 +175,4 @@ class ClientCredentialsTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
+        assert "access_token" in resp

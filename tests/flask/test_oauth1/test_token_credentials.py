@@ -45,26 +45,26 @@ class TokenCredentialsTest(TestCase):
         # case 1
         rv = self.client.post(url)
         data = decode_response(rv.data)
-        self.assertEqual(data["error"], "missing_required_parameter")
-        self.assertIn("oauth_consumer_key", data["error_description"])
+        assert data["error"] == "missing_required_parameter"
+        assert "oauth_consumer_key" in data["error_description"]
 
         # case 2
         rv = self.client.post(url, data={"oauth_consumer_key": "a"})
         data = decode_response(rv.data)
-        self.assertEqual(data["error"], "invalid_client")
+        assert data["error"] == "invalid_client"
 
         # case 3
         rv = self.client.post(url, data={"oauth_consumer_key": "client"})
         data = decode_response(rv.data)
-        self.assertEqual(data["error"], "missing_required_parameter")
-        self.assertIn("oauth_token", data["error_description"])
+        assert data["error"] == "missing_required_parameter"
+        assert "oauth_token" in data["error_description"]
 
         # case 4
         rv = self.client.post(
             url, data={"oauth_consumer_key": "client", "oauth_token": "a"}
         )
         data = decode_response(rv.data)
-        self.assertEqual(data["error"], "invalid_token")
+        assert data["error"] == "invalid_token"
 
     def test_invalid_token_and_verifiers(self):
         self.prepare_data()
@@ -79,8 +79,8 @@ class TokenCredentialsTest(TestCase):
             url, data={"oauth_consumer_key": "client", "oauth_token": "abc"}
         )
         data = decode_response(rv.data)
-        self.assertEqual(data["error"], "missing_required_parameter")
-        self.assertIn("oauth_verifier", data["error_description"])
+        assert data["error"] == "missing_required_parameter"
+        assert "oauth_verifier" in data["error_description"]
 
         # case 6
         hook(
@@ -95,8 +95,8 @@ class TokenCredentialsTest(TestCase):
             },
         )
         data = decode_response(rv.data)
-        self.assertEqual(data["error"], "invalid_request")
-        self.assertIn("oauth_verifier", data["error_description"])
+        assert data["error"] == "invalid_request"
+        assert "oauth_verifier" in data["error_description"]
 
     def test_duplicated_oauth_parameters(self):
         self.prepare_data()
@@ -110,7 +110,7 @@ class TokenCredentialsTest(TestCase):
             },
         )
         data = decode_response(rv.data)
-        self.assertEqual(data["error"], "duplicated_oauth_protocol_parameter")
+        assert data["error"] == "duplicated_oauth_protocol_parameter"
 
     def test_plaintext_signature(self):
         self.prepare_data()
@@ -128,7 +128,7 @@ class TokenCredentialsTest(TestCase):
         headers = {"Authorization": auth_header}
         rv = self.client.post(url, headers=headers)
         data = decode_response(rv.data)
-        self.assertIn("oauth_token", data)
+        assert "oauth_token" in data
 
         # case 2: invalid signature
         self.prepare_temporary_credential()
@@ -143,7 +143,7 @@ class TokenCredentialsTest(TestCase):
             },
         )
         data = decode_response(rv.data)
-        self.assertEqual(data["error"], "invalid_signature")
+        assert data["error"] == "invalid_signature"
 
     def test_hmac_sha1_signature(self):
         self.prepare_data()
@@ -170,13 +170,13 @@ class TokenCredentialsTest(TestCase):
         self.prepare_temporary_credential()
         rv = self.client.post(url, headers=headers)
         data = decode_response(rv.data)
-        self.assertIn("oauth_token", data)
+        assert "oauth_token" in data
 
         # case 2: exists nonce
         self.prepare_temporary_credential()
         rv = self.client.post(url, headers=headers)
         data = decode_response(rv.data)
-        self.assertEqual(data["error"], "invalid_nonce")
+        assert data["error"] == "invalid_nonce"
 
     def test_rsa_sha1_signature(self):
         self.prepare_data()
@@ -203,7 +203,7 @@ class TokenCredentialsTest(TestCase):
         headers = {"Authorization": auth_header}
         rv = self.client.post(url, headers=headers)
         data = decode_response(rv.data)
-        self.assertIn("oauth_token", data)
+        assert "oauth_token" in data
 
         # case: invalid signature
         self.prepare_temporary_credential()
@@ -212,4 +212,4 @@ class TokenCredentialsTest(TestCase):
         headers = {"Authorization": auth_header}
         rv = self.client.post(url, headers=headers)
         data = decode_response(rv.data)
-        self.assertEqual(data["error"], "invalid_signature")
+        assert data["error"] == "invalid_signature"

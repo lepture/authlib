@@ -73,8 +73,8 @@ class ImplicitTest(TestCase):
                 },
             )
         )
-        self.assertIn("error=invalid_request", rv.location)
-        self.assertIn("nonce", rv.location)
+        assert "error=invalid_request" in rv.location
+        assert "nonce" in rv.location
 
     def test_require_nonce(self):
         self.prepare_data()
@@ -89,8 +89,8 @@ class ImplicitTest(TestCase):
                 "user_id": "1",
             },
         )
-        self.assertIn("error=invalid_request", rv.location)
-        self.assertIn("nonce", rv.location)
+        assert "error=invalid_request" in rv.location
+        assert "nonce" in rv.location
 
     def test_missing_openid_in_scope(self):
         self.prepare_data()
@@ -106,7 +106,7 @@ class ImplicitTest(TestCase):
                 "user_id": "1",
             },
         )
-        self.assertIn("error=invalid_scope", rv.location)
+        assert "error=invalid_scope" in rv.location
 
     def test_denied(self):
         self.prepare_data()
@@ -121,7 +121,7 @@ class ImplicitTest(TestCase):
                 "redirect_uri": "https://a.b/c",
             },
         )
-        self.assertIn("error=access_denied", rv.location)
+        assert "error=access_denied" in rv.location
 
     def test_authorize_access_token(self):
         self.prepare_data()
@@ -137,9 +137,9 @@ class ImplicitTest(TestCase):
                 "user_id": "1",
             },
         )
-        self.assertIn("access_token=", rv.location)
-        self.assertIn("id_token=", rv.location)
-        self.assertIn("state=bar", rv.location)
+        assert "access_token=" in rv.location
+        assert "id_token=" in rv.location
+        assert "state=bar" in rv.location
         params = dict(url_decode(urlparse.urlparse(rv.location).fragment))
         self.validate_claims(params["id_token"], params)
 
@@ -157,8 +157,8 @@ class ImplicitTest(TestCase):
                 "user_id": "1",
             },
         )
-        self.assertIn("id_token=", rv.location)
-        self.assertIn("state=bar", rv.location)
+        assert "id_token=" in rv.location
+        assert "state=bar" in rv.location
         params = dict(url_decode(urlparse.urlparse(rv.location).fragment))
         self.validate_claims(params["id_token"], params)
 
@@ -177,8 +177,8 @@ class ImplicitTest(TestCase):
                 "user_id": "1",
             },
         )
-        self.assertIn("id_token=", rv.location)
-        self.assertIn("state=bar", rv.location)
+        assert "id_token=" in rv.location
+        assert "state=bar" in rv.location
         params = dict(url_decode(urlparse.urlparse(rv.location).query))
         self.validate_claims(params["id_token"], params)
 
@@ -197,5 +197,5 @@ class ImplicitTest(TestCase):
                 "user_id": "1",
             },
         )
-        self.assertIn(b'name="id_token"', rv.data)
-        self.assertIn(b'name="state"', rv.data)
+        assert b'name="id_token"' in rv.data
+        assert b'name="state"' in rv.data

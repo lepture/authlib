@@ -2,6 +2,7 @@ from io import StringIO
 from unittest import TestCase
 from unittest import mock
 
+import pytest
 import requests
 
 from authlib.common.encoding import to_unicode
@@ -28,13 +29,14 @@ TEST_RSA_OAUTH_SIGNATURE = (
 
 class OAuth1SessionTest(TestCase):
     def test_no_client_id(self):
-        self.assertRaises(ValueError, lambda: OAuth1Session(None))
+        with pytest.raises(ValueError):
+            OAuth1Session(None)
 
     def test_signature_types(self):
         def verify_signature(getter):
             def fake_send(r, **kwargs):
                 signature = to_unicode(getter(r))
-                self.assertIn("oauth_signature", signature)
+                assert "oauth_signature" in signature
                 resp = mock.MagicMock(spec=requests.Response)
                 resp.cookies = []
                 return resp
@@ -108,7 +110,7 @@ class OAuth1SessionTest(TestCase):
 
         def fake_send(r, **kwargs):
             auth_header = r.headers["Authorization"]
-            self.assertIn("oauth_body_hash", auth_header)
+            assert "oauth_body_hash" in auth_header
 
         auth = OAuth1Session("foo", force_include_body=True)
         auth.send = fake_send
@@ -130,61 +132,61 @@ class OAuth1SessionTest(TestCase):
 
     def test_redirect_uri(self):
         sess = OAuth1Session("foo")
-        self.assertIsNone(sess.redirect_uri)
+        assert sess.redirect_uri is None
         url = "https://i.b"
         sess.redirect_uri = url
-        self.assertEqual(sess.redirect_uri, url)
+        assert sess.redirect_uri == url
 
     def test_set_token(self):
         sess = OAuth1Session("foo")
         try:
             sess.token = {}
         except OAuthError as exc:
-            self.assertEqual(exc.error, "missing_token")
+            assert exc.error == "missing_token"
 
         sess.token = {"oauth_token": "a", "oauth_token_secret": "b"}
-        self.assertIsNone(sess.token["oauth_verifier"])
+        assert sess.token["oauth_verifier"] is None
         sess.token = {"oauth_token": "a", "oauth_verifier": "c"}
-        self.assertEqual(sess.token["oauth_token_secret"], "b")
-        self.assertEqual(sess.token["oauth_verifier"], "c")
+        assert sess.token["oauth_token_secret"] == "b"
+        assert sess.token["oauth_verifier"] == "c"
 
         sess.token = None
-        self.assertIsNone(sess.token["oauth_token"])
-        self.assertIsNone(sess.token["oauth_token_secret"])
-        self.assertIsNone(sess.token["oauth_verifier"])
+        assert sess.token["oauth_token"] is None
+        assert sess.token["oauth_token_secret"] is None
+        assert sess.token["oauth_verifier"] is None
 
     def test_create_authorization_url(self):
         auth = OAuth1Session("foo")
         url = "https://example.comm/authorize"
         token = "asluif023sf"
         auth_url = auth.create_authorization_url(url, request_token=token)
-        self.assertEqual(auth_url, url + "?oauth_token=" + token)
+        assert auth_url == url + "?oauth_token=" + token
         redirect_uri = "https://c.b"
         auth = OAuth1Session("foo", redirect_uri=redirect_uri)
         auth_url = auth.create_authorization_url(url, request_token=token)
-        self.assertIn(escape(redirect_uri), auth_url)
+        assert escape(redirect_uri) in auth_url
 
     def test_parse_response_url(self):
         url = "https://i.b/callback?oauth_token=foo&oauth_verifier=bar"
         auth = OAuth1Session("foo")
         resp = auth.parse_authorization_response(url)
-        self.assertEqual(resp["oauth_token"], "foo")
-        self.assertEqual(resp["oauth_verifier"], "bar")
+        assert resp["oauth_token"] == "foo"
+        assert resp["oauth_verifier"] == "bar"
         for k, v in resp.items():
-            self.assertTrue(isinstance(k, str))
-            self.assertTrue(isinstance(v, str))
+            assert isinstance(k, str)
+            assert isinstance(v, str)
 
     def test_fetch_request_token(self):
         auth = OAuth1Session("foo", realm="A")
         auth.send = mock_text_response("oauth_token=foo")
         resp = auth.fetch_request_token("https://example.com/token")
-        self.assertEqual(resp["oauth_token"], "foo")
+        assert resp["oauth_token"] == "foo"
         for k, v in resp.items():
-            self.assertTrue(isinstance(k, str))
-            self.assertTrue(isinstance(v, str))
+            assert isinstance(k, str)
+            assert isinstance(v, str)
 
         resp = auth.fetch_request_token("https://example.com/token")
-        self.assertEqual(resp["oauth_token"], "foo")
+        assert resp["oauth_token"] == "foo"
 
     def test_fetch_request_token_with_optional_arguments(self):
         auth = OAuth1Session("foo")
@@ -192,29 +194,29 @@ class OAuth1SessionTest(TestCase):
         resp = auth.fetch_request_token(
             "https://example.com/token", verify=False, stream=True
         )
-        self.assertEqual(resp["oauth_token"], "foo")
+        assert resp["oauth_token"] == "foo"
         for k, v in resp.items():
-            self.assertTrue(isinstance(k, str))
-            self.assertTrue(isinstance(v, str))
+            assert isinstance(k, str)
+            assert isinstance(v, str)
 
     def test_fetch_access_token(self):
         auth = OAuth1Session("foo", verifier="bar")
         auth.send = mock_text_response("oauth_token=foo")
         resp = auth.fetch_access_token("https://example.com/token")
-        self.assertEqual(resp["oauth_token"], "foo")
+        assert resp["oauth_token"] == "foo"
         for k, v in resp.items():
-            self.assertTrue(isinstance(k, str))
-            self.assertTrue(isinstance(v, str))
+            assert isinstance(k, str)
+            assert isinstance(v, str)
 
         auth = OAuth1Session("foo", verifier="bar")
         auth.send = mock_text_response('{"oauth_token":"foo"}')
         resp = auth.fetch_access_token("https://example.com/token")
-        self.assertEqual(resp["oauth_token"], "foo")
+        assert resp["oauth_token"] == "foo"
 
         auth = OAuth1Session("foo")
         auth.send = mock_text_response("oauth_token=foo")
         resp = auth.fetch_access_token("https://example.com/token", verifier="bar")
-        self.assertEqual(resp["oauth_token"], "foo")
+        assert resp["oauth_token"] == "foo"
 
     def test_fetch_access_token_with_optional_arguments(self):
         auth = OAuth1Session("foo", verifier="bar")
@@ -222,42 +224,29 @@ class OAuth1SessionTest(TestCase):
         resp = auth.fetch_access_token(
             "https://example.com/token", verify=False, stream=True
         )
-        self.assertEqual(resp["oauth_token"], "foo")
+        assert resp["oauth_token"] == "foo"
         for k, v in resp.items():
-            self.assertTrue(isinstance(k, str))
-            self.assertTrue(isinstance(v, str))
+            assert isinstance(k, str)
+            assert isinstance(v, str)
 
     def _test_fetch_access_token_raises_error(self, session):
         """Assert that an error is being raised whenever there's no verifier
         passed in to the client.
         """
         session.send = mock_text_response("oauth_token=foo")
-
-        # Use a try-except block so that we can assert on the exception message
-        # being raised and also keep the Python2.6 compatibility where
-        # assertRaises is not a context manager.
-        try:
+        with pytest.raises(OAuthError, match="missing_verifier"):
             session.fetch_access_token("https://example.com/token")
-        except OAuthError as exc:
-            self.assertEqual(exc.error, "missing_verifier")
 
     def test_fetch_token_invalid_response(self):
         auth = OAuth1Session("foo")
         auth.send = mock_text_response("not valid urlencoded response!")
-        self.assertRaises(
-            ValueError, auth.fetch_request_token, "https://example.com/token"
-        )
+        with pytest.raises(ValueError):
+            auth.fetch_request_token("https://example.com/token")
 
         for code in (400, 401, 403):
             auth.send = mock_text_response("valid=response", code)
-            # use try/catch rather than self.assertRaises, so we can
-            # assert on the properties of the exception
-            try:
+            with pytest.raises(OAuthError, match="fetch_token_denied"):
                 auth.fetch_request_token("https://example.com/token")
-            except OAuthError as err:
-                self.assertEqual(err.error, "fetch_token_denied")
-            else:  # no exception raised
-                self.fail("ValueError not raised")
 
     def test_fetch_access_token_missing_verifier(self):
         self._test_fetch_access_token_raises_error(OAuth1Session("foo"))
@@ -270,7 +259,7 @@ class OAuth1SessionTest(TestCase):
     def verify_signature(self, signature):
         def fake_send(r, **kwargs):
             auth_header = to_unicode(r.headers["Authorization"])
-            self.assertEqual(auth_header, signature)
+            assert auth_header == signature
             resp = mock.MagicMock(spec=requests.Response)
             resp.cookies = []
             return resp
