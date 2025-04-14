@@ -169,15 +169,15 @@ Now define an endpoint for authorization. This endpoint is used by
 
     @app.route('/oauth/authorize', methods=['GET', 'POST'])
     def authorize():
+        try:
+            grant = server.get_consent_grant(end_user=current_user)
+        except OAuth2Error as error:
+            return authorization.handle_error_response(request, error)
+
         # Login is required since we need to know the current resource owner.
         # It can be done with a redirection to the login page, or a login
         # form on this authorization page.
         if request.method == 'GET':
-            try:
-                grant = server.get_consent_grant(end_user=current_user)
-            except OAuth2Error as error:
-                return authorization.handle_error_response(request, error)
-
             scope = grant.client.get_allowed_scope(grant.request.scope)
 
             # You may add a function to extract scope into a list of scopes
@@ -193,10 +193,10 @@ Now define an endpoint for authorization. This endpoint is used by
         confirmed = request.form['confirm']
         if confirmed:
             # granted by resource owner
-            return server.create_authorization_response(grant_user=current_user)
+            return server.create_authorization_response(grant=grant, grant_user=current_user)
 
         # denied by resource owner
-        return server.create_authorization_response(grant_user=None)
+        return server.create_authorization_response(grant=grant, grant_user=None)
 
 This is a simple demo, the real case should be more complex. There is a little
 more complex demo in https://github.com/authlib/example-oauth2-server.

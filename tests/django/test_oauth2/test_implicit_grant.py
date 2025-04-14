@@ -57,15 +57,17 @@ class ImplicitTest(TestCase):
         self.prepare_data()
         data = {"response_type": "token", "client_id": "client"}
         request = self.factory.post("/authorize", data=data)
-        server.get_consent_grant(request)
+        grant = server.get_consent_grant(request)
 
-        resp = server.create_authorization_response(request)
+        resp = server.create_authorization_response(request, grant=grant)
         self.assertEqual(resp.status_code, 302)
         params = dict(url_decode(urlparse.urlparse(resp["Location"]).fragment))
         self.assertEqual(params["error"], "access_denied")
 
         grant_user = User.objects.get(username="foo")
-        resp = server.create_authorization_response(request, grant_user=grant_user)
+        resp = server.create_authorization_response(
+            request, grant=grant, grant_user=grant_user
+        )
         self.assertEqual(resp.status_code, 302)
         params = dict(url_decode(urlparse.urlparse(resp["Location"]).fragment))
         self.assertIn("access_token", params)

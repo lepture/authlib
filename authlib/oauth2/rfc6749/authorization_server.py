@@ -1,4 +1,5 @@
 from authlib.common.errors import ContinueIteration
+from authlib.deprecate import deprecate
 
 from .authenticate_client import ClientAuthentication
 from .errors import InvalidScopeError
@@ -289,7 +290,7 @@ class AuthorizationServer:
             except OAuth2Error as error:
                 return self.handle_error_response(request, error)
 
-    def create_authorization_response(self, request=None, grant_user=None):
+    def create_authorization_response(self, request=None, grant_user=None, grant=None):
         """Validate authorization request and create authorization response.
 
         :param request: HTTP request instance.
@@ -300,11 +301,13 @@ class AuthorizationServer:
         if not isinstance(request, OAuth2Request):
             request = self.create_oauth2_request(request)
 
-        try:
-            grant = self.get_authorization_grant(request)
-        except UnsupportedResponseTypeError as error:
-            error.state = request.state
-            return self.handle_error_response(request, error)
+        if not grant:
+            deprecate("The 'grant' parameter will become mandatory.", version="1.7")
+            try:
+                grant = self.get_authorization_grant(request)
+            except UnsupportedResponseTypeError as error:
+                error.state = request.state
+                return self.handle_error_response(request, error)
 
         try:
             redirect_uri = grant.validate_authorization_request()
