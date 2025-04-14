@@ -158,8 +158,8 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         self.save_authorization_code(code, self.request)
 
         params = [("code", code)]
-        if self.request.state:
-            params.append(("state", self.request.state))
+        if self.request.payload.state:
+            params.append(("state", self.request.payload.state))
         uri = add_params_to_uri(redirect_uri, params)
         headers = [("Location", uri)]
         return 302, "", headers
@@ -229,7 +229,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
 
         # validate redirect_uri parameter
         log.debug("Validate token redirect_uri of %r", client)
-        redirect_uri = self.request.redirect_uri
+        redirect_uri = self.request.payload.redirect_uri
         original_redirect_uri = authorization_code.get_redirect_uri()
         if original_redirect_uri and redirect_uri != original_redirect_uri:
             raise InvalidGrantError("Invalid 'redirect_uri' in request.")
@@ -306,8 +306,8 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
                 item = AuthorizationCode(
                     code=code,
                     client_id=client.client_id,
-                    redirect_uri=request.redirect_uri,
-                    scope=request.scope,
+                    redirect_uri=request.payload.redirect_uri,
+                    scope=request.payload.scope,
                     user_id=request.user.id,
                 )
                 item.save()
@@ -353,7 +353,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
 
 def validate_code_authorization_request(grant):
     request = grant.request
-    client_id = request.client_id
+    client_id = request.payload.client_id
     log.debug("Validate authorization request of %r", client_id)
 
     if client_id is None:
@@ -368,7 +368,7 @@ def validate_code_authorization_request(grant):
         )
 
     redirect_uri = grant.validate_authorization_redirect_uri(request, client)
-    response_type = request.response_type
+    response_type = request.payload.response_type
     if not client.check_response_type(response_type):
         raise UnauthorizedClientError(
             f"The client is not authorized to use 'response_type={response_type}'",

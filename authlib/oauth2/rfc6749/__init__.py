@@ -36,7 +36,9 @@ from .grants import TokenEndpointMixin
 from .models import AuthorizationCodeMixin
 from .models import ClientMixin
 from .models import TokenMixin
+from .requests import JsonPayload
 from .requests import JsonRequest
+from .requests import OAuth2Payload
 from .requests import OAuth2Request
 from .resource_protector import ResourceProtector
 from .resource_protector import TokenValidator
@@ -46,8 +48,10 @@ from .util import scope_to_list
 from .wrappers import OAuth2Token
 
 __all__ = [
+    "OAuth2Payload",
     "OAuth2Token",
     "OAuth2Request",
+    "JsonPayload",
     "JsonRequest",
     "OAuth2Error",
     "AccessDeniedError",

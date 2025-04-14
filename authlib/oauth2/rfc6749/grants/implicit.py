@@ -127,7 +127,7 @@ class ImplicitGrant(BaseGrant, AuthorizationEndpointMixin):
 
         redirect_uri = self.validate_authorization_redirect_uri(self.request, client)
 
-        response_type = self.request.response_type
+        response_type = self.request.payload.response_type
         if not client.check_response_type(response_type):
             raise UnauthorizedClientError(
                 f"The client is not authorized to use 'response_type={response_type}'",
@@ -201,12 +201,12 @@ class ImplicitGrant(BaseGrant, AuthorizationEndpointMixin):
             resource owner, otherwise pass None.
         :returns: (status_code, body, headers)
         """
-        state = self.request.state
+        state = self.request.payload.state
         if grant_user:
             self.request.user = grant_user
             token = self.generate_token(
                 user=grant_user,
-                scope=self.request.scope,
+                scope=self.request.payload.scope,
                 include_refresh_token=False,
             )
             log.debug("Grant token %r to %r", token, self.request.client)

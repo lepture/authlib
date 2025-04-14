@@ -157,7 +157,7 @@ The ``AuthorizationServer`` has provided built-in methods to handle these endpoi
             return server.handle_error_response(request, error)
 
         if request.method == 'GET':
-            scope = grant.client.get_allowed_scope(grant.request.scope)
+            scope = grant.client.get_allowed_scope(grant.request.payload.scope)
             context = dict(grant=grant, client=grant.client, scope=scope, user=request.user)
             return render(request, 'authorize.html', context)
 

@@ -234,9 +234,9 @@ class AuthorizationServer:
                 return _create_grant(grant_cls, extensions, request, self)
 
         raise UnsupportedResponseTypeError(
-            f"The response type '{request.response_type}' is not supported by the server.",
-            request.response_type,
-            redirect_uri=request.redirect_uri,
+            f"The response type '{request.payload.response_type}' is not supported by the server.",
+            request.payload.response_type,
+            redirect_uri=request.payload.redirect_uri,
         )
 
     def get_consent_grant(self, request=None, end_user=None):
@@ -255,7 +255,7 @@ class AuthorizationServer:
             # REQUIRED if a "state" parameter was present in the client
             # authorization request.  The exact value received from the
             # client.
-            error.state = request.state
+            error.state = request.payload.state
             raise
         return grant
 
@@ -268,7 +268,7 @@ class AuthorizationServer:
         for grant_cls, extensions in self._token_grants:
             if grant_cls.check_token_endpoint(request):
                 return _create_grant(grant_cls, extensions, request, self)
-        raise UnsupportedGrantTypeError(request.grant_type)
+        raise UnsupportedGrantTypeError(request.payload.grant_type)
 
     def create_endpoint_response(self, name, request=None):
         """Validate endpoint request and create endpoint response.
@@ -306,7 +306,7 @@ class AuthorizationServer:
             try:
                 grant = self.get_authorization_grant(request)
             except UnsupportedResponseTypeError as error:
-                error.state = request.state
+                error.state = request.payload.state
                 return self.handle_error_response(request, error)
 
         try:
@@ -314,7 +314,7 @@ class AuthorizationServer:
             args = grant.create_authorization_response(redirect_uri, grant_user)
             response = self.handle_response(*args)
         except OAuth2Error as error:
-            error.state = request.state
+            error.state = request.payload.state
             response = self.handle_error_response(request, error)
 
         grant.execute_hook("after_authorization_response", response)
