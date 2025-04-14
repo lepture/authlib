@@ -19,7 +19,7 @@ def is_openid_scope(scope):
 
 
 def validate_request_prompt(grant, redirect_uri, redirect_fragment=False):
-    prompt = grant.request.data.get("prompt")
+    prompt = grant.request.payload.data.get("prompt")
     end_user = grant.request.user
     if not prompt:
         if not end_user:
@@ -50,7 +50,7 @@ def validate_request_prompt(grant, redirect_uri, redirect_fragment=False):
 
 
 def validate_nonce(request, exists_nonce, required=False):
-    nonce = request.data.get("nonce")
+    nonce = request.payload.data.get("nonce")
     if not nonce:
         if required:
             raise InvalidRequestError("Missing 'nonce' in request.")

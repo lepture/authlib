@@ -89,7 +89,7 @@ class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
             &device_code=GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS
             &client_id=1406020730
         """
-        device_code = self.request.data.get("device_code")
+        device_code = self.request.payload.data.get("device_code")
         if not device_code:
             raise InvalidRequestError("Missing 'device_code' in payload")
 

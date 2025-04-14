@@ -57,7 +57,7 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
         return token
 
     def _validate_token_scope(self, token):
-        scope = self.request.scope
+        scope = self.request.payload.scope
         if not scope:
             return
 
@@ -131,7 +131,7 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def issue_token(self, user, refresh_token):
-        scope = self.request.scope
+        scope = self.request.payload.scope
         if not scope:
             scope = refresh_token.get_scope()
 

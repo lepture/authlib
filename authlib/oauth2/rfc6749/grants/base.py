@@ -85,7 +85,7 @@ class BaseGrant:
 
     def validate_requested_scope(self):
         """Validate if requested scope is supported by Authorization Server."""
-        scope = self.request.scope
+        scope = self.request.payload.scope
         return self.server.validate_requested_scope(scope)
 
     def register_hook(self, hook_type, hook):
@@ -108,7 +108,7 @@ class TokenEndpointMixin:
     @classmethod
     def check_token_endpoint(cls, request: OAuth2Request):
         return (
-            request.grant_type == cls.GRANT_TYPE
+            request.payload.grant_type == cls.GRANT_TYPE
             and request.method in cls.TOKEN_ENDPOINT_HTTP_METHODS
         )
 
@@ -125,21 +125,21 @@ class AuthorizationEndpointMixin:
 
     @classmethod
     def check_authorization_endpoint(cls, request: OAuth2Request):
-        return request.response_type in cls.RESPONSE_TYPES
+        return request.payload.response_type in cls.RESPONSE_TYPES
 
     @staticmethod
     def validate_authorization_redirect_uri(request: OAuth2Request, client):
-        if request.redirect_uri:
-            if not client.check_redirect_uri(request.redirect_uri):
+        if request.payload.redirect_uri:
+            if not client.check_redirect_uri(request.payload.redirect_uri):
                 raise InvalidRequestError(
-                    f"Redirect URI {request.redirect_uri} is not supported by client.",
+                    f"Redirect URI {request.payload.redirect_uri} is not supported by client.",
                 )
-            return request.redirect_uri
+            return request.payload.redirect_uri
         else:
             redirect_uri = client.get_default_redirect_uri()
             if not redirect_uri:
                 raise InvalidRequestError(
-                    "Missing 'redirect_uri' in request.", state=request.state
+                    "Missing 'redirect_uri' in request.", state=request.payload.state
                 )
             return redirect_uri
 
@@ -150,12 +150,12 @@ class AuthorizationEndpointMixin:
 
         .. _`Section 3.1`: https://tools.ietf.org/html/rfc6749#section-3.1
         """
-        datalist = request.datalist
+        datalist = request.payload.datalist
         parameters = ["response_type", "client_id", "redirect_uri", "scope", "state"]
         for param in parameters:
             if len(datalist.get(param, [])) > 1:
                 raise InvalidRequestError(
-                    f"Multiple '{param}' in request.", state=request.state
+                    f"Multiple '{param}' in request.", state=request.payload.state
                 )
 
     def validate_consent_request(self):

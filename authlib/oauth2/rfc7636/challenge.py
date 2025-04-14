@@ -68,15 +68,15 @@ class CodeChallenge:
 
     def validate_code_challenge(self, grant):
         request: OAuth2Request = grant.request
-        challenge = request.data.get("code_challenge")
-        method = request.data.get("code_challenge_method")
+        challenge = request.payload.data.get("code_challenge")
+        method = request.payload.data.get("code_challenge_method")
         if not challenge and not method:
             return
 
         if not challenge:
             raise InvalidRequestError("Missing 'code_challenge'")
 
-        if len(request.datalist.get("code_challenge", [])) > 1:
+        if len(request.payload.datalist.get("code_challenge", [])) > 1:
             raise InvalidRequestError("Multiple 'code_challenge' in request.")
 
         if not CODE_CHALLENGE_PATTERN.match(challenge):
@@ -85,7 +85,7 @@ class CodeChallenge:
         if method and method not in self.SUPPORTED_CODE_CHALLENGE_METHOD:
             raise InvalidRequestError("Unsupported 'code_challenge_method'")
 
-        if len(request.datalist.get("code_challenge_method", [])) > 1:
+        if len(request.payload.datalist.get("code_challenge_method", [])) > 1:
             raise InvalidRequestError("Multiple 'code_challenge_method' in request.")
 
     def validate_code_verifier(self, grant):

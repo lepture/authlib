@@ -100,7 +100,7 @@ class ClientCredentialsGrant(BaseGrant, TokenEndpointMixin):
         :returns: (status_code, body, headers)
         """
         token = self.generate_token(
-            scope=self.request.scope, include_refresh_token=False
+            scope=self.request.payload.scope, include_refresh_token=False
         )
         log.debug("Issue token %r to %r", token, self.client)
         self.save_token(token)

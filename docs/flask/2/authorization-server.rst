@@ -178,7 +178,7 @@ Now define an endpoint for authorization. This endpoint is used by
         # It can be done with a redirection to the login page, or a login
         # form on this authorization page.
         if request.method == 'GET':
-            scope = grant.client.get_allowed_scope(grant.request.scope)
+            scope = grant.client.get_allowed_scope(grant.request.payload.scope)
 
             # You may add a function to extract scope into a list of scopes
             # with rich information, e.g.

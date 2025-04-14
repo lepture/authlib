@@ -135,7 +135,7 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant, TokenEndpointMixin):
         :returns: (status_code, body, headers)
         """
         user = self.request.user
-        scope = self.request.scope
+        scope = self.request.payload.scope
         token = self.generate_token(user=user, scope=scope)
         log.debug("Issue token %r to %r", token, self.client)
         self.save_token(token)
