@@ -1,32 +1,11 @@
 from collections import defaultdict
 
+from authlib.deprecate import deprecate
+
 from .errors import InsecureTransportError
 
 
-class OAuth2Request:
-    def __init__(self, method: str, uri: str, headers=None):
-        InsecureTransportError.check(uri)
-        #: HTTP method
-        self.method = method
-        self.uri = uri
-        #: HTTP headers
-        self.headers = headers or {}
-
-        self.client = None
-        self.auth_method = None
-        self.user = None
-        self.authorization_code = None
-        self.refresh_token = None
-        self.credential = None
-
-    @property
-    def args(self):
-        raise NotImplementedError()
-
-    @property
-    def form(self):
-        raise NotImplementedError()
-
+class OAuth2Payload:
     @property
     def data(self):
         raise NotImplementedError()
@@ -56,7 +35,7 @@ class OAuth2Request:
 
     @property
     def grant_type(self) -> str:
-        return self.form.get("grant_type")
+        return self.data.get("grant_type")
 
     @property
     def redirect_uri(self):
@@ -71,12 +50,114 @@ class OAuth2Request:
         return self.data.get("state")
 
 
+class OAuth2Request(OAuth2Payload):
+    def __init__(self, method: str, uri: str, headers=None):
+        InsecureTransportError.check(uri)
+        #: HTTP method
+        self.method = method
+        self.uri = uri
+        #: HTTP headers
+        self.headers = headers or {}
+
+        self.payload = None
+
+        self.client = None
+        self.auth_method = None
+        self.user = None
+        self.authorization_code = None
+        self.refresh_token = None
+        self.credential = None
+
+    @property
+    def args(self):
+        raise NotImplementedError()
+
+    @property
+    def form(self):
+        raise NotImplementedError()
+
+    @property
+    def data(self):
+        deprecate(
+            "'request.data' is deprecated in favor of 'request.payload.data'",
+            version="1.7",
+        )
+        return self.payload.data
+
+    @property
+    def datalist(self) -> defaultdict[str, list]:
+        deprecate(
+            "'request.datalist' is deprecated in favor of 'request.payload.datalist'",
+            version="1.7",
+        )
+        return self.payload.datalist
+
+    @property
+    def client_id(self) -> str:
+        deprecate(
+            "'request.client_id' is deprecated in favor of 'request.payload.client_id'",
+            version="1.7",
+        )
+        return self.payload.client_id
+
+    @property
+    def response_type(self) -> str:
+        deprecate(
+            "'request.response_type' is deprecated in favor of 'request.payload.response_type'",
+            version="1.7",
+        )
+        return self.payload.response_type
+
+    @property
+    def grant_type(self) -> str:
+        deprecate(
+            "'request.grant_type' is deprecated in favor of 'request.payload.grant_type'",
+            version="1.7",
+        )
+        return self.payload.grant_type
+
+    @property
+    def redirect_uri(self):
+        deprecate(
+            "'request.redirect_uri' is deprecated in favor of 'request.payload.redirect_uri'",
+            version="1.7",
+        )
+        return self.payload.redirect_uri
+
+    @property
+    def scope(self) -> str:
+        deprecate(
+            "'request.scope' is deprecated in favor of 'request.payload.scope'",
+            version="1.7",
+        )
+        return self.payload.scope
+
+    @property
+    def state(self):
+        deprecate(
+            "'request.state' is deprecated in favor of 'request.payload.state'",
+            version="1.7",
+        )
+        return self.payload.state
+
+
+class JsonPayload:
+    @property
+    def data(self):
+        raise NotImplementedError()
+
+
 class JsonRequest:
     def __init__(self, method, uri, headers=None):
         self.method = method
         self.uri = uri
         self.headers = headers or {}
+        self.payload = None
 
     @property
     def data(self):
-        raise NotImplementedError()
+        deprecate(
+            "'request.data' is deprecated in favor of 'request.payload.data'",
+            version="1.7",
+        )
+        return self.payload.data

@@ -52,10 +52,10 @@ class ClientRegistrationEndpoint:
         return 201, body, default_json_headers
 
     def extract_client_metadata(self, request):
-        if not request.data:
+        if not request.payload.data:
             raise InvalidRequestError()
 
-        json_data = request.data.copy()
+        json_data = request.payload.data.copy()
         software_statement = json_data.pop("software_statement", None)
         if software_statement and self.software_statement_alg_values_supported:
             data = self.extract_software_statement(software_statement, request)

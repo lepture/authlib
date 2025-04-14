@@ -98,7 +98,7 @@ class OpenIDCode(OpenIDToken):
                 return {...}
 
             def exists_nonce(self, nonce, request):
-                return check_if_nonce_in_cache(request.client_id, nonce)
+                return check_if_nonce_in_cache(request.payload.client_id, nonce)
 
             def generate_user_info(self, user, scope):
                 return {...}
@@ -119,7 +119,7 @@ class OpenIDCode(OpenIDToken):
 
             def exists_nonce(self, nonce, request):
                 exists = AuthorizationCode.query.filter_by(
-                    client_id=request.client_id, nonce=nonce
+                    client_id=request.payload.client_id, nonce=nonce
                 ).first()
                 return bool(exists)
 
@@ -134,7 +134,7 @@ class OpenIDCode(OpenIDToken):
 
     def __call__(self, grant):
         grant.register_hook("process_token", self.process_token)
-        if is_openid_scope(grant.request.scope):
+        if is_openid_scope(grant.request.payload.scope):
             grant.register_hook(
                 "after_validate_authorization_request",
                 self.validate_openid_authorization_request,

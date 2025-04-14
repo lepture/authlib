@@ -46,12 +46,12 @@ class ClientAuthentication:
 
         if "client_secret_basic" in methods:
             raise InvalidClientError(
-                state=request.state,
+                state=request.payload.state,
                 status_code=401,
                 description=f"The client cannot authenticate with methods: {methods}",
             )
         raise InvalidClientError(
-            state=request.state,
+            state=request.payload.state,
             description=f"The client cannot authenticate with methods: {methods}",
         )
 
@@ -65,7 +65,7 @@ def authenticate_client_secret_basic(query_client, request):
     """
     client_id, client_secret = extract_basic_authorization(request.headers)
     if client_id and client_secret:
-        client = _validate_client(query_client, client_id, request.state, 401)
+        client = _validate_client(query_client, client_id, request.payload.state, 401)
         if client.check_client_secret(client_secret):
             log.debug(f'Authenticate {client_id} via "client_secret_basic" success')
             return client
@@ -80,7 +80,7 @@ def authenticate_client_secret_post(query_client, request):
     client_id = data.get("client_id")
     client_secret = data.get("client_secret")
     if client_id and client_secret:
-        client = _validate_client(query_client, client_id, request.state)
+        client = _validate_client(query_client, client_id, request.payload.state)
         if client.check_client_secret(client_secret):
             log.debug(f'Authenticate {client_id} via "client_secret_post" success')
             return client
@@ -91,9 +91,9 @@ def authenticate_none(query_client, request):
     """Authenticate public client by ``none`` method. The client
     does not have a client secret.
     """
-    client_id = request.client_id
-    if client_id and not request.data.get("client_secret"):
-        client = _validate_client(query_client, client_id, request.state)
+    client_id = request.payload.client_id
+    if client_id and not request.payload.data.get("client_secret"):
+        client = _validate_client(query_client, client_id, request.payload.state)
         log.debug(f'Authenticate {client_id} via "none" success')
         return client
     log.debug(f'Authenticate {client_id} via "none" failed')

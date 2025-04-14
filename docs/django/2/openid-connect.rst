@@ -112,7 +112,7 @@ First, we need to implement the missing methods for ``OpenIDCode``::
         def exists_nonce(self, nonce, request):
             try:
                 AuthorizationCode.objects.get(
-                    client_id=request.client_id, nonce=nonce
+                    client_id=request.payload.client_id, nonce=nonce
                 )
                 return True
             except AuthorizationCode.DoesNotExist:
@@ -139,13 +139,13 @@ we need to save this value into database. In this case, we have to update our
     class AuthorizationCodeGrant(_AuthorizationCodeGrant):
         def save_authorization_code(self, code, request):
             # openid request MAY have "nonce" parameter
-            nonce = request.data.get('nonce')
+            nonce = request.payload.data.get('nonce')
             client = request.client
             auth_code = AuthorizationCode(
                 code=code,
                 client_id=client.client_id,
                 redirect_uri=request.redirect_uri,
-                scope=request.scope,
+                scope=request.payload.scope,
                 user=request.user,
                 nonce=nonce,
             )
@@ -192,7 +192,7 @@ a scripting language. You need to implement the missing methods of
         def exists_nonce(self, nonce, request):
             try:
                 AuthorizationCode.objects.get(
-                    client_id=request.client_id, nonce=nonce)
+                    client_id=request.payload.client_id, nonce=nonce)
                 )
                 return True
             except AuthorizationCode.DoesNotExist:
@@ -231,13 +231,13 @@ is ``save_authorization_code``. You can implement it like this::
     class OpenIDHybridGrant(grants.OpenIDHybridGrant):
         def save_authorization_code(self, code, request):
             # openid request MAY have "nonce" parameter
-            nonce = request.data.get('nonce')
+            nonce = request.payload.data.get('nonce')
             client = request.client
             auth_code = AuthorizationCode(
                 code=code,
                 client_id=client.client_id,
                 redirect_uri=request.redirect_uri,
-                scope=request.scope,
+                scope=request.payload.scope,
                 user=request.user,
                 nonce=nonce,
             )
@@ -247,7 +247,7 @@ is ``save_authorization_code``. You can implement it like this::
         def exists_nonce(self, nonce, request):
             try:
                 AuthorizationCode.objects.get(
-                    client_id=request.client_id, nonce=nonce)
+                    client_id=request.payload.client_id, nonce=nonce)
                 )
                 return True
             except AuthorizationCode.DoesNotExist:

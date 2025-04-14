@@ -232,7 +232,7 @@ class AuthorizationServer:
         for grant_cls, extensions in self._authorization_grants:
             if grant_cls.check_authorization_endpoint(request):
                 return _create_grant(grant_cls, extensions, request, self)
-        raise UnsupportedResponseTypeError(request.response_type)
+        raise UnsupportedResponseTypeError(request.payload.response_type)
 
     def get_consent_grant(self, request=None, end_user=None):
         """Validate current HTTP request for authorization page. This page
@@ -255,7 +255,7 @@ class AuthorizationServer:
         for grant_cls, extensions in self._token_grants:
             if grant_cls.check_token_endpoint(request):
                 return _create_grant(grant_cls, extensions, request, self)
-        raise UnsupportedGrantTypeError(request.grant_type)
+        raise UnsupportedGrantTypeError(request.payload.grant_type)
 
     def create_endpoint_response(self, name, request=None):
         """Validate endpoint request and create endpoint response.
