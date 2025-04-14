@@ -10,9 +10,7 @@ from authlib.oauth2.rfc6749 import OAuth2Request
 
 class DjangoOAuth2Request(OAuth2Request):
     def __init__(self, request: HttpRequest):
-        super().__init__(
-            request.method, request.build_absolute_uri(), None, request.headers
-        )
+        super().__init__(request.method, request.build_absolute_uri(), request.headers)
         self._request = request
 
     @property
@@ -42,9 +40,7 @@ class DjangoOAuth2Request(OAuth2Request):
 
 class DjangoJsonRequest(JsonRequest):
     def __init__(self, request: HttpRequest):
-        super().__init__(
-            request.method, request.build_absolute_uri(), None, request.headers
-        )
+        super().__init__(request.method, request.build_absolute_uri(), request.headers)
         self._request = request
 
     @cached_property
