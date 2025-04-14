@@ -20,3 +20,4 @@ venv/
 *.egg
 .idea/
 uv.lock
+.env
