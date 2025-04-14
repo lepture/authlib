@@ -73,7 +73,7 @@ class RFC9207AuthorizationCodeTest(TestCase):
         self.prepare_data(rfc9207=True)
         url = self.authorize_url + "&state=bar"
         rv = self.client.post(url, data={"user_id": "1"})
-        self.assertIn("iss=https%3A%2F%2Fauth.test", rv.location)
+        assert "iss=https%3A%2F%2Fauth.test" in rv.location
 
     def test_rfc9207_disabled_success_no_iss(self):
         """Check that when RFC9207 is not implemented,
@@ -82,7 +82,7 @@ class RFC9207AuthorizationCodeTest(TestCase):
         self.prepare_data(rfc9207=False)
         url = self.authorize_url + "&state=bar"
         rv = self.client.post(url, data={"user_id": "1"})
-        self.assertNotIn("iss=", rv.location)
+        assert "iss=" not in rv.location
 
     def test_rfc9207_enabled_error(self):
         """Check that when RFC9207 is implemented,
@@ -91,8 +91,8 @@ class RFC9207AuthorizationCodeTest(TestCase):
 
         self.prepare_data(rfc9207=True)
         rv = self.client.post(self.authorize_url)
-        self.assertIn("error=access_denied", rv.location)
-        self.assertIn("iss=https%3A%2F%2Fauth.test", rv.location)
+        assert "error=access_denied" in rv.location
+        assert "iss=https%3A%2F%2Fauth.test" in rv.location
 
     def test_rfc9207_disbled_error_no_iss(self):
         """Check that when RFC9207 is not implemented,
@@ -101,5 +101,5 @@ class RFC9207AuthorizationCodeTest(TestCase):
 
         self.prepare_data(rfc9207=False)
         rv = self.client.post(self.authorize_url)
-        self.assertIn("error=access_denied", rv.location)
-        self.assertNotIn("iss=", rv.location)
+        assert "error=access_denied" in rv.location
+        assert "iss=" not in rv.location

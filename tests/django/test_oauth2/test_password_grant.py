@@ -48,9 +48,9 @@ class PasswordTest(TestCase):
             data={"grant_type": "password", "username": "foo", "password": "ok"},
         )
         resp = server.create_token_response(request)
-        self.assertEqual(resp.status_code, 401)
+        assert resp.status_code == 401
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "invalid_client")
+        assert data["error"] == "invalid_client"
 
         request = self.factory.post(
             "/oauth/token",
@@ -58,9 +58,9 @@ class PasswordTest(TestCase):
             HTTP_AUTHORIZATION=self.create_basic_auth("invalid", "secret"),
         )
         resp = server.create_token_response(request)
-        self.assertEqual(resp.status_code, 401)
+        assert resp.status_code == 401
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "invalid_client")
+        assert data["error"] == "invalid_client"
 
     def test_invalid_scope(self):
         server = self.create_server()
@@ -77,9 +77,9 @@ class PasswordTest(TestCase):
             HTTP_AUTHORIZATION=self.create_basic_auth("client", "secret"),
         )
         resp = server.create_token_response(request)
-        self.assertEqual(resp.status_code, 400)
+        assert resp.status_code == 400
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "invalid_scope")
+        assert data["error"] == "invalid_scope"
 
     def test_invalid_request(self):
         server = self.create_server()
@@ -92,9 +92,9 @@ class PasswordTest(TestCase):
             HTTP_AUTHORIZATION=auth_header,
         )
         resp = server.create_token_response(request)
-        self.assertEqual(resp.status_code, 400)
+        assert resp.status_code == 400
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "unsupported_grant_type")
+        assert data["error"] == "unsupported_grant_type"
 
         # case 2
         request = self.factory.post(
@@ -103,9 +103,9 @@ class PasswordTest(TestCase):
             HTTP_AUTHORIZATION=auth_header,
         )
         resp = server.create_token_response(request)
-        self.assertEqual(resp.status_code, 400)
+        assert resp.status_code == 400
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "invalid_request")
+        assert data["error"] == "invalid_request"
 
         # case 3
         request = self.factory.post(
@@ -114,9 +114,9 @@ class PasswordTest(TestCase):
             HTTP_AUTHORIZATION=auth_header,
         )
         resp = server.create_token_response(request)
-        self.assertEqual(resp.status_code, 400)
+        assert resp.status_code == 400
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "invalid_request")
+        assert data["error"] == "invalid_request"
 
         # case 4
         request = self.factory.post(
@@ -129,9 +129,9 @@ class PasswordTest(TestCase):
             HTTP_AUTHORIZATION=auth_header,
         )
         resp = server.create_token_response(request)
-        self.assertEqual(resp.status_code, 400)
+        assert resp.status_code == 400
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "invalid_request")
+        assert data["error"] == "invalid_request"
 
     def test_unauthorized_client(self):
         server = self.create_server()
@@ -146,9 +146,9 @@ class PasswordTest(TestCase):
             HTTP_AUTHORIZATION=self.create_basic_auth("client", "secret"),
         )
         resp = server.create_token_response(request)
-        self.assertEqual(resp.status_code, 400)
+        assert resp.status_code == 400
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "unauthorized_client")
+        assert data["error"] == "unauthorized_client"
 
     def test_authorize_token(self):
         server = self.create_server()
@@ -163,6 +163,6 @@ class PasswordTest(TestCase):
             HTTP_AUTHORIZATION=self.create_basic_auth("client", "secret"),
         )
         resp = server.create_token_response(request)
-        self.assertEqual(resp.status_code, 200)
+        assert resp.status_code == 200
         data = json.loads(resp.content)
-        self.assertIn("access_token", data)
+        assert "access_token" in data

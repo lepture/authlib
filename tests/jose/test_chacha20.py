@@ -1,5 +1,7 @@
 import unittest
 
+import pytest
+
 from authlib.jose import JsonWebEncryption
 from authlib.jose import OctKey
 from authlib.jose.drafts import register_jwe_draft
@@ -14,12 +16,14 @@ class ChaCha20Test(unittest.TestCase):
         protected = {"alg": "dir", "enc": "C20P"}
         data = jwe.serialize_compact(protected, b"hello", key)
         rv = jwe.deserialize_compact(data, key)
-        self.assertEqual(rv["payload"], b"hello")
+        assert rv["payload"] == b"hello"
 
         key2 = OctKey.generate_key(128, is_private=True)
-        self.assertRaises(ValueError, jwe.deserialize_compact, data, key2)
+        with pytest.raises(ValueError):
+            jwe.deserialize_compact(data, key2)
 
-        self.assertRaises(ValueError, jwe.serialize_compact, protected, b"hello", key2)
+        with pytest.raises(ValueError):
+            jwe.serialize_compact(protected, b"hello", key2)
 
     def test_dir_alg_xc20p(self):
         jwe = JsonWebEncryption()
@@ -27,12 +31,14 @@ class ChaCha20Test(unittest.TestCase):
         protected = {"alg": "dir", "enc": "XC20P"}
         data = jwe.serialize_compact(protected, b"hello", key)
         rv = jwe.deserialize_compact(data, key)
-        self.assertEqual(rv["payload"], b"hello")
+        assert rv["payload"] == b"hello"
 
         key2 = OctKey.generate_key(128, is_private=True)
-        self.assertRaises(ValueError, jwe.deserialize_compact, data, key2)
+        with pytest.raises(ValueError):
+            jwe.deserialize_compact(data, key2)
 
-        self.assertRaises(ValueError, jwe.serialize_compact, protected, b"hello", key2)
+        with pytest.raises(ValueError):
+            jwe.serialize_compact(protected, b"hello", key2)
 
     def test_xc20p_content_encryption_decryption(self):
         # https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-xchacha-03#appendix-A.3.1
@@ -51,16 +57,13 @@ class ChaCha20Test(unittest.TestCase):
         iv = bytes.fromhex("404142434445464748494a4b4c4d4e4f5051525354555657")
 
         ciphertext, tag = enc.encrypt(plaintext, aad, iv, key)
-        self.assertEqual(
-            ciphertext,
-            bytes.fromhex(
-                "bd6d179d3e83d43b9576579493c0e939572a1700252bfaccbed2902c21396cbb"
-                + "731c7f1b0b4aa6440bf3a82f4eda7e39ae64c6708c54c216cb96b72e1213b452"
-                + "2f8c9ba40db5d945b11b69b982c1bb9e3f3fac2bc369488f76b2383565d3fff9"
-                + "21f9664c97637da9768812f615c68b13b52e"
-            ),
+        assert ciphertext == bytes.fromhex(
+            "bd6d179d3e83d43b9576579493c0e939572a1700252bfaccbed2902c21396cbb"
+            + "731c7f1b0b4aa6440bf3a82f4eda7e39ae64c6708c54c216cb96b72e1213b452"
+            + "2f8c9ba40db5d945b11b69b982c1bb9e3f3fac2bc369488f76b2383565d3fff9"
+            + "21f9664c97637da9768812f615c68b13b52e"
         )
-        self.assertEqual(tag, bytes.fromhex("c0875924c1c7987947deafd8780acf49"))
+        assert tag == bytes.fromhex("c0875924c1c7987947deafd8780acf49")
 
         decrypted_plaintext = enc.decrypt(ciphertext, aad, iv, tag, key)
-        self.assertEqual(decrypted_plaintext, plaintext)
+        assert decrypted_plaintext == plaintext

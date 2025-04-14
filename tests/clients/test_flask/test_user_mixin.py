@@ -1,6 +1,7 @@
 from unittest import TestCase
 from unittest import mock
 
+import pytest
 from flask import Flask
 
 from authlib.integrations.flask_client import OAuth
@@ -36,7 +37,7 @@ class FlaskUserMixinTest(TestCase):
         with app.test_request_context():
             with mock.patch("requests.sessions.Session.send", fake_send):
                 user = client.userinfo()
-                self.assertEqual(user.sub, "123")
+                assert user.sub == "123"
 
     def test_parse_id_token(self):
         token = get_bearer_token()
@@ -64,22 +65,21 @@ class FlaskUserMixinTest(TestCase):
             id_token_signing_alg_values_supported=["HS256", "RS256"],
         )
         with app.test_request_context():
-            self.assertIsNone(client.parse_id_token(token, nonce="n"))
+            assert client.parse_id_token(token, nonce="n") is None
 
             token["id_token"] = id_token
             user = client.parse_id_token(token, nonce="n")
-            self.assertEqual(user.sub, "123")
+            assert user.sub == "123"
 
             claims_options = {"iss": {"value": "https://i.b"}}
             user = client.parse_id_token(
                 token, nonce="n", claims_options=claims_options
             )
-            self.assertEqual(user.sub, "123")
+            assert user.sub == "123"
 
             claims_options = {"iss": {"value": "https://i.c"}}
-            self.assertRaises(
-                InvalidClaimError, client.parse_id_token, token, "n", claims_options
-            )
+            with pytest.raises(InvalidClaimError):
+                client.parse_id_token(token, "n", claims_options)
 
     def test_parse_id_token_nonce_supported(self):
         token = get_bearer_token()
@@ -108,7 +108,7 @@ class FlaskUserMixinTest(TestCase):
         with app.test_request_context():
             token["id_token"] = id_token
             user = client.parse_id_token(token, nonce="n")
-            self.assertEqual(user.sub, "123")
+            assert user.sub == "123"
 
     def test_runtime_error_fetch_jwks_uri(self):
         token = get_bearer_token()
@@ -139,7 +139,8 @@ class FlaskUserMixinTest(TestCase):
         )
         with app.test_request_context():
             token["id_token"] = id_token
-            self.assertRaises(RuntimeError, client.parse_id_token, token, "n")
+            with pytest.raises(RuntimeError):
+                client.parse_id_token(token, "n")
 
     def test_force_fetch_jwks_uri(self):
         secret_keys = read_key_file("jwks_private.json")
@@ -175,9 +176,9 @@ class FlaskUserMixinTest(TestCase):
             return resp
 
         with app.test_request_context():
-            self.assertIsNone(client.parse_id_token(token, nonce="n"))
+            assert client.parse_id_token(token, nonce="n") is None
 
             with mock.patch("requests.sessions.Session.send", fake_send):
                 token["id_token"] = id_token
                 user = client.parse_id_token(token, nonce="n")
-                self.assertEqual(user.sub, "123")
+                assert user.sub == "123"
