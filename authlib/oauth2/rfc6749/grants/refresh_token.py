@@ -13,6 +13,7 @@ from ..errors import InvalidGrantError
 from ..errors import InvalidRequestError
 from ..errors import InvalidScopeError
 from ..errors import UnauthorizedClientError
+from ..hooks import hooked
 from ..util import scope_to_list
 from .base import BaseGrant
 from .base import TokenEndpointMixin
@@ -109,6 +110,7 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
         self._validate_token_scope(refresh_token)
         self.request.refresh_token = refresh_token
 
+    @hooked
     def create_token_response(self):
         """If valid and authorized, the authorization server issues an access
         token as described in Section 5.1.  If the request failed
@@ -126,7 +128,6 @@ class RefreshTokenGrant(BaseGrant, TokenEndpointMixin):
 
         self.request.user = user
         self.save_token(token)
-        self.execute_hook("process_token", token=token)
         self.revoke_old_credential(refresh_token)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
