@@ -56,8 +56,8 @@ class OpenIDHybridGrant(OpenIDImplicitGrant):
                 redirect_fragment=True,
             )
         self.register_hook(
-            "after_validate_authorization_request",
-            lambda grant: validate_nonce(
+            "after_validate_authorization_request_payload",
+            lambda grant, redirect_uri: validate_nonce(
                 grant.request, grant.exists_nonce, required=True
             ),
         )

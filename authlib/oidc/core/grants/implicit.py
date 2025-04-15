@@ -4,6 +4,7 @@ from authlib.oauth2.rfc6749 import AccessDeniedError
 from authlib.oauth2.rfc6749 import ImplicitGrant
 from authlib.oauth2.rfc6749 import InvalidScopeError
 from authlib.oauth2.rfc6749 import OAuth2Error
+from authlib.oauth2.rfc6749.hooks import hooked
 
 from .util import create_response_mode_response
 from .util import generate_id_token
@@ -93,9 +94,11 @@ class OpenIDImplicitGrant(ImplicitGrant):
             raise error
         return redirect_uri
 
+    @hooked
     def validate_consent_request(self):
         redirect_uri = self.validate_authorization_request()
         validate_request_prompt(self, redirect_uri, redirect_fragment=True)
+        return redirect_uri
 
     def create_authorization_response(self, redirect_uri, grant_user):
         state = self.request.payload.state
