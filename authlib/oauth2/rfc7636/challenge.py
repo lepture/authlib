@@ -58,7 +58,7 @@ class CodeChallenge:
 
     def __call__(self, grant):
         grant.register_hook(
-            "after_validate_authorization_request",
+            "after_validate_authorization_request_payload",
             self.validate_code_challenge,
         )
         grant.register_hook(
@@ -66,7 +66,7 @@ class CodeChallenge:
             self.validate_code_verifier,
         )
 
-    def validate_code_challenge(self, grant):
+    def validate_code_challenge(self, grant, redirect_uri):
         request: OAuth2Request = grant.request
         challenge = request.payload.data.get("code_challenge")
         method = request.payload.data.get("code_challenge_method")
@@ -88,7 +88,7 @@ class CodeChallenge:
         if len(request.payload.datalist.get("code_challenge_method", [])) > 1:
             raise InvalidRequestError("Multiple 'code_challenge_method' in request.")
 
-    def validate_code_verifier(self, grant):
+    def validate_code_verifier(self, grant, result):
         request: OAuth2Request = grant.request
         verifier = request.form.get("code_verifier")
 

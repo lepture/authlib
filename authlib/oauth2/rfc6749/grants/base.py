@@ -1,10 +1,12 @@
 from authlib.consts import default_json_headers
 
 from ..errors import InvalidRequestError
+from ..hooks import Hookable
+from ..hooks import hooked
 from ..requests import OAuth2Request
 
 
-class BaseGrant:
+class BaseGrant(Hookable):
     #: Allowed client auth methods for token endpoint
     TOKEN_ENDPOINT_AUTH_METHODS = ["client_secret_basic"]
 
@@ -18,17 +20,11 @@ class BaseGrant:
     TOKEN_RESPONSE_HEADER = default_json_headers
 
     def __init__(self, request: OAuth2Request, server):
+        super().__init__()
         self.prompt = None
         self.redirect_uri = None
         self.request = request
         self.server = server
-        self._hooks = {
-            "after_validate_authorization_request": set(),
-            "after_authorization_response": set(),
-            "after_validate_consent_request": set(),
-            "after_validate_token_request": set(),
-            "process_token": set(),
-        }
 
     @property
     def client(self):
@@ -87,15 +83,6 @@ class BaseGrant:
         """Validate if requested scope is supported by Authorization Server."""
         scope = self.request.payload.scope
         return self.server.validate_requested_scope(scope)
-
-    def register_hook(self, hook_type, hook):
-        if hook_type not in self._hooks:
-            raise ValueError("Hook type %s is not in %s.", hook_type, self._hooks)
-        self._hooks[hook_type].add(hook)
-
-    def execute_hook(self, hook_type, *args, **kwargs):
-        for hook in self._hooks[hook_type]:
-            hook(self, *args, **kwargs)
 
 
 class TokenEndpointMixin:
@@ -158,10 +145,11 @@ class AuthorizationEndpointMixin:
                     f"Multiple '{param}' in request.", state=request.payload.state
                 )
 
+    @hooked
     def validate_consent_request(self):
         redirect_uri = self.validate_authorization_request()
-        self.execute_hook("after_validate_consent_request", redirect_uri)
         self.redirect_uri = redirect_uri
+        return redirect_uri
 
     def validate_authorization_request(self):
         raise NotImplementedError()

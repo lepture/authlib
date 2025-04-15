@@ -9,6 +9,7 @@ from ..errors import InvalidGrantError
 from ..errors import InvalidRequestError
 from ..errors import OAuth2Error
 from ..errors import UnauthorizedClientError
+from ..hooks import hooked
 from .base import AuthorizationEndpointMixin
 from .base import BaseGrant
 from .base import TokenEndpointMixin
@@ -164,6 +165,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         headers = [("Location", uri)]
         return 302, "", headers
 
+    @hooked
     def validate_token_request(self):
         """The client makes a request to the token endpoint by sending the
         following parameters using the "application/x-www-form-urlencoded"
@@ -237,8 +239,8 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         # save for create_token_response
         self.request.client = client
         self.request.authorization_code = authorization_code
-        self.execute_hook("after_validate_token_request")
 
+    @hooked
     def create_token_response(self):
         """If the access token request is valid and authorized, the
         authorization server issues an access token and optional refresh
@@ -284,7 +286,6 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         log.debug("Issue token %r to %r", token, client)
 
         self.save_token(token)
-        self.execute_hook("process_token", token=token)
         self.delete_authorization_code(authorization_code)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
@@ -375,10 +376,14 @@ def validate_code_authorization_request(grant):
             redirect_uri=redirect_uri,
         )
 
-    try:
-        grant.request.client = client
+    grant.request.client = client
+
+    @hooked
+    def validate_authorization_request_payload(grant, redirect_uri):
         grant.validate_requested_scope()
-        grant.execute_hook("after_validate_authorization_request")
+
+    try:
+        validate_authorization_request_payload(grant, redirect_uri)
     except OAuth2Error as error:
         error.redirect_uri = redirect_uri
         raise error
