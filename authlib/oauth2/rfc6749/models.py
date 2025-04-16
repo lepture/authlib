@@ -4,8 +4,6 @@
 This module defines how to construct Client, AuthorizationCode and Token.
 """
 
-from authlib.deprecate import deprecate
-
 
 class ClientMixin:
     """Implementation of OAuth 2 Client described in `Section 2`_ with
@@ -109,10 +107,6 @@ class ClientMixin:
         .. _`RFC7591`: https://tools.ietf.org/html/rfc7591
         """
         raise NotImplementedError()
-
-    def check_token_endpoint_auth_method(self, method):
-        deprecate("Please implement ``check_endpoint_auth_method`` instead.")
-        return self.check_endpoint_auth_method(method, "token")
 
     def check_response_type(self, response_type):
         """Validate if the client can handle the given response_type. There
