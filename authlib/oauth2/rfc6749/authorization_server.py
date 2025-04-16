@@ -1,4 +1,5 @@
 from authlib.common.errors import ContinueIteration
+from authlib.deprecate import deprecate
 
 from .authenticate_client import ClientAuthentication
 from .errors import InvalidScopeError
@@ -285,6 +286,9 @@ class AuthorizationServer:
         :returns: Response
         """
         if not isinstance(request, OAuth2Request):
+            deprecate(
+                "The 'request' object must be of type OAuth2Request.", version="1.7"
+            )
             request = self.create_oauth2_request(request)
 
         try:
