@@ -230,6 +230,7 @@ class AuthorizationServer(Hookable):
         endpoints = self._endpoints.setdefault(endpoint.ENDPOINT_NAME, [])
         endpoints.append(endpoint)
 
+    @hooked
     def get_authorization_grant(self, request):
         """Find the authorization grant for current request.
 
