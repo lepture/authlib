@@ -152,10 +152,13 @@ The ``AuthorizationServer`` has provided built-in methods to handle these endpoi
 
     def authorize(request):
         if request.method == 'GET':
-            grant = server.get_consent_grant(request, end_user=request.user)
-            client = grant.client
-            scope = client.get_allowed_scope(grant.request.scope)
-            context = dict(grant=grant, client=client, scope=scope, user=request.user)
+            try:
+                grant = server.get_consent_grant(request, end_user=request.user)
+            except OAuth2Error as error:
+                return server.handle_error_response(request, error)
+
+            scope = grant.client.get_allowed_scope(grant.request.scope)
+            context = dict(grant=grant, client=grant.client, scope=scope, user=request.user)
             return render(request, 'authorize.html', context)
 
         if is_user_confirmed(request):

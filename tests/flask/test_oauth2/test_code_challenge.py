@@ -61,7 +61,7 @@ class CodeChallengeTest(TestCase):
     def test_missing_code_challenge(self):
         self.prepare_data()
         rv = self.client.get(self.authorize_url + "&code_challenge_method=plain")
-        self.assertIn(b"Missing", rv.data)
+        self.assertIn("Missing", rv.location)
 
     def test_has_code_challenge(self):
         self.prepare_data()
@@ -76,13 +76,13 @@ class CodeChallengeTest(TestCase):
         rv = self.client.get(
             self.authorize_url + "&code_challenge=abc&code_challenge_method=plain"
         )
-        self.assertIn(b"Invalid", rv.data)
+        self.assertIn("Invalid", rv.location)
 
     def test_invalid_code_challenge_method(self):
         self.prepare_data()
         suffix = "&code_challenge=Zhs2POMonIVVHZteWfoU7cSXQSm0YjghikFGJSDI2_s&code_challenge_method=invalid"
         rv = self.client.get(self.authorize_url + suffix)
-        self.assertIn(b"Unsupported", rv.data)
+        self.assertIn("Unsupported", rv.location)
 
     def test_supported_code_challenge_method(self):
         self.prepare_data()

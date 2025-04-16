@@ -94,7 +94,7 @@ class AuthorizationCodeTest(TestCase):
     def test_unauthorized_client(self):
         self.prepare_data(True, "token")
         rv = self.client.get(self.authorize_url)
-        self.assertIn(b"unauthorized_client", rv.data)
+        self.assertIn("unauthorized_client", rv.location)
 
     def test_invalid_client(self):
         self.prepare_data()
@@ -254,8 +254,11 @@ class AuthorizationCodeTest(TestCase):
             + "&scope=profile&state=bar&redirect_uri=https%3A%2F%2Fa.b&response_type=code"
         )
         rv = self.client.get(url)
-        self.assertIn(b"invalid_request", rv.data)
-        self.assertIn(b"Multiple+%27response_type%27+in+request.", rv.data)
+        resp = json.loads(rv.data)
+        self.assertEqual(resp["error"], "invalid_request")
+        self.assertEqual(
+            resp["error_description"], "Multiple 'response_type' in request."
+        )
 
     def test_client_secret_post(self):
         self.app.config.update({"OAUTH2_REFRESH_TOKEN_GENERATOR": True})

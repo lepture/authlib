@@ -8,7 +8,6 @@ from flask import request
 from authlib.common.encoding import to_bytes
 from authlib.common.encoding import to_unicode
 from authlib.common.security import generate_token
-from authlib.common.urls import url_encode
 from authlib.integrations.flask_oauth2 import AuthorizationServer
 from authlib.integrations.sqla_oauth2 import create_query_client_func
 from authlib.integrations.sqla_oauth2 import create_save_token_func
@@ -39,23 +38,20 @@ def create_authorization_server(app, lazy=False):
 
     @app.route("/oauth/authorize", methods=["GET", "POST"])
     def authorize():
+        user_id = request.values.get("user_id")
+        if user_id:
+            end_user = db.session.get(User, int(user_id))
+        else:
+            end_user = None
+
         if request.method == "GET":
-            user_id = request.args.get("user_id")
-            if user_id:
-                end_user = db.session.get(User, int(user_id))
-            else:
-                end_user = None
             try:
                 grant = server.get_consent_grant(end_user=end_user)
                 return grant.prompt or "ok"
             except OAuth2Error as error:
-                return url_encode(error.get_body())
-        user_id = request.form.get("user_id")
-        if user_id:
-            grant_user = db.session.get(User, int(user_id))
-        else:
-            grant_user = None
-        return server.create_authorization_response(grant_user=grant_user)
+                return server.handle_error_response(request, error)
+
+        return server.create_authorization_response(grant_user=end_user)
 
     @app.route("/oauth/token", methods=["GET", "POST"])
     def issue_token():

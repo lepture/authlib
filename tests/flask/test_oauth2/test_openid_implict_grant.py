@@ -73,8 +73,8 @@ class ImplicitTest(TestCase):
                 },
             )
         )
-        self.assertIn(b"error=invalid_request", rv.data)
-        self.assertIn(b"nonce", rv.data)
+        self.assertIn("error=invalid_request", rv.location)
+        self.assertIn("nonce", rv.location)
 
     def test_require_nonce(self):
         self.prepare_data()

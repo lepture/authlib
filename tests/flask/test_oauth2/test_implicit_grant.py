@@ -56,7 +56,7 @@ class ImplicitTest(TestCase):
     def test_unsupported_client(self):
         self.prepare_data(response_type="code")
         rv = self.client.get(self.authorize_url)
-        self.assertIn(b"unauthorized_client", rv.data)
+        self.assertIn("unauthorized_client", rv.location)
 
     def test_invalid_authorize(self):
         self.prepare_data()
