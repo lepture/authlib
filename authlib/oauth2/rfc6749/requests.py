@@ -50,6 +50,20 @@ class OAuth2Payload:
         return self.data.get("state")
 
 
+class BasicOAuth2Payload(OAuth2Payload):
+    def __init__(self, payload):
+        self._data = payload
+        self._datalist = {key: [value] for key, value in payload.items()}
+
+    @property
+    def data(self):
+        return self._data
+
+    @property
+    def datalist(self) -> defaultdict[str, list]:
+        return self._datalist
+
+
 class OAuth2Request(OAuth2Payload):
     def __init__(self, method: str, uri: str, headers=None):
         InsecureTransportError.check(uri)

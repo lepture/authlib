@@ -110,7 +110,7 @@ class ClientConfigurationEndpoint:
         for claims_class in self.claims_classes:
             options = (
                 claims_class.get_claims_options(server_metadata)
-                if server_metadata
+                if hasattr(claims_class, "get_claims_options") and server_metadata
                 else {}
             )
             claims = claims_class(json_data, {}, options, server_metadata)
