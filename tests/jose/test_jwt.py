@@ -41,7 +41,7 @@ class JWTTest(unittest.TestCase):
         )
 
     def test_encode_datetime(self):
-        now = datetime.datetime.utcnow()
+        now = datetime.datetime.now(tz=datetime.timezone.utc)
         id_token = jwt.encode({"alg": "HS256"}, {"exp": now}, "k")
         claims = jwt.decode(id_token, "k")
         self.assertIsInstance(claims.exp, int)
@@ -118,7 +118,9 @@ class JWTTest(unittest.TestCase):
         self.assertRaises(errors.InvalidTokenError, claims.validate, 123)
 
     def test_validate_iat_issued_in_future(self):
-        in_future = datetime.datetime.utcnow() + datetime.timedelta(seconds=10)
+        in_future = datetime.datetime.now(
+            tz=datetime.timezone.utc
+        ) + datetime.timedelta(seconds=10)
         id_token = jwt.encode({"alg": "HS256"}, {"iat": in_future}, "k")
         claims = jwt.decode(id_token, "k")
         with self.assertRaises(errors.InvalidTokenError) as error_ctx:
@@ -129,7 +131,9 @@ class JWTTest(unittest.TestCase):
         )
 
     def test_validate_iat_issued_in_future_with_insufficient_leeway(self):
-        in_future = datetime.datetime.utcnow() + datetime.timedelta(seconds=10)
+        in_future = datetime.datetime.now(
+            tz=datetime.timezone.utc
+        ) + datetime.timedelta(seconds=10)
         id_token = jwt.encode({"alg": "HS256"}, {"iat": in_future}, "k")
         claims = jwt.decode(id_token, "k")
         with self.assertRaises(errors.InvalidTokenError) as error_ctx:
@@ -140,13 +144,17 @@ class JWTTest(unittest.TestCase):
         )
 
     def test_validate_iat_issued_in_future_with_sufficient_leeway(self):
-        in_future = datetime.datetime.utcnow() + datetime.timedelta(seconds=10)
+        in_future = datetime.datetime.now(
+            tz=datetime.timezone.utc
+        ) + datetime.timedelta(seconds=10)
         id_token = jwt.encode({"alg": "HS256"}, {"iat": in_future}, "k")
         claims = jwt.decode(id_token, "k")
         claims.validate(leeway=20)
 
     def test_validate_iat_issued_in_past(self):
-        in_future = datetime.datetime.utcnow() - datetime.timedelta(seconds=10)
+        in_future = datetime.datetime.now(
+            tz=datetime.timezone.utc
+        ) - datetime.timedelta(seconds=10)
         id_token = jwt.encode({"alg": "HS256"}, {"iat": in_future}, "k")
         claims = jwt.decode(id_token, "k")
         claims.validate()
