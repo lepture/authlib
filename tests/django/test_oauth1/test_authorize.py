@@ -1,3 +1,4 @@
+import pytest
 from django.test import override_settings
 
 from authlib.oauth1.rfc5849 import errors
@@ -24,16 +25,12 @@ class AuthorizationTest(TestCase):
         server = self.create_server()
         url = "/oauth/authorize"
         request = self.factory.post(url)
-        self.assertRaises(
-            errors.MissingRequiredParameterError,
-            server.check_authorization_request,
-            request,
-        )
+        with pytest.raises(errors.MissingRequiredParameterError):
+            server.check_authorization_request(request)
 
         request = self.factory.post(url, data={"oauth_token": "a"})
-        self.assertRaises(
-            errors.InvalidTokenError, server.check_authorization_request, request
-        )
+        with pytest.raises(errors.InvalidTokenError):
+            server.check_authorization_request(request)
 
     def test_invalid_initiate(self):
         server = self.create_server()
@@ -49,7 +46,7 @@ class AuthorizationTest(TestCase):
         )
         resp = server.create_temporary_credentials_response(request)
         data = decode_response(resp.content)
-        self.assertEqual(data["error"], "invalid_client")
+        assert data["error"] == "invalid_client"
 
     @override_settings(AUTHLIB_OAUTH1_PROVIDER={"signature_methods": ["PLAINTEXT"]})
     def test_authorize_denied(self):
@@ -70,15 +67,15 @@ class AuthorizationTest(TestCase):
         )
         resp = server.create_temporary_credentials_response(request)
         data = decode_response(resp.content)
-        self.assertIn("oauth_token", data)
+        assert "oauth_token" in data
 
         request = self.factory.post(
             authorize_url, data={"oauth_token": data["oauth_token"]}
         )
         resp = server.create_authorization_response(request)
-        self.assertEqual(resp.status_code, 302)
-        self.assertIn("access_denied", resp["Location"])
-        self.assertIn("https://a.b", resp["Location"])
+        assert resp.status_code == 302
+        assert "access_denied" in resp["Location"]
+        assert "https://a.b" in resp["Location"]
 
         # case 2
         request = self.factory.post(
@@ -92,14 +89,14 @@ class AuthorizationTest(TestCase):
         )
         resp = server.create_temporary_credentials_response(request)
         data = decode_response(resp.content)
-        self.assertIn("oauth_token", data)
+        assert "oauth_token" in data
         request = self.factory.post(
             authorize_url, data={"oauth_token": data["oauth_token"]}
         )
         resp = server.create_authorization_response(request)
-        self.assertEqual(resp.status_code, 302)
-        self.assertIn("access_denied", resp["Location"])
-        self.assertIn("https://i.test", resp["Location"])
+        assert resp.status_code == 302
+        assert "access_denied" in resp["Location"]
+        assert "https://i.test" in resp["Location"]
 
     @override_settings(AUTHLIB_OAUTH1_PROVIDER={"signature_methods": ["PLAINTEXT"]})
     def test_authorize_granted(self):
@@ -121,16 +118,16 @@ class AuthorizationTest(TestCase):
         )
         resp = server.create_temporary_credentials_response(request)
         data = decode_response(resp.content)
-        self.assertIn("oauth_token", data)
+        assert "oauth_token" in data
 
         request = self.factory.post(
             authorize_url, data={"oauth_token": data["oauth_token"]}
         )
         resp = server.create_authorization_response(request, user)
-        self.assertEqual(resp.status_code, 302)
+        assert resp.status_code == 302
 
-        self.assertIn("oauth_verifier", resp["Location"])
-        self.assertIn("https://a.b", resp["Location"])
+        assert "oauth_verifier" in resp["Location"]
+        assert "https://a.b" in resp["Location"]
 
         # case 2
         request = self.factory.post(
@@ -144,13 +141,13 @@ class AuthorizationTest(TestCase):
         )
         resp = server.create_temporary_credentials_response(request)
         data = decode_response(resp.content)
-        self.assertIn("oauth_token", data)
+        assert "oauth_token" in data
 
         request = self.factory.post(
             authorize_url, data={"oauth_token": data["oauth_token"]}
         )
         resp = server.create_authorization_response(request, user)
 
-        self.assertEqual(resp.status_code, 302)
-        self.assertIn("oauth_verifier", resp["Location"])
-        self.assertIn("https://i.test", resp["Location"])
+        assert resp.status_code == 302
+        assert "oauth_verifier" in resp["Location"]
+        assert "https://i.test" in resp["Location"]

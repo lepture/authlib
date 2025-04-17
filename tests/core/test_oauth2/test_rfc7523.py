@@ -12,46 +12,44 @@ class ClientSecretJWTTest(TestCase):
     def test_nothing_set(self):
         jwt_signer = ClientSecretJWT()
 
-        self.assertEqual(jwt_signer.token_endpoint, None)
-        self.assertEqual(jwt_signer.claims, None)
-        self.assertEqual(jwt_signer.headers, None)
-        self.assertEqual(jwt_signer.alg, "HS256")
+        assert jwt_signer.token_endpoint is None
+        assert jwt_signer.claims is None
+        assert jwt_signer.headers is None
+        assert jwt_signer.alg == "HS256"
 
     def test_endpoint_set(self):
         jwt_signer = ClientSecretJWT(
             token_endpoint="https://example.com/oauth/access_token"
         )
 
-        self.assertEqual(
-            jwt_signer.token_endpoint, "https://example.com/oauth/access_token"
-        )
-        self.assertEqual(jwt_signer.claims, None)
-        self.assertEqual(jwt_signer.headers, None)
-        self.assertEqual(jwt_signer.alg, "HS256")
+        assert jwt_signer.token_endpoint == "https://example.com/oauth/access_token"
+        assert jwt_signer.claims is None
+        assert jwt_signer.headers is None
+        assert jwt_signer.alg == "HS256"
 
     def test_alg_set(self):
         jwt_signer = ClientSecretJWT(alg="HS512")
 
-        self.assertEqual(jwt_signer.token_endpoint, None)
-        self.assertEqual(jwt_signer.claims, None)
-        self.assertEqual(jwt_signer.headers, None)
-        self.assertEqual(jwt_signer.alg, "HS512")
+        assert jwt_signer.token_endpoint is None
+        assert jwt_signer.claims is None
+        assert jwt_signer.headers is None
+        assert jwt_signer.alg == "HS512"
 
     def test_claims_set(self):
         jwt_signer = ClientSecretJWT(claims={"foo1": "bar1"})
 
-        self.assertEqual(jwt_signer.token_endpoint, None)
-        self.assertEqual(jwt_signer.claims, {"foo1": "bar1"})
-        self.assertEqual(jwt_signer.headers, None)
-        self.assertEqual(jwt_signer.alg, "HS256")
+        assert jwt_signer.token_endpoint is None
+        assert jwt_signer.claims == {"foo1": "bar1"}
+        assert jwt_signer.headers is None
+        assert jwt_signer.alg == "HS256"
 
     def test_headers_set(self):
         jwt_signer = ClientSecretJWT(headers={"foo1": "bar1"})
 
-        self.assertEqual(jwt_signer.token_endpoint, None)
-        self.assertEqual(jwt_signer.claims, None)
-        self.assertEqual(jwt_signer.headers, {"foo1": "bar1"})
-        self.assertEqual(jwt_signer.alg, "HS256")
+        assert jwt_signer.token_endpoint is None
+        assert jwt_signer.claims is None
+        assert jwt_signer.headers == {"foo1": "bar1"}
+        assert jwt_signer.alg == "HS256"
 
     def test_all_set(self):
         jwt_signer = ClientSecretJWT(
@@ -61,12 +59,10 @@ class ClientSecretJWTTest(TestCase):
             alg="HS512",
         )
 
-        self.assertEqual(
-            jwt_signer.token_endpoint, "https://example.com/oauth/access_token"
-        )
-        self.assertEqual(jwt_signer.claims, {"foo1a": "bar1a"})
-        self.assertEqual(jwt_signer.headers, {"foo1b": "bar1b"})
-        self.assertEqual(jwt_signer.alg, "HS512")
+        assert jwt_signer.token_endpoint == "https://example.com/oauth/access_token"
+        assert jwt_signer.claims == {"foo1a": "bar1a"}
+        assert jwt_signer.headers == {"foo1b": "bar1b"}
+        assert jwt_signer.alg == "HS512"
 
     @staticmethod
     def sign_and_decode(jwt_signer, client_id, client_secret, token_endpoint):
@@ -97,21 +93,18 @@ class ClientSecretJWTTest(TestCase):
             "https://example.com/oauth/access_token",
         )
 
-        self.assertGreaterEqual(iat, pre_sign_time)
-        self.assertGreaterEqual(exp, iat + 3600)
-        self.assertLessEqual(exp, iat + 3600 + 2)
-        self.assertIsNotNone(jti)
+        assert iat >= pre_sign_time
+        assert exp >= iat + 3600
+        assert exp <= iat + 3600 + 2
+        assert jti is not None
 
-        self.assertEqual(
-            {
-                "iss": "client_id_1",
-                "aud": "https://example.com/oauth/access_token",
-                "sub": "client_id_1",
-            },
-            decoded,
-        )
+        assert {
+            "iss": "client_id_1",
+            "aud": "https://example.com/oauth/access_token",
+            "sub": "client_id_1",
+        } == decoded
 
-        self.assertEqual({"alg": "HS256", "typ": "JWT"}, decoded.header)
+        assert {"alg": "HS256", "typ": "JWT"} == decoded.header
 
     def test_sign_custom_jti(self):
         jwt_signer = ClientSecretJWT(claims={"jti": "custom_jti"})
@@ -123,21 +116,17 @@ class ClientSecretJWTTest(TestCase):
             "https://example.com/oauth/access_token",
         )
 
-        self.assertGreaterEqual(iat, pre_sign_time)
-        self.assertGreaterEqual(exp, iat + 3600)
-        self.assertLessEqual(exp, iat + 3600 + 2)
-        self.assertEqual("custom_jti", jti)
+        assert iat >= pre_sign_time
+        assert exp >= iat + 3600
+        assert exp <= iat + 3600 + 2
+        assert "custom_jti" == jti
 
-        self.assertEqual(
-            decoded,
-            {
-                "iss": "client_id_1",
-                "aud": "https://example.com/oauth/access_token",
-                "sub": "client_id_1",
-            },
-        )
-
-        self.assertEqual({"alg": "HS256", "typ": "JWT"}, decoded.header)
+        assert decoded == {
+            "iss": "client_id_1",
+            "aud": "https://example.com/oauth/access_token",
+            "sub": "client_id_1",
+        }
+        assert {"alg": "HS256", "typ": "JWT"} == decoded.header
 
     def test_sign_with_additional_header(self):
         jwt_signer = ClientSecretJWT(headers={"kid": "custom_kid"})
@@ -149,23 +138,17 @@ class ClientSecretJWTTest(TestCase):
             "https://example.com/oauth/access_token",
         )
 
-        self.assertGreaterEqual(iat, pre_sign_time)
-        self.assertGreaterEqual(exp, iat + 3600)
-        self.assertLessEqual(exp, iat + 3600 + 2)
-        self.assertIsNotNone(jti)
+        assert iat >= pre_sign_time
+        assert exp >= iat + 3600
+        assert exp <= iat + 3600 + 2
+        assert jti is not None
 
-        self.assertEqual(
-            decoded,
-            {
-                "iss": "client_id_1",
-                "aud": "https://example.com/oauth/access_token",
-                "sub": "client_id_1",
-            },
-        )
-
-        self.assertEqual(
-            {"alg": "HS256", "typ": "JWT", "kid": "custom_kid"}, decoded.header
-        )
+        assert decoded == {
+            "iss": "client_id_1",
+            "aud": "https://example.com/oauth/access_token",
+            "sub": "client_id_1",
+        }
+        assert {"alg": "HS256", "typ": "JWT", "kid": "custom_kid"} == decoded.header
 
     def test_sign_with_additional_headers(self):
         jwt_signer = ClientSecretJWT(
@@ -179,29 +162,22 @@ class ClientSecretJWTTest(TestCase):
             "https://example.com/oauth/access_token",
         )
 
-        self.assertGreaterEqual(iat, pre_sign_time)
-        self.assertGreaterEqual(exp, iat + 3600)
-        self.assertLessEqual(exp, iat + 3600 + 2)
-        self.assertIsNotNone(jti)
+        assert iat >= pre_sign_time
+        assert exp >= iat + 3600
+        assert exp <= iat + 3600 + 2
+        assert jti is not None
 
-        self.assertEqual(
-            decoded,
-            {
-                "iss": "client_id_1",
-                "aud": "https://example.com/oauth/access_token",
-                "sub": "client_id_1",
-            },
-        )
-
-        self.assertEqual(
-            {
-                "alg": "HS256",
-                "typ": "JWT",
-                "kid": "custom_kid",
-                "jku": "https://example.com/oauth/jwks",
-            },
-            decoded.header,
-        )
+        assert decoded == {
+            "iss": "client_id_1",
+            "aud": "https://example.com/oauth/access_token",
+            "sub": "client_id_1",
+        }
+        assert {
+            "alg": "HS256",
+            "typ": "JWT",
+            "kid": "custom_kid",
+            "jku": "https://example.com/oauth/jwks",
+        } == decoded.header
 
     def test_sign_with_additional_claim(self):
         jwt_signer = ClientSecretJWT(claims={"name": "Foo"})
@@ -213,22 +189,18 @@ class ClientSecretJWTTest(TestCase):
             "https://example.com/oauth/access_token",
         )
 
-        self.assertGreaterEqual(iat, pre_sign_time)
-        self.assertGreaterEqual(exp, iat + 3600)
-        self.assertLessEqual(exp, iat + 3600 + 2)
-        self.assertIsNotNone(jti)
+        assert iat >= pre_sign_time
+        assert exp >= iat + 3600
+        assert exp <= iat + 3600 + 2
+        assert jti is not None
 
-        self.assertEqual(
-            decoded,
-            {
-                "iss": "client_id_1",
-                "aud": "https://example.com/oauth/access_token",
-                "sub": "client_id_1",
-                "name": "Foo",
-            },
-        )
-
-        self.assertEqual({"alg": "HS256", "typ": "JWT"}, decoded.header)
+        assert decoded == {
+            "iss": "client_id_1",
+            "aud": "https://example.com/oauth/access_token",
+            "sub": "client_id_1",
+            "name": "Foo",
+        }
+        assert {"alg": "HS256", "typ": "JWT"} == decoded.header
 
     def test_sign_with_additional_claims(self):
         jwt_signer = ClientSecretJWT(claims={"name": "Foo", "role": "bar"})
@@ -240,23 +212,19 @@ class ClientSecretJWTTest(TestCase):
             "https://example.com/oauth/access_token",
         )
 
-        self.assertGreaterEqual(iat, pre_sign_time)
-        self.assertGreaterEqual(exp, iat + 3600)
-        self.assertLessEqual(exp, iat + 3600 + 2)
-        self.assertIsNotNone(jti)
+        assert iat >= pre_sign_time
+        assert exp >= iat + 3600
+        assert exp <= iat + 3600 + 2
+        assert jti is not None
 
-        self.assertEqual(
-            decoded,
-            {
-                "iss": "client_id_1",
-                "aud": "https://example.com/oauth/access_token",
-                "sub": "client_id_1",
-                "name": "Foo",
-                "role": "bar",
-            },
-        )
-
-        self.assertEqual({"alg": "HS256", "typ": "JWT"}, decoded.header)
+        assert decoded == {
+            "iss": "client_id_1",
+            "aud": "https://example.com/oauth/access_token",
+            "sub": "client_id_1",
+            "name": "Foo",
+            "role": "bar",
+        }
+        assert {"alg": "HS256", "typ": "JWT"} == decoded.header
 
 
 class PrivateKeyJWTTest(TestCase):
@@ -268,46 +236,44 @@ class PrivateKeyJWTTest(TestCase):
     def test_nothing_set(self):
         jwt_signer = PrivateKeyJWT()
 
-        self.assertEqual(jwt_signer.token_endpoint, None)
-        self.assertEqual(jwt_signer.claims, None)
-        self.assertEqual(jwt_signer.headers, None)
-        self.assertEqual(jwt_signer.alg, "RS256")
+        assert jwt_signer.token_endpoint is None
+        assert jwt_signer.claims is None
+        assert jwt_signer.headers is None
+        assert jwt_signer.alg == "RS256"
 
     def test_endpoint_set(self):
         jwt_signer = PrivateKeyJWT(
             token_endpoint="https://example.com/oauth/access_token"
         )
 
-        self.assertEqual(
-            jwt_signer.token_endpoint, "https://example.com/oauth/access_token"
-        )
-        self.assertEqual(jwt_signer.claims, None)
-        self.assertEqual(jwt_signer.headers, None)
-        self.assertEqual(jwt_signer.alg, "RS256")
+        assert jwt_signer.token_endpoint == "https://example.com/oauth/access_token"
+        assert jwt_signer.claims is None
+        assert jwt_signer.headers is None
+        assert jwt_signer.alg == "RS256"
 
     def test_alg_set(self):
         jwt_signer = PrivateKeyJWT(alg="RS512")
 
-        self.assertEqual(jwt_signer.token_endpoint, None)
-        self.assertEqual(jwt_signer.claims, None)
-        self.assertEqual(jwt_signer.headers, None)
-        self.assertEqual(jwt_signer.alg, "RS512")
+        assert jwt_signer.token_endpoint is None
+        assert jwt_signer.claims is None
+        assert jwt_signer.headers is None
+        assert jwt_signer.alg == "RS512"
 
     def test_claims_set(self):
         jwt_signer = PrivateKeyJWT(claims={"foo1": "bar1"})
 
-        self.assertEqual(jwt_signer.token_endpoint, None)
-        self.assertEqual(jwt_signer.claims, {"foo1": "bar1"})
-        self.assertEqual(jwt_signer.headers, None)
-        self.assertEqual(jwt_signer.alg, "RS256")
+        assert jwt_signer.token_endpoint is None
+        assert jwt_signer.claims == {"foo1": "bar1"}
+        assert jwt_signer.headers is None
+        assert jwt_signer.alg == "RS256"
 
     def test_headers_set(self):
         jwt_signer = PrivateKeyJWT(headers={"foo1": "bar1"})
 
-        self.assertEqual(jwt_signer.token_endpoint, None)
-        self.assertEqual(jwt_signer.claims, None)
-        self.assertEqual(jwt_signer.headers, {"foo1": "bar1"})
-        self.assertEqual(jwt_signer.alg, "RS256")
+        assert jwt_signer.token_endpoint is None
+        assert jwt_signer.claims is None
+        assert jwt_signer.headers == {"foo1": "bar1"}
+        assert jwt_signer.alg == "RS256"
 
     def test_all_set(self):
         jwt_signer = PrivateKeyJWT(
@@ -317,12 +283,10 @@ class PrivateKeyJWTTest(TestCase):
             alg="RS512",
         )
 
-        self.assertEqual(
-            jwt_signer.token_endpoint, "https://example.com/oauth/access_token"
-        )
-        self.assertEqual(jwt_signer.claims, {"foo1a": "bar1a"})
-        self.assertEqual(jwt_signer.headers, {"foo1b": "bar1b"})
-        self.assertEqual(jwt_signer.alg, "RS512")
+        assert jwt_signer.token_endpoint == "https://example.com/oauth/access_token"
+        assert jwt_signer.claims == {"foo1a": "bar1a"}
+        assert jwt_signer.headers == {"foo1b": "bar1b"}
+        assert jwt_signer.alg == "RS512"
 
     @staticmethod
     def sign_and_decode(jwt_signer, client_id, public_key, private_key, token_endpoint):
@@ -354,21 +318,17 @@ class PrivateKeyJWTTest(TestCase):
             "https://example.com/oauth/access_token",
         )
 
-        self.assertGreaterEqual(iat, pre_sign_time)
-        self.assertGreaterEqual(exp, iat + 3600)
-        self.assertLessEqual(exp, iat + 3600 + 2)
-        self.assertIsNotNone(jti)
+        assert iat >= pre_sign_time
+        assert exp >= iat + 3600
+        assert exp <= iat + 3600 + 2
+        assert jti is not None
 
-        self.assertEqual(
-            {
-                "iss": "client_id_1",
-                "aud": "https://example.com/oauth/access_token",
-                "sub": "client_id_1",
-            },
-            decoded,
-        )
-
-        self.assertEqual({"alg": "RS256", "typ": "JWT"}, decoded.header)
+        assert {
+            "iss": "client_id_1",
+            "aud": "https://example.com/oauth/access_token",
+            "sub": "client_id_1",
+        } == decoded
+        assert {"alg": "RS256", "typ": "JWT"} == decoded.header
 
     def test_sign_custom_jti(self):
         jwt_signer = PrivateKeyJWT(claims={"jti": "custom_jti"})
@@ -381,21 +341,17 @@ class PrivateKeyJWTTest(TestCase):
             "https://example.com/oauth/access_token",
         )
 
-        self.assertGreaterEqual(iat, pre_sign_time)
-        self.assertGreaterEqual(exp, iat + 3600)
-        self.assertLessEqual(exp, iat + 3600 + 2)
-        self.assertEqual("custom_jti", jti)
+        assert iat >= pre_sign_time
+        assert exp >= iat + 3600
+        assert exp <= iat + 3600 + 2
+        assert "custom_jti" == jti
 
-        self.assertEqual(
-            decoded,
-            {
-                "iss": "client_id_1",
-                "aud": "https://example.com/oauth/access_token",
-                "sub": "client_id_1",
-            },
-        )
-
-        self.assertEqual({"alg": "RS256", "typ": "JWT"}, decoded.header)
+        assert decoded == {
+            "iss": "client_id_1",
+            "aud": "https://example.com/oauth/access_token",
+            "sub": "client_id_1",
+        }
+        assert {"alg": "RS256", "typ": "JWT"} == decoded.header
 
     def test_sign_with_additional_header(self):
         jwt_signer = PrivateKeyJWT(headers={"kid": "custom_kid"})
@@ -408,23 +364,17 @@ class PrivateKeyJWTTest(TestCase):
             "https://example.com/oauth/access_token",
         )
 
-        self.assertGreaterEqual(iat, pre_sign_time)
-        self.assertGreaterEqual(exp, iat + 3600)
-        self.assertLessEqual(exp, iat + 3600 + 2)
-        self.assertIsNotNone(jti)
+        assert iat >= pre_sign_time
+        assert exp >= iat + 3600
+        assert exp <= iat + 3600 + 2
+        assert jti is not None
 
-        self.assertEqual(
-            decoded,
-            {
-                "iss": "client_id_1",
-                "aud": "https://example.com/oauth/access_token",
-                "sub": "client_id_1",
-            },
-        )
-
-        self.assertEqual(
-            {"alg": "RS256", "typ": "JWT", "kid": "custom_kid"}, decoded.header
-        )
+        assert decoded == {
+            "iss": "client_id_1",
+            "aud": "https://example.com/oauth/access_token",
+            "sub": "client_id_1",
+        }
+        assert {"alg": "RS256", "typ": "JWT", "kid": "custom_kid"} == decoded.header
 
     def test_sign_with_additional_headers(self):
         jwt_signer = PrivateKeyJWT(
@@ -439,29 +389,22 @@ class PrivateKeyJWTTest(TestCase):
             "https://example.com/oauth/access_token",
         )
 
-        self.assertGreaterEqual(iat, pre_sign_time)
-        self.assertGreaterEqual(exp, iat + 3600)
-        self.assertLessEqual(exp, iat + 3600 + 2)
-        self.assertIsNotNone(jti)
+        assert iat >= pre_sign_time
+        assert exp >= iat + 3600
+        assert exp <= iat + 3600 + 2
+        assert jti is not None
 
-        self.assertEqual(
-            decoded,
-            {
-                "iss": "client_id_1",
-                "aud": "https://example.com/oauth/access_token",
-                "sub": "client_id_1",
-            },
-        )
-
-        self.assertEqual(
-            {
-                "alg": "RS256",
-                "typ": "JWT",
-                "kid": "custom_kid",
-                "jku": "https://example.com/oauth/jwks",
-            },
-            decoded.header,
-        )
+        assert decoded == {
+            "iss": "client_id_1",
+            "aud": "https://example.com/oauth/access_token",
+            "sub": "client_id_1",
+        }
+        assert {
+            "alg": "RS256",
+            "typ": "JWT",
+            "kid": "custom_kid",
+            "jku": "https://example.com/oauth/jwks",
+        } == decoded.header
 
     def test_sign_with_additional_claim(self):
         jwt_signer = PrivateKeyJWT(claims={"name": "Foo"})
@@ -474,22 +417,18 @@ class PrivateKeyJWTTest(TestCase):
             "https://example.com/oauth/access_token",
         )
 
-        self.assertGreaterEqual(iat, pre_sign_time)
-        self.assertGreaterEqual(exp, iat + 3600)
-        self.assertLessEqual(exp, iat + 3600 + 2)
-        self.assertIsNotNone(jti)
+        assert iat >= pre_sign_time
+        assert exp >= iat + 3600
+        assert exp <= iat + 3600 + 2
+        assert jti is not None
 
-        self.assertEqual(
-            decoded,
-            {
-                "iss": "client_id_1",
-                "aud": "https://example.com/oauth/access_token",
-                "sub": "client_id_1",
-                "name": "Foo",
-            },
-        )
-
-        self.assertEqual({"alg": "RS256", "typ": "JWT"}, decoded.header)
+        assert decoded == {
+            "iss": "client_id_1",
+            "aud": "https://example.com/oauth/access_token",
+            "sub": "client_id_1",
+            "name": "Foo",
+        }
+        assert {"alg": "RS256", "typ": "JWT"} == decoded.header
 
     def test_sign_with_additional_claims(self):
         jwt_signer = PrivateKeyJWT(claims={"name": "Foo", "role": "bar"})
@@ -502,20 +441,16 @@ class PrivateKeyJWTTest(TestCase):
             "https://example.com/oauth/access_token",
         )
 
-        self.assertGreaterEqual(iat, pre_sign_time)
-        self.assertGreaterEqual(exp, iat + 3600)
-        self.assertLessEqual(exp, iat + 3600 + 2)
-        self.assertIsNotNone(jti)
+        assert iat >= pre_sign_time
+        assert exp >= iat + 3600
+        assert exp <= iat + 3600 + 2
+        assert jti is not None
 
-        self.assertEqual(
-            decoded,
-            {
-                "iss": "client_id_1",
-                "aud": "https://example.com/oauth/access_token",
-                "sub": "client_id_1",
-                "name": "Foo",
-                "role": "bar",
-            },
-        )
-
-        self.assertEqual({"alg": "RS256", "typ": "JWT"}, decoded.header)
+        assert decoded == {
+            "iss": "client_id_1",
+            "aud": "https://example.com/oauth/access_token",
+            "sub": "client_id_1",
+            "name": "Foo",
+            "role": "bar",
+        }
+        assert {"alg": "RS256", "typ": "JWT"} == decoded.header

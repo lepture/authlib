@@ -61,8 +61,8 @@ class JWTBearerGrantTest(TestCase):
             "/oauth/token", data={"grant_type": JWTBearerGrant.GRANT_TYPE}
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_request")
-        self.assertIn("assertion", resp["error_description"])
+        assert resp["error"] == "invalid_request"
+        assert "assertion" in resp["error_description"]
 
     def test_invalid_assertion(self):
         self.prepare_data()
@@ -78,7 +78,7 @@ class JWTBearerGrantTest(TestCase):
             data={"grant_type": JWTBearerGrant.GRANT_TYPE, "assertion": assertion},
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_grant")
+        assert resp["error"] == "invalid_grant"
 
     def test_authorize_token(self):
         self.prepare_data()
@@ -94,7 +94,7 @@ class JWTBearerGrantTest(TestCase):
             data={"grant_type": JWTBearerGrant.GRANT_TYPE, "assertion": assertion},
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
+        assert "access_token" in resp
 
     def test_unauthorized_client(self):
         self.prepare_data("password")
@@ -110,7 +110,7 @@ class JWTBearerGrantTest(TestCase):
             data={"grant_type": JWTBearerGrant.GRANT_TYPE, "assertion": assertion},
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "unauthorized_client")
+        assert resp["error"] == "unauthorized_client"
 
     def test_token_generator(self):
         m = "tests.flask.test_oauth2.oauth2_server:token_generator"
@@ -128,8 +128,8 @@ class JWTBearerGrantTest(TestCase):
             data={"grant_type": JWTBearerGrant.GRANT_TYPE, "assertion": assertion},
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
-        self.assertIn("j-", resp["access_token"])
+        assert "access_token" in resp
+        assert "j-" in resp["access_token"]
 
     def test_jwt_bearer_token_generator(self):
         private_key = read_file_path("jwks_private.json")
@@ -146,5 +146,5 @@ class JWTBearerGrantTest(TestCase):
             data={"grant_type": JWTBearerGrant.GRANT_TYPE, "assertion": assertion},
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
-        self.assertEqual(resp["access_token"].count("."), 2)
+        assert "access_token" in resp
+        assert resp["access_token"].count(".") == 2

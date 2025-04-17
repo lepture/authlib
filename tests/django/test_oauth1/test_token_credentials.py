@@ -45,21 +45,21 @@ class AuthorizationTest(TestCase):
         request = self.factory.post(url)
         resp = server.create_token_response(request)
         data = decode_response(resp.content)
-        self.assertEqual(data["error"], "missing_required_parameter")
-        self.assertIn("oauth_consumer_key", data["error_description"])
+        assert data["error"] == "missing_required_parameter"
+        assert "oauth_consumer_key" in data["error_description"]
 
         # case 2
         request = self.factory.post(url, data={"oauth_consumer_key": "a"})
         resp = server.create_token_response(request)
         data = decode_response(resp.content)
-        self.assertEqual(data["error"], "invalid_client")
+        assert data["error"] == "invalid_client"
 
         # case 3
         request = self.factory.post(url, data={"oauth_consumer_key": "client"})
         resp = server.create_token_response(request)
         data = decode_response(resp.content)
-        self.assertEqual(data["error"], "missing_required_parameter")
-        self.assertIn("oauth_token", data["error_description"])
+        assert data["error"] == "missing_required_parameter"
+        assert "oauth_token" in data["error_description"]
 
         # case 4
         request = self.factory.post(
@@ -67,7 +67,7 @@ class AuthorizationTest(TestCase):
         )
         resp = server.create_token_response(request)
         data = decode_response(resp.content)
-        self.assertEqual(data["error"], "invalid_token")
+        assert data["error"] == "invalid_token"
 
     def test_duplicated_oauth_parameters(self):
         self.prepare_data()
@@ -83,7 +83,7 @@ class AuthorizationTest(TestCase):
         )
         resp = server.create_token_response(request)
         data = decode_response(resp.content)
-        self.assertEqual(data["error"], "duplicated_oauth_protocol_parameter")
+        assert data["error"] == "duplicated_oauth_protocol_parameter"
 
     @override_settings(AUTHLIB_OAUTH1_PROVIDER={"signature_methods": ["PLAINTEXT"]})
     def test_plaintext_signature(self):
@@ -103,7 +103,7 @@ class AuthorizationTest(TestCase):
         request = self.factory.post(url, HTTP_AUTHORIZATION=auth_header)
         resp = server.create_token_response(request)
         data = decode_response(resp.content)
-        self.assertIn("oauth_token", data)
+        assert "oauth_token" in data
 
         # case 2: invalid signature
         self.prepare_temporary_credential(server)
@@ -119,7 +119,7 @@ class AuthorizationTest(TestCase):
         )
         resp = server.create_token_response(request)
         data = decode_response(resp.content)
-        self.assertEqual(data["error"], "invalid_signature")
+        assert data["error"] == "invalid_signature"
 
     def test_hmac_sha1_signature(self):
         self.prepare_data()
@@ -147,14 +147,14 @@ class AuthorizationTest(TestCase):
         request = self.factory.post(url, HTTP_AUTHORIZATION=auth_header)
         resp = server.create_token_response(request)
         data = decode_response(resp.content)
-        self.assertIn("oauth_token", data)
+        assert "oauth_token" in data
 
         # case 2: exists nonce
         self.prepare_temporary_credential(server)
         request = self.factory.post(url, HTTP_AUTHORIZATION=auth_header)
         resp = server.create_token_response(request)
         data = decode_response(resp.content)
-        self.assertEqual(data["error"], "invalid_nonce")
+        assert data["error"] == "invalid_nonce"
 
     @override_settings(AUTHLIB_OAUTH1_PROVIDER={"signature_methods": ["RSA-SHA1"]})
     def test_rsa_sha1_signature(self):
@@ -184,7 +184,7 @@ class AuthorizationTest(TestCase):
         request = self.factory.post(url, HTTP_AUTHORIZATION=auth_header)
         resp = server.create_token_response(request)
         data = decode_response(resp.content)
-        self.assertIn("oauth_token", data)
+        assert "oauth_token" in data
 
         # case: invalid signature
         self.prepare_temporary_credential(server)
@@ -193,4 +193,4 @@ class AuthorizationTest(TestCase):
         request = self.factory.post(url, HTTP_AUTHORIZATION=auth_header)
         resp = server.create_token_response(request)
         data = decode_response(resp.content)
-        self.assertEqual(data["error"], "invalid_signature")
+        assert data["error"] == "invalid_signature"

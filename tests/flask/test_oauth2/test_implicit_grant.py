@@ -46,41 +46,41 @@ class ImplicitTest(TestCase):
     def test_get_authorize(self):
         self.prepare_data()
         rv = self.client.get(self.authorize_url)
-        self.assertEqual(rv.data, b"ok")
+        assert rv.data == b"ok"
 
     def test_confidential_client(self):
         self.prepare_data(True)
         rv = self.client.get(self.authorize_url)
-        self.assertIn(b"invalid_client", rv.data)
+        assert b"invalid_client" in rv.data
 
     def test_unsupported_client(self):
         self.prepare_data(response_type="code")
         rv = self.client.get(self.authorize_url)
-        self.assertIn("unauthorized_client", rv.location)
+        assert "unauthorized_client" in rv.location
 
     def test_invalid_authorize(self):
         self.prepare_data()
         rv = self.client.post(self.authorize_url)
-        self.assertIn("#error=access_denied", rv.location)
+        assert "#error=access_denied" in rv.location
 
         self.server.scopes_supported = ["profile"]
         rv = self.client.post(self.authorize_url + "&scope=invalid")
-        self.assertIn("#error=invalid_scope", rv.location)
+        assert "#error=invalid_scope" in rv.location
 
     def test_authorize_token(self):
         self.prepare_data()
         rv = self.client.post(self.authorize_url, data={"user_id": "1"})
-        self.assertIn("access_token=", rv.location)
+        assert "access_token=" in rv.location
 
         url = self.authorize_url + "&state=bar&scope=profile"
         rv = self.client.post(url, data={"user_id": "1"})
-        self.assertIn("access_token=", rv.location)
-        self.assertIn("state=bar", rv.location)
-        self.assertIn("scope=profile", rv.location)
+        assert "access_token=" in rv.location
+        assert "state=bar" in rv.location
+        assert "scope=profile" in rv.location
 
     def test_token_generator(self):
         m = "tests.flask.test_oauth2.oauth2_server:token_generator"
         self.app.config.update({"OAUTH2_ACCESS_TOKEN_GENERATOR": m})
         self.prepare_data()
         rv = self.client.post(self.authorize_url, data={"user_id": "1"})
-        self.assertIn("access_token=i-implicit.1.", rv.location)
+        assert "access_token=i-implicit.1." in rv.location

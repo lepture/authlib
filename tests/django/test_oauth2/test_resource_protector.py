@@ -46,21 +46,21 @@ class ResourceProtectorTest(TestCase):
 
         request = self.factory.get("/user")
         resp = get_user_profile(request)
-        self.assertEqual(resp.status_code, 401)
+        assert resp.status_code == 401
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "missing_authorization")
+        assert data["error"] == "missing_authorization"
 
         request = self.factory.get("/user", HTTP_AUTHORIZATION="invalid token")
         resp = get_user_profile(request)
-        self.assertEqual(resp.status_code, 401)
+        assert resp.status_code == 401
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "unsupported_token_type")
+        assert data["error"] == "unsupported_token_type"
 
         request = self.factory.get("/user", HTTP_AUTHORIZATION="bearer token")
         resp = get_user_profile(request)
-        self.assertEqual(resp.status_code, 401)
+        assert resp.status_code == 401
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "invalid_token")
+        assert data["error"] == "invalid_token"
 
     def test_expired_token(self):
         self.prepare_data(-10)
@@ -72,9 +72,9 @@ class ResourceProtectorTest(TestCase):
 
         request = self.factory.get("/user", HTTP_AUTHORIZATION="bearer a1")
         resp = get_user_profile(request)
-        self.assertEqual(resp.status_code, 401)
+        assert resp.status_code == 401
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "invalid_token")
+        assert data["error"] == "invalid_token"
 
     def test_insufficient_token(self):
         self.prepare_data()
@@ -86,9 +86,9 @@ class ResourceProtectorTest(TestCase):
 
         request = self.factory.get("/user/email", HTTP_AUTHORIZATION="bearer a1")
         resp = get_user_email(request)
-        self.assertEqual(resp.status_code, 403)
+        assert resp.status_code == 403
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "insufficient_scope")
+        assert data["error"] == "insufficient_scope"
 
     def test_access_resource(self):
         self.prepare_data()
@@ -102,15 +102,15 @@ class ResourceProtectorTest(TestCase):
 
         request = self.factory.get("/user")
         resp = get_user_profile(request)
-        self.assertEqual(resp.status_code, 200)
+        assert resp.status_code == 200
         data = json.loads(resp.content)
-        self.assertEqual(data["username"], "anonymous")
+        assert data["username"] == "anonymous"
 
         request = self.factory.get("/user", HTTP_AUTHORIZATION="bearer a1")
         resp = get_user_profile(request)
-        self.assertEqual(resp.status_code, 200)
+        assert resp.status_code == 200
         data = json.loads(resp.content)
-        self.assertEqual(data["username"], "foo")
+        assert data["username"] == "foo"
 
     def test_scope_operator(self):
         self.prepare_data()
@@ -127,11 +127,11 @@ class ResourceProtectorTest(TestCase):
 
         request = self.factory.get("/user", HTTP_AUTHORIZATION="bearer a1")
         resp = operator_and(request)
-        self.assertEqual(resp.status_code, 403)
+        assert resp.status_code == 403
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "insufficient_scope")
+        assert data["error"] == "insufficient_scope"
 
         resp = operator_or(request)
-        self.assertEqual(resp.status_code, 200)
+        assert resp.status_code == 200
         data = json.loads(resp.content)
-        self.assertEqual(data["username"], "foo")
+        assert data["username"] == "foo"

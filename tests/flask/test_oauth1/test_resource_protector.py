@@ -48,26 +48,26 @@ class ResourceCacheTest(TestCase):
         # case 1
         rv = self.client.get(url)
         data = json.loads(rv.data)
-        self.assertEqual(data["error"], "missing_required_parameter")
-        self.assertIn("oauth_consumer_key", data["error_description"])
+        assert data["error"] == "missing_required_parameter"
+        assert "oauth_consumer_key" in data["error_description"]
 
         # case 2
         rv = self.client.get(add_params_to_uri(url, {"oauth_consumer_key": "a"}))
         data = json.loads(rv.data)
-        self.assertEqual(data["error"], "invalid_client")
+        assert data["error"] == "invalid_client"
 
         # case 3
         rv = self.client.get(add_params_to_uri(url, {"oauth_consumer_key": "client"}))
         data = json.loads(rv.data)
-        self.assertEqual(data["error"], "missing_required_parameter")
-        self.assertIn("oauth_token", data["error_description"])
+        assert data["error"] == "missing_required_parameter"
+        assert "oauth_token" in data["error_description"]
 
         # case 4
         rv = self.client.get(
             add_params_to_uri(url, {"oauth_consumer_key": "client", "oauth_token": "a"})
         )
         data = json.loads(rv.data)
-        self.assertEqual(data["error"], "invalid_token")
+        assert data["error"] == "invalid_token"
 
         # case 5
         rv = self.client.get(
@@ -76,8 +76,8 @@ class ResourceCacheTest(TestCase):
             )
         )
         data = json.loads(rv.data)
-        self.assertEqual(data["error"], "missing_required_parameter")
-        self.assertIn("oauth_timestamp", data["error_description"])
+        assert data["error"] == "missing_required_parameter"
+        assert "oauth_timestamp" in data["error_description"]
 
     def test_plaintext_signature(self):
         self.prepare_data()
@@ -93,14 +93,14 @@ class ResourceCacheTest(TestCase):
         headers = {"Authorization": auth_header}
         rv = self.client.get(url, headers=headers)
         data = json.loads(rv.data)
-        self.assertIn("username", data)
+        assert "username" in data
 
         # case 2: invalid signature
         auth_header = auth_header.replace("valid-token-secret", "invalid")
         headers = {"Authorization": auth_header}
         rv = self.client.get(url, headers=headers)
         data = json.loads(rv.data)
-        self.assertEqual(data["error"], "invalid_signature")
+        assert data["error"] == "invalid_signature"
 
     def test_hmac_sha1_signature(self):
         self.prepare_data()
@@ -125,12 +125,12 @@ class ResourceCacheTest(TestCase):
         # case 1: success
         rv = self.client.get(url, headers=headers)
         data = json.loads(rv.data)
-        self.assertIn("username", data)
+        assert "username" in data
 
         # case 2: exists nonce
         rv = self.client.get(url, headers=headers)
         data = json.loads(rv.data)
-        self.assertEqual(data["error"], "invalid_nonce")
+        assert data["error"] == "invalid_nonce"
 
     def test_rsa_sha1_signature(self):
         self.prepare_data()
@@ -155,7 +155,7 @@ class ResourceCacheTest(TestCase):
         headers = {"Authorization": auth_header}
         rv = self.client.get(url, headers=headers)
         data = json.loads(rv.data)
-        self.assertIn("username", data)
+        assert "username" in data
 
         # case: invalid signature
         auth_param = auth_param.replace("rsa-sha1-nonce", "alt-sha1-nonce")
@@ -163,7 +163,7 @@ class ResourceCacheTest(TestCase):
         headers = {"Authorization": auth_header}
         rv = self.client.get(url, headers=headers)
         data = json.loads(rv.data)
-        self.assertEqual(data["error"], "invalid_signature")
+        assert data["error"] == "invalid_signature"
 
 
 class ResourceDBTest(ResourceCacheTest):

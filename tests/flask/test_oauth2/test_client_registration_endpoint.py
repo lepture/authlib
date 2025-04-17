@@ -62,14 +62,14 @@ class OAuthClientRegistrationTest(TestCase):
         self.prepare_data()
         rv = self.client.post("/create_client", json={})
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "access_denied")
+        assert resp["error"] == "access_denied"
 
     def test_invalid_request(self):
         self.prepare_data()
         headers = {"Authorization": "bearer abc"}
         rv = self.client.post("/create_client", json={}, headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_request")
+        assert resp["error"] == "invalid_request"
 
     def test_create_client(self):
         self.prepare_data()
@@ -77,8 +77,8 @@ class OAuthClientRegistrationTest(TestCase):
         body = {"client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
 
     def test_software_statement(self):
         payload = {"software_id": "uuid-123", "client_name": "Authlib"}
@@ -91,8 +91,8 @@ class OAuthClientRegistrationTest(TestCase):
         headers = {"Authorization": "bearer abc"}
         rv = self.client.post("/create_client", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
 
     def test_no_public_key(self):
         class ClientRegistrationEndpoint2(ClientRegistrationEndpoint):
@@ -112,7 +112,7 @@ class OAuthClientRegistrationTest(TestCase):
         headers = {"Authorization": "bearer abc"}
         rv = self.client.post("/create_client", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "unapproved_software_statement")
+        assert resp["error"] in "unapproved_software_statement"
 
     def test_scopes_supported(self):
         metadata = {"scopes_supported": ["profile", "email"]}
@@ -122,13 +122,13 @@ class OAuthClientRegistrationTest(TestCase):
         body = {"scope": "profile email", "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
 
         body = {"scope": "profile email address", "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
     def test_response_types_supported(self):
         metadata = {"response_types_supported": ["code"]}
@@ -138,8 +138,8 @@ class OAuthClientRegistrationTest(TestCase):
         body = {"response_types": ["code"], "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
 
         # https://www.rfc-editor.org/rfc/rfc7591.html#section-2
         # If omitted, the default is that the client will use only the "code"
@@ -147,13 +147,13 @@ class OAuthClientRegistrationTest(TestCase):
         body = {"client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
 
         body = {"response_types": ["code", "token"], "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
     def test_grant_types_supported(self):
         metadata = {"grant_types_supported": ["authorization_code", "password"]}
@@ -163,8 +163,8 @@ class OAuthClientRegistrationTest(TestCase):
         body = {"grant_types": ["password"], "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
 
         # https://www.rfc-editor.org/rfc/rfc7591.html#section-2
         # If omitted, the default behavior is that the client will use only
@@ -172,13 +172,13 @@ class OAuthClientRegistrationTest(TestCase):
         body = {"client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
 
         body = {"grant_types": ["client_credentials"], "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
     def test_token_endpoint_auth_methods_supported(self):
         metadata = {"token_endpoint_auth_methods_supported": ["client_secret_basic"]}
@@ -191,13 +191,13 @@ class OAuthClientRegistrationTest(TestCase):
         }
         rv = self.client.post("/create_client", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
 
         body = {"token_endpoint_auth_method": "none", "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
 
 class OIDCClientRegistrationTest(TestCase):
@@ -234,9 +234,9 @@ class OIDCClientRegistrationTest(TestCase):
         }
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["application_type"], "web")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert resp["application_type"] == "web"
 
         # Default case
         # The default, if omitted, is that any algorithm supported by the OP and the RP MAY be used.
@@ -245,9 +245,9 @@ class OIDCClientRegistrationTest(TestCase):
         }
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["application_type"], "web")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert resp["application_type"] == "web"
 
         # Error case
         body = {
@@ -256,7 +256,7 @@ class OIDCClientRegistrationTest(TestCase):
         }
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
     def test_token_endpoint_auth_signing_alg_supported(self):
         metadata = {
@@ -271,9 +271,9 @@ class OIDCClientRegistrationTest(TestCase):
         }
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["token_endpoint_auth_signing_alg"], "ES256")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert resp["token_endpoint_auth_signing_alg"] == "ES256"
 
         # Default case
         # The default, if omitted, is that any algorithm supported by the OP and the RP MAY be used.
@@ -282,8 +282,8 @@ class OIDCClientRegistrationTest(TestCase):
         }
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
 
         # Error case
         body = {
@@ -292,7 +292,7 @@ class OIDCClientRegistrationTest(TestCase):
         }
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
     def test_subject_types_supported(self):
         metadata = {"subject_types_supported": ["public", "pairwise"]}
@@ -302,15 +302,15 @@ class OIDCClientRegistrationTest(TestCase):
         body = {"subject_type": "public", "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["subject_type"], "public")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert resp["subject_type"] == "public"
 
         # Error case
         body = {"subject_type": "invalid", "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
     def test_id_token_signing_alg_values_supported(self):
         metadata = {"id_token_signing_alg_values_supported": ["RS256", "ES256"]}
@@ -321,23 +321,23 @@ class OIDCClientRegistrationTest(TestCase):
         body = {"client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["id_token_signed_response_alg"], "RS256")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert resp["id_token_signed_response_alg"] == "RS256"
 
         # Nominal case
         body = {"id_token_signed_response_alg": "ES256", "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["id_token_signed_response_alg"], "ES256")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert resp["id_token_signed_response_alg"] == "ES256"
 
         # Error case
         body = {"id_token_signed_response_alg": "RS512", "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
     def test_id_token_encryption_alg_values_supported(self):
         metadata = {"id_token_encryption_alg_values_supported": ["RS256", "ES256"]}
@@ -347,32 +347,32 @@ class OIDCClientRegistrationTest(TestCase):
         body = {"client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertNotIn("id_token_encrypted_response_enc", resp)
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert "id_token_encrypted_response_enc" not in resp
 
         # If id_token_encrypted_response_alg is specified, the default
         # id_token_encrypted_response_enc value is A128CBC-HS256.
         body = {"id_token_encrypted_response_alg": "RS256", "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["id_token_encrypted_response_enc"], "A128CBC-HS256")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert resp["id_token_encrypted_response_enc"] == "A128CBC-HS256"
 
         # Nominal case
         body = {"id_token_encrypted_response_alg": "ES256", "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["id_token_encrypted_response_alg"], "ES256")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert resp["id_token_encrypted_response_alg"] == "ES256"
 
         # Error case
         body = {"id_token_encrypted_response_alg": "RS512", "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
     def test_id_token_encryption_enc_values_supported(self):
         metadata = {
@@ -388,22 +388,22 @@ class OIDCClientRegistrationTest(TestCase):
         }
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["id_token_encrypted_response_alg"], "RS256")
-        self.assertEqual(resp["id_token_encrypted_response_enc"], "A256GCM")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert resp["id_token_encrypted_response_alg"] == "RS256"
+        assert resp["id_token_encrypted_response_enc"] == "A256GCM"
 
         # Error case: missing id_token_encrypted_response_alg
         body = {"id_token_encrypted_response_enc": "A256GCM", "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
         # Error case: alg not in server metadata
         body = {"id_token_encrypted_response_enc": "A128GCM", "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
     def test_userinfo_signing_alg_values_supported(self):
         metadata = {"userinfo_signing_alg_values_supported": ["RS256", "ES256"]}
@@ -413,15 +413,15 @@ class OIDCClientRegistrationTest(TestCase):
         body = {"userinfo_signed_response_alg": "ES256", "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["userinfo_signed_response_alg"], "ES256")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert resp["userinfo_signed_response_alg"] == "ES256"
 
         # Error case
         body = {"userinfo_signed_response_alg": "RS512", "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
     def test_userinfo_encryption_alg_values_supported(self):
         metadata = {"userinfo_encryption_alg_values_supported": ["RS256", "ES256"]}
@@ -431,15 +431,15 @@ class OIDCClientRegistrationTest(TestCase):
         body = {"userinfo_encrypted_response_alg": "ES256", "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["userinfo_encrypted_response_alg"], "ES256")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert resp["userinfo_encrypted_response_alg"] == "ES256"
 
         # Error case
         body = {"userinfo_encrypted_response_alg": "RS512", "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
     def test_userinfo_encryption_enc_values_supported(self):
         metadata = {
@@ -451,18 +451,18 @@ class OIDCClientRegistrationTest(TestCase):
         body = {"client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertNotIn("userinfo_encrypted_response_enc", resp)
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert "userinfo_encrypted_response_enc" not in resp
 
         # If userinfo_encrypted_response_alg is specified, the default
         # userinfo_encrypted_response_enc value is A128CBC-HS256.
         body = {"userinfo_encrypted_response_alg": "RS256", "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["userinfo_encrypted_response_enc"], "A128CBC-HS256")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert resp["userinfo_encrypted_response_enc"] == "A128CBC-HS256"
 
         # Nominal case
         body = {
@@ -472,22 +472,22 @@ class OIDCClientRegistrationTest(TestCase):
         }
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["userinfo_encrypted_response_alg"], "RS256")
-        self.assertEqual(resp["userinfo_encrypted_response_enc"], "A256GCM")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert resp["userinfo_encrypted_response_alg"] == "RS256"
+        assert resp["userinfo_encrypted_response_enc"] == "A256GCM"
 
         # Error case: no userinfo_encrypted_response_alg
         body = {"userinfo_encrypted_response_enc": "A256GCM", "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
         # Error case: alg not in server metadata
         body = {"userinfo_encrypted_response_enc": "A128GCM", "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
     def test_acr_values_supported(self):
         metadata = {
@@ -505,9 +505,9 @@ class OIDCClientRegistrationTest(TestCase):
         }
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["default_acr_values"], ["urn:mace:incommon:iap:silver"])
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert resp["default_acr_values"] == ["urn:mace:incommon:iap:silver"]
 
         # Error case
         body = {
@@ -519,7 +519,7 @@ class OIDCClientRegistrationTest(TestCase):
         }
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
     def test_request_object_signing_alg_values_supported(self):
         metadata = {"request_object_signing_alg_values_supported": ["RS256", "ES256"]}
@@ -529,15 +529,15 @@ class OIDCClientRegistrationTest(TestCase):
         body = {"request_object_signing_alg": "ES256", "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["request_object_signing_alg"], "ES256")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert resp["request_object_signing_alg"] == "ES256"
 
         # Error case
         body = {"request_object_signing_alg": "RS512", "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
     def test_request_object_encryption_alg_values_supported(self):
         metadata = {
@@ -552,9 +552,9 @@ class OIDCClientRegistrationTest(TestCase):
         }
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["request_object_encryption_alg"], "ES256")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert resp["request_object_encryption_alg"] == "ES256"
 
         # Error case
         body = {
@@ -563,7 +563,7 @@ class OIDCClientRegistrationTest(TestCase):
         }
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
     def test_request_object_encryption_enc_values_supported(self):
         metadata = {
@@ -578,18 +578,18 @@ class OIDCClientRegistrationTest(TestCase):
         body = {"client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertNotIn("request_object_encryption_enc", resp)
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert "request_object_encryption_enc" not in resp
 
         # If request_object_encryption_alg is specified, the default
         # request_object_encryption_enc value is A128CBC-HS256.
         body = {"request_object_encryption_alg": "RS256", "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["request_object_encryption_enc"], "A128CBC-HS256")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert resp["request_object_encryption_enc"] == "A128CBC-HS256"
 
         # Nominal case
         body = {
@@ -599,10 +599,10 @@ class OIDCClientRegistrationTest(TestCase):
         }
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["request_object_encryption_alg"], "RS256")
-        self.assertEqual(resp["request_object_encryption_enc"], "A256GCM")
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert resp["request_object_encryption_alg"] == "RS256"
+        assert resp["request_object_encryption_enc"] == "A256GCM"
 
         # Error case: missing request_object_encryption_alg
         body = {
@@ -611,7 +611,7 @@ class OIDCClientRegistrationTest(TestCase):
         }
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
         # Error case: alg not in server metadata
         body = {
@@ -620,7 +620,7 @@ class OIDCClientRegistrationTest(TestCase):
         }
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
     def test_require_auth_time(self):
         self.prepare_data()
@@ -631,9 +631,9 @@ class OIDCClientRegistrationTest(TestCase):
         }
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["require_auth_time"], False)
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert resp["require_auth_time"] is False
 
         # Nominal case
         body = {
@@ -642,9 +642,9 @@ class OIDCClientRegistrationTest(TestCase):
         }
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["require_auth_time"], True)
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert resp["require_auth_time"] is True
 
         # Error case
         body = {
@@ -653,7 +653,7 @@ class OIDCClientRegistrationTest(TestCase):
         }
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"
 
     def test_redirect_uri(self):
         """RFC6749 indicate that fragments are forbidden in redirect_uri.
@@ -673,9 +673,9 @@ class OIDCClientRegistrationTest(TestCase):
         }
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn("client_id", resp)
-        self.assertEqual(resp["client_name"], "Authlib")
-        self.assertEqual(resp["redirect_uris"], ["https://client.test"])
+        assert "client_id" in resp
+        assert resp["client_name"] == "Authlib"
+        assert resp["redirect_uris"] == ["https://client.test"]
 
         # Error case
         body = {
@@ -684,4 +684,4 @@ class OIDCClientRegistrationTest(TestCase):
         }
         rv = self.client.post("/create_client", json=body, headers=self.headers)
         resp = json.loads(rv.data)
-        self.assertIn(resp["error"], "invalid_client_metadata")
+        assert resp["error"] in "invalid_client_metadata"

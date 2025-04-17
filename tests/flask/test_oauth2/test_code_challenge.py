@@ -1,3 +1,4 @@
+import pytest
 from flask import json
 
 from authlib.common.security import generate_token
@@ -61,7 +62,7 @@ class CodeChallengeTest(TestCase):
     def test_missing_code_challenge(self):
         self.prepare_data()
         rv = self.client.get(self.authorize_url + "&code_challenge_method=plain")
-        self.assertIn("Missing", rv.location)
+        assert "Missing" in rv.location
 
     def test_has_code_challenge(self):
         self.prepare_data()
@@ -69,34 +70,34 @@ class CodeChallengeTest(TestCase):
             self.authorize_url
             + "&code_challenge=Zhs2POMonIVVHZteWfoU7cSXQSm0YjghikFGJSDI2_s"
         )
-        self.assertEqual(rv.data, b"ok")
+        assert rv.data == b"ok"
 
     def test_invalid_code_challenge(self):
         self.prepare_data()
         rv = self.client.get(
             self.authorize_url + "&code_challenge=abc&code_challenge_method=plain"
         )
-        self.assertIn("Invalid", rv.location)
+        assert "Invalid" in rv.location
 
     def test_invalid_code_challenge_method(self):
         self.prepare_data()
         suffix = "&code_challenge=Zhs2POMonIVVHZteWfoU7cSXQSm0YjghikFGJSDI2_s&code_challenge_method=invalid"
         rv = self.client.get(self.authorize_url + suffix)
-        self.assertIn("Unsupported", rv.location)
+        assert "Unsupported" in rv.location
 
     def test_supported_code_challenge_method(self):
         self.prepare_data()
         suffix = "&code_challenge=Zhs2POMonIVVHZteWfoU7cSXQSm0YjghikFGJSDI2_s&code_challenge_method=plain"
         rv = self.client.get(self.authorize_url + suffix)
-        self.assertEqual(rv.data, b"ok")
+        assert rv.data == b"ok"
 
     def test_trusted_client_without_code_challenge(self):
         self.prepare_data("client_secret_basic")
         rv = self.client.get(self.authorize_url)
-        self.assertEqual(rv.data, b"ok")
+        assert rv.data == b"ok"
 
         rv = self.client.post(self.authorize_url, data={"user_id": "1"})
-        self.assertIn("code=", rv.location)
+        assert "code=" in rv.location
 
         params = dict(url_decode(urlparse.urlparse(rv.location).query))
 
@@ -111,7 +112,7 @@ class CodeChallengeTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
+        assert "access_token" in resp
 
     def test_missing_code_verifier(self):
         self.prepare_data()
@@ -120,7 +121,7 @@ class CodeChallengeTest(TestCase):
             + "&code_challenge=Zhs2POMonIVVHZteWfoU7cSXQSm0YjghikFGJSDI2_s"
         )
         rv = self.client.post(url, data={"user_id": "1"})
-        self.assertIn("code=", rv.location)
+        assert "code=" in rv.location
 
         params = dict(url_decode(urlparse.urlparse(rv.location).query))
         code = params["code"]
@@ -133,7 +134,7 @@ class CodeChallengeTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertIn("Missing", resp["error_description"])
+        assert "Missing" in resp["error_description"]
 
     def test_trusted_client_missing_code_verifier(self):
         self.prepare_data("client_secret_basic")
@@ -142,7 +143,7 @@ class CodeChallengeTest(TestCase):
             + "&code_challenge=Zhs2POMonIVVHZteWfoU7cSXQSm0YjghikFGJSDI2_s"
         )
         rv = self.client.post(url, data={"user_id": "1"})
-        self.assertIn("code=", rv.location)
+        assert "code=" in rv.location
 
         params = dict(url_decode(urlparse.urlparse(rv.location).query))
         code = params["code"]
@@ -156,7 +157,7 @@ class CodeChallengeTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertIn("Missing", resp["error_description"])
+        assert "Missing" in resp["error_description"]
 
     def test_plain_code_challenge_invalid(self):
         self.prepare_data()
@@ -165,7 +166,7 @@ class CodeChallengeTest(TestCase):
             + "&code_challenge=Zhs2POMonIVVHZteWfoU7cSXQSm0YjghikFGJSDI2_s"
         )
         rv = self.client.post(url, data={"user_id": "1"})
-        self.assertIn("code=", rv.location)
+        assert "code=" in rv.location
 
         params = dict(url_decode(urlparse.urlparse(rv.location).query))
         code = params["code"]
@@ -179,7 +180,7 @@ class CodeChallengeTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertIn("Invalid", resp["error_description"])
+        assert "Invalid" in resp["error_description"]
 
     def test_plain_code_challenge_failed(self):
         self.prepare_data()
@@ -188,7 +189,7 @@ class CodeChallengeTest(TestCase):
             + "&code_challenge=Zhs2POMonIVVHZteWfoU7cSXQSm0YjghikFGJSDI2_s"
         )
         rv = self.client.post(url, data={"user_id": "1"})
-        self.assertIn("code=", rv.location)
+        assert "code=" in rv.location
 
         params = dict(url_decode(urlparse.urlparse(rv.location).query))
         code = params["code"]
@@ -202,14 +203,14 @@ class CodeChallengeTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertIn("failed", resp["error_description"])
+        assert "failed" in resp["error_description"]
 
     def test_plain_code_challenge_success(self):
         self.prepare_data()
         code_verifier = generate_token(48)
         url = self.authorize_url + "&code_challenge=" + code_verifier
         rv = self.client.post(url, data={"user_id": "1"})
-        self.assertIn("code=", rv.location)
+        assert "code=" in rv.location
 
         params = dict(url_decode(urlparse.urlparse(rv.location).query))
         code = params["code"]
@@ -223,7 +224,7 @@ class CodeChallengeTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
+        assert "access_token" in resp
 
     def test_s256_code_challenge_success(self):
         self.prepare_data()
@@ -233,7 +234,7 @@ class CodeChallengeTest(TestCase):
         url += "&code_challenge_method=S256"
 
         rv = self.client.post(url, data={"user_id": "1"})
-        self.assertIn("code=", rv.location)
+        assert "code=" in rv.location
 
         params = dict(url_decode(urlparse.urlparse(rv.location).query))
         code = params["code"]
@@ -247,7 +248,7 @@ class CodeChallengeTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
+        assert "access_token" in resp
 
     def test_not_implemented_code_challenge_method(self):
         self.prepare_data()
@@ -258,18 +259,17 @@ class CodeChallengeTest(TestCase):
         url += "&code_challenge_method=S128"
 
         rv = self.client.post(url, data={"user_id": "1"})
-        self.assertIn("code=", rv.location)
+        assert "code=" in rv.location
 
         params = dict(url_decode(urlparse.urlparse(rv.location).query))
         code = params["code"]
-        self.assertRaises(
-            RuntimeError,
-            self.client.post,
-            "/oauth/token",
-            data={
-                "grant_type": "authorization_code",
-                "code": code,
-                "code_verifier": generate_token(48),
-                "client_id": "code-client",
-            },
-        )
+        with pytest.raises(RuntimeError):
+            self.client.post(
+                "/oauth/token",
+                data={
+                    "grant_type": "authorization_code",
+                    "code": code,
+                    "code_verifier": generate_token(48),
+                    "client_id": "code-client",
+                },
+            )

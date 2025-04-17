@@ -2,6 +2,8 @@ import json
 import os
 import unittest
 
+import pytest
+from cryptography.exceptions import InvalidTag
 from cryptography.hazmat.primitives.keywrap import InvalidUnwrap
 
 from authlib.common.encoding import json_b64encode
@@ -26,42 +28,38 @@ class JWETest(unittest.TestCase):
     def test_not_enough_segments(self):
         s = "a.b.c"
         jwe = JsonWebEncryption()
-        self.assertRaises(errors.DecodeError, jwe.deserialize_compact, s, None)
+        with pytest.raises(errors.DecodeError):
+            jwe.deserialize_compact(s, None)
 
     def test_invalid_header(self):
         jwe = JsonWebEncryption()
         public_key = read_file_path("rsa_public.pem")
-        self.assertRaises(
-            errors.MissingAlgorithmError, jwe.serialize_compact, {}, "a", public_key
-        )
-        self.assertRaises(
-            errors.UnsupportedAlgorithmError,
-            jwe.serialize_compact,
-            {"alg": "invalid"},
-            "a",
-            public_key,
-        )
-        self.assertRaises(
-            errors.MissingEncryptionAlgorithmError,
-            jwe.serialize_compact,
-            {"alg": "RSA-OAEP"},
-            "a",
-            public_key,
-        )
-        self.assertRaises(
-            errors.UnsupportedEncryptionAlgorithmError,
-            jwe.serialize_compact,
-            {"alg": "RSA-OAEP", "enc": "invalid"},
-            "a",
-            public_key,
-        )
-        self.assertRaises(
-            errors.UnsupportedCompressionAlgorithmError,
-            jwe.serialize_compact,
-            {"alg": "RSA-OAEP", "enc": "A256GCM", "zip": "invalid"},
-            "a",
-            public_key,
-        )
+        with pytest.raises(errors.MissingAlgorithmError):
+            jwe.serialize_compact({}, "a", public_key)
+        with pytest.raises(errors.UnsupportedAlgorithmError):
+            jwe.serialize_compact(
+                {"alg": "invalid"},
+                "a",
+                public_key,
+            )
+        with pytest.raises(errors.MissingEncryptionAlgorithmError):
+            jwe.serialize_compact(
+                {"alg": "RSA-OAEP"},
+                "a",
+                public_key,
+            )
+        with pytest.raises(errors.UnsupportedEncryptionAlgorithmError):
+            jwe.serialize_compact(
+                {"alg": "RSA-OAEP", "enc": "invalid"},
+                "a",
+                public_key,
+            )
+        with pytest.raises(errors.UnsupportedCompressionAlgorithmError):
+            jwe.serialize_compact(
+                {"alg": "RSA-OAEP", "enc": "A256GCM", "zip": "invalid"},
+                "a",
+                public_key,
+            )
 
     def test_not_supported_alg(self):
         public_key = read_file_path("rsa_public.pem")
@@ -73,48 +71,42 @@ class JWETest(unittest.TestCase):
         )
 
         jwe = JsonWebEncryption(algorithms=["RSA1_5", "A256GCM"])
-        self.assertRaises(
-            errors.UnsupportedAlgorithmError,
-            jwe.serialize_compact,
-            {"alg": "RSA-OAEP", "enc": "A256GCM"},
-            "hello",
-            public_key,
-        )
-        self.assertRaises(
-            errors.UnsupportedCompressionAlgorithmError,
-            jwe.serialize_compact,
-            {"alg": "RSA1_5", "enc": "A256GCM", "zip": "DEF"},
-            "hello",
-            public_key,
-        )
-        self.assertRaises(
-            errors.UnsupportedAlgorithmError,
-            jwe.deserialize_compact,
-            s,
-            private_key,
-        )
+        with pytest.raises(errors.UnsupportedAlgorithmError):
+            jwe.serialize_compact(
+                {"alg": "RSA-OAEP", "enc": "A256GCM"},
+                "hello",
+                public_key,
+            )
+        with pytest.raises(errors.UnsupportedCompressionAlgorithmError):
+            jwe.serialize_compact(
+                {"alg": "RSA1_5", "enc": "A256GCM", "zip": "DEF"},
+                "hello",
+                public_key,
+            )
+        with pytest.raises(errors.UnsupportedAlgorithmError):
+            jwe.deserialize_compact(
+                s,
+                private_key,
+            )
 
         jwe = JsonWebEncryption(algorithms=["RSA-OAEP", "A192GCM"])
-        self.assertRaises(
-            errors.UnsupportedEncryptionAlgorithmError,
-            jwe.serialize_compact,
-            {"alg": "RSA-OAEP", "enc": "A256GCM"},
-            "hello",
-            public_key,
-        )
-        self.assertRaises(
-            errors.UnsupportedCompressionAlgorithmError,
-            jwe.serialize_compact,
-            {"alg": "RSA-OAEP", "enc": "A192GCM", "zip": "DEF"},
-            "hello",
-            public_key,
-        )
-        self.assertRaises(
-            errors.UnsupportedEncryptionAlgorithmError,
-            jwe.deserialize_compact,
-            s,
-            private_key,
-        )
+        with pytest.raises(errors.UnsupportedEncryptionAlgorithmError):
+            jwe.serialize_compact(
+                {"alg": "RSA-OAEP", "enc": "A256GCM"},
+                "hello",
+                public_key,
+            )
+        with pytest.raises(errors.UnsupportedCompressionAlgorithmError):
+            jwe.serialize_compact(
+                {"alg": "RSA-OAEP", "enc": "A192GCM", "zip": "DEF"},
+                "hello",
+                public_key,
+            )
+        with pytest.raises(errors.UnsupportedEncryptionAlgorithmError):
+            jwe.deserialize_compact(
+                s,
+                private_key,
+            )
 
     def test_inappropriate_sender_key_for_serialize_compact(self):
         jwe = JsonWebEncryption()
@@ -134,19 +126,17 @@ class JWETest(unittest.TestCase):
         }
 
         protected = {"alg": "ECDH-1PU", "enc": "A256GCM"}
-        self.assertRaises(
-            ValueError, jwe.serialize_compact, protected, b"hello", bob_key
-        )
+        with pytest.raises(ValueError):
+            jwe.serialize_compact(protected, b"hello", bob_key)
 
         protected = {"alg": "ECDH-ES", "enc": "A256GCM"}
-        self.assertRaises(
-            ValueError,
-            jwe.serialize_compact,
-            protected,
-            b"hello",
-            bob_key,
-            sender_key=alice_key,
-        )
+        with pytest.raises(ValueError):
+            jwe.serialize_compact(
+                protected,
+                b"hello",
+                bob_key,
+                sender_key=alice_key,
+            )
 
     def test_inappropriate_sender_key_for_deserialize_compact(self):
         jwe = JsonWebEncryption()
@@ -167,13 +157,13 @@ class JWETest(unittest.TestCase):
 
         protected = {"alg": "ECDH-1PU", "enc": "A256GCM"}
         data = jwe.serialize_compact(protected, b"hello", bob_key, sender_key=alice_key)
-        self.assertRaises(ValueError, jwe.deserialize_compact, data, bob_key)
+        with pytest.raises(ValueError):
+            jwe.deserialize_compact(data, bob_key)
 
         protected = {"alg": "ECDH-ES", "enc": "A256GCM"}
         data = jwe.serialize_compact(protected, b"hello", bob_key)
-        self.assertRaises(
-            ValueError, jwe.deserialize_compact, data, bob_key, sender_key=alice_key
-        )
+        with pytest.raises(ValueError):
+            jwe.deserialize_compact(data, bob_key, sender_key=alice_key)
 
     def test_compact_rsa(self):
         jwe = JsonWebEncryption()
@@ -184,8 +174,8 @@ class JWETest(unittest.TestCase):
         )
         data = jwe.deserialize_compact(s, read_file_path("rsa_private.pem"))
         header, payload = data["header"], data["payload"]
-        self.assertEqual(payload, b"hello")
-        self.assertEqual(header["alg"], "RSA-OAEP")
+        assert payload == b"hello"
+        assert header["alg"] == "RSA-OAEP"
 
     def test_with_zip_header(self):
         jwe = JsonWebEncryption()
@@ -196,8 +186,8 @@ class JWETest(unittest.TestCase):
         )
         data = jwe.deserialize_compact(s, read_file_path("rsa_private.pem"))
         header, payload = data["header"], data["payload"]
-        self.assertEqual(payload, b"hello")
-        self.assertEqual(header["alg"], "RSA-OAEP")
+        assert payload == b"hello"
+        assert header["alg"] == "RSA-OAEP"
 
     def test_aes_jwe(self):
         jwe = JsonWebEncryption()
@@ -217,14 +207,13 @@ class JWETest(unittest.TestCase):
                 protected = {"alg": alg, "enc": enc}
                 data = jwe.serialize_compact(protected, b"hello", key)
                 rv = jwe.deserialize_compact(data, key)
-                self.assertEqual(rv["payload"], b"hello")
+                assert rv["payload"] == b"hello"
 
     def test_aes_jwe_invalid_key(self):
         jwe = JsonWebEncryption()
         protected = {"alg": "A128KW", "enc": "A128GCM"}
-        self.assertRaises(
-            ValueError, jwe.serialize_compact, protected, b"hello", b"invalid-key"
-        )
+        with pytest.raises(ValueError):
+            jwe.serialize_compact(protected, b"hello", b"invalid-key")
 
     def test_aes_gcm_jwe(self):
         jwe = JsonWebEncryption()
@@ -244,14 +233,13 @@ class JWETest(unittest.TestCase):
                 protected = {"alg": alg, "enc": enc}
                 data = jwe.serialize_compact(protected, b"hello", key)
                 rv = jwe.deserialize_compact(data, key)
-                self.assertEqual(rv["payload"], b"hello")
+                assert rv["payload"] == b"hello"
 
     def test_aes_gcm_jwe_invalid_key(self):
         jwe = JsonWebEncryption()
         protected = {"alg": "A128GCMKW", "enc": "A128GCM"}
-        self.assertRaises(
-            ValueError, jwe.serialize_compact, protected, b"hello", b"invalid-key"
-        )
+        with pytest.raises(ValueError):
+            jwe.serialize_compact(protected, b"hello", b"invalid-key")
 
     def test_serialize_compact_fails_if_header_contains_unknown_field_while_private_fields_restricted(
         self,
@@ -261,13 +249,12 @@ class JWETest(unittest.TestCase):
 
         protected = {"alg": "ECDH-ES+A128KW", "enc": "A128GCM", "foo": "bar"}
 
-        self.assertRaises(
-            InvalidHeaderParameterNameError,
-            jwe.serialize_compact,
-            protected,
-            b"hello",
-            key,
-        )
+        with pytest.raises(InvalidHeaderParameterNameError):
+            jwe.serialize_compact(
+                protected,
+                b"hello",
+                key,
+            )
 
     def test_serialize_compact_allows_unknown_fields_in_header_while_private_fields_not_restricted(
         self,
@@ -279,7 +266,7 @@ class JWETest(unittest.TestCase):
 
         data = jwe.serialize_compact(protected, b"hello", key)
         rv = jwe.deserialize_compact(data, key)
-        self.assertEqual(rv["payload"], b"hello")
+        assert rv["payload"] == b"hello"
 
     def test_serialize_json_fails_if_protected_header_contains_unknown_field_while_private_fields_restricted(
         self,
@@ -290,13 +277,12 @@ class JWETest(unittest.TestCase):
         protected = {"alg": "ECDH-ES+A128KW", "enc": "A128GCM", "foo": "bar"}
         header_obj = {"protected": protected}
 
-        self.assertRaises(
-            InvalidHeaderParameterNameError,
-            jwe.serialize_json,
-            header_obj,
-            b"hello",
-            key,
-        )
+        with pytest.raises(InvalidHeaderParameterNameError):
+            jwe.serialize_json(
+                header_obj,
+                b"hello",
+                key,
+            )
 
     def test_serialize_json_fails_if_unprotected_header_contains_unknown_field_while_private_fields_restricted(
         self,
@@ -308,13 +294,12 @@ class JWETest(unittest.TestCase):
         unprotected = {"foo": "bar"}
         header_obj = {"protected": protected, "unprotected": unprotected}
 
-        self.assertRaises(
-            InvalidHeaderParameterNameError,
-            jwe.serialize_json,
-            header_obj,
-            b"hello",
-            key,
-        )
+        with pytest.raises(InvalidHeaderParameterNameError):
+            jwe.serialize_json(
+                header_obj,
+                b"hello",
+                key,
+            )
 
     def test_serialize_json_fails_if_recipient_header_contains_unknown_field_while_private_fields_restricted(
         self,
@@ -326,13 +311,12 @@ class JWETest(unittest.TestCase):
         recipients = [{"header": {"foo": "bar"}}]
         header_obj = {"protected": protected, "recipients": recipients}
 
-        self.assertRaises(
-            InvalidHeaderParameterNameError,
-            jwe.serialize_json,
-            header_obj,
-            b"hello",
-            key,
-        )
+        with pytest.raises(InvalidHeaderParameterNameError):
+            jwe.serialize_json(
+                header_obj,
+                b"hello",
+                key,
+            )
 
     def test_serialize_json_allows_unknown_fields_in_headers_while_private_fields_not_restricted(
         self,
@@ -351,7 +335,7 @@ class JWETest(unittest.TestCase):
 
         data = jwe.serialize_json(header_obj, b"hello", key)
         rv = jwe.deserialize_json(data, key)
-        self.assertEqual(rv["payload"], b"hello")
+        assert rv["payload"] == b"hello"
 
     def test_serialize_json_ignores_additional_members_in_recipients_elements(self):
         jwe = JsonWebEncryption()
@@ -361,7 +345,7 @@ class JWETest(unittest.TestCase):
 
         data = jwe.serialize_compact(protected, b"hello", key)
         rv = jwe.deserialize_compact(data, key)
-        self.assertEqual(rv["payload"], b"hello")
+        assert rv["payload"] == b"hello"
 
     def test_deserialize_json_fails_if_protected_header_contains_unknown_field_while_private_fields_restricted(
         self,
@@ -378,9 +362,8 @@ class JWETest(unittest.TestCase):
         decoded_protected["foo"] = "bar"
         data["protected"] = to_unicode(json_b64encode(decoded_protected))
 
-        self.assertRaises(
-            InvalidHeaderParameterNameError, jwe.deserialize_json, data, key
-        )
+        with pytest.raises(InvalidHeaderParameterNameError):
+            jwe.deserialize_json(data, key)
 
     def test_deserialize_json_fails_if_unprotected_header_contains_unknown_field_while_private_fields_restricted(
         self,
@@ -395,9 +378,8 @@ class JWETest(unittest.TestCase):
 
         data["unprotected"] = {"foo": "bar"}
 
-        self.assertRaises(
-            InvalidHeaderParameterNameError, jwe.deserialize_json, data, key
-        )
+        with pytest.raises(InvalidHeaderParameterNameError):
+            jwe.deserialize_json(data, key)
 
     def test_deserialize_json_fails_if_recipient_header_contains_unknown_field_while_private_fields_restricted(
         self,
@@ -412,9 +394,8 @@ class JWETest(unittest.TestCase):
 
         data["recipients"][0]["header"] = {"foo": "bar"}
 
-        self.assertRaises(
-            InvalidHeaderParameterNameError, jwe.deserialize_json, data, key
-        )
+        with pytest.raises(InvalidHeaderParameterNameError):
+            jwe.deserialize_json(data, key)
 
     def test_deserialize_json_allows_unknown_fields_in_headers_while_private_fields_not_restricted(
         self,
@@ -431,7 +412,7 @@ class JWETest(unittest.TestCase):
         data["recipients"][0]["header"] = {"foo2": "bar2"}
 
         rv = jwe.deserialize_json(data, key)
-        self.assertEqual(rv["payload"], b"hello")
+        assert rv["payload"] == b"hello"
 
     def test_deserialize_json_ignores_additional_members_in_recipients_elements(self):
         jwe = JsonWebEncryption()
@@ -446,7 +427,7 @@ class JWETest(unittest.TestCase):
 
         data = jwe.serialize_compact(protected, b"hello", key)
         rv = jwe.deserialize_compact(data, key)
-        self.assertEqual(rv["payload"], b"hello")
+        assert rv["payload"] == b"hello"
 
     def test_deserialize_json_ignores_additional_members_in_jwe_message(self):
         jwe = JsonWebEncryption()
@@ -461,7 +442,7 @@ class JWETest(unittest.TestCase):
 
         data = jwe.serialize_compact(protected, b"hello", key)
         rv = jwe.deserialize_compact(data, key)
-        self.assertEqual(rv["payload"], b"hello")
+        assert rv["payload"] == b"hello"
 
     def test_ecdh_es_key_agreement_computation(self):
         # https://tools.ietf.org/html/rfc7518#appendix-C
@@ -508,128 +489,116 @@ class JWETest(unittest.TestCase):
         _shared_key_at_alice = alice_ephemeral_key.exchange_shared_key(
             bob_static_pubkey
         )
-        self.assertEqual(
-            _shared_key_at_alice,
-            bytes(
-                [
-                    158,
-                    86,
-                    217,
-                    29,
-                    129,
-                    113,
-                    53,
-                    211,
-                    114,
-                    131,
-                    66,
-                    131,
-                    191,
-                    132,
-                    38,
-                    156,
-                    251,
-                    49,
-                    110,
-                    163,
-                    218,
-                    128,
-                    106,
-                    72,
-                    246,
-                    218,
-                    167,
-                    121,
-                    140,
-                    254,
-                    144,
-                    196,
-                ]
-            ),
+        assert _shared_key_at_alice == bytes(
+            [
+                158,
+                86,
+                217,
+                29,
+                129,
+                113,
+                53,
+                211,
+                114,
+                131,
+                66,
+                131,
+                191,
+                132,
+                38,
+                156,
+                251,
+                49,
+                110,
+                163,
+                218,
+                128,
+                106,
+                72,
+                246,
+                218,
+                167,
+                121,
+                140,
+                254,
+                144,
+                196,
+            ]
         )
 
         _fixed_info_at_alice = alg.compute_fixed_info(headers, enc.key_size)
-        self.assertEqual(
-            _fixed_info_at_alice,
-            bytes(
-                [
-                    0,
-                    0,
-                    0,
-                    7,
-                    65,
-                    49,
-                    50,
-                    56,
-                    71,
-                    67,
-                    77,
-                    0,
-                    0,
-                    0,
-                    5,
-                    65,
-                    108,
-                    105,
-                    99,
-                    101,
-                    0,
-                    0,
-                    0,
-                    3,
-                    66,
-                    111,
-                    98,
-                    0,
-                    0,
-                    0,
-                    128,
-                ]
-            ),
+        assert _fixed_info_at_alice == bytes(
+            [
+                0,
+                0,
+                0,
+                7,
+                65,
+                49,
+                50,
+                56,
+                71,
+                67,
+                77,
+                0,
+                0,
+                0,
+                5,
+                65,
+                108,
+                105,
+                99,
+                101,
+                0,
+                0,
+                0,
+                3,
+                66,
+                111,
+                98,
+                0,
+                0,
+                0,
+                128,
+            ]
         )
 
         _dk_at_alice = alg.compute_derived_key(
             _shared_key_at_alice, _fixed_info_at_alice, enc.key_size
         )
-        self.assertEqual(
-            _dk_at_alice,
-            bytes(
-                [86, 170, 141, 234, 248, 35, 109, 32, 92, 34, 40, 205, 113, 167, 16, 26]
-            ),
+        assert _dk_at_alice == bytes(
+            [86, 170, 141, 234, 248, 35, 109, 32, 92, 34, 40, 205, 113, 167, 16, 26]
         )
-        self.assertEqual(urlsafe_b64encode(_dk_at_alice), b"VqqN6vgjbSBcIijNcacQGg")
+        assert urlsafe_b64encode(_dk_at_alice) == b"VqqN6vgjbSBcIijNcacQGg"
 
         # All-in-one method verification
         dk_at_alice = alg.deliver(
             alice_ephemeral_key, bob_static_pubkey, headers, enc.key_size
         )
-        self.assertEqual(
-            dk_at_alice,
-            bytes(
-                [86, 170, 141, 234, 248, 35, 109, 32, 92, 34, 40, 205, 113, 167, 16, 26]
-            ),
+        assert dk_at_alice == bytes(
+            [86, 170, 141, 234, 248, 35, 109, 32, 92, 34, 40, 205, 113, 167, 16, 26]
         )
-        self.assertEqual(urlsafe_b64encode(dk_at_alice), b"VqqN6vgjbSBcIijNcacQGg")
+        assert urlsafe_b64encode(dk_at_alice) == b"VqqN6vgjbSBcIijNcacQGg"
 
         # Derived key computation at Bob
 
         # Step-by-step methods verification
         _shared_key_at_bob = bob_static_key.exchange_shared_key(alice_ephemeral_pubkey)
-        self.assertEqual(_shared_key_at_bob, _shared_key_at_alice)
+        assert _shared_key_at_bob == _shared_key_at_alice
 
         _fixed_info_at_bob = alg.compute_fixed_info(headers, enc.key_size)
-        self.assertEqual(_fixed_info_at_bob, _fixed_info_at_alice)
+        assert _fixed_info_at_bob == _fixed_info_at_alice
 
         _dk_at_bob = alg.compute_derived_key(
             _shared_key_at_bob, _fixed_info_at_bob, enc.key_size
         )
-        self.assertEqual(_dk_at_bob, _dk_at_alice)
+        assert _dk_at_bob == _dk_at_alice
 
         # All-in-one method verification
         dk_at_bob = alg.deliver(
             bob_static_key, alice_ephemeral_pubkey, headers, enc.key_size
         )
-        self.assertEqual(dk_at_bob, dk_at_alice)
+        assert dk_at_bob == dk_at_alice
 
     def test_ecdh_es_jwe_in_direct_key_agreement_mode(self):
         jwe = JsonWebEncryption()
@@ -652,7 +621,7 @@ class JWETest(unittest.TestCase):
             protected = {"alg": "ECDH-ES", "enc": enc}
             data = jwe.serialize_compact(protected, b"hello", key)
             rv = jwe.deserialize_compact(data, key)
-            self.assertEqual(rv["payload"], b"hello")
+            assert rv["payload"] == b"hello"
 
     def test_ecdh_es_jwe_json_serialization_single_recipient_in_direct_key_agreement_mode(
         self,
@@ -664,7 +633,7 @@ class JWETest(unittest.TestCase):
         header_obj = {"protected": protected}
         data = jwe.serialize_json(header_obj, b"hello", key)
         rv = jwe.deserialize_json(data, key)
-        self.assertEqual(rv["payload"], b"hello")
+        assert rv["payload"] == b"hello"
 
     def test_ecdh_es_jwe_in_key_agreement_with_key_wrapping_mode(self):
         jwe = JsonWebEncryption()
@@ -692,7 +661,7 @@ class JWETest(unittest.TestCase):
                 protected = {"alg": alg, "enc": enc}
                 data = jwe.serialize_compact(protected, b"hello", key)
                 rv = jwe.deserialize_compact(data, key)
-                self.assertEqual(rv["payload"], b"hello")
+                assert rv["payload"] == b"hello"
 
     def test_ecdh_es_jwe_with_okp_key_in_direct_key_agreement_mode(self):
         jwe = JsonWebEncryption()
@@ -709,7 +678,7 @@ class JWETest(unittest.TestCase):
             protected = {"alg": "ECDH-ES", "enc": enc}
             data = jwe.serialize_compact(protected, b"hello", key)
             rv = jwe.deserialize_compact(data, key)
-            self.assertEqual(rv["payload"], b"hello")
+            assert rv["payload"] == b"hello"
 
     def test_ecdh_es_jwe_with_okp_key_in_key_agreement_with_key_wrapping_mode(self):
         jwe = JsonWebEncryption()
@@ -731,7 +700,7 @@ class JWETest(unittest.TestCase):
                 protected = {"alg": alg, "enc": enc}
                 data = jwe.serialize_compact(protected, b"hello", key)
                 rv = jwe.deserialize_compact(data, key)
-                self.assertEqual(rv["payload"], b"hello")
+                assert rv["payload"] == b"hello"
 
     def test_ecdh_es_jwe_with_json_serialization_when_kid_is_not_specified(self):
         jwe = JsonWebEncryption()
@@ -782,37 +751,27 @@ class JWETest(unittest.TestCase):
 
         rv_at_bob = jwe.deserialize_json(data, bob_key)
 
-        self.assertEqual(
-            rv_at_bob["header"]["protected"].keys(), protected.keys() | {"epk"}
-        )
-        self.assertEqual(
-            {
-                k: rv_at_bob["header"]["protected"][k]
-                for k in rv_at_bob["header"]["protected"].keys() - {"epk"}
-            },
-            protected,
-        )
-        self.assertEqual(rv_at_bob["header"]["unprotected"], unprotected)
-        self.assertEqual(rv_at_bob["header"]["recipients"], recipients)
-        self.assertEqual(rv_at_bob["header"]["aad"], jwe_aad)
-        self.assertEqual(rv_at_bob["payload"], payload)
+        assert rv_at_bob["header"]["protected"].keys() == protected.keys() | {"epk"}
+        assert {
+            k: rv_at_bob["header"]["protected"][k]
+            for k in rv_at_bob["header"]["protected"].keys() - {"epk"}
+        } == protected
+        assert rv_at_bob["header"]["unprotected"] == unprotected
+        assert rv_at_bob["header"]["recipients"] == recipients
+        assert rv_at_bob["header"]["aad"] == jwe_aad
+        assert rv_at_bob["payload"] == payload
 
         rv_at_charlie = jwe.deserialize_json(data, charlie_key)
 
-        self.assertEqual(
-            rv_at_charlie["header"]["protected"].keys(), protected.keys() | {"epk"}
-        )
-        self.assertEqual(
-            {
-                k: rv_at_charlie["header"]["protected"][k]
-                for k in rv_at_charlie["header"]["protected"].keys() - {"epk"}
-            },
-            protected,
-        )
-        self.assertEqual(rv_at_charlie["header"]["unprotected"], unprotected)
-        self.assertEqual(rv_at_charlie["header"]["recipients"], recipients)
-        self.assertEqual(rv_at_charlie["header"]["aad"], jwe_aad)
-        self.assertEqual(rv_at_charlie["payload"], payload)
+        assert rv_at_charlie["header"]["protected"].keys() == protected.keys() | {"epk"}
+        assert {
+            k: rv_at_charlie["header"]["protected"][k]
+            for k in rv_at_charlie["header"]["protected"].keys() - {"epk"}
+        } == protected
+        assert rv_at_charlie["header"]["unprotected"] == unprotected
+        assert rv_at_charlie["header"]["recipients"] == recipients
+        assert rv_at_charlie["header"]["aad"] == jwe_aad
+        assert rv_at_charlie["payload"] == payload
 
     def test_ecdh_es_jwe_with_json_serialization_when_kid_is_specified(self):
         jwe = JsonWebEncryption()
@@ -865,37 +824,27 @@ class JWETest(unittest.TestCase):
 
         rv_at_bob = jwe.deserialize_json(data, bob_key)
 
-        self.assertEqual(
-            rv_at_bob["header"]["protected"].keys(), protected.keys() | {"epk"}
-        )
-        self.assertEqual(
-            {
-                k: rv_at_bob["header"]["protected"][k]
-                for k in rv_at_bob["header"]["protected"].keys() - {"epk"}
-            },
-            protected,
-        )
-        self.assertEqual(rv_at_bob["header"]["unprotected"], unprotected)
-        self.assertEqual(rv_at_bob["header"]["recipients"], recipients)
-        self.assertEqual(rv_at_bob["header"]["aad"], jwe_aad)
-        self.assertEqual(rv_at_bob["payload"], payload)
+        assert rv_at_bob["header"]["protected"].keys() == protected.keys() | {"epk"}
+        assert {
+            k: rv_at_bob["header"]["protected"][k]
+            for k in rv_at_bob["header"]["protected"].keys() - {"epk"}
+        } == protected
+        assert rv_at_bob["header"]["unprotected"] == unprotected
+        assert rv_at_bob["header"]["recipients"] == recipients
+        assert rv_at_bob["header"]["aad"] == jwe_aad
+        assert rv_at_bob["payload"] == payload
 
         rv_at_charlie = jwe.deserialize_json(data, charlie_key)
 
-        self.assertEqual(
-            rv_at_charlie["header"]["protected"].keys(), protected.keys() | {"epk"}
-        )
-        self.assertEqual(
-            {
-                k: rv_at_charlie["header"]["protected"][k]
-                for k in rv_at_charlie["header"]["protected"].keys() - {"epk"}
-            },
-            protected,
-        )
-        self.assertEqual(rv_at_charlie["header"]["unprotected"], unprotected)
-        self.assertEqual(rv_at_charlie["header"]["recipients"], recipients)
-        self.assertEqual(rv_at_charlie["header"]["aad"], jwe_aad)
-        self.assertEqual(rv_at_charlie["payload"], payload)
+        assert rv_at_charlie["header"]["protected"].keys() == protected.keys() | {"epk"}
+        assert {
+            k: rv_at_charlie["header"]["protected"][k]
+            for k in rv_at_charlie["header"]["protected"].keys() - {"epk"}
+        } == protected
+        assert rv_at_charlie["header"]["unprotected"] == unprotected
+        assert rv_at_charlie["header"]["recipients"] == recipients
+        assert rv_at_charlie["header"]["aad"] == jwe_aad
+        assert rv_at_charlie["payload"] == payload
 
     def test_ecdh_es_jwe_with_json_serialization_for_single_recipient(self):
         jwe = JsonWebEncryption()
@@ -935,18 +884,15 @@ class JWETest(unittest.TestCase):
 
         rv = jwe.deserialize_json(data, key)
 
-        self.assertEqual(rv["header"]["protected"].keys(), protected.keys() | {"epk"})
-        self.assertEqual(
-            {
-                k: rv["header"]["protected"][k]
-                for k in rv["header"]["protected"].keys() - {"epk"}
-            },
-            protected,
-        )
-        self.assertEqual(rv["header"]["unprotected"], unprotected)
-        self.assertEqual(rv["header"]["recipients"], recipients)
-        self.assertEqual(rv["header"]["aad"], jwe_aad)
-        self.assertEqual(rv["payload"], payload)
+        assert rv["header"]["protected"].keys() == protected.keys() | {"epk"}
+        assert {
+            k: rv["header"]["protected"][k]
+            for k in rv["header"]["protected"].keys() - {"epk"}
+        } == protected
+        assert rv["header"]["unprotected"] == unprotected
+        assert rv["header"]["recipients"] == recipients
+        assert rv["header"]["aad"] == jwe_aad
+        assert rv["payload"] == payload
 
     def test_ecdh_es_encryption_fails_json_serialization_multiple_recipients_in_direct_key_agreement_mode(
         self,
@@ -957,13 +903,12 @@ class JWETest(unittest.TestCase):
 
         protected = {"alg": "ECDH-ES", "enc": "A128GCM"}
         header_obj = {"protected": protected}
-        self.assertRaises(
-            InvalidAlgorithmForMultipleRecipientsMode,
-            jwe.serialize_json,
-            header_obj,
-            b"hello",
-            [bob_key, charlie_key],
-        )
+        with pytest.raises(InvalidAlgorithmForMultipleRecipientsMode):
+            jwe.serialize_json(
+                header_obj,
+                b"hello",
+                [bob_key, charlie_key],
+            )
 
     def test_ecdh_es_decryption_with_public_key_fails(self):
         jwe = JsonWebEncryption()
@@ -976,14 +921,16 @@ class JWETest(unittest.TestCase):
             "y": "e8lnCO-AlStT-NJVX-crhB7QRYhiix03illJOVAOyck",
         }
         data = jwe.serialize_compact(protected, b"hello", key)
-        self.assertRaises(ValueError, jwe.deserialize_compact, data, key)
+        with pytest.raises(ValueError):
+            jwe.deserialize_compact(data, key)
 
     def test_ecdh_es_encryption_fails_if_key_curve_is_inappropriate(self):
         jwe = JsonWebEncryption()
         protected = {"alg": "ECDH-ES", "enc": "A128GCM"}
 
         key = OKPKey.generate_key("Ed25519", is_private=False)
-        self.assertRaises(ValueError, jwe.serialize_compact, protected, b"hello", key)
+        with pytest.raises(ValueError):
+            jwe.serialize_compact(protected, b"hello", key)
 
     def test_ecdh_es_decryption_fails_if_key_matches_to_no_recipient(self):
         jwe = JsonWebEncryption()
@@ -1029,7 +976,8 @@ class JWETest(unittest.TestCase):
 
         data = jwe.serialize_json(header_obj, payload, bob_key)
 
-        self.assertRaises(InvalidUnwrap, jwe.deserialize_json, data, charlie_key)
+        with pytest.raises(InvalidUnwrap):
+            jwe.deserialize_json(data, charlie_key)
 
     def test_decryption_with_json_serialization_succeeds_while_encrypted_key_for_another_recipient_is_invalid(
         self,
@@ -1089,38 +1037,36 @@ class JWETest(unittest.TestCase):
 
         rv_at_charlie = jwe.deserialize_json(data, charlie_key, sender_key=alice_key)
 
-        self.assertEqual(rv_at_charlie.keys(), {"header", "payload"})
+        assert rv_at_charlie.keys() == {"header", "payload"}
 
-        self.assertEqual(
-            rv_at_charlie["header"].keys(), {"protected", "unprotected", "recipients"}
-        )
+        assert rv_at_charlie["header"].keys() == {
+            "protected",
+            "unprotected",
+            "recipients",
+        }
 
-        self.assertEqual(
-            rv_at_charlie["header"]["protected"],
-            {
-                "alg": "ECDH-1PU+A128KW",
-                "enc": "A256CBC-HS512",
-                "apu": "QWxpY2U",
-                "apv": "Qm9iIGFuZCBDaGFybGll",
-                "epk": {
-                    "kty": "OKP",
-                    "crv": "X25519",
-                    "x": "k9of_cpAajy0poW5gaixXGs9nHkwg1AFqUAFa39dyBc",
-                },
+        assert rv_at_charlie["header"]["protected"] == {
+            "alg": "ECDH-1PU+A128KW",
+            "enc": "A256CBC-HS512",
+            "apu": "QWxpY2U",
+            "apv": "Qm9iIGFuZCBDaGFybGll",
+            "epk": {
+                "kty": "OKP",
+                "crv": "X25519",
+                "x": "k9of_cpAajy0poW5gaixXGs9nHkwg1AFqUAFa39dyBc",
             },
-        )
+        }
 
-        self.assertEqual(
-            rv_at_charlie["header"]["unprotected"],
-            {"jku": "https://alice.example.com/keys.jwks"},
-        )
+        assert rv_at_charlie["header"]["unprotected"] == {
+            "jku": "https://alice.example.com/keys.jwks"
+        }
 
-        self.assertEqual(
-            rv_at_charlie["header"]["recipients"],
-            [{"header": {"kid": "Bob's key"}}, {"header": {"kid": "Charlie's key"}}],
-        )
+        assert rv_at_charlie["header"]["recipients"] == [
+            {"header": {"kid": "Bob's key"}},
+            {"header": {"kid": "Charlie's key"}},
+        ]
 
-        self.assertEqual(rv_at_charlie["payload"], b"Three is a magic number.")
+        assert rv_at_charlie["payload"] == b"Three is a magic number."
 
     def test_decryption_with_json_serialization_fails_if_encrypted_key_for_this_recipient_is_invalid(
         self,
@@ -1178,9 +1124,8 @@ class JWETest(unittest.TestCase):
             "tag": "HLb4fTlm8spGmij3RyOs2gJ4DpHM4hhVRwdF_hGb3WQ",
         }
 
-        self.assertRaises(
-            InvalidUnwrap, jwe.deserialize_json, data, bob_key, sender_key=alice_key
-        )
+        with pytest.raises(InvalidUnwrap):
+            jwe.deserialize_json(data, bob_key, sender_key=alice_key)
 
     def test_dir_alg(self):
         jwe = JsonWebEncryption()
@@ -1188,12 +1133,14 @@ class JWETest(unittest.TestCase):
         protected = {"alg": "dir", "enc": "A128GCM"}
         data = jwe.serialize_compact(protected, b"hello", key)
         rv = jwe.deserialize_compact(data, key)
-        self.assertEqual(rv["payload"], b"hello")
+        assert rv["payload"] == b"hello"
 
         key2 = OctKey.generate_key(256, is_private=True)
-        self.assertRaises(ValueError, jwe.deserialize_compact, data, key2)
+        with pytest.raises(ValueError):
+            jwe.deserialize_compact(data, key2)
 
-        self.assertRaises(ValueError, jwe.serialize_compact, protected, b"hello", key2)
+        with pytest.raises(ValueError):
+            jwe.serialize_compact(protected, b"hello", key2)
 
     def test_decryption_of_message_to_multiple_recipients_by_matching_key(self):
         jwe = JsonWebEncryption()
@@ -1275,48 +1222,40 @@ class JWETest(unittest.TestCase):
             parsed_data, (available_key_id, available_key), sender_key=alice_public_key
         )
 
-        self.assertEqual(rv.keys(), {"header", "payload"})
+        assert rv.keys() == {"header", "payload"}
 
-        self.assertEqual(
-            rv["header"].keys(), {"protected", "unprotected", "recipients"}
-        )
+        assert rv["header"].keys() == {"protected", "unprotected", "recipients"}
 
-        self.assertEqual(
-            rv["header"]["protected"],
-            {
-                "alg": "ECDH-1PU+A128KW",
-                "enc": "A256CBC-HS512",
-                "apu": "QWxpY2U",
-                "apv": "Qm9iIGFuZCBDaGFybGll",
-                "epk": {
-                    "kty": "OKP",
-                    "crv": "X25519",
-                    "x": "k9of_cpAajy0poW5gaixXGs9nHkwg1AFqUAFa39dyBc",
-                },
+        assert rv["header"]["protected"] == {
+            "alg": "ECDH-1PU+A128KW",
+            "enc": "A256CBC-HS512",
+            "apu": "QWxpY2U",
+            "apv": "Qm9iIGFuZCBDaGFybGll",
+            "epk": {
+                "kty": "OKP",
+                "crv": "X25519",
+                "x": "k9of_cpAajy0poW5gaixXGs9nHkwg1AFqUAFa39dyBc",
             },
-        )
+        }
 
-        self.assertEqual(
-            rv["header"]["unprotected"], {"jku": "https://alice.example.com/keys.jwks"}
-        )
+        assert rv["header"]["unprotected"] == {
+            "jku": "https://alice.example.com/keys.jwks"
+        }
 
-        self.assertEqual(
-            rv["header"]["recipients"],
-            [
-                {
-                    "header": {
-                        "kid": "did:example:123#_Qq0UL2Fq651Q0Fjd6TvnYE-faHiOpRlPVQcY_-tA4A"
-                    }
-                },
-                {
-                    "header": {
-                        "kid": "did:example:123#ZC2jXTO6t4R501bfCXv3RxarZyUbdP2w_psLwMuY6ec"
-                    }
-                },
-            ],
-        )
+        assert rv["header"]["recipients"] == [
+            {
+                "header": {
+                    "kid": "did:example:123#_Qq0UL2Fq651Q0Fjd6TvnYE-faHiOpRlPVQcY_-tA4A"
+                }
+            },
+            {
+                "header": {
+                    "kid": "did:example:123#ZC2jXTO6t4R501bfCXv3RxarZyUbdP2w_psLwMuY6ec"
+                }
+            },
+        ]
 
-        self.assertEqual(rv["payload"], b"Three is a magic number.")
+        assert rv["payload"] == b"Three is a magic number."
 
     def test_decryption_of_json_string(self):
         jwe = JsonWebEncryption()
@@ -1373,73 +1312,65 @@ class JWETest(unittest.TestCase):
 
         rv_at_bob = jwe.deserialize_json(data, bob_key, sender_key=alice_key)
 
-        self.assertEqual(rv_at_bob.keys(), {"header", "payload"})
+        assert rv_at_bob.keys() == {"header", "payload"}
 
-        self.assertEqual(
-            rv_at_bob["header"].keys(), {"protected", "unprotected", "recipients"}
-        )
+        assert rv_at_bob["header"].keys() == {"protected", "unprotected", "recipients"}
 
-        self.assertEqual(
-            rv_at_bob["header"]["protected"],
-            {
-                "alg": "ECDH-1PU+A128KW",
-                "enc": "A256CBC-HS512",
-                "apu": "QWxpY2U",
-                "apv": "Qm9iIGFuZCBDaGFybGll",
-                "epk": {
-                    "kty": "OKP",
-                    "crv": "X25519",
-                    "x": "k9of_cpAajy0poW5gaixXGs9nHkwg1AFqUAFa39dyBc",
-                },
+        assert rv_at_bob["header"]["protected"] == {
+            "alg": "ECDH-1PU+A128KW",
+            "enc": "A256CBC-HS512",
+            "apu": "QWxpY2U",
+            "apv": "Qm9iIGFuZCBDaGFybGll",
+            "epk": {
+                "kty": "OKP",
+                "crv": "X25519",
+                "x": "k9of_cpAajy0poW5gaixXGs9nHkwg1AFqUAFa39dyBc",
             },
-        )
+        }
 
-        self.assertEqual(
-            rv_at_bob["header"]["unprotected"],
-            {"jku": "https://alice.example.com/keys.jwks"},
-        )
+        assert rv_at_bob["header"]["unprotected"] == {
+            "jku": "https://alice.example.com/keys.jwks"
+        }
 
-        self.assertEqual(
-            rv_at_bob["header"]["recipients"],
-            [{"header": {"kid": "bob-key-2"}}, {"header": {"kid": "2021-05-06"}}],
-        )
+        assert rv_at_bob["header"]["recipients"] == [
+            {"header": {"kid": "bob-key-2"}},
+            {"header": {"kid": "2021-05-06"}},
+        ]
 
-        self.assertEqual(rv_at_bob["payload"], b"Three is a magic number.")
+        assert rv_at_bob["payload"] == b"Three is a magic number."
 
         rv_at_charlie = jwe.deserialize_json(data, charlie_key, sender_key=alice_key)
 
-        self.assertEqual(rv_at_charlie.keys(), {"header", "payload"})
+        assert rv_at_charlie.keys() == {"header", "payload"}
 
-        self.assertEqual(
-            rv_at_charlie["header"].keys(), {"protected", "unprotected", "recipients"}
-        )
+        assert rv_at_charlie["header"].keys() == {
+            "protected",
+            "unprotected",
+            "recipients",
+        }
 
-        self.assertEqual(
-            rv_at_charlie["header"]["protected"],
-            {
-                "alg": "ECDH-1PU+A128KW",
-                "enc": "A256CBC-HS512",
-                "apu": "QWxpY2U",
-                "apv": "Qm9iIGFuZCBDaGFybGll",
-                "epk": {
-                    "kty": "OKP",
-                    "crv": "X25519",
-                    "x": "k9of_cpAajy0poW5gaixXGs9nHkwg1AFqUAFa39dyBc",
-                },
+        assert rv_at_charlie["header"]["protected"] == {
+            "alg": "ECDH-1PU+A128KW",
+            "enc": "A256CBC-HS512",
+            "apu": "QWxpY2U",
+            "apv": "Qm9iIGFuZCBDaGFybGll",
+            "epk": {
+                "kty": "OKP",
+                "crv": "X25519",
+                "x": "k9of_cpAajy0poW5gaixXGs9nHkwg1AFqUAFa39dyBc",
             },
-        )
+        }
 
-        self.assertEqual(
-            rv_at_charlie["header"]["unprotected"],
-            {"jku": "https://alice.example.com/keys.jwks"},
-        )
+        assert rv_at_charlie["header"]["unprotected"] == {
+            "jku": "https://alice.example.com/keys.jwks"
+        }
 
-        self.assertEqual(
-            rv_at_charlie["header"]["recipients"],
-            [{"header": {"kid": "bob-key-2"}}, {"header": {"kid": "2021-05-06"}}],
-        )
+        assert rv_at_charlie["header"]["recipients"] == [
+            {"header": {"kid": "bob-key-2"}},
+            {"header": {"kid": "2021-05-06"}},
+        ]
 
-        self.assertEqual(rv_at_charlie["payload"], b"Three is a magic number.")
+        assert rv_at_charlie["payload"] == b"Three is a magic number."
 
     def test_parse_json(self):
         json_msg = """
@@ -1469,26 +1400,23 @@ class JWETest(unittest.TestCase):
 
         parsed_msg = JsonWebEncryption.parse_json(json_msg)
 
-        self.assertEqual(
-            parsed_msg,
-            {
-                "protected": "eyJhbGciOiJFQ0RILTFQVStBMTI4S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwiYXB1IjoiUVd4cFkyVSIsImFwdiI6IlFtOWlJR0Z1WkNCRGFHRnliR2xsIiwiZXBrIjp7Imt0eSI6Ik9LUCIsImNydiI6IlgyNTUxOSIsIngiOiJrOW9mX2NwQWFqeTBwb1c1Z2FpeFhHczluSGt3ZzFBRnFVQUZhMzlkeUJjIn19",
-                "unprotected": {"jku": "https://alice.example.com/keys.jwks"},
-                "recipients": [
-                    {
-                        "header": {"kid": "bob-key-2"},
-                        "encrypted_key": "pOMVA9_PtoRe7xXW1139NzzN1UhiFoio8lGto9cf0t8PyU-sjNXH8-LIRLycq8CHJQbDwvQeU1cSl55cQ0hGezJu2N9IY0QN",
-                    },
-                    {
-                        "header": {"kid": "2021-05-06"},
-                        "encrypted_key": "56GVudgRLIMEElQ7DpXsijJVRSWUSDNdbWkdV3g0GUNq6hcT_GkxwnxlPIWrTXCqRpVKQC8fe4z3PQ2YH2afvjQ28aiCTWFE",
-                    },
-                ],
-                "iv": "AAECAwQFBgcICQoLDA0ODw",
-                "ciphertext": "Az2IWsISEMDJvyc5XRL-3-d-RgNBOGolCsxFFoUXFYw",
-                "tag": "HLb4fTlm8spGmij3RyOs2gJ4DpHM4hhVRwdF_hGb3WQ",
-            },
-        )
+        assert parsed_msg == {
+            "protected": "eyJhbGciOiJFQ0RILTFQVStBMTI4S1ciLCJlbmMiOiJBMjU2Q0JDLUhTNTEyIiwiYXB1IjoiUVd4cFkyVSIsImFwdiI6IlFtOWlJR0Z1WkNCRGFHRnliR2xsIiwiZXBrIjp7Imt0eSI6Ik9LUCIsImNydiI6IlgyNTUxOSIsIngiOiJrOW9mX2NwQWFqeTBwb1c1Z2FpeFhHczluSGt3ZzFBRnFVQUZhMzlkeUJjIn19",
+            "unprotected": {"jku": "https://alice.example.com/keys.jwks"},
+            "recipients": [
+                {
+                    "header": {"kid": "bob-key-2"},
+                    "encrypted_key": "pOMVA9_PtoRe7xXW1139NzzN1UhiFoio8lGto9cf0t8PyU-sjNXH8-LIRLycq8CHJQbDwvQeU1cSl55cQ0hGezJu2N9IY0QN",
+                },
+                {
+                    "header": {"kid": "2021-05-06"},
+                    "encrypted_key": "56GVudgRLIMEElQ7DpXsijJVRSWUSDNdbWkdV3g0GUNq6hcT_GkxwnxlPIWrTXCqRpVKQC8fe4z3PQ2YH2afvjQ28aiCTWFE",
+                },
+            ],
+            "iv": "AAECAwQFBgcICQoLDA0ODw",
+            "ciphertext": "Az2IWsISEMDJvyc5XRL-3-d-RgNBOGolCsxFFoUXFYw",
+            "tag": "HLb4fTlm8spGmij3RyOs2gJ4DpHM4hhVRwdF_hGb3WQ",
+        }
 
     def test_parse_json_fails_if_json_msg_is_invalid(self):
         json_msg = """
@@ -1516,7 +1444,8 @@ class JWETest(unittest.TestCase):
                 "tag": "HLb4fTlm8spGmij3RyOs2gJ4DpHM4hhVRwdF_hGb3WQ"
             }"""
 
-        self.assertRaises(DecodeError, JsonWebEncryption.parse_json, json_msg)
+        with pytest.raises(DecodeError):
+            JsonWebEncryption.parse_json(json_msg)
 
     def test_decryption_fails_if_ciphertext_is_invalid(self):
         jwe = JsonWebEncryption()
@@ -1556,9 +1485,8 @@ class JWETest(unittest.TestCase):
             "tag": "HLb4fTlm8spGmij3RyOs2gJ4DpHM4hhVRwdF_hGb3WQ",
         }
 
-        self.assertRaises(
-            Exception, jwe.deserialize_json, data, bob_key, sender_key=alice_key
-        )
+        with pytest.raises(InvalidTag):
+            jwe.deserialize_json(data, bob_key, sender_key=alice_key)
 
     def test_generic_serialize_deserialize_for_compact_serialization(self):
         jwe = JsonWebEncryption()
@@ -1569,10 +1497,10 @@ class JWETest(unittest.TestCase):
         header_obj = {"alg": "ECDH-1PU+A128KW", "enc": "A128CBC-HS256"}
 
         data = jwe.serialize(header_obj, b"hello", bob_key, sender_key=alice_key)
-        self.assertIsInstance(data, bytes)
+        assert isinstance(data, bytes)
 
         rv = jwe.deserialize(data, bob_key, sender_key=alice_key)
-        self.assertEqual(rv["payload"], b"hello")
+        assert rv["payload"] == b"hello"
 
     def test_generic_serialize_deserialize_for_json_serialization(self):
         jwe = JsonWebEncryption()
@@ -1584,10 +1512,10 @@ class JWETest(unittest.TestCase):
         header_obj = {"protected": protected}
 
         data = jwe.serialize(header_obj, b"hello", bob_key, sender_key=alice_key)
-        self.assertIsInstance(data, dict)
+        assert isinstance(data, dict)
 
         rv = jwe.deserialize(data, bob_key, sender_key=alice_key)
-        self.assertEqual(rv["payload"], b"hello")
+        assert rv["payload"] == b"hello"
 
     def test_generic_deserialize_for_json_serialization_string(self):
         jwe = JsonWebEncryption()
@@ -1599,9 +1527,9 @@ class JWETest(unittest.TestCase):
         header_obj = {"protected": protected}
 
         data = jwe.serialize(header_obj, b"hello", bob_key, sender_key=alice_key)
-        self.assertIsInstance(data, dict)
+        assert isinstance(data, dict)
 
         data_as_string = json.dumps(data)
 
         rv = jwe.deserialize(data_as_string, bob_key, sender_key=alice_key)
-        self.assertEqual(rv["payload"], b"hello")
+        assert rv["payload"] == b"hello"
