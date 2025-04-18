@@ -65,7 +65,7 @@ class JWTBearerTokenGenerator(BearerTokenGenerator):
 
     def get_audiences(self, client, user, scope) -> Union[str, list[str]]:
         """Return the audience for the token. By default this simply returns
-        the client ID. Developpers MAY re-implement this method to add extra
+        the client ID. Developers MAY re-implement this method to add extra
         audiences::
 
             def get_audiences(self, client, user, scope):
@@ -80,7 +80,7 @@ class JWTBearerTokenGenerator(BearerTokenGenerator):
         """Authentication Context Class Reference.
         Returns a user-defined case sensitive string indicating the class of
         authentication the used performed. Token audience may refuse to give access to
-        some resources if some ACR criterias are not met.
+        some resources if some ACR criteria are not met.
         :ref:`specs/oidc` defines one special value: ``0`` means that the user
         authentication did not respect `ISO29115`_ level 1, and will be refused monetary
         operations. Developers MAY re-implement this method::

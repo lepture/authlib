@@ -179,7 +179,7 @@ class ClientConfigurationEndpoint:
         raise NotImplementedError()
 
     def check_permission(self, client, request):
-        """Checks wether the current client is allowed to be accessed, edited
+        """Checks whether the current client is allowed to be accessed, edited
         or deleted. Developers MUST implement it in subclass, e.g.::
 
             def check_permission(self, client, request):

@@ -5,7 +5,7 @@ RFC9068: JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens
 
 This section contains the generic implementation of RFC9068_.
 JSON Web Token (JWT) Profile for OAuth 2.0 Access Tokens allows
-developpers to generate JWT access tokens.
+developers to generate JWT access tokens.
 
 Using JWT instead of plain text for access tokens result in different
 possibilities:
