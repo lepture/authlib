@@ -95,7 +95,7 @@ the state in case of CSRF attack::
 
 Save this token to access users' protected resources.
 
-In real project, this session can not be re-used since you are redirected to
+In real project, this session can not be reused since you are redirected to
 another website. You need to create another session yourself::
 
     >>> state = restore_previous_state()
@@ -242,7 +242,7 @@ directly::
 Access Protected Resources
 --------------------------
 
-Now you can access the protected resources. If you re-use the session, you
+Now you can access the protected resources. If you reuse the session, you
 don't need to do anything::
 
     >>> account_url = 'https://api.github.com/user'
