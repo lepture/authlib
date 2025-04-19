@@ -46,12 +46,10 @@ class ClientAuthentication:
 
         if "client_secret_basic" in methods:
             raise InvalidClientError(
-                state=request.state,
                 status_code=401,
                 description=f"The client cannot authenticate with methods: {methods}",
             )
         raise InvalidClientError(
-            state=request.state,
             description=f"The client cannot authenticate with methods: {methods}",
         )
 
@@ -65,7 +63,7 @@ def authenticate_client_secret_basic(query_client, request):
     """
     client_id, client_secret = extract_basic_authorization(request.headers)
     if client_id and client_secret:
-        client = _validate_client(query_client, client_id, request.state, 401)
+        client = _validate_client(query_client, client_id, 401)
         if client.check_client_secret(client_secret):
             log.debug(f'Authenticate {client_id} via "client_secret_basic" success')
             return client
@@ -80,7 +78,7 @@ def authenticate_client_secret_post(query_client, request):
     client_id = data.get("client_id")
     client_secret = data.get("client_secret")
     if client_id and client_secret:
-        client = _validate_client(query_client, client_id, request.state)
+        client = _validate_client(query_client, client_id)
         if client.check_client_secret(client_secret):
             log.debug(f'Authenticate {client_id} via "client_secret_post" success')
             return client
@@ -93,16 +91,15 @@ def authenticate_none(query_client, request):
     """
     client_id = request.client_id
     if client_id and not request.data.get("client_secret"):
-        client = _validate_client(query_client, client_id, request.state)
+        client = _validate_client(query_client, client_id)
         log.debug(f'Authenticate {client_id} via "none" success')
         return client
     log.debug(f'Authenticate {client_id} via "none" failed')
 
 
-def _validate_client(query_client, client_id, state=None, status_code=400):
+def _validate_client(query_client, client_id, status_code=400):
     if client_id is None:
         raise InvalidClientError(
-            state=state,
             status_code=status_code,
             description="Missing 'client_id' parameter.",
         )
@@ -110,7 +107,6 @@ def _validate_client(query_client, client_id, state=None, status_code=400):
     client = query_client(client_id)
     if not client:
         raise InvalidClientError(
-            state=state,
             status_code=status_code,
             description="The client does not exist on this server.",
         )
