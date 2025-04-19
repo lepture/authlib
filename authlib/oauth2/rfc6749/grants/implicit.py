@@ -131,7 +131,6 @@ class ImplicitGrant(BaseGrant, AuthorizationEndpointMixin):
         if not client.check_response_type(response_type):
             raise UnauthorizedClientError(
                 f"The client is not authorized to use 'response_type={response_type}'",
-                state=self.request.state,
                 redirect_uri=redirect_uri,
                 redirect_fragment=True,
             )
@@ -222,6 +221,4 @@ class ImplicitGrant(BaseGrant, AuthorizationEndpointMixin):
             headers = [("Location", uri)]
             return 302, "", headers
         else:
-            raise AccessDeniedError(
-                state=state, redirect_uri=redirect_uri, redirect_fragment=True
-            )
+            raise AccessDeniedError(redirect_uri=redirect_uri, redirect_fragment=True)

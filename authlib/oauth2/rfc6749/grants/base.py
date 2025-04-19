@@ -86,8 +86,7 @@ class BaseGrant:
     def validate_requested_scope(self):
         """Validate if requested scope is supported by Authorization Server."""
         scope = self.request.scope
-        state = self.request.state
-        return self.server.validate_requested_scope(scope, state)
+        return self.server.validate_requested_scope(scope)
 
     def register_hook(self, hook_type, hook):
         if hook_type not in self._hooks:
@@ -134,7 +133,6 @@ class AuthorizationEndpointMixin:
             if not client.check_redirect_uri(request.redirect_uri):
                 raise InvalidRequestError(
                     f"Redirect URI {request.redirect_uri} is not supported by client.",
-                    state=request.state,
                 )
             return request.redirect_uri
         else:

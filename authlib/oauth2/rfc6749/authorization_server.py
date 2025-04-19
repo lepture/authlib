@@ -178,14 +178,14 @@ class AuthorizationServer:
         """Return HTTP response. Framework MUST implement this function."""
         raise NotImplementedError()
 
-    def validate_requested_scope(self, scope, state=None):
+    def validate_requested_scope(self, scope):
         """Validate if requested scope is supported by Authorization Server.
         Developers CAN re-write this method to meet your needs.
         """
         if scope and self.scopes_supported:
             scopes = set(scope_to_list(scope))
             if not set(self.scopes_supported).issuperset(scopes):
-                raise InvalidScopeError(state=state)
+                raise InvalidScopeError()
 
     def register_grant(self, grant_cls, extensions=None):
         """Register a grant class into the endpoint registry. Developers
@@ -237,12 +237,20 @@ class AuthorizationServer:
         """Validate current HTTP request for authorization page. This page
         is designed for resource owner to grant or deny the authorization.
         """
-        request = self.create_oauth2_request(request)
-        request.user = end_user
+        try:
+            request = self.create_oauth2_request(request)
+            request.user = end_user
 
-        grant = self.get_authorization_grant(request)
-        grant.validate_no_multiple_request_parameter(request)
-        grant.validate_consent_request()
+            grant = self.get_authorization_grant(request)
+            grant.validate_no_multiple_request_parameter(request)
+            grant.validate_consent_request()
+
+        except OAuth2Error as error:
+            # REQUIRED if a "state" parameter was present in the client
+            # authorization request.  The exact value received from the
+            # client.
+            error.state = request.state
+            raise
         return grant
 
     def get_token_grant(self, request):
@@ -290,6 +298,7 @@ class AuthorizationServer:
         try:
             grant = self.get_authorization_grant(request)
         except UnsupportedResponseTypeError as error:
+            error.state = request.state
             return self.handle_error_response(request, error)
 
         try:
@@ -297,6 +306,7 @@ class AuthorizationServer:
             args = grant.create_authorization_response(redirect_uri, grant_user)
             response = self.handle_response(*args)
         except OAuth2Error as error:
+            error.state = request.state
             response = self.handle_error_response(request, error)
 
         grant.execute_hook("after_authorization_response", response)

@@ -12,6 +12,7 @@ Version 1.5.3
 **Unreleased**
 
 - Fix issue when :rfc:`RFC9207 <9207>` is enabled and the authorization endpoint response is not a redirection. :pr:`733`
+- Fix missing ``state`` parameter in authorization error responses. :issue:`525`
 
 Version 1.5.2
 -------------
