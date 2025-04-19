@@ -96,7 +96,7 @@ class DeviceAuthorizationEndpoint:
         # https://tools.ietf.org/html/rfc8628#section-3.1
 
         self.authenticate_client(request)
-        self.server.validate_requested_scope(request.scope)
+        self.server.validate_requested_scope(request.payload.scope)
 
         device_code = self.generate_device_code()
         user_code = self.generate_user_code()
@@ -114,7 +114,9 @@ class DeviceAuthorizationEndpoint:
             "interval": self.INTERVAL,
         }
 
-        self.save_device_credential(request.client_id, request.scope, data)
+        self.save_device_credential(
+            request.payload.client_id, request.payload.scope, data
+        )
         return 200, data, default_json_headers
 
     def generate_user_code(self):

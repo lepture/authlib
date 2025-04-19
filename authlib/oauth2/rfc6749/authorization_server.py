@@ -1,16 +1,19 @@
 from authlib.common.errors import ContinueIteration
+from authlib.deprecate import deprecate
 
 from .authenticate_client import ClientAuthentication
 from .errors import InvalidScopeError
 from .errors import OAuth2Error
 from .errors import UnsupportedGrantTypeError
 from .errors import UnsupportedResponseTypeError
+from .hooks import Hookable
+from .hooks import hooked
 from .requests import JsonRequest
 from .requests import OAuth2Request
 from .util import scope_to_list
 
 
-class AuthorizationServer:
+class AuthorizationServer(Hookable):
     """Authorization server that handles Authorization Endpoint and Token
     Endpoint.
 
@@ -18,12 +21,14 @@ class AuthorizationServer:
     """
 
     def __init__(self, scopes_supported=None):
+        super().__init__()
         self.scopes_supported = scopes_supported
         self._token_generators = {}
         self._client_auth = None
         self._authorization_grants = []
         self._token_grants = []
         self._endpoints = {}
+        self._extensions = []
 
     def query_client(self, client_id):
         """Query OAuth client by client_id. The client model class MUST
@@ -146,6 +151,9 @@ class AuthorizationServer:
 
         self._client_auth.register(method, func)
 
+    def register_extension(self, extension):
+        self._extensions.append(extension(self))
+
     def get_error_uri(self, request, error):
         """Return a URI for the given error, framework may implement this method."""
         return None
@@ -222,6 +230,7 @@ class AuthorizationServer:
         endpoints = self._endpoints.setdefault(endpoint.ENDPOINT_NAME, [])
         endpoints.append(endpoint)
 
+    @hooked
     def get_authorization_grant(self, request):
         """Find the authorization grant for current request.
 
@@ -231,7 +240,7 @@ class AuthorizationServer:
         for grant_cls, extensions in self._authorization_grants:
             if grant_cls.check_authorization_endpoint(request):
                 return _create_grant(grant_cls, extensions, request, self)
-        raise UnsupportedResponseTypeError(request.response_type)
+        raise UnsupportedResponseTypeError(request.payload.response_type)
 
     def get_consent_grant(self, request=None, end_user=None):
         """Validate current HTTP request for authorization page. This page
@@ -254,7 +263,7 @@ class AuthorizationServer:
         for grant_cls, extensions in self._token_grants:
             if grant_cls.check_token_endpoint(request):
                 return _create_grant(grant_cls, extensions, request, self)
-        raise UnsupportedGrantTypeError(request.grant_type)
+        raise UnsupportedGrantTypeError(request.payload.grant_type)
 
     def create_endpoint_response(self, name, request=None):
         """Validate endpoint request and create endpoint response.
@@ -276,7 +285,8 @@ class AuthorizationServer:
             except OAuth2Error as error:
                 return self.handle_error_response(request, error)
 
-    def create_authorization_response(self, request=None, grant_user=None):
+    @hooked
+    def create_authorization_response(self, request=None, grant_user=None, grant=None):
         """Validate authorization request and create authorization response.
 
         :param request: HTTP request instance.
@@ -287,10 +297,12 @@ class AuthorizationServer:
         if not isinstance(request, OAuth2Request):
             request = self.create_oauth2_request(request)
 
-        try:
-            grant = self.get_authorization_grant(request)
-        except UnsupportedResponseTypeError as error:
-            return self.handle_error_response(request, error)
+        if not grant:
+            deprecate("The 'grant' parameter will become mandatory.", version="1.7")
+            try:
+                grant = self.get_authorization_grant(request)
+            except UnsupportedResponseTypeError as error:
+                return self.handle_error_response(request, error)
 
         try:
             redirect_uri = grant.validate_authorization_request()

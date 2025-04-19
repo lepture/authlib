@@ -2,6 +2,7 @@ import logging
 
 from ..errors import InvalidRequestError
 from ..errors import UnauthorizedClientError
+from ..hooks import hooked
 from .base import BaseGrant
 from .base import TokenEndpointMixin
 
@@ -108,6 +109,7 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant, TokenEndpointMixin):
         self.request.user = user
         self.validate_requested_scope()
 
+    @hooked
     def create_token_response(self):
         """If the access token request is valid and authorized, the
         authorization server issues an access token and optional refresh
@@ -135,11 +137,10 @@ class ResourceOwnerPasswordCredentialsGrant(BaseGrant, TokenEndpointMixin):
         :returns: (status_code, body, headers)
         """
         user = self.request.user
-        scope = self.request.scope
+        scope = self.request.payload.scope
         token = self.generate_token(user=user, scope=scope)
         log.debug("Issue token %r to %r", token, self.client)
         self.save_token(token)
-        self.execute_hook("process_token", token=token)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def authenticate_user(self, username, password):
