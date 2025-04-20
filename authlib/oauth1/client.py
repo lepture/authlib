@@ -180,5 +180,7 @@ class OAuth1Client:
         raise ValueError(f"{error_type}: {error_description}")
 
     def __del__(self):
-        if self.session:
+        try:
             del self.session
+        except AttributeError:
+            pass
