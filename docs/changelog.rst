@@ -14,7 +14,7 @@ Version 1.5.3
 - Fix issue when :rfc:`RFC9207 <9207>` is enabled and the authorization endpoint response is not a redirection. :pr:`733`
 - Fix missing ``state`` parameter in authorization error responses. :issue:`525`
 - Support for ``acr`` and ``amr`` claims in ``id_token``. :issue:`734`
-
+- Support for the ``none`` JWS algorithm.
 
 Version 1.5.2
 -------------

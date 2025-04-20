@@ -35,7 +35,7 @@ class NoneAlgorithm(JWSAlgorithm):
         return b""
 
     def verify(self, msg, sig, key):
-        return False
+        return sig == b""
 
 
 class HMACAlgorithm(JWSAlgorithm):

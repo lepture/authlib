@@ -92,9 +92,12 @@ class JWSTest(unittest.TestCase):
         self.assertRaises(errors.BadSignatureError, jws.deserialize, s, ssh_pub_key)
 
     def test_compact_none(self):
-        jws = JsonWebSignature()
-        s = jws.serialize({"alg": "none"}, "hello", "")
-        self.assertRaises(errors.BadSignatureError, jws.deserialize, s, "")
+        jws = JsonWebSignature(algorithms=["none"])
+        s = jws.serialize({"alg": "none"}, "hello", None)
+        data = jws.deserialize(s, None)
+        header, payload = data["header"], data["payload"]
+        self.assertEqual(payload, b"hello")
+        self.assertEqual(header["alg"], "none")
 
     def test_flattened_json_jws(self):
         jws = JsonWebSignature()
