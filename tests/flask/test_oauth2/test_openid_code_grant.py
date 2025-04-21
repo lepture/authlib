@@ -219,6 +219,24 @@ class OpenIDCodeTest(BaseTestCase):
         rv = self.client.get("/oauth/authorize?" + query)
         self.assertEqual(rv.data, b"login")
 
+    def test_prompt_none_not_logged(self):
+        self.prepare_data()
+        params = [
+            ("response_type", "code"),
+            ("client_id", "code-client"),
+            ("state", "bar"),
+            ("nonce", "abc"),
+            ("scope", "openid profile"),
+            ("redirect_uri", "https://a.b"),
+            ("prompt", "none"),
+        ]
+        query = url_encode(params)
+        rv = self.client.get("/oauth/authorize?" + query)
+
+        params = dict(url_decode(urlparse.urlparse(rv.location).query))
+        self.assertEqual(params["error"], "login_required")
+        self.assertEqual(params["state"], "bar")
+
 
 class RSAOpenIDCodeTest(BaseTestCase):
     def config_app(self):

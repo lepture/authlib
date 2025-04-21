@@ -150,7 +150,7 @@ class AuthorizationCodeGrant(BaseGrant, AuthorizationEndpointMixin, TokenEndpoin
         :returns: (status_code, body, headers)
         """
         if not grant_user:
-            raise AccessDeniedError(state=self.request.state, redirect_uri=redirect_uri)
+            raise AccessDeniedError(redirect_uri=redirect_uri)
 
         self.request.user = grant_user
 
@@ -358,14 +358,12 @@ def validate_code_authorization_request(grant):
 
     if client_id is None:
         raise InvalidClientError(
-            state=request.state,
             description="Missing 'client_id' parameter.",
         )
 
     client = grant.server.query_client(client_id)
     if not client:
         raise InvalidClientError(
-            state=request.state,
             description="The client does not exist on this server.",
         )
 
@@ -374,7 +372,6 @@ def validate_code_authorization_request(grant):
     if not client.check_response_type(response_type):
         raise UnauthorizedClientError(
             f"The client is not authorized to use 'response_type={response_type}'",
-            state=grant.request.state,
             redirect_uri=redirect_uri,
         )
 
