@@ -221,3 +221,19 @@ class TokenMixin:
         :return: boolean
         """
         raise NotImplementedError()
+
+    def get_user(self):
+        """A method to get the user object associated with this token::
+
+        def get_user(self):
+            return User.get(self.user_id)
+        """
+        raise NotImplementedError()
+
+    def get_client(self) -> ClientMixin:
+        """A method to get the client object associated with this token::
+
+        def get_client(self):
+            return Client.get(self.client_id)
+        """
+        raise NotImplementedError()
