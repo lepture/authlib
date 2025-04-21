@@ -10,7 +10,7 @@ from authlib.common.urls import urlparse
 from authlib.integrations.flask_client import FlaskOAuth2App
 from authlib.integrations.flask_client import OAuth
 from authlib.integrations.flask_client import OAuthError
-from authlib.jose import jwk
+from authlib.jose.rfc7517 import JsonWebKey
 from authlib.oidc.core.grants.util import generate_id_token
 
 from ..util import get_bearer_token
@@ -352,7 +352,7 @@ class FlaskOAuthTest(TestCase):
         app = Flask(__name__)
         app.secret_key = "!"
         oauth = OAuth(app)
-        key = jwk.dumps("secret", "oct", kid="f")
+        key = dict(JsonWebKey.import_key("secret", {"kid": "f", "kty": "oct"}))
 
         client = oauth.register(
             "dev",

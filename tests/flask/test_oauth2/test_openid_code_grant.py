@@ -1,3 +1,5 @@
+import time
+
 from flask import current_app
 from flask import json
 
@@ -120,6 +122,9 @@ class OpenIDCodeTest(BaseTestCase):
             claims_options={"iss": {"value": "Authlib"}},
         )
         claims.validate()
+        assert claims["auth_time"] >= int(time.time())
+        assert claims["acr"] == "urn:mace:incommon:iap:silver"
+        assert claims["amr"] == ["pwd", "otp"]
 
     def test_pure_code_flow(self):
         self.prepare_data()

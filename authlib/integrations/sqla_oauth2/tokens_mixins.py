@@ -17,6 +17,8 @@ class OAuth2AuthorizationCodeMixin(AuthorizationCodeMixin):
     scope = Column(Text, default="")
     nonce = Column(Text)
     auth_time = Column(Integer, nullable=False, default=lambda: int(time.time()))
+    acr = Column(Text, nullable=True)
+    amr = Column(Text, nullable=True)
 
     code_challenge = Column(Text)
     code_challenge_method = Column(String(48))
@@ -32,6 +34,12 @@ class OAuth2AuthorizationCodeMixin(AuthorizationCodeMixin):
 
     def get_auth_time(self):
         return self.auth_time
+
+    def get_acr(self):
+        return self.acr
+
+    def get_amr(self):
+        return self.amr.split() if self.amr else []
 
     def get_nonce(self):
         return self.nonce
