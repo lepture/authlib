@@ -84,6 +84,7 @@ class BaseTestCase(TestCase):
 class OpenIDCodeTest(BaseTestCase):
     def test_authorize_token(self):
         self.prepare_data()
+        auth_request_time = time.time()
         rv = self.client.post(
             "/oauth/authorize",
             data={
@@ -122,7 +123,7 @@ class OpenIDCodeTest(BaseTestCase):
             claims_options={"iss": {"value": "Authlib"}},
         )
         claims.validate()
-        assert claims["auth_time"] >= int(time.time())
+        assert claims["auth_time"] >= int(auth_request_time)
         assert claims["acr"] == "urn:mace:incommon:iap:silver"
         assert claims["amr"] == ["pwd", "otp"]
 
