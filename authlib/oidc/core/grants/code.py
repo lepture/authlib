@@ -79,8 +79,12 @@ class OpenIDToken:
         if authorization_code:
             config["nonce"] = authorization_code.get_nonce()
             config["auth_time"] = authorization_code.get_auth_time()
-            config["acr"] = authorization_code.get_acr()
-            config["amr"] = authorization_code.get_amr()
+
+            if acr := authorization_code.get_acr():
+                config["acr"] = acr
+
+            if amr := authorization_code.get_amr():
+                config["amr"] = amr
 
         user_info = self.generate_user_info(request.user, token["scope"])
         id_token = generate_id_token(token, user_info, **config)
