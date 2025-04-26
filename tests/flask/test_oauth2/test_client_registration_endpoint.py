@@ -339,6 +339,35 @@ class OIDCClientRegistrationTest(TestCase):
         resp = json.loads(rv.data)
         self.assertIn(resp["error"], "invalid_client_metadata")
 
+    def test_id_token_signing_alg_values_none(self):
+        # The value none MUST NOT be used as the ID Token alg value unless the Client uses
+        # only Response Types that return no ID Token from the Authorization Endpoint
+        # (such as when only using the Authorization Code Flow).
+        metadata = {"id_token_signing_alg_values_supported": ["none", "RS256", "ES256"]}
+        self.prepare_data(metadata)
+
+        # Nominal case
+        body = {
+            "id_token_signed_response_alg": "none",
+            "client_name": "Authlib",
+            "response_type": "code",
+        }
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+        self.assertEqual(resp["id_token_signed_response_alg"], "none")
+
+        # Error case
+        body = {
+            "id_token_signed_response_alg": "none",
+            "client_name": "Authlib",
+            "response_type": "id_token",
+        }
+        rv = self.client.post("/create_client", json=body, headers=self.headers)
+        resp = json.loads(rv.data)
+        self.assertIn(resp["error"], "invalid_client_metadata")
+
     def test_id_token_encryption_alg_values_supported(self):
         metadata = {"id_token_encryption_alg_values_supported": ["RS256", "ES256"]}
         self.prepare_data(metadata)
