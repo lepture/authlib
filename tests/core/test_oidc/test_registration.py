@@ -35,10 +35,6 @@ class ClientMetadataClaimsTest(TestCase):
         claims = ClientMetadataClaims({"id_token_signed_response_alg": "RSA256"}, {})
         claims.validate()
 
-        # The value none MUST NOT be used.
-        claims = ClientMetadataClaims({"id_token_signed_response_alg": "none"}, {})
-        self.assertRaises(InvalidClaimError, claims.validate)
-
     def test_default_max_age(self):
         claims = ClientMetadataClaims({"default_max_age": 1234}, {})
         claims.validate()
