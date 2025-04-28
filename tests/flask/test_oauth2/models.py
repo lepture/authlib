@@ -18,8 +18,36 @@ class User(db.Model):
     def check_password(self, password):
         return password != "wrong"
 
-    def generate_user_info(self, scopes):
-        profile = {"sub": str(self.id), "name": self.username}
+    def generate_user_info(self, scopes=None):
+        profile = {
+            "sub": str(self.id),
+            "name": self.username,
+            "given_name": "Jane",
+            "family_name": "Doe",
+            "middle_name": "Middle",
+            "nickname": "Jany",
+            "preferred_username": "j.doe",
+            "profile": "https://example.com/janedoe",
+            "picture": "https://example.com/janedoe/me.jpg",
+            "website": "https://example.com",
+            "email": "janedoe@example.com",
+            "email_verified": True,
+            "gender": "female",
+            "birthdate": "2000-12-01",
+            "zoneinfo": "Europe/Paris",
+            "locale": "fr-FR",
+            "phone_number": "+1 (425) 555-1212",
+            "phone_number_verified": False,
+            "address": {
+                "formatted": "742 Evergreen Terrace, Springfield",
+                "street_address": "742 Evergreen Terrace",
+                "locality": "Springfield",
+                "region": "Unknown",
+                "postal_code": "1245",
+                "country": "USA",
+            },
+            "updated_at": 1745315119,
+        }
         return UserInfo(profile)
 
 
@@ -45,6 +73,12 @@ class Token(db.Model, OAuth2TokenMixin):
 
     def is_refresh_token_active(self):
         return not self.refresh_token_revoked_at
+
+    def get_client(self):
+        return db.session.query(Client).filter_by(client_id=self.client_id).one()
+
+    def get_user(self):
+        return self.user
 
 
 class CodeGrantMixin:
