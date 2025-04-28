@@ -149,8 +149,8 @@ class OpenIDCodeTest(TestCase):
                 "user_id": "1",
             },
         )
-        resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "unsupported_response_type")
+        params = dict(url_decode(urlparse.urlparse(rv.location).query))
+        self.assertEqual(params["error"], "unsupported_response_type")
 
     def test_invalid_scope(self):
         self.prepare_data()
