@@ -140,8 +140,8 @@ class UnsupportedResponseTypeError(OAuth2Error):
 
     error = "unsupported_response_type"
 
-    def __init__(self, response_type):
-        super().__init__()
+    def __init__(self, response_type, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.response_type = response_type
 
     def get_error_description(self):

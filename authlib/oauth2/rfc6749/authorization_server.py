@@ -231,7 +231,12 @@ class AuthorizationServer:
         for grant_cls, extensions in self._authorization_grants:
             if grant_cls.check_authorization_endpoint(request):
                 return _create_grant(grant_cls, extensions, request, self)
-        raise UnsupportedResponseTypeError(request.response_type)
+
+        raise UnsupportedResponseTypeError(
+            f"The response type '{request.response_type}' is not supported by the server.",
+            request.response_type,
+            redirect_uri=request.redirect_uri,
+        )
 
     def get_consent_grant(self, request=None, end_user=None):
         """Validate current HTTP request for authorization page. This page
