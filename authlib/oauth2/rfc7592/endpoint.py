@@ -82,11 +82,11 @@ class ClientConfigurationEndpoint:
             "client_id_issued_at",
         )
         for k in must_not_include:
-            if k in request.data:
+            if k in request.payload.data:
                 raise InvalidRequestError()
 
         # The client MUST include its 'client_id' field in the request
-        client_id = request.data.get("client_id")
+        client_id = request.payload.data.get("client_id")
         if not client_id:
             raise InvalidRequestError()
         if client_id != client.get_client_id():
@@ -95,8 +95,8 @@ class ClientConfigurationEndpoint:
         # If the client includes the 'client_secret' field in the request,
         # the value of this field MUST match the currently issued client
         # secret for that client.
-        if "client_secret" in request.data:
-            if not client.check_client_secret(request.data["client_secret"]):
+        if "client_secret" in request.payload.data:
+            if not client.check_client_secret(request.payload.data["client_secret"]):
                 raise InvalidRequestError()
 
         client_metadata = self.extract_client_metadata(request)
@@ -104,13 +104,13 @@ class ClientConfigurationEndpoint:
         return self.create_read_client_response(client, request)
 
     def extract_client_metadata(self, request):
-        json_data = request.data.copy()
+        json_data = request.payload.data.copy()
         client_metadata = {}
         server_metadata = self.get_server_metadata()
         for claims_class in self.claims_classes:
             options = (
                 claims_class.get_claims_options(server_metadata)
-                if server_metadata
+                if hasattr(claims_class, "get_claims_options") and server_metadata
                 else {}
             )
             claims = claims_class(json_data, {}, options, server_metadata)
@@ -160,7 +160,7 @@ class ClientConfigurationEndpoint:
         Developers MUST implement this method in subclass::
 
             def authenticate_client(self, request):
-                client_id = request.data.get("client_id")
+                client_id = request.payload.data.get("client_id")
                 return Client.get(client_id=client_id)
 
         :return: client instance

@@ -16,6 +16,7 @@ Version 1.5.3
 - Support for ``acr`` and ``amr`` claims in ``id_token``. :issue:`734`
 - Support for the ``none`` JWS algorithm.
 - Fix ``response_types`` strict order during dynamic client registration. :issue:`760`
+- Implement :rfc:`RFC9101 The OAuth 2.0 Authorization Framework: JWT-Secured Authorization Request (JAR) <9101>`. :issue:`723`
 
 Version 1.5.2
 -------------

@@ -89,8 +89,8 @@ def authenticate_none(query_client, request):
     """Authenticate public client by ``none`` method. The client
     does not have a client secret.
     """
-    client_id = request.client_id
-    if client_id and not request.data.get("client_secret"):
+    client_id = request.payload.client_id
+    if client_id and not request.payload.data.get("client_secret"):
         client = _validate_client(query_client, client_id)
         log.debug(f'Authenticate {client_id} via "none" success')
         return client

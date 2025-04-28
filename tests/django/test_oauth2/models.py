@@ -145,9 +145,9 @@ def generate_authorization_code(client, grant_user, request, **extra):
     item = OAuth2Code(
         code=code,
         client_id=client.client_id,
-        redirect_uri=request.redirect_uri,
-        response_type=request.response_type,
-        scope=request.scope,
+        redirect_uri=request.payload.redirect_uri,
+        response_type=request.payload.response_type,
+        scope=request.payload.scope,
         user=grant_user,
         **extra,
     )
