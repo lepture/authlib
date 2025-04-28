@@ -131,11 +131,22 @@ class OAuthClientRegistrationTest(TestCase):
         self.assertIn(resp["error"], "invalid_client_metadata")
 
     def test_response_types_supported(self):
-        metadata = {"response_types_supported": ["code"]}
+        metadata = {"response_types_supported": ["code", "code id_token"]}
         self.prepare_data(metadata=metadata)
 
         headers = {"Authorization": "bearer abc"}
         body = {"response_types": ["code"], "client_name": "Authlib"}
+        rv = self.client.post("/create_client", json=body, headers=headers)
+        resp = json.loads(rv.data)
+        self.assertIn("client_id", resp)
+        self.assertEqual(resp["client_name"], "Authlib")
+
+        # The items order should not matter
+        # Extension response types MAY contain a space-delimited (%x20) list of
+        # values, where the order of values does not matter (e.g., response
+        # type "a b" is the same as "b a").
+        headers = {"Authorization": "bearer abc"}
+        body = {"response_types": ["id_token code"], "client_name": "Authlib"}
         rv = self.client.post("/create_client", json=body, headers=headers)
         resp = json.loads(rv.data)
         self.assertIn("client_id", resp)

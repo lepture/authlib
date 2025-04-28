@@ -15,6 +15,7 @@ Version 1.5.3
 - Fix missing ``state`` parameter in authorization error responses. :issue:`525`
 - Support for ``acr`` and ``amr`` claims in ``id_token``. :issue:`734`
 - Support for the ``none`` JWS algorithm.
+- Fix ``response_types`` strict order during dynamic client registration. :issue:`760`
 
 Version 1.5.2
 -------------

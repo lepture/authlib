@@ -240,13 +240,20 @@ class ClientMetadataClaims(BaseClaims):
             options["scope"] = {"validate": _validate_scope}
 
         if response_types_supported is not None:
-            response_types_supported = set(response_types_supported)
+            response_types_supported = [
+                set(items.split()) for items in response_types_supported
+            ]
 
             def _validate_response_types(claims, value):
                 # If omitted, the default is that the client will use only the "code"
                 # response type.
-                response_types = set(value) if value else {"code"}
-                return response_types_supported.issuperset(response_types)
+                response_types = (
+                    [set(items.split()) for items in value] if value else [{"code"}]
+                )
+                return all(
+                    response_type in response_types_supported
+                    for response_type in response_types
+                )
 
             options["response_types"] = {"validate": _validate_response_types}
 
