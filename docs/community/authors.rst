@@ -18,7 +18,7 @@ Here is the list of the main contributors:
 - Nuno Santos
 - Éloi Rivard
 
-And more on https://github.com/lepture/authlib/graphs/contributors
+And more on https://github.com/authlib/authlib/graphs/contributors
 
 Sponsors
 --------
