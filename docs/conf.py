@@ -26,8 +26,8 @@ extensions = [
 ]
 
 extlinks = {
-    "issue": ("https://github.com/lepture/authlib/issues/%s", "issue #%s"),
-    "PR": ("https://github.com/lepture/authlib/pull/%s", "pull request #%s"),
+    "issue": ("https://github.com/authlib/authlib/issues/%s", "issue #%s"),
+    "PR": ("https://github.com/authlib/authlib/pull/%s", "pull request #%s"),
 }
 
 intersphinx_mapping = {
@@ -42,7 +42,7 @@ html_theme_options = {
     "twitter_site": "authlib",
     "twitter_creator": "lepture",
     "twitter_url": "https://twitter.com/authlib",
-    "github_url": "https://github.com/lepture/authlib",
+    "github_url": "https://github.com/authlib/authlib",
     "discord_url": "https://discord.gg/HvBVAeNAaV",
     "nav_links": [
         {

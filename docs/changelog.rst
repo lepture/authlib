@@ -207,7 +207,7 @@ Added ``ES256K`` algorithm for JWS and JWT.
 Old Versions
 ------------
 
-Find old changelog at https://github.com/lepture/authlib/releases
+Find old changelog at https://github.com/authlib/authlib/releases
 
 - Version 0.15.5: Released on Oct 18, 2021
 - Version 0.15.4: Released on Jul 17, 2021
