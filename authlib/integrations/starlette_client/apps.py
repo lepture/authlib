@@ -123,10 +123,11 @@ class StarletteOAuth2App(
         jwt = JsonWebToken(alg_values)
         jwk_set = await self.fetch_jwk_set()
 
+        claims_cls = kwargs.pop("claims_cls", JWTAccessTokenClaims)
         return jwt.decode(
             token,
             key=JsonWebKey.import_key_set(jwk_set),
-            claims_cls=JWTAccessTokenClaims,
+            claims_cls=claims_cls,
             claims_options=claims_options,
             **kwargs
         )
