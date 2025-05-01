@@ -119,7 +119,7 @@ class StarletteOAuth2App(
 
         # RFC9068: authorization servers and resource servers must support RS256
         if alg_values is None:
-            alg_values = ['RS256']
+            alg_values = ["RS256"]
         jwt = JsonWebToken(alg_values)
         jwk_set = await self.fetch_jwk_set()
 
