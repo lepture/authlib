@@ -333,18 +333,18 @@ async def test_oauth2_decode_access_token():
     )
 
     header = {
-        'alg': 'RS256',
-        'typ': 'at+jwt',
+        "alg": "RS256",
+        "typ": "at+jwt",
     }
     now = int(time.time())
     access_token = {
-        'iss': 'https://i.b',
-        'exp': now + 3600,
-        'aud': 'dev',
-        'sub': '123',
-        'client_id': '123',
-        'iat': now,
-        'jti': '123',
+        "iss": "https://i.b",
+        "exp": now + 3600,
+        "aud": "dev",
+        "sub": "123",
+        "client_id": "123",
+        "iat": now,
+        "jti": "123",
     }
     token = to_native(jwt.encode(header, access_token, secret_key))
 
@@ -367,18 +367,18 @@ async def test_oauth2_invalid_access_token():
     )
 
     header = {
-        'alg': 'RS256',
-        'typ': 'at+jwt',
+        "alg": "RS256",
+        "typ": "at+jwt",
     }
     now = int(time.time())
     access_token = {
-        'iss': 'https://i.b',
-        'exp': now + 3600,
-        'aud': 'invalid', # aud does not equal client_id
-        'sub': '123',
-        'client_id': '123',
-        'iat': now,
-        'jti': '123',
+        "iss": "https://i.b",
+        "exp": now + 3600,
+        "aud": "invalid", # aud does not equal client_id
+        "sub": "123",
+        "client_id": "123",
+        "iat": now,
+        "jti": "123",
     }
     token = to_native(jwt.encode(header, access_token, secret_key))
 
