@@ -45,12 +45,12 @@ class RevocationEndpointTest(TestCase):
         request = self.factory.post("/oauth/revoke")
         resp = server.create_endpoint_response(ENDPOINT_NAME, request)
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "invalid_client")
+        assert data["error"] == "invalid_client"
 
         request = self.factory.post("/oauth/revoke", HTTP_AUTHORIZATION="invalid token")
         resp = server.create_endpoint_response(ENDPOINT_NAME, request)
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "invalid_client")
+        assert data["error"] == "invalid_client"
 
         request = self.factory.post(
             "/oauth/revoke",
@@ -58,7 +58,7 @@ class RevocationEndpointTest(TestCase):
         )
         resp = server.create_endpoint_response(ENDPOINT_NAME, request)
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "invalid_client")
+        assert data["error"] == "invalid_client"
 
         request = self.factory.post(
             "/oauth/revoke",
@@ -66,7 +66,7 @@ class RevocationEndpointTest(TestCase):
         )
         resp = server.create_endpoint_response(ENDPOINT_NAME, request)
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "invalid_client")
+        assert data["error"] == "invalid_client"
 
     def test_invalid_token(self):
         server = self.create_server()
@@ -77,7 +77,7 @@ class RevocationEndpointTest(TestCase):
         request = self.factory.post("/oauth/revoke", HTTP_AUTHORIZATION=auth_header)
         resp = server.create_endpoint_response(ENDPOINT_NAME, request)
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "invalid_request")
+        assert data["error"] == "invalid_request"
 
         # case 1
         request = self.factory.post(
@@ -86,7 +86,7 @@ class RevocationEndpointTest(TestCase):
             HTTP_AUTHORIZATION=auth_header,
         )
         resp = server.create_endpoint_response(ENDPOINT_NAME, request)
-        self.assertEqual(resp.status_code, 200)
+        assert resp.status_code == 200
 
         # case 2
         request = self.factory.post(
@@ -99,7 +99,7 @@ class RevocationEndpointTest(TestCase):
         )
         resp = server.create_endpoint_response(ENDPOINT_NAME, request)
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "unsupported_token_type")
+        assert data["error"] == "unsupported_token_type"
 
         # case 3
         request = self.factory.post(
@@ -111,7 +111,7 @@ class RevocationEndpointTest(TestCase):
             HTTP_AUTHORIZATION=auth_header,
         )
         resp = server.create_endpoint_response(ENDPOINT_NAME, request)
-        self.assertEqual(resp.status_code, 200)
+        assert resp.status_code == 200
 
     def test_revoke_token_with_hint(self):
         self.prepare_client()
@@ -135,4 +135,4 @@ class RevocationEndpointTest(TestCase):
             HTTP_AUTHORIZATION=auth_header,
         )
         resp = server.create_endpoint_response(ENDPOINT_NAME, request)
-        self.assertEqual(resp.status_code, 200)
+        assert resp.status_code == 200

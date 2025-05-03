@@ -1,5 +1,7 @@
 from unittest import TestCase
 
+import pytest
+
 from authlib.jose.errors import InvalidClaimError
 from authlib.oidc.registration import ClientMetadataClaims
 
@@ -12,7 +14,8 @@ class ClientMetadataClaimsTest(TestCase):
         claims.validate()
 
         claims = ClientMetadataClaims({"request_uris": ["invalid"]}, {})
-        self.assertRaises(InvalidClaimError, claims.validate)
+        with pytest.raises(InvalidClaimError):
+            claims.validate()
 
     def test_initiate_login_uri(self):
         claims = ClientMetadataClaims(
@@ -21,7 +24,8 @@ class ClientMetadataClaimsTest(TestCase):
         claims.validate()
 
         claims = ClientMetadataClaims({"initiate_login_uri": "invalid"}, {})
-        self.assertRaises(InvalidClaimError, claims.validate)
+        with pytest.raises(InvalidClaimError):
+            claims.validate()
 
     def test_token_endpoint_auth_signing_alg(self):
         claims = ClientMetadataClaims({"token_endpoint_auth_signing_alg": "RSA256"}, {})
@@ -29,7 +33,8 @@ class ClientMetadataClaimsTest(TestCase):
 
         # The value none MUST NOT be used.
         claims = ClientMetadataClaims({"token_endpoint_auth_signing_alg": "none"}, {})
-        self.assertRaises(InvalidClaimError, claims.validate)
+        with pytest.raises(InvalidClaimError):
+            claims.validate()
 
     def test_id_token_signed_response_alg(self):
         claims = ClientMetadataClaims({"id_token_signed_response_alg": "RSA256"}, {})
@@ -41,4 +46,5 @@ class ClientMetadataClaimsTest(TestCase):
 
         # The value none MUST NOT be used.
         claims = ClientMetadataClaims({"default_max_age": "invalid"}, {})
-        self.assertRaises(InvalidClaimError, claims.validate)
+        with pytest.raises(InvalidClaimError):
+            claims.validate()

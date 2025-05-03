@@ -69,32 +69,32 @@ class AuthorizationCodeTest(TestCase):
     def test_get_authorize(self):
         self.prepare_data()
         rv = self.client.get(self.authorize_url)
-        self.assertEqual(rv.data, b"ok")
+        assert rv.data == b"ok"
 
     def test_invalid_client_id(self):
         self.prepare_data()
         url = "/oauth/authorize?response_type=code"
         rv = self.client.get(url)
-        self.assertIn(b"invalid_client", rv.data)
+        assert b"invalid_client" in rv.data
 
         url = "/oauth/authorize?response_type=code&client_id=invalid"
         rv = self.client.get(url)
-        self.assertIn(b"invalid_client", rv.data)
+        assert b"invalid_client" in rv.data
 
     def test_invalid_authorize(self):
         self.prepare_data()
         rv = self.client.post(self.authorize_url)
-        self.assertIn("error=access_denied", rv.location)
+        assert "error=access_denied" in rv.location
 
         self.server.scopes_supported = ["profile"]
         rv = self.client.post(self.authorize_url + "&scope=invalid&state=foo")
-        self.assertIn("error=invalid_scope", rv.location)
-        self.assertIn("state=foo", rv.location)
+        assert "error=invalid_scope" in rv.location
+        assert "state=foo" in rv.location
 
     def test_unauthorized_client(self):
         self.prepare_data(True, "token")
         rv = self.client.get(self.authorize_url)
-        self.assertIn("unauthorized_client", rv.location)
+        assert "unauthorized_client" in rv.location
 
     def test_invalid_client(self):
         self.prepare_data()
@@ -107,7 +107,7 @@ class AuthorizationCodeTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_client")
+        assert resp["error"] == "invalid_client"
 
         headers = self.create_basic_header("code-client", "invalid-secret")
         rv = self.client.post(
@@ -119,8 +119,8 @@ class AuthorizationCodeTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_client")
-        self.assertEqual(resp["error_uri"], "https://a.b/e#invalid_client")
+        assert resp["error"] == "invalid_client"
+        assert resp["error_uri"] == "https://a.b/e#invalid_client"
 
     def test_invalid_code(self):
         self.prepare_data()
@@ -134,7 +134,7 @@ class AuthorizationCodeTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_request")
+        assert resp["error"] == "invalid_request"
 
         rv = self.client.post(
             "/oauth/token",
@@ -145,7 +145,7 @@ class AuthorizationCodeTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_grant")
+        assert resp["error"] == "invalid_grant"
 
         code = AuthorizationCode(code="no-user", client_id="code-client", user_id=0)
         db.session.add(code)
@@ -159,18 +159,18 @@ class AuthorizationCodeTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_grant")
+        assert resp["error"] == "invalid_grant"
 
     def test_invalid_redirect_uri(self):
         self.prepare_data()
         uri = self.authorize_url + "&redirect_uri=https%3A%2F%2Fa.c"
         rv = self.client.post(uri, data={"user_id": "1"})
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_request")
+        assert resp["error"] == "invalid_request"
 
         uri = self.authorize_url + "&redirect_uri=https%3A%2F%2Fa.b"
         rv = self.client.post(uri, data={"user_id": "1"})
-        self.assertIn("code=", rv.location)
+        assert "code=" in rv.location
 
         params = dict(url_decode(urlparse.urlparse(rv.location).query))
         code = params["code"]
@@ -184,7 +184,7 @@ class AuthorizationCodeTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_grant")
+        assert resp["error"] == "invalid_grant"
 
     def test_invalid_grant_type(self):
         self.prepare_data(
@@ -199,14 +199,14 @@ class AuthorizationCodeTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "unauthorized_client")
+        assert resp["error"] == "unauthorized_client"
 
     def test_authorize_token_no_refresh_token(self):
         self.app.config.update({"OAUTH2_REFRESH_TOKEN_GENERATOR": True})
         self.prepare_data(False, token_endpoint_auth_method="none")
 
         rv = self.client.post(self.authorize_url, data={"user_id": "1"})
-        self.assertIn("code=", rv.location)
+        assert "code=" in rv.location
 
         params = dict(url_decode(urlparse.urlparse(rv.location).query))
         code = params["code"]
@@ -219,8 +219,8 @@ class AuthorizationCodeTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
-        self.assertNotIn("refresh_token", resp)
+        assert "access_token" in resp
+        assert "refresh_token" not in resp
 
     def test_authorize_token_has_refresh_token(self):
         # generate refresh token
@@ -228,10 +228,10 @@ class AuthorizationCodeTest(TestCase):
         self.prepare_data(grant_type="authorization_code\nrefresh_token")
         url = self.authorize_url + "&state=bar"
         rv = self.client.post(url, data={"user_id": "1"})
-        self.assertIn("code=", rv.location)
+        assert "code=" in rv.location
 
         params = dict(url_decode(urlparse.urlparse(rv.location).query))
-        self.assertEqual(params["state"], "bar")
+        assert params["state"] == "bar"
 
         code = params["code"]
         headers = self.create_basic_header("code-client", "code-secret")
@@ -244,8 +244,8 @@ class AuthorizationCodeTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
-        self.assertIn("refresh_token", resp)
+        assert "access_token" in resp
+        assert "refresh_token" in resp
 
     def test_invalid_multiple_request_parameters(self):
         self.prepare_data()
@@ -255,10 +255,8 @@ class AuthorizationCodeTest(TestCase):
         )
         rv = self.client.get(url)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_request")
-        self.assertEqual(
-            resp["error_description"], "Multiple 'response_type' in request."
-        )
+        assert resp["error"] == "invalid_request"
+        assert resp["error_description"] == "Multiple 'response_type' in request."
 
     def test_client_secret_post(self):
         self.app.config.update({"OAUTH2_REFRESH_TOKEN_GENERATOR": True})
@@ -268,10 +266,10 @@ class AuthorizationCodeTest(TestCase):
         )
         url = self.authorize_url + "&state=bar"
         rv = self.client.post(url, data={"user_id": "1"})
-        self.assertIn("code=", rv.location)
+        assert "code=" in rv.location
 
         params = dict(url_decode(urlparse.urlparse(rv.location).query))
-        self.assertEqual(params["state"], "bar")
+        assert params["state"] == "bar"
 
         code = params["code"]
         rv = self.client.post(
@@ -284,8 +282,8 @@ class AuthorizationCodeTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
-        self.assertIn("refresh_token", resp)
+        assert "access_token" in resp
+        assert "refresh_token" in resp
 
     def test_token_generator(self):
         m = "tests.flask.test_oauth2.oauth2_server:token_generator"
@@ -293,7 +291,7 @@ class AuthorizationCodeTest(TestCase):
         self.prepare_data(False, token_endpoint_auth_method="none")
 
         rv = self.client.post(self.authorize_url, data={"user_id": "1"})
-        self.assertIn("code=", rv.location)
+        assert "code=" in rv.location
 
         params = dict(url_decode(urlparse.urlparse(rv.location).query))
         code = params["code"]
@@ -306,5 +304,5 @@ class AuthorizationCodeTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
-        self.assertIn("c-authorization_code.1.", resp["access_token"])
+        assert "access_token" in resp
+        assert "c-authorization_code.1." in resp["access_token"]

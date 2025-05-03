@@ -67,7 +67,7 @@ class PasswordTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_client")
+        assert resp["error"] == "invalid_client"
 
         headers = self.create_basic_header("password-client", "invalid-secret")
         rv = self.client.post(
@@ -80,7 +80,7 @@ class PasswordTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_client")
+        assert resp["error"] == "invalid_client"
 
     def test_invalid_scope(self):
         self.prepare_data()
@@ -97,7 +97,7 @@ class PasswordTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_scope")
+        assert resp["error"] == "invalid_scope"
 
     def test_invalid_request(self):
         self.prepare_data()
@@ -113,7 +113,7 @@ class PasswordTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "unsupported_grant_type")
+        assert resp["error"] == "unsupported_grant_type"
 
         rv = self.client.post(
             "/oauth/token",
@@ -123,7 +123,7 @@ class PasswordTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_request")
+        assert resp["error"] == "invalid_request"
 
         rv = self.client.post(
             "/oauth/token",
@@ -134,7 +134,7 @@ class PasswordTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_request")
+        assert resp["error"] == "invalid_request"
 
         rv = self.client.post(
             "/oauth/token",
@@ -146,7 +146,7 @@ class PasswordTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_request")
+        assert resp["error"] == "invalid_request"
 
     def test_invalid_grant_type(self):
         self.prepare_data(grant_type="invalid")
@@ -161,7 +161,7 @@ class PasswordTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "unauthorized_client")
+        assert resp["error"] == "unauthorized_client"
 
     def test_authorize_token(self):
         self.prepare_data()
@@ -176,7 +176,7 @@ class PasswordTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
+        assert "access_token" in resp
 
     def test_token_generator(self):
         m = "tests.flask.test_oauth2.oauth2_server:token_generator"
@@ -193,8 +193,8 @@ class PasswordTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
-        self.assertIn("p-password.1.", resp["access_token"])
+        assert "access_token" in resp
+        assert "p-password.1." in resp["access_token"]
 
     def test_custom_expires_in(self):
         self.app.config.update({"OAUTH2_TOKEN_EXPIRES_IN": {"password": 1800}})
@@ -210,8 +210,8 @@ class PasswordTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
-        self.assertEqual(resp["expires_in"], 1800)
+        assert "access_token" in resp
+        assert resp["expires_in"] == 1800
 
     def test_id_token_extension(self):
         self.prepare_data(extensions=[IDToken()])
@@ -227,5 +227,5 @@ class PasswordTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
-        self.assertIn("id_token", resp)
+        assert "access_token" in resp
+        assert "id_token" in resp
