@@ -1,5 +1,7 @@
 import unittest
 
+import pytest
+
 from authlib.jose import JsonWebEncryption
 from authlib.jose import OctKey
 from authlib.jose.drafts import register_jwe_draft
@@ -22,6 +24,8 @@ class ChaCha20Test(unittest.TestCase):
         self.assertRaises(ValueError, jwe.serialize_compact, protected, b"hello", key2)
 
     def test_dir_alg_xc20p(self):
+        pytest.importorskip("Cryptodome.Cipher.ChaCha20_Poly1305")
+
         jwe = JsonWebEncryption()
         key = OctKey.generate_key(256, is_private=True)
         protected = {"alg": "dir", "enc": "XC20P"}
@@ -35,6 +39,8 @@ class ChaCha20Test(unittest.TestCase):
         self.assertRaises(ValueError, jwe.serialize_compact, protected, b"hello", key2)
 
     def test_xc20p_content_encryption_decryption(self):
+        pytest.importorskip("Cryptodome.Cipher.ChaCha20_Poly1305")
+
         # https://datatracker.ietf.org/doc/html/draft-irtf-cfrg-xchacha-03#appendix-A.3.1
         enc = JsonWebEncryption.ENC_REGISTRY["XC20P"]
 
