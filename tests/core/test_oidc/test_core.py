@@ -1,5 +1,7 @@
 import unittest
 
+import pytest
+
 from authlib.jose.errors import InvalidClaimError
 from authlib.jose.errors import MissingClaimError
 from authlib.oidc.core import CodeIDToken
@@ -12,7 +14,8 @@ from authlib.oidc.core import get_claim_cls_by_response_type
 class IDTokenTest(unittest.TestCase):
     def test_essential_claims(self):
         claims = CodeIDToken({}, {})
-        self.assertRaises(MissingClaimError, claims.validate)
+        with pytest.raises(MissingClaimError):
+            claims.validate()
         claims = CodeIDToken(
             {"iss": "1", "sub": "1", "aud": "1", "exp": 10000, "iat": 100}, {}
         )
@@ -23,19 +26,23 @@ class IDTokenTest(unittest.TestCase):
             {"iss": "1", "sub": "1", "aud": "1", "exp": 10000, "iat": 100}, {}
         )
         claims.params = {"max_age": 100}
-        self.assertRaises(MissingClaimError, claims.validate, 1000)
+        with pytest.raises(MissingClaimError):
+            claims.validate(1000)
 
         claims["auth_time"] = "foo"
-        self.assertRaises(InvalidClaimError, claims.validate, 1000)
+        with pytest.raises(InvalidClaimError):
+            claims.validate(1000)
 
     def test_validate_nonce(self):
         claims = CodeIDToken(
             {"iss": "1", "sub": "1", "aud": "1", "exp": 10000, "iat": 100}, {}
         )
         claims.params = {"nonce": "foo"}
-        self.assertRaises(MissingClaimError, claims.validate, 1000)
+        with pytest.raises(MissingClaimError):
+            claims.validate(1000)
         claims["nonce"] = "bar"
-        self.assertRaises(InvalidClaimError, claims.validate, 1000)
+        with pytest.raises(InvalidClaimError):
+            claims.validate(1000)
         claims["nonce"] = "foo"
         claims.validate(1000)
 
@@ -51,7 +58,8 @@ class IDTokenTest(unittest.TestCase):
             },
             {},
         )
-        self.assertRaises(InvalidClaimError, claims.validate, 1000)
+        with pytest.raises(InvalidClaimError):
+            claims.validate(1000)
 
     def test_validate_azp(self):
         claims = CodeIDToken(
@@ -65,10 +73,12 @@ class IDTokenTest(unittest.TestCase):
             {},
         )
         claims.params = {"client_id": "2"}
-        self.assertRaises(MissingClaimError, claims.validate, 1000)
+        with pytest.raises(MissingClaimError):
+            claims.validate(1000)
 
         claims["azp"] = "1"
-        self.assertRaises(InvalidClaimError, claims.validate, 1000)
+        with pytest.raises(InvalidClaimError):
+            claims.validate(1000)
 
         claims["azp"] = "2"
         claims.validate(1000)
@@ -92,7 +102,8 @@ class IDTokenTest(unittest.TestCase):
         claims.validate(1000)
 
         claims.header = {"alg": "HS256"}
-        self.assertRaises(InvalidClaimError, claims.validate, 1000)
+        with pytest.raises(InvalidClaimError):
+            claims.validate(1000)
 
     def test_implicit_id_token(self):
         claims = ImplicitIDToken(
@@ -107,7 +118,8 @@ class IDTokenTest(unittest.TestCase):
             {},
         )
         claims.params = {"access_token": "a"}
-        self.assertRaises(MissingClaimError, claims.validate, 1000)
+        with pytest.raises(MissingClaimError):
+            claims.validate(1000)
 
     def test_hybrid_id_token(self):
         claims = HybridIDToken(
@@ -124,7 +136,8 @@ class IDTokenTest(unittest.TestCase):
         claims.validate(1000)
 
         claims.params = {"code": "a"}
-        self.assertRaises(MissingClaimError, claims.validate, 1000)
+        with pytest.raises(MissingClaimError):
+            claims.validate(1000)
 
         # invalid alg won't raise
         claims.header = {"alg": "HS222"}
@@ -132,22 +145,24 @@ class IDTokenTest(unittest.TestCase):
         claims.validate(1000)
 
         claims.header = {"alg": "HS256"}
-        self.assertRaises(InvalidClaimError, claims.validate, 1000)
+        with pytest.raises(InvalidClaimError):
+            claims.validate(1000)
 
     def test_get_claim_cls_by_response_type(self):
         cls = get_claim_cls_by_response_type("id_token")
-        self.assertEqual(cls, ImplicitIDToken)
+        assert cls == ImplicitIDToken
         cls = get_claim_cls_by_response_type("code")
-        self.assertEqual(cls, CodeIDToken)
+        assert cls == CodeIDToken
         cls = get_claim_cls_by_response_type("code id_token")
-        self.assertEqual(cls, HybridIDToken)
+        assert cls == HybridIDToken
         cls = get_claim_cls_by_response_type("none")
-        self.assertIsNone(cls)
+        assert cls is None
 
 
 class UserInfoTest(unittest.TestCase):
     def test_getattribute(self):
         user = UserInfo({"sub": "1"})
-        self.assertEqual(user.sub, "1")
-        self.assertIsNone(user.email, None)
-        self.assertRaises(AttributeError, lambda: user.invalid)
+        assert user.sub == "1"
+        assert user.email is None
+        with pytest.raises(AttributeError):
+            user.invalid  # noqa: B018

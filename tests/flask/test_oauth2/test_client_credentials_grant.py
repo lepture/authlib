@@ -42,7 +42,7 @@ class ClientCredentialsTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_client")
+        assert resp["error"] == "invalid_client"
 
         headers = self.create_basic_header("credential-client", "invalid-secret")
         rv = self.client.post(
@@ -53,7 +53,7 @@ class ClientCredentialsTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_client")
+        assert resp["error"] == "invalid_client"
 
     def test_invalid_grant_type(self):
         self.prepare_data(grant_type="invalid")
@@ -66,7 +66,7 @@ class ClientCredentialsTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "unauthorized_client")
+        assert resp["error"] == "unauthorized_client"
 
     def test_invalid_scope(self):
         self.prepare_data()
@@ -81,7 +81,7 @@ class ClientCredentialsTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_scope")
+        assert resp["error"] == "invalid_scope"
 
     def test_authorize_token(self):
         self.prepare_data()
@@ -94,7 +94,7 @@ class ClientCredentialsTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
+        assert "access_token" in resp
 
     def test_token_generator(self):
         m = "tests.flask.test_oauth2.oauth2_server:token_generator"
@@ -110,5 +110,5 @@ class ClientCredentialsTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
-        self.assertIn("c-client_credentials.", resp["access_token"])
+        assert "access_token" in resp
+        assert "c-client_credentials." in resp["access_token"]

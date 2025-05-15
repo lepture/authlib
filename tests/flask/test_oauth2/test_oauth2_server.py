@@ -66,10 +66,10 @@ class AuthorizationTest(TestCase):
         create_authorization_server(self.app)
         authorize_url = "/oauth/authorize?response_type=token&client_id=implicit-client"
         rv = self.client.get(authorize_url)
-        self.assertIn(b"unsupported_response_type", rv.data)
+        assert b"unsupported_response_type" in rv.data
 
         rv = self.client.post(authorize_url, data={"user_id": "1"})
-        self.assertNotEqual(rv.status, 200)
+        assert rv.status != 200
 
         rv = self.client.post(
             "/oauth/token",
@@ -79,7 +79,7 @@ class AuthorizationTest(TestCase):
             },
         )
         data = json.loads(rv.data)
-        self.assertEqual(data["error"], "unsupported_grant_type")
+        assert data["error"] == "unsupported_grant_type"
 
 
 class ResourceTest(TestCase):
@@ -122,21 +122,21 @@ class ResourceTest(TestCase):
         self.prepare_data()
 
         rv = self.client.get("/user")
-        self.assertEqual(rv.status_code, 401)
+        assert rv.status_code == 401
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "missing_authorization")
+        assert resp["error"] == "missing_authorization"
 
         headers = {"Authorization": "invalid token"}
         rv = self.client.get("/user", headers=headers)
-        self.assertEqual(rv.status_code, 401)
+        assert rv.status_code == 401
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "unsupported_token_type")
+        assert resp["error"] == "unsupported_token_type"
 
         headers = self.create_bearer_header("invalid")
         rv = self.client.get("/user", headers=headers)
-        self.assertEqual(rv.status_code, 401)
+        assert rv.status_code == 401
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_token")
+        assert resp["error"] == "invalid_token"
 
     def test_expired_token(self):
         self.prepare_data()
@@ -144,21 +144,21 @@ class ResourceTest(TestCase):
         headers = self.create_bearer_header("a1")
 
         rv = self.client.get("/user", headers=headers)
-        self.assertEqual(rv.status_code, 401)
+        assert rv.status_code == 401
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_token")
+        assert resp["error"] == "invalid_token"
 
         rv = self.client.get("/acquire", headers=headers)
-        self.assertEqual(rv.status_code, 401)
+        assert rv.status_code == 401
 
     def test_insufficient_token(self):
         self.prepare_data()
         self.create_token()
         headers = self.create_bearer_header("a1")
         rv = self.client.get("/user/email", headers=headers)
-        self.assertEqual(rv.status_code, 403)
+        assert rv.status_code == 403
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "insufficient_scope")
+        assert resp["error"] == "insufficient_scope"
 
     def test_access_resource(self):
         self.prepare_data()
@@ -167,38 +167,38 @@ class ResourceTest(TestCase):
 
         rv = self.client.get("/user", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["username"], "foo")
+        assert resp["username"] == "foo"
 
         rv = self.client.get("/acquire", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["username"], "foo")
+        assert resp["username"] == "foo"
 
         rv = self.client.get("/info", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["status"], "ok")
+        assert resp["status"] == "ok"
 
     def test_scope_operator(self):
         self.prepare_data()
         self.create_token()
         headers = self.create_bearer_header("a1")
         rv = self.client.get("/operator-and", headers=headers)
-        self.assertEqual(rv.status_code, 403)
+        assert rv.status_code == 403
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "insufficient_scope")
+        assert resp["error"] == "insufficient_scope"
 
         rv = self.client.get("/operator-or", headers=headers)
-        self.assertEqual(rv.status_code, 200)
+        assert rv.status_code == 200
 
     def test_optional_token(self):
         self.prepare_data()
         rv = self.client.get("/optional")
-        self.assertEqual(rv.status_code, 200)
+        assert rv.status_code == 200
         resp = json.loads(rv.data)
-        self.assertEqual(resp["username"], "anonymous")
+        assert resp["username"] == "anonymous"
 
         self.create_token()
         headers = self.create_bearer_header("a1")
         rv = self.client.get("/optional", headers=headers)
-        self.assertEqual(rv.status_code, 200)
+        assert rv.status_code == 200
         resp = json.loads(rv.data)
-        self.assertEqual(resp["username"], "foo")
+        assert resp["username"] == "foo"

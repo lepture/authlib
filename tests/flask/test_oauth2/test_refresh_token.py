@@ -75,7 +75,7 @@ class RefreshTokenTest(TestCase):
             },
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_client")
+        assert resp["error"] == "invalid_client"
 
         headers = self.create_basic_header("invalid-client", "refresh-secret")
         rv = self.client.post(
@@ -87,7 +87,7 @@ class RefreshTokenTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_client")
+        assert resp["error"] == "invalid_client"
 
         headers = self.create_basic_header("refresh-client", "invalid-secret")
         rv = self.client.post(
@@ -99,7 +99,7 @@ class RefreshTokenTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_client")
+        assert resp["error"] == "invalid_client"
 
     def test_invalid_refresh_token(self):
         self.prepare_data()
@@ -112,8 +112,8 @@ class RefreshTokenTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_request")
-        self.assertIn("Missing", resp["error_description"])
+        assert resp["error"] == "invalid_request"
+        assert "Missing" in resp["error_description"]
 
         rv = self.client.post(
             "/oauth/token",
@@ -124,7 +124,7 @@ class RefreshTokenTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_grant")
+        assert resp["error"] == "invalid_grant"
 
     def test_invalid_scope(self):
         self.prepare_data()
@@ -140,7 +140,7 @@ class RefreshTokenTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_scope")
+        assert resp["error"] == "invalid_scope"
 
     def test_invalid_scope_none(self):
         self.prepare_data()
@@ -156,7 +156,7 @@ class RefreshTokenTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_scope")
+        assert resp["error"] == "invalid_scope"
 
     def test_invalid_user(self):
         self.prepare_data()
@@ -172,7 +172,7 @@ class RefreshTokenTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_request")
+        assert resp["error"] == "invalid_request"
 
     def test_invalid_grant_type(self):
         self.prepare_data(grant_type="invalid")
@@ -188,7 +188,7 @@ class RefreshTokenTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "unauthorized_client")
+        assert resp["error"] == "unauthorized_client"
 
     def test_authorize_token_no_scope(self):
         self.prepare_data()
@@ -203,7 +203,7 @@ class RefreshTokenTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
+        assert "access_token" in resp
 
     def test_authorize_token_scope(self):
         self.prepare_data()
@@ -219,7 +219,7 @@ class RefreshTokenTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
+        assert "access_token" in resp
 
     def test_revoke_old_credential(self):
         self.prepare_data()
@@ -235,7 +235,7 @@ class RefreshTokenTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
+        assert "access_token" in resp
 
         rv = self.client.post(
             "/oauth/token",
@@ -246,9 +246,9 @@ class RefreshTokenTest(TestCase):
             },
             headers=headers,
         )
-        self.assertEqual(rv.status_code, 400)
+        assert rv.status_code == 400
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_grant")
+        assert resp["error"] == "invalid_grant"
 
     def test_token_generator(self):
         m = "tests.flask.test_oauth2.oauth2_server:token_generator"
@@ -266,5 +266,5 @@ class RefreshTokenTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
-        self.assertIn("r-refresh_token.1.", resp["access_token"])
+        assert "access_token" in resp
+        assert "r-refresh_token.1." in resp["access_token"]
