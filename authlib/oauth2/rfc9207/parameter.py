@@ -10,7 +10,7 @@ class IssuerParameter:
         if isinstance(authorization_server, BaseGrant):
             deprecate(
                 "IssueParameter should be used as an authorization server extension with 'authorization_server.register_extension(IssueParameter())'.",
-                version="1.7",
+                version="1.8",
             )
             authorization_server.register_hook(
                 "after_authorization_response",
