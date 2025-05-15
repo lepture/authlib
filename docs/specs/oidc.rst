@@ -31,10 +31,19 @@ OpenID Grants
     :show-inheritance:
     :members:
 
+OpenID Endpoints
+----------------
+
+.. module:: authlib.oidc.core
+
+.. autoclass:: UserInfoEndpoint
+    :show-inheritance:
+    :members:
+
 OpenID Claims
 -------------
 
-.. module:: authlib.oidc.core
+.. module:: authlib.oidc.core.claims
 
 .. autoclass:: IDToken
     :show-inheritance:

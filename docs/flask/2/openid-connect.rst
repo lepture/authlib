@@ -116,10 +116,11 @@ First, we need to implement the missing methods for ``OpenIDCode``::
             }
 
         def generate_user_info(self, user, scope):
-            user_info = UserInfo(sub=user.id, name=user.name)
-            if 'email' in scope:
-                user_info['email'] = user.email
-            return user_info
+            return UserInfo(
+                sub=user.id,
+                name=user.name,
+                email=user.email,
+            ).filter(scope)
 
 Second, since there is one more ``nonce`` value in the ``AuthorizationCode``
 data, we need to save this value into the database. In this case, we have to
@@ -196,10 +197,11 @@ a scripting language. You need to implement the missing methods of
             }
 
         def generate_user_info(self, user, scope):
-            user_info = UserInfo(sub=user.id, name=user.name)
-            if 'email' in scope:
-                user_info['email'] = user.email
-            return user_info
+            return UserInfo(
+                sub=user.id,
+                name=user.name,
+                email=user.email,
+            ).filter(scope)
 
     server.register_grant(OpenIDImplicitGrant)
 
@@ -249,10 +251,11 @@ is ``save_authorization_code``. You can implement it like this::
             }
 
         def generate_user_info(self, user, scope):
-            user_info = UserInfo(sub=user.id, name=user.name)
-            if 'email' in scope:
-                user_info['email'] = user.email
-            return user_info
+            return UserInfo(
+                sub=user.id,
+                name=user.name,
+                email=user.email,
+            ).filter(scope)
 
     # register it to grant endpoint
     server.register_grant(OpenIDHybridGrant)

@@ -16,6 +16,8 @@ Version 1.5.3
 - Support for ``acr`` and ``amr`` claims in ``id_token``. :issue:`734`
 - Support for the ``none`` JWS algorithm.
 - Fix ``response_types`` strict order during dynamic client registration. :issue:`760`
+- OIDC :class:`UserInfo endpoint <authlib.oidc.core.userinfo.UserInfoEndpoint>` support. :issue:`459`
+
 
 Version 1.5.2
 -------------
