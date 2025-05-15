@@ -151,22 +151,22 @@ The ``AuthorizationServer`` has provided built-in methods to handle these endpoi
     # use ``server.create_authorization_response`` to handle authorization endpoint
 
     def authorize(request):
-        if request.method == 'GET':
-            try:
-                grant = server.get_consent_grant(request, end_user=request.user)
-            except OAuth2Error as error:
-                return server.handle_error_response(request, error)
+        try:
+            grant = server.get_consent_grant(request, end_user=request.user)
+        except OAuth2Error as error:
+            return server.handle_error_response(request, error)
 
-            scope = grant.client.get_allowed_scope(grant.request.scope)
+        if request.method == 'GET':
+            scope = grant.client.get_allowed_scope(grant.request.payload.scope)
             context = dict(grant=grant, client=grant.client, scope=scope, user=request.user)
             return render(request, 'authorize.html', context)
 
         if is_user_confirmed(request):
             # granted by resource owner
-            return server.create_authorization_response(request, grant_user=request.user)
+            return server.create_authorization_response(request, grant=grant, grant_user=request.user)
 
         # denied by resource owner
-        return server.create_authorization_response(request, grant_user=None)
+        return server.create_authorization_response(request, grant=grant, grant_user=None)
 
     # use ``server.create_token_response`` to handle token endpoint
 

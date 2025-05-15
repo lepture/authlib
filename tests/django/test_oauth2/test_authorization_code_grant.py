@@ -22,9 +22,9 @@ class AuthorizationCodeGrant(CodeGrantMixin, grants.AuthorizationCodeGrant):
         auth_code = OAuth2Code(
             code=code,
             client_id=request.client.client_id,
-            redirect_uri=request.redirect_uri,
-            response_type=request.response_type,
-            scope=request.scope,
+            redirect_uri=request.payload.redirect_uri,
+            response_type=request.payload.response_type,
+            scope=request.payload.scope,
             user=request.user,
         )
         auth_code.save()
@@ -105,14 +105,16 @@ class AuthorizationCodeTest(TestCase):
         self.prepare_data()
         data = {"response_type": "code", "client_id": "client"}
         request = self.factory.post("/authorize", data=data)
-        server.get_consent_grant(request)
+        grant = server.get_consent_grant(request)
 
-        resp = server.create_authorization_response(request)
+        resp = server.create_authorization_response(request, grant=grant)
         assert resp.status_code == 302
         assert "error=access_denied" in resp["Location"]
 
         grant_user = User.objects.get(username="foo")
-        resp = server.create_authorization_response(request, grant_user=grant_user)
+        resp = server.create_authorization_response(
+            request, grant=grant, grant_user=grant_user
+        )
         assert resp.status_code == 302
         assert "code=" in resp["Location"]
 
@@ -171,7 +173,10 @@ class AuthorizationCodeTest(TestCase):
         data = {"response_type": "code", "client_id": "client"}
         request = self.factory.post("/authorize", data=data)
         grant_user = User.objects.get(username="foo")
-        resp = server.create_authorization_response(request, grant_user=grant_user)
+        grant = server.get_consent_grant(request)
+        resp = server.create_authorization_response(
+            request, grant=grant, grant_user=grant_user
+        )
         assert resp.status_code == 302
 
         params = dict(url_decode(urlparse.urlparse(resp["Location"]).query))

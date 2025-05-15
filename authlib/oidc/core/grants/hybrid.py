@@ -39,9 +39,9 @@ class OpenIDHybridGrant(OpenIDImplicitGrant):
                 auth_code = AuthorizationCode(
                     code=code,
                     client_id=client.client_id,
-                    redirect_uri=request.redirect_uri,
-                    scope=request.scope,
-                    nonce=request.data.get("nonce"),
+                    redirect_uri=request.payload.redirect_uri,
+                    scope=request.payload.scope,
+                    nonce=request.payload.data.get("nonce"),
                     user_id=request.user.id,
                 )
                 auth_code.save()
@@ -49,15 +49,15 @@ class OpenIDHybridGrant(OpenIDImplicitGrant):
         raise NotImplementedError()
 
     def validate_authorization_request(self):
-        if not is_openid_scope(self.request.scope):
+        if not is_openid_scope(self.request.payload.scope):
             raise InvalidScopeError(
                 "Missing 'openid' scope",
-                redirect_uri=self.request.redirect_uri,
+                redirect_uri=self.request.payload.redirect_uri,
                 redirect_fragment=True,
             )
         self.register_hook(
-            "after_validate_authorization_request",
-            lambda grant: validate_nonce(
+            "after_validate_authorization_request_payload",
+            lambda grant, redirect_uri: validate_nonce(
                 grant.request, grant.exists_nonce, required=True
             ),
         )
@@ -72,11 +72,11 @@ class OpenIDHybridGrant(OpenIDImplicitGrant):
         token = self.generate_token(
             grant_type="implicit",
             user=grant_user,
-            scope=self.request.scope,
+            scope=self.request.payload.scope,
             include_refresh_token=False,
         )
 
-        response_types = self.request.response_type.split()
+        response_types = self.request.payload.response_type.split()
         if "token" in response_types:
             log.debug("Grant token %r to %r", token, client)
             self.server.save_token(token, self.request)

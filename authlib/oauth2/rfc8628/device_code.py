@@ -5,6 +5,7 @@ from ..rfc6749 import TokenEndpointMixin
 from ..rfc6749.errors import AccessDeniedError
 from ..rfc6749.errors import InvalidRequestError
 from ..rfc6749.errors import UnauthorizedClientError
+from ..rfc6749.hooks import hooked
 from .errors import AuthorizationPendingError
 from .errors import ExpiredTokenError
 from .errors import SlowDownError
@@ -89,7 +90,7 @@ class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
             &device_code=GmRhmhcxhwAzkoEqiMEg_DnyEysNkuNhszIySk9eS
             &client_id=1406020730
         """
-        device_code = self.request.data.get("device_code")
+        device_code = self.request.payload.data.get("device_code")
         if not device_code:
             raise InvalidRequestError("Missing 'device_code' in payload")
 
@@ -111,6 +112,7 @@ class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
         self.request.client = client
         self.request.credential = credential
 
+    @hooked
     def create_token_response(self):
         """If the access token request is valid and authorized, the
         authorization server issues an access token and optional refresh
@@ -125,7 +127,6 @@ class DeviceCodeGrant(BaseGrant, TokenEndpointMixin):
         )
         log.debug("Issue token %r to %r", token, client)
         self.save_token(token)
-        self.execute_hook("process_token", token=token)
         return 200, token, self.TOKEN_RESPONSE_HEADER
 
     def validate_device_credential(self, credential):
