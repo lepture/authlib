@@ -42,4 +42,4 @@ Then, when fetching your token in the framework of your choice, pass your custom
 
 The only difference to the original is the addition of the "| str" check which allows for lists and strings in the "amr" claim.
 
-See the underlying [IDToken code](/authlib/authlib/blob/main/authlib/oidc/core/claims.py) to determine which methods you can override.
+See the underlying `IDToken code <https://github.com/authlib/authlib/blob/main/authlib/oidc/core/claims.py>`_ to determine which methods you can override.
