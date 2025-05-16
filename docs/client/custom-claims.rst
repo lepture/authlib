@@ -10,7 +10,7 @@ ORCID has a non-standard response in the "amr" claim that returns a single strin
 
 Example: Log In with ORCID
 ---------------------
-To do so, create a custom claims class:
+To do so, create a custom claims class::
 
 	from authlib.jose.errors import InvalidClaimError
 	from authlib.oidc.core import CodeIDToken
@@ -34,7 +34,7 @@ To do so, create a custom claims class:
 	            raise InvalidClaimError(claim_error)
 
 
-Then, when fetching your token in the framework of your choice, pass your custom class:
+Then, when fetching your token in the framework of your choice, pass your custom class::
 
 	token = oauth.cilogon.authorize_access_token(
 	            request, claims_cls=ORCIDHandledToken
