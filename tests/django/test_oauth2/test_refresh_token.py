@@ -69,9 +69,9 @@ class RefreshTokenTest(TestCase):
             data={"grant_type": "refresh_token", "refresh_token": "foo"},
         )
         resp = server.create_token_response(request)
-        self.assertEqual(resp.status_code, 401)
+        assert resp.status_code == 401
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "invalid_client")
+        assert data["error"] == "invalid_client"
 
         request = self.factory.post(
             "/oauth/token",
@@ -79,9 +79,9 @@ class RefreshTokenTest(TestCase):
             HTTP_AUTHORIZATION=self.create_basic_auth("invalid", "secret"),
         )
         resp = server.create_token_response(request)
-        self.assertEqual(resp.status_code, 401)
+        assert resp.status_code == 401
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "invalid_client")
+        assert data["error"] == "invalid_client"
 
     def test_invalid_refresh_token(self):
         self.prepare_client()
@@ -93,10 +93,10 @@ class RefreshTokenTest(TestCase):
             HTTP_AUTHORIZATION=auth_header,
         )
         resp = server.create_token_response(request)
-        self.assertEqual(resp.status_code, 400)
+        assert resp.status_code == 400
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "invalid_request")
-        self.assertIn("Missing", data["error_description"])
+        assert data["error"] == "invalid_request"
+        assert "Missing" in data["error_description"]
 
         request = self.factory.post(
             "/oauth/token",
@@ -104,9 +104,9 @@ class RefreshTokenTest(TestCase):
             HTTP_AUTHORIZATION=auth_header,
         )
         resp = server.create_token_response(request)
-        self.assertEqual(resp.status_code, 400)
+        assert resp.status_code == 400
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "invalid_grant")
+        assert data["error"] == "invalid_grant"
 
     def test_invalid_scope(self):
         server = self.create_server()
@@ -123,9 +123,9 @@ class RefreshTokenTest(TestCase):
             HTTP_AUTHORIZATION=self.create_basic_auth("client", "secret"),
         )
         resp = server.create_token_response(request)
-        self.assertEqual(resp.status_code, 400)
+        assert resp.status_code == 400
         data = json.loads(resp.content)
-        self.assertEqual(data["error"], "invalid_scope")
+        assert data["error"] == "invalid_scope"
 
     def test_authorize_tno_scope(self):
         server = self.create_server()
@@ -141,9 +141,9 @@ class RefreshTokenTest(TestCase):
             HTTP_AUTHORIZATION=self.create_basic_auth("client", "secret"),
         )
         resp = server.create_token_response(request)
-        self.assertEqual(resp.status_code, 200)
+        assert resp.status_code == 200
         data = json.loads(resp.content)
-        self.assertIn("access_token", data)
+        assert "access_token" in data
 
     def test_authorize_token_scope(self):
         server = self.create_server()
@@ -160,9 +160,9 @@ class RefreshTokenTest(TestCase):
             HTTP_AUTHORIZATION=self.create_basic_auth("client", "secret"),
         )
         resp = server.create_token_response(request)
-        self.assertEqual(resp.status_code, 200)
+        assert resp.status_code == 200
         data = json.loads(resp.content)
-        self.assertIn("access_token", data)
+        assert "access_token" in data
 
     def test_revoke_old_token(self):
         server = self.create_server()
@@ -179,9 +179,9 @@ class RefreshTokenTest(TestCase):
             HTTP_AUTHORIZATION=self.create_basic_auth("client", "secret"),
         )
         resp = server.create_token_response(request)
-        self.assertEqual(resp.status_code, 200)
+        assert resp.status_code == 200
         data = json.loads(resp.content)
-        self.assertIn("access_token", data)
+        assert "access_token" in data
 
         resp = server.create_token_response(request)
-        self.assertEqual(resp.status_code, 400)
+        assert resp.status_code == 400

@@ -102,12 +102,12 @@ def save_authorization_code(code, request):
     auth_code = AuthorizationCode(
         code=code,
         client_id=client.client_id,
-        redirect_uri=request.redirect_uri,
-        scope=request.scope,
-        nonce=request.data.get("nonce"),
+        redirect_uri=request.payload.redirect_uri,
+        scope=request.payload.scope,
+        nonce=request.payload.data.get("nonce"),
         user_id=request.user.id,
-        code_challenge=request.data.get("code_challenge"),
-        code_challenge_method=request.data.get("code_challenge_method"),
+        code_challenge=request.payload.data.get("code_challenge"),
+        code_challenge_method=request.payload.data.get("code_challenge_method"),
         acr="urn:mace:incommon:iap:silver",
         amr="pwd otp",
     )
@@ -116,8 +116,8 @@ def save_authorization_code(code, request):
     return auth_code
 
 
-def exists_nonce(nonce, req):
+def exists_nonce(nonce, request):
     exists = AuthorizationCode.query.filter_by(
-        client_id=req.client_id, nonce=nonce
+        client_id=request.payload.client_id, nonce=nonce
     ).first()
     return bool(exists)

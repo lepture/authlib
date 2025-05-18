@@ -103,7 +103,7 @@ First, we need to implement the missing methods for ``OpenIDCode``::
     class OpenIDCode(grants.OpenIDCode):
         def exists_nonce(self, nonce, request):
             exists = AuthorizationCode.query.filter_by(
-                client_id=request.client_id, nonce=nonce
+                client_id=request.payload.client_id, nonce=nonce
             ).first()
             return bool(exists)
 
@@ -129,12 +129,12 @@ update our :ref:`flask_oauth2_code_grant` ``save_authorization_code`` method::
     class AuthorizationCodeGrant(_AuthorizationCodeGrant):
         def save_authorization_code(self, code, request):
             # openid request MAY have "nonce" parameter
-            nonce = request.data.get('nonce')
+            nonce = request.payload.data.get('nonce')
             auth_code = AuthorizationCode(
                 code=code,
                 client_id=request.client.client_id,
                 redirect_uri=request.redirect_uri,
-                scope=request.scope,
+                scope=request.payload.scope,
                 user_id=request.user.id,
                 nonce=nonce,
             )
@@ -184,7 +184,7 @@ a scripting language. You need to implement the missing methods of
     class OpenIDImplicitGrant(grants.OpenIDImplicitGrant):
         def exists_nonce(self, nonce, request):
             exists = AuthorizationCode.query.filter_by(
-                client_id=request.client_id, nonce=nonce
+                client_id=request.payload.client_id, nonce=nonce
             ).first()
             return bool(exists)
 
@@ -223,12 +223,12 @@ is ``save_authorization_code``. You can implement it like this::
 
     class OpenIDHybridGrant(grants.OpenIDHybridGrant):
         def save_authorization_code(self, code, request):
-            nonce = request.data.get('nonce')
+            nonce = request.payload.data.get('nonce')
             item = AuthorizationCode(
                 code=code,
                 client_id=request.client.client_id,
                 redirect_uri=request.redirect_uri,
-                scope=request.scope,
+                scope=request.payload.scope,
                 user_id=request.user.id,
                 nonce=nonce,
             )
@@ -238,7 +238,7 @@ is ``save_authorization_code``. You can implement it like this::
 
         def exists_nonce(self, nonce, request):
             exists = AuthorizationCode.query.filter_by(
-                client_id=request.client_id, nonce=nonce
+                client_id=request.payload.client_id, nonce=nonce
             ).first()
             return bool(exists)
 

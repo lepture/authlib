@@ -4,6 +4,7 @@ from authlib.oauth2.rfc6749 import AccessDeniedError
 from authlib.oauth2.rfc6749 import ImplicitGrant
 from authlib.oauth2.rfc6749 import InvalidScopeError
 from authlib.oauth2.rfc6749 import OAuth2Error
+from authlib.oauth2.rfc6749.hooks import hooked
 
 from .util import create_response_mode_response
 from .util import generate_id_token
@@ -24,7 +25,7 @@ class OpenIDImplicitGrant(ImplicitGrant):
 
             def exists_nonce(self, nonce, request):
                 exists = AuthorizationCode.query.filter_by(
-                    client_id=request.client_id, nonce=nonce
+                    client_id=request.payload.client_id, nonce=nonce
                 ).first()
                 return bool(exists)
 
@@ -78,10 +79,10 @@ class OpenIDImplicitGrant(ImplicitGrant):
         return [client.get_client_id()]
 
     def validate_authorization_request(self):
-        if not is_openid_scope(self.request.scope):
+        if not is_openid_scope(self.request.payload.scope):
             raise InvalidScopeError(
                 "Missing 'openid' scope",
-                redirect_uri=self.request.redirect_uri,
+                redirect_uri=self.request.payload.redirect_uri,
                 redirect_fragment=True,
             )
         redirect_uri = super().validate_authorization_request()
@@ -93,12 +94,14 @@ class OpenIDImplicitGrant(ImplicitGrant):
             raise error
         return redirect_uri
 
+    @hooked
     def validate_consent_request(self):
         redirect_uri = self.validate_authorization_request()
         validate_request_prompt(self, redirect_uri, redirect_fragment=True)
+        return redirect_uri
 
     def create_authorization_response(self, redirect_uri, grant_user):
-        state = self.request.state
+        state = self.request.payload.state
         if grant_user:
             params = self.create_granted_params(grant_user)
             if state:
@@ -108,7 +111,7 @@ class OpenIDImplicitGrant(ImplicitGrant):
             params = error.get_body()
 
         # http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#ResponseModes
-        response_mode = self.request.data.get(
+        response_mode = self.request.payload.data.get(
             "response_mode", self.DEFAULT_RESPONSE_MODE
         )
         return create_response_mode_response(
@@ -121,9 +124,11 @@ class OpenIDImplicitGrant(ImplicitGrant):
         self.request.user = grant_user
         client = self.request.client
         token = self.generate_token(
-            user=grant_user, scope=self.request.scope, include_refresh_token=False
+            user=grant_user,
+            scope=self.request.payload.scope,
+            include_refresh_token=False,
         )
-        if self.request.response_type == "id_token":
+        if self.request.payload.response_type == "id_token":
             token = {
                 "expires_in": token["expires_in"],
                 "scope": token["scope"],
@@ -139,7 +144,7 @@ class OpenIDImplicitGrant(ImplicitGrant):
     def process_implicit_token(self, token, code=None):
         config = self.get_jwt_config()
         config["aud"] = self.get_audiences(self.request)
-        config["nonce"] = self.request.data.get("nonce")
+        config["nonce"] = self.request.payload.data.get("nonce")
         if code is not None:
             config["code"] = code
 

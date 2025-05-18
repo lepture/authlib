@@ -38,8 +38,8 @@ classifiers = [
 [project.urls]
 Documentation = "https://docs.authlib.org/"
 Purchase = "https://authlib.org/plans"
-Issues = "https://github.com/lepture/authlib/issues"
-Source = "https://github.com/lepture/authlib"
+Issues = "https://github.com/authlib/authlib/issues"
+Source = "https://github.com/authlib/authlib"
 Donate = "https://github.com/sponsors/lepture"
 Blog = "https://blog.authlib.org/"
 

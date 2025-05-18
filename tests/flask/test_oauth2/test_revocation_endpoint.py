@@ -56,29 +56,29 @@ class RevokeTokenTest(TestCase):
         self.prepare_data()
         rv = self.client.post("/oauth/revoke")
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_client")
+        assert resp["error"] == "invalid_client"
 
         headers = {"Authorization": "invalid token_string"}
         rv = self.client.post("/oauth/revoke", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_client")
+        assert resp["error"] == "invalid_client"
 
         headers = self.create_basic_header("invalid-client", "revoke-secret")
         rv = self.client.post("/oauth/revoke", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_client")
+        assert resp["error"] == "invalid_client"
 
         headers = self.create_basic_header("revoke-client", "invalid-secret")
         rv = self.client.post("/oauth/revoke", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_client")
+        assert resp["error"] == "invalid_client"
 
     def test_invalid_token(self):
         self.prepare_data()
         headers = self.create_basic_header("revoke-client", "revoke-secret")
         rv = self.client.post("/oauth/revoke", headers=headers)
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_request")
+        assert resp["error"] == "invalid_request"
 
         rv = self.client.post(
             "/oauth/revoke",
@@ -87,7 +87,7 @@ class RevokeTokenTest(TestCase):
             },
             headers=headers,
         )
-        self.assertEqual(rv.status_code, 200)
+        assert rv.status_code == 200
 
         rv = self.client.post(
             "/oauth/revoke",
@@ -98,7 +98,7 @@ class RevokeTokenTest(TestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "unsupported_token_type")
+        assert resp["error"] == "unsupported_token_type"
 
         rv = self.client.post(
             "/oauth/revoke",
@@ -108,7 +108,7 @@ class RevokeTokenTest(TestCase):
             },
             headers=headers,
         )
-        self.assertEqual(rv.status_code, 200)
+        assert rv.status_code == 200
 
     def test_revoke_token_with_hint(self):
         self.prepare_data()
@@ -122,7 +122,7 @@ class RevokeTokenTest(TestCase):
             },
             headers=headers,
         )
-        self.assertEqual(rv.status_code, 200)
+        assert rv.status_code == 200
 
     def test_revoke_token_without_hint(self):
         self.prepare_data()
@@ -135,7 +135,7 @@ class RevokeTokenTest(TestCase):
             },
             headers=headers,
         )
-        self.assertEqual(rv.status_code, 200)
+        assert rv.status_code == 200
 
     def test_revoke_token_bound_to_client(self):
         self.prepare_data()
@@ -163,6 +163,6 @@ class RevokeTokenTest(TestCase):
             },
             headers=headers,
         )
-        self.assertEqual(rv.status_code, 400)
+        assert rv.status_code == 400
         resp = json.loads(rv.data)
-        self.assertEqual(resp["error"], "invalid_grant")
+        assert resp["error"] == "invalid_grant"

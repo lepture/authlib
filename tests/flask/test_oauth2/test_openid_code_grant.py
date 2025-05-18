@@ -96,10 +96,10 @@ class OpenIDCodeTest(BaseTestCase):
                 "user_id": "1",
             },
         )
-        self.assertIn("code=", rv.location)
+        assert "code=" in rv.location
 
         params = dict(url_decode(urlparse.urlparse(rv.location).query))
-        self.assertEqual(params["state"], "bar")
+        assert params["state"] == "bar"
 
         code = params["code"]
         headers = self.create_basic_header("code-client", "code-secret")
@@ -113,8 +113,8 @@ class OpenIDCodeTest(BaseTestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
-        self.assertIn("id_token", resp)
+        assert "access_token" in resp
+        assert "id_token" in resp
 
         claims = jwt.decode(
             resp["id_token"],
@@ -140,10 +140,10 @@ class OpenIDCodeTest(BaseTestCase):
                 "user_id": "1",
             },
         )
-        self.assertIn("code=", rv.location)
+        assert "code=" in rv.location
 
         params = dict(url_decode(urlparse.urlparse(rv.location).query))
-        self.assertEqual(params["state"], "bar")
+        assert params["state"] == "bar"
 
         code = params["code"]
         headers = self.create_basic_header("code-client", "code-secret")
@@ -157,8 +157,8 @@ class OpenIDCodeTest(BaseTestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
-        self.assertNotIn("id_token", resp)
+        assert "access_token" in resp
+        assert "id_token" not in resp
 
     def test_require_nonce(self):
         self.prepare_data(require_nonce=True)
@@ -174,8 +174,8 @@ class OpenIDCodeTest(BaseTestCase):
             },
         )
         params = dict(url_decode(urlparse.urlparse(rv.location).query))
-        self.assertEqual(params["error"], "invalid_request")
-        self.assertEqual(params["error_description"], "Missing 'nonce' in request.")
+        assert params["error"] == "invalid_request"
+        assert params["error_description"] == "Missing 'nonce' in request."
 
     def test_nonce_replay(self):
         self.prepare_data()
@@ -189,10 +189,10 @@ class OpenIDCodeTest(BaseTestCase):
             "redirect_uri": "https://a.b",
         }
         rv = self.client.post("/oauth/authorize", data=data)
-        self.assertIn("code=", rv.location)
+        assert "code=" in rv.location
 
         rv = self.client.post("/oauth/authorize", data=data)
-        self.assertIn("error=", rv.location)
+        assert "error=" in rv.location
 
     def test_prompt(self):
         self.prepare_data()
@@ -206,19 +206,19 @@ class OpenIDCodeTest(BaseTestCase):
         ]
         query = url_encode(params)
         rv = self.client.get("/oauth/authorize?" + query)
-        self.assertEqual(rv.data, b"login")
+        assert rv.data == b"login"
 
         query = url_encode(params + [("user_id", "1")])
         rv = self.client.get("/oauth/authorize?" + query)
-        self.assertEqual(rv.data, b"ok")
+        assert rv.data == b"ok"
 
         query = url_encode(params + [("prompt", "login")])
         rv = self.client.get("/oauth/authorize?" + query)
-        self.assertEqual(rv.data, b"login")
+        assert rv.data == b"login"
 
         query = url_encode(params + [("user_id", "1"), ("prompt", "login")])
         rv = self.client.get("/oauth/authorize?" + query)
-        self.assertEqual(rv.data, b"login")
+        assert rv.data == b"login"
 
     def test_prompt_none_not_logged(self):
         self.prepare_data()
@@ -235,8 +235,8 @@ class OpenIDCodeTest(BaseTestCase):
         rv = self.client.get("/oauth/authorize?" + query)
 
         params = dict(url_decode(urlparse.urlparse(rv.location).query))
-        self.assertEqual(params["error"], "login_required")
-        self.assertEqual(params["state"], "bar")
+        assert params["error"] == "login_required"
+        assert params["state"] == "bar"
 
 
 class RSAOpenIDCodeTest(BaseTestCase):
@@ -266,10 +266,10 @@ class RSAOpenIDCodeTest(BaseTestCase):
                 "user_id": "1",
             },
         )
-        self.assertIn("code=", rv.location)
+        assert "code=" in rv.location
 
         params = dict(url_decode(urlparse.urlparse(rv.location).query))
-        self.assertEqual(params["state"], "bar")
+        assert params["state"] == "bar"
 
         code = params["code"]
         headers = self.create_basic_header("code-client", "code-secret")
@@ -283,8 +283,8 @@ class RSAOpenIDCodeTest(BaseTestCase):
             headers=headers,
         )
         resp = json.loads(rv.data)
-        self.assertIn("access_token", resp)
-        self.assertIn("id_token", resp)
+        assert "access_token" in resp
+        assert "id_token" in resp
 
         claims = jwt.decode(
             resp["id_token"],

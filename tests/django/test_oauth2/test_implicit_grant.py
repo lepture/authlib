@@ -1,3 +1,5 @@
+import pytest
+
 from authlib.common.urls import url_decode
 from authlib.common.urls import urlparse
 from authlib.oauth2.rfc6749 import errors
@@ -31,16 +33,17 @@ class ImplicitTest(TestCase):
         server = self.create_server()
         url = "/authorize?response_type=token"
         request = self.factory.get(url)
-        self.assertRaises(errors.InvalidClientError, server.get_consent_grant, request)
+        with pytest.raises(errors.InvalidClientError):
+            server.get_consent_grant(request)
 
         url = "/authorize?response_type=token&client_id=client"
         request = self.factory.get(url)
-        self.assertRaises(errors.InvalidClientError, server.get_consent_grant, request)
+        with pytest.raises(errors.InvalidClientError):
+            server.get_consent_grant(request)
 
         self.prepare_data(response_type="")
-        self.assertRaises(
-            errors.UnauthorizedClientError, server.get_consent_grant, request
-        )
+        with pytest.raises(errors.UnauthorizedClientError):
+            server.get_consent_grant(request)
 
     def test_get_consent_grant_scope(self):
         server = self.create_server()
@@ -50,22 +53,25 @@ class ImplicitTest(TestCase):
         base_url = "/authorize?response_type=token&client_id=client"
         url = base_url + "&scope=invalid"
         request = self.factory.get(url)
-        self.assertRaises(errors.InvalidScopeError, server.get_consent_grant, request)
+        with pytest.raises(errors.InvalidScopeError):
+            server.get_consent_grant(request)
 
     def test_create_authorization_response(self):
         server = self.create_server()
         self.prepare_data()
         data = {"response_type": "token", "client_id": "client"}
         request = self.factory.post("/authorize", data=data)
-        server.get_consent_grant(request)
+        grant = server.get_consent_grant(request)
 
-        resp = server.create_authorization_response(request)
-        self.assertEqual(resp.status_code, 302)
+        resp = server.create_authorization_response(request, grant=grant)
+        assert resp.status_code == 302
         params = dict(url_decode(urlparse.urlparse(resp["Location"]).fragment))
-        self.assertEqual(params["error"], "access_denied")
+        assert params["error"] == "access_denied"
 
         grant_user = User.objects.get(username="foo")
-        resp = server.create_authorization_response(request, grant_user=grant_user)
-        self.assertEqual(resp.status_code, 302)
+        resp = server.create_authorization_response(
+            request, grant=grant, grant_user=grant_user
+        )
+        assert resp.status_code == 302
         params = dict(url_decode(urlparse.urlparse(resp["Location"]).fragment))
-        self.assertIn("access_token", params)
+        assert "access_token" in params

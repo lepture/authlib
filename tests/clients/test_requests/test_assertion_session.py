@@ -2,6 +2,8 @@ import time
 from unittest import TestCase
 from unittest import mock
 
+import pytest
+
 from authlib.integrations.requests_client import AssertionSession
 
 
@@ -20,7 +22,7 @@ class AssertionSessionTest(TestCase):
             resp = mock.MagicMock()
             resp.status_code = 200
             if r.url == "https://i.b/token":
-                self.assertIn("assertion=", r.body)
+                assert "assertion=" in r.body
                 resp.json = lambda: self.token
             return resp
 
@@ -63,4 +65,5 @@ class AssertionSessionTest(TestCase):
             audience="foo",
             key="secret",
         )
-        self.assertRaises(ValueError, sess.get, "https://i.b")
+        with pytest.raises(ValueError):
+            sess.get("https://i.b")

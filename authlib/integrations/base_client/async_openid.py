@@ -78,7 +78,7 @@ class AsyncOpenIDMixin:
                 claims_params=claims_params,
             )
 
-        # https://github.com/lepture/authlib/issues/259
+        # https://github.com/authlib/authlib/issues/259
         if claims.get("nonce_supported") is False:
             claims.params["nonce"] = None
         claims.validate(leeway=leeway)

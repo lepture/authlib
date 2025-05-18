@@ -17,7 +17,7 @@ Version 1.5.3
 - Support for the ``none`` JWS algorithm.
 - Fix ``response_types`` strict order during dynamic client registration. :issue:`760`
 - OIDC :class:`UserInfo endpoint <authlib.oidc.core.userinfo.UserInfoEndpoint>` support. :issue:`459`
-
+- Implement :rfc:`RFC9101 The OAuth 2.0 Authorization Framework: JWT-Secured Authorization Request (JAR) <9101>`. :issue:`723`
 
 Version 1.5.2
 -------------
@@ -209,7 +209,7 @@ Added ``ES256K`` algorithm for JWS and JWT.
 Old Versions
 ------------
 
-Find old changelog at https://github.com/lepture/authlib/releases
+Find old changelog at https://github.com/authlib/authlib/releases
 
 - Version 0.15.5: Released on Oct 18, 2021
 - Version 0.15.4: Released on Jul 17, 2021

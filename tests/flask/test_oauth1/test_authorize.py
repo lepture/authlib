@@ -31,13 +31,13 @@ class AuthorizationWithCacheTest(TestCase):
         # case 1
         rv = self.client.post(url, data={"user_id": "1"})
         data = decode_response(rv.data)
-        self.assertEqual(data["error"], "missing_required_parameter")
-        self.assertIn("oauth_token", data["error_description"])
+        assert data["error"] == "missing_required_parameter"
+        assert "oauth_token" in data["error_description"]
 
         # case 2
         rv = self.client.post(url, data={"user_id": "1", "oauth_token": "a"})
         data = decode_response(rv.data)
-        self.assertEqual(data["error"], "invalid_token")
+        assert data["error"] == "invalid_token"
 
     def test_authorize_denied(self):
         self.prepare_data()
@@ -54,12 +54,12 @@ class AuthorizationWithCacheTest(TestCase):
             },
         )
         data = decode_response(rv.data)
-        self.assertIn("oauth_token", data)
+        assert "oauth_token" in data
 
         rv = self.client.post(authorize_url, data={"oauth_token": data["oauth_token"]})
-        self.assertEqual(rv.status_code, 302)
-        self.assertIn("access_denied", rv.headers["Location"])
-        self.assertIn("https://a.b", rv.headers["Location"])
+        assert rv.status_code == 302
+        assert "access_denied" in rv.headers["Location"]
+        assert "https://a.b" in rv.headers["Location"]
 
         rv = self.client.post(
             initiate_url,
@@ -71,12 +71,12 @@ class AuthorizationWithCacheTest(TestCase):
             },
         )
         data = decode_response(rv.data)
-        self.assertIn("oauth_token", data)
+        assert "oauth_token" in data
 
         rv = self.client.post(authorize_url, data={"oauth_token": data["oauth_token"]})
-        self.assertEqual(rv.status_code, 302)
-        self.assertIn("access_denied", rv.headers["Location"])
-        self.assertIn("https://i.test", rv.headers["Location"])
+        assert rv.status_code == 302
+        assert "access_denied" in rv.headers["Location"]
+        assert "https://i.test" in rv.headers["Location"]
 
     def test_authorize_granted(self):
         self.prepare_data()
@@ -93,14 +93,14 @@ class AuthorizationWithCacheTest(TestCase):
             },
         )
         data = decode_response(rv.data)
-        self.assertIn("oauth_token", data)
+        assert "oauth_token" in data
 
         rv = self.client.post(
             authorize_url, data={"user_id": "1", "oauth_token": data["oauth_token"]}
         )
-        self.assertEqual(rv.status_code, 302)
-        self.assertIn("oauth_verifier", rv.headers["Location"])
-        self.assertIn("https://a.b", rv.headers["Location"])
+        assert rv.status_code == 302
+        assert "oauth_verifier" in rv.headers["Location"]
+        assert "https://a.b" in rv.headers["Location"]
 
         rv = self.client.post(
             initiate_url,
@@ -112,14 +112,14 @@ class AuthorizationWithCacheTest(TestCase):
             },
         )
         data = decode_response(rv.data)
-        self.assertIn("oauth_token", data)
+        assert "oauth_token" in data
 
         rv = self.client.post(
             authorize_url, data={"user_id": "1", "oauth_token": data["oauth_token"]}
         )
-        self.assertEqual(rv.status_code, 302)
-        self.assertIn("oauth_verifier", rv.headers["Location"])
-        self.assertIn("https://i.test", rv.headers["Location"])
+        assert rv.status_code == 302
+        assert "oauth_verifier" in rv.headers["Location"]
+        assert "https://i.test" in rv.headers["Location"]
 
 
 class AuthorizationNoCacheTest(AuthorizationWithCacheTest):
