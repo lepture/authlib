@@ -44,14 +44,15 @@ def create_authorization_server(app, lazy=False):
         else:
             end_user = None
 
-        if request.method == "GET":
-            try:
-                grant = server.get_consent_grant(end_user=end_user)
-                return grant.prompt or "ok"
-            except OAuth2Error as error:
-                return server.handle_error_response(request, error)
+        try:
+            grant = server.get_consent_grant(end_user=end_user)
+        except OAuth2Error as error:
+            return server.handle_error_response(request, error)
 
-        return server.create_authorization_response(grant_user=end_user)
+        if request.method == "GET":
+            return grant.prompt or "ok"
+
+        return server.create_authorization_response(grant=grant, grant_user=end_user)
 
     @app.route("/oauth/token", methods=["GET", "POST"])
     def issue_token():

@@ -36,8 +36,9 @@ class RFC9207AuthorizationCodeTest(TestCase):
         rfc9207=True,
     ):
         server = create_authorization_server(self.app, self.LAZY_INIT)
-        extensions = [IssuerParameter()] if rfc9207 else []
-        server.register_grant(AuthorizationCodeGrant, extensions=extensions)
+        if rfc9207:
+            server.register_extension(IssuerParameter())
+        server.register_grant(AuthorizationCodeGrant)
         self.server = server
 
         user = User(username="foo")

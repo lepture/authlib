@@ -1,6 +1,7 @@
 import logging
 
 from ..errors import UnauthorizedClientError
+from ..hooks import hooked
 from .base import BaseGrant
 from .base import TokenEndpointMixin
 
@@ -74,6 +75,7 @@ class ClientCredentialsGrant(BaseGrant, TokenEndpointMixin):
         self.request.client = client
         self.validate_requested_scope()
 
+    @hooked
     def create_token_response(self):
         """If the access token request is valid and authorized, the
         authorization server issues an access token as described in
@@ -100,9 +102,8 @@ class ClientCredentialsGrant(BaseGrant, TokenEndpointMixin):
         :returns: (status_code, body, headers)
         """
         token = self.generate_token(
-            scope=self.request.scope, include_refresh_token=False
+            scope=self.request.payload.scope, include_refresh_token=False
         )
         log.debug("Issue token %r to %r", token, self.client)
         self.save_token(token)
-        self.execute_hook("process_token", self, token=token)
         return 200, token, self.TOKEN_RESPONSE_HEADER

@@ -1,16 +1,29 @@
 from typing import Optional
 
 from authlib.common.urls import add_params_to_uri
+from authlib.deprecate import deprecate
+from authlib.oauth2.rfc6749.grants import BaseGrant
 
 
 class IssuerParameter:
-    def __call__(self, grant):
-        grant.register_hook(
-            "after_authorization_response",
-            self.add_issuer_parameter,
-        )
+    def __call__(self, authorization_server):
+        if isinstance(authorization_server, BaseGrant):
+            deprecate(
+                "IssueParameter should be used as an authorization server extension with 'authorization_server.register_extension(IssueParameter())'.",
+                version="1.8",
+            )
+            authorization_server.register_hook(
+                "after_authorization_response",
+                self.add_issuer_parameter,
+            )
 
-    def add_issuer_parameter(self, hook_type: str, response):
+        else:
+            authorization_server.register_hook(
+                "after_create_authorization_response",
+                self.add_issuer_parameter,
+            )
+
+    def add_issuer_parameter(self, authorization_server, response):
         if self.get_issuer() and response.location:
             # RFC9207 §2
             # In authorization responses to the client, including error responses,

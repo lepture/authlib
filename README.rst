@@ -30,12 +30,15 @@ Specifications
 - RFC7521: Assertion Framework for OAuth 2.0 Client Authentication and Authorization Grants
 - RFC7523: JSON Web Token (JWT) Profile for OAuth 2.0 Client Authentication and Authorization Grants
 - RFC7591: OAuth 2.0 Dynamic Client Registration Protocol
+- RFC7592: OAuth 2.0 Dynamic Client Registration Management Protocol
 - RFC7636: Proof Key for Code Exchange by OAuth Public Clients
 - RFC7638: JSON Web Key (JWK) Thumbprint
 - RFC7662: OAuth 2.0 Token Introspection
 - RFC8037: CFRG Elliptic Curve Diffie-Hellman (ECDH) and Signatures in JSON Object Signing and Encryption (JOSE)
 - RFC8414: OAuth 2.0 Authorization Server Metadata
 - RFC8628: OAuth 2.0 Device Authorization Grant
+- RFC9101: The OAuth 2.0 Authorization Framework: JWT-Secured Authorization Request (JAR)
+- RFC9207: OAuth 2.0 Authorization Server Issuer Identification
 - OpenID Connect 1.0
 - OpenID Connect Discovery 1.0
 - draft-madden-jose-ecdh-1pu-04: Public Key Authenticated Encryption for JOSE: ECDH-1PU

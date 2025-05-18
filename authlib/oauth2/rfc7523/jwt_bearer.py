@@ -134,7 +134,7 @@ class JWTBearerGrant(BaseGrant, TokenEndpointMixin):
         token.
         """
         token = self.generate_token(
-            scope=self.request.scope,
+            scope=self.request.payload.scope,
             user=self.request.user,
             include_refresh_token=False,
         )
