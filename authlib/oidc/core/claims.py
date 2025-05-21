@@ -5,6 +5,7 @@ from authlib.common.encoding import to_bytes
 from authlib.jose import JWTClaims
 from authlib.jose.errors import InvalidClaimError
 from authlib.jose.errors import MissingClaimError
+from authlib.oauth2.rfc6749.util import scope_to_list
 
 from .util import create_half_hash
 
@@ -247,6 +248,42 @@ class UserInfo(dict):
         "address",
         "updated_at",
     ]
+
+    SCOPES_CLAIMS_MAPPING = {
+        "openid": ["sub"],
+        "profile": [
+            "name",
+            "family_name",
+            "given_name",
+            "middle_name",
+            "nickname",
+            "preferred_username",
+            "profile",
+            "picture",
+            "website",
+            "gender",
+            "birthdate",
+            "zoneinfo",
+            "locale",
+            "updated_at",
+        ],
+        "email": ["email", "email_verified"],
+        "address": ["address"],
+        "phone": ["phone_number", "phone_number_verified"],
+    }
+
+    def filter(self, scope: str):
+        """Return a new UserInfo object containing only the claims matching the scope passed in parameter."""
+        scope = scope_to_list(scope)
+        filtered_claims = [
+            claim
+            for scope_part in scope
+            for claim in self.SCOPES_CLAIMS_MAPPING.get(scope_part, [])
+        ]
+        filtered_items = {
+            key: val for key, val in self.items() if key in filtered_claims
+        }
+        return UserInfo(filtered_items)
 
     def __getattr__(self, key):
         try:
