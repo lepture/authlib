@@ -6,10 +6,10 @@ Changelog
 
 Here you can see the full list of changes between each Authlib release.
 
-Version 1.5.3
+Version 1.6.0
 -------------
 
-**Unreleased**
+**Released on May 22, 2025**
 
 - Fix issue when :rfc:`RFC9207 <9207>` is enabled and the authorization endpoint response is not a redirection. :pr:`733`
 - Fix missing ``state`` parameter in authorization error responses. :issue:`525`
@@ -26,8 +26,7 @@ Version 1.5.2
 
 - Forbid fragments in ``redirect_uris``. :issue:`714`
 - Fix invalid characters in ``error_description``. :issue:`720`
-- Add ``claims_cls``` parameter for client's ``parse_id_token`` method. :issue:`725`
-
+- Add ``claims_cls`` parameter for client's ``parse_id_token`` method. :issue:`725`
 
 Version 1.5.1
 -------------

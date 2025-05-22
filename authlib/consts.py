@@ -1,7 +1,7 @@
 name = "Authlib"
-version = "1.5.2"
+version = "1.6.0"
 author = "Hsiaoming Yang <me@lepture.com>"
-homepage = "https://authlib.org/"
+homepage = "https://authlib.org"
 default_user_agent = f"{name}/{version} (+{homepage})"
 
 default_json_headers = [
